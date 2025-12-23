@@ -2,9 +2,14 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Hatch",
-  description: "Code you can maintain",
-};
+  title: 'HatchIt - From Prompt to Production',
+  description: 'AI-powered React component generator',
+  icons: {
+    icon: [
+      { url: '/favicon.png', type: 'image/png' },
+    ],
+  },
+}
 
 export default function RootLayout({
   children,
