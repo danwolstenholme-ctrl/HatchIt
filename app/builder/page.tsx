@@ -70,16 +70,22 @@ export default function Home() {
   }
 
   return (
-    <div className="h-screen bg-zinc-950 p-4">
-      <Group orientation="horizontal" className="h-full rounded-xl overflow-hidden border border-zinc-700">
+    <div className="h-screen bg-zinc-950 p-4 relative overflow-hidden">
+      {/* Animated background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
+      </div>
+
+      <Group orientation="horizontal" className="relative h-full rounded-xl overflow-hidden border border-zinc-700/50 shadow-2xl shadow-purple-500/5">
         {/* Chat Panel - Left */}
         <Panel id="chat" defaultSize={30} minSize={20}>
-          <div className="h-full flex flex-col bg-zinc-900">
+          <div className="h-full flex flex-col bg-zinc-900/90 backdrop-blur-sm">
             <div className="px-4 py-3 border-b border-zinc-800">
-              <div className="flex items-center gap-3">
-                <img src="/logo.svg" alt="Hatch" className="w-7 h-7" />
-                <p className="text-sm text-zinc-400">Hatch it. Ship it.</p>
-              </div>
+              <h1 className="text-2xl font-black">
+                <span className="bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent">Hatch</span>
+                <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">It</span>
+              </h1>
             </div>
             <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} />
           </div>
@@ -89,7 +95,7 @@ export default function Home() {
 
         {/* Right Panel - Tabbed Preview/Code */}
         <Panel id="right" defaultSize={70} minSize={40}>
-          <div className="h-full flex flex-col bg-zinc-900">
+          <div className="h-full flex flex-col bg-zinc-900/90 backdrop-blur-sm">
             {/* Tab Header */}
             <div className="flex items-center justify-between border-b border-zinc-800 px-2">
               <div className="flex">
