@@ -50,6 +50,22 @@ export default function LivePreview({ code }: LivePreviewProps) {
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script>
+    // Intercept all link clicks to prevent iframe navigation
+    document.addEventListener('click', function(e) {
+      const link = e.target.closest('a');
+      if (link) {
+        e.preventDefault();
+        const href = link.getAttribute('href');
+        // Handle anchor links - scroll to element
+        if (href && href.startsWith('#')) {
+          const target = document.querySelector(href);
+          if (target) target.scrollIntoView({ behavior: 'smooth' });
+        }
+        // For other links, could show a toast or just ignore
+      }
+    });
+  </script>
   <script type="text/babel" data-presets="react,typescript">
     ${hooksDestructure}
     
@@ -67,19 +83,19 @@ export default function LivePreview({ code }: LivePreviewProps) {
   }, [code])
 
   return (
-    <div className="flex-1 bg-zinc-900 overflow-hidden">
-      {code ? (
-        <iframe
-          srcDoc={srcDoc}
-          className="w-full h-full border-0 bg-white"
-          sandbox="allow-scripts"
-          title="Live Preview"
-        />
-      ) : (
-        <div className="p-4 text-sm text-zinc-600">
-          Live preview will render here.
-        </div>
-      )}
-    </div>
-  )
+  <div className="flex-1 h-full bg-zinc-900 overflow-auto">
+    {code ? (
+      <iframe
+        srcDoc={srcDoc}
+        className="w-full h-full min-h-[200vh] border-0 bg-white"
+        sandbox="allow-scripts"
+        title="Live Preview"
+      />
+    ) : (
+      <div className="p-4 text-sm text-zinc-600">
+        Live preview will render here.
+      </div>
+    )}
+  </div>
+)
 }

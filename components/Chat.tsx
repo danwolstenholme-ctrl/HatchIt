@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, FormEvent } from 'react'
+import { useState, useEffect, FormEvent } from 'react'
 import { Group, Panel, Separator } from 'react-resizable-panels'
 
 interface Message {
@@ -15,6 +15,32 @@ interface ChatProps {
   currentCode: string
 }
 
+function LoadingIndicator() {
+  const [stage, setStage] = useState(0);
+  const stages = ['Thinking', 'Building'];
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (stage < stages.length - 1) {
+        setStage(s => s + 1);
+      }
+    }, 2000);
+    
+    return () => clearTimeout(timer);
+  }, [stage]);
+
+  return (
+    <div className="text-sm text-zinc-400 flex items-center gap-1">
+      <span>{stages[stage]}</span>
+      <span className="flex gap-0.5">
+        <span className="animate-bounce [animation-delay:0ms]">.</span>
+        <span className="animate-bounce [animation-delay:150ms]">.</span>
+        <span className="animate-bounce [animation-delay:300ms]">.</span>
+      </span>
+    </div>
+  );
+}
+
 export default function Chat({ onGenerate, isGenerating, currentCode }: ChatProps) {
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
@@ -25,13 +51,12 @@ export default function Chat({ onGenerate, isGenerating, currentCode }: ChatProp
 
     const userMessage = input.trim()
     setInput('')
-    
+
     const newUserMessage: Message = { role: 'user', content: userMessage }
     const updatedMessages = [...messages, newUserMessage]
     setMessages(updatedMessages)
 
     await onGenerate(userMessage, messages, currentCode)
-
     setMessages(prev => [...prev, { role: 'assistant', content: 'Component updated.', code: currentCode }])
   }
 
@@ -73,9 +98,7 @@ export default function Chat({ onGenerate, isGenerating, currentCode }: ChatProp
               )}
             </>
           )}
-          {isGenerating && (
-            <div className="text-sm text-zinc-500">Generating...</div>
-          )}
+          {isGenerating && <LoadingIndicator />}
         </div>
       </Panel>
 
@@ -93,7 +116,7 @@ export default function Chat({ onGenerate, isGenerating, currentCode }: ChatProp
                 handleSubmit(e)
               }
             }}
-            placeholder={messages.length === 0 ? "A pricing card with three tiers..." : "Make the buttons rounder..."}
+            placeholder={isGenerating ? "" : messages.length === 0 ? "A pricing card with three tiers..." : "What's next?"}
             className="flex-1 bg-zinc-800 border border-zinc-600 rounded-lg px-3 py-2 text-sm text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-zinc-500 resize-none"
             disabled={isGenerating}
           />

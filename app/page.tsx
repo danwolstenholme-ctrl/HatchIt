@@ -15,7 +15,7 @@ interface Message {
 export default function Home() {
   const [code, setCode] = useState<string>('')
   const [isGenerating, setIsGenerating] = useState(false)
-  const [copied, setCopied] = useState(false)
+  const [activeTab, setActiveTab] = useState<'preview' | 'code'>('preview')
 
   const handleGenerate = async (prompt: string, history: Message[], currentCode: string) => {
     setIsGenerating(true)
@@ -36,14 +36,8 @@ export default function Home() {
     }
   }
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(code)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
   return (
-    <div className="h-screen bg-zinc-950 !p-4">
+    <div className="h-screen bg-zinc-950 p-4">
       <Group orientation="horizontal" className="h-full rounded-xl overflow-hidden border border-zinc-700">
         {/* Chat Panel - Left */}
         <Panel id="chat" defaultSize={30} minSize={20}>
@@ -58,39 +52,44 @@ export default function Home() {
 
         <Separator className="w-2 bg-zinc-800 hover:bg-zinc-600 transition-colors cursor-col-resize" />
 
-        {/* Right Panels - Code + Preview */}
+        {/* Right Panel - Tabbed Preview/Code */}
         <Panel id="right" defaultSize={70} minSize={40}>
-          <Group orientation="vertical" className="h-full">
-            {/* Code Preview - Top Right */}
-            <Panel id="code" defaultSize={50} minSize={20}>
-              <div className="h-full flex flex-col bg-zinc-900">
-                <div className="p-3 border-b border-zinc-800 flex items-center justify-between">
-                  <span className="text-sm text-zinc-400">Generated Code</span>
-                  {code && (
-                    <button
-                      onClick={handleCopy}
-                      className="text-xs px-2 py-1 bg-zinc-700 hover:bg-zinc-600 rounded transition-colors text-zinc-300"
-                    >
-                      {copied ? '✓ Copied!' : 'Copy'}
-                    </button>
-                  )}
-                </div>
-                <CodePreview code={code} />
+          <div className="h-full flex flex-col bg-zinc-900">
+            {/* Tab Header */}
+            <div className="flex items-center justify-between border-b border-zinc-800">
+              <div className="flex">
+                <button
+                  onClick={() => setActiveTab('preview')}
+                  className={`px-4 py-3 text-sm font-medium transition-colors ${
+                    activeTab === 'preview'
+                      ? 'text-zinc-100 border-b-2 border-zinc-100'
+                      : 'text-zinc-500 hover:text-zinc-300'
+                  }`}
+                >
+                  Preview
+                </button>
+                <button
+                  onClick={() => setActiveTab('code')}
+                  className={`px-4 py-3 text-sm font-medium transition-colors ${
+                    activeTab === 'code'
+                      ? 'text-zinc-100 border-b-2 border-zinc-100'
+                      : 'text-zinc-500 hover:text-zinc-300'
+                  }`}
+                >
+                  Code
+                </button>
               </div>
-            </Panel>
+            </div>
 
-            <Separator className="h-2 bg-zinc-800 hover:bg-zinc-600 transition-colors cursor-row-resize" />
-
-            {/* Live Preview - Bottom Right */}
-            <Panel id="preview" defaultSize={50} minSize={20}>
-              <div className="h-full flex flex-col bg-zinc-900">
-                <div className="p-3 border-b border-zinc-800">
-                  <span className="text-sm text-zinc-400">Live Preview</span>
-                </div>
+            {/* Tab Content */}
+            <div className="flex-1 overflow-auto min-h-0">
+              {activeTab === 'preview' ? (
                 <LivePreview code={code} />
-              </div>
-            </Panel>
-          </Group>
+              ) : (
+                <CodePreview code={code} />
+              )}
+            </div>
+          </div>
         </Panel>
       </Group>
     </div>
