@@ -6,18 +6,24 @@ import Chat from '@/components/Chat'
 import CodePreview from '@/components/CodePreview'
 import LivePreview from '@/components/LivePreview'
 
+interface Message {
+  role: 'user' | 'assistant'
+  content: string
+  code?: string
+}
+
 export default function Home() {
   const [code, setCode] = useState<string>('')
   const [isGenerating, setIsGenerating] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  const handleGenerate = async (prompt: string) => {
+  const handleGenerate = async (prompt: string, history: Message[], currentCode: string) => {
     setIsGenerating(true)
     try {
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt, history, currentCode }),
       })
       const data = await response.json()
       if (data.code) {
@@ -46,7 +52,7 @@ export default function Home() {
               <h1 className="text-xl font-semibold text-zinc-100">Hatch</h1>
               <p className="text-sm text-zinc-500">Code you can maintain</p>
             </div>
-            <Chat onGenerate={handleGenerate} isGenerating={isGenerating} />
+            <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} />
           </div>
         </Panel>
 

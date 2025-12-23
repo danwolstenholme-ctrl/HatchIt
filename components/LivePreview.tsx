@@ -10,38 +10,39 @@ export default function LivePreview({ code }: LivePreviewProps) {
   const srcDoc = useMemo(() => {
     if (!code) return ''
 
-    const needsUseState = code.includes('useState')
-    const needsUseEffect = code.includes('useEffect')
-    const needsUseMemo = code.includes('useMemo')
-    
-    const hooks = []
-    if (needsUseState) hooks.push('useState')
-    if (needsUseEffect) hooks.push('useEffect')
-    if (needsUseMemo) hooks.push('useMemo')
-    
-    const hooksDestructure = hooks.length > 0 
-      ? `const { ${hooks.join(', ')} } = React;`
-      : ''
+    // Always destructure common hooks
+    const hooksDestructure = `const { useState, useEffect, useMemo, useCallback, useRef } = React;`
 
-    // Remove export statements for browser execution
+    // Remove export statements and fix React.hook patterns
     const cleanedCode = code
       .replace(/export\s+default\s+/g, '')
       .replace(/export\s+/g, '')
+      .replace(/React\.useState/g, 'useState')
+      .replace(/React\.useEffect/g, 'useEffect')
+      .replace(/React\.useMemo/g, 'useMemo')
+      .replace(/React\.useCallback/g, 'useCallback')
+      .replace(/React\.useRef/g, 'useRef')
 
     return `<!DOCTYPE html>
 <html>
 <head>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { 
-      background: #18181b; 
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem;
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body, #root { 
+      min-height: 100%;
+      width: 100%;
     }
-    .error { color: #ef4444; padding: 1rem; font-family: monospace; white-space: pre-wrap; }
+    body {
+      background: #f9fafb;
+    }
+    .error { 
+      color: #ef4444; 
+      padding: 1rem; 
+      font-family: monospace; 
+      white-space: pre-wrap;
+      background: #18181b;
+    }
   </style>
 </head>
 <body>
@@ -54,19 +55,23 @@ export default function LivePreview({ code }: LivePreviewProps) {
     
     ${cleanedCode}
     
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<Component />);
+    try {
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<Component />);
+    } catch (err) {
+      document.getElementById('root').innerHTML = '<div class="error">Error: ' + err.message + '</div>';
+    }
   </script>
 </body>
 </html>`
   }, [code])
 
   return (
-    <div className="flex-1 bg-zinc-900">
+    <div className="flex-1 bg-zinc-900 overflow-hidden">
       {code ? (
         <iframe
           srcDoc={srcDoc}
-          className="w-full h-full border-0"
+          className="w-full h-full border-0 bg-white"
           sandbox="allow-scripts"
           title="Live Preview"
         />

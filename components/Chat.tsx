@@ -6,14 +6,16 @@ import { Group, Panel, Separator } from 'react-resizable-panels'
 interface Message {
   role: 'user' | 'assistant'
   content: string
+  code?: string
 }
 
 interface ChatProps {
-  onGenerate: (prompt: string) => Promise<void>
+  onGenerate: (prompt: string, history: Message[], currentCode: string) => Promise<void>
   isGenerating: boolean
+  currentCode: string
 }
 
-export default function Chat({ onGenerate, isGenerating }: ChatProps) {
+export default function Chat({ onGenerate, isGenerating, currentCode }: ChatProps) {
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
 
@@ -23,11 +25,18 @@ export default function Chat({ onGenerate, isGenerating }: ChatProps) {
 
     const userMessage = input.trim()
     setInput('')
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }])
+    
+    const newUserMessage: Message = { role: 'user', content: userMessage }
+    const updatedMessages = [...messages, newUserMessage]
+    setMessages(updatedMessages)
 
-    await onGenerate(userMessage)
+    await onGenerate(userMessage, messages, currentCode)
 
-    setMessages(prev => [...prev, { role: 'assistant', content: 'Component generated.' }])
+    setMessages(prev => [...prev, { role: 'assistant', content: 'Component updated.', code: currentCode }])
+  }
+
+  const clearChat = () => {
+    setMessages([])
   }
 
   return (
@@ -35,24 +44,35 @@ export default function Chat({ onGenerate, isGenerating }: ChatProps) {
       {/* Messages */}
       <Panel id="messages" defaultSize={70} minSize={30}>
         <div className="h-full overflow-y-auto p-4 space-y-4">
-          {messages.length === 0 && (
+          {messages.length === 0 ? (
             <div className="text-zinc-500 text-sm">
-              Describe a component and I'll generate clean React + Tailwind code.
+              Describe a component and I'll generate clean React + Tailwind code. Then ask for changes to iterate.
             </div>
+          ) : (
+            <>
+              {messages.map((msg, i) => (
+                <div
+                  key={i}
+                  className={`text-sm ${
+                    msg.role === 'user' ? 'text-zinc-100' : 'text-zinc-400'
+                  }`}
+                >
+                  <span className="font-medium">
+                    {msg.role === 'user' ? 'You: ' : 'Hatch: '}
+                  </span>
+                  {msg.content}
+                </div>
+              ))}
+              {messages.length > 0 && (
+                <button
+                  onClick={clearChat}
+                  className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+                >
+                  Clear & start new
+                </button>
+              )}
+            </>
           )}
-          {messages.map((msg, i) => (
-            <div
-              key={i}
-              className={`text-sm ${
-                msg.role === 'user' ? 'text-zinc-100' : 'text-zinc-400'
-              }`}
-            >
-              <span className="font-medium">
-                {msg.role === 'user' ? 'You: ' : 'Hatch: '}
-              </span>
-              {msg.content}
-            </div>
-          ))}
           {isGenerating && (
             <div className="text-sm text-zinc-500">Generating...</div>
           )}
@@ -73,7 +93,7 @@ export default function Chat({ onGenerate, isGenerating }: ChatProps) {
                 handleSubmit(e)
               }
             }}
-            placeholder="A pricing card with three tiers..."
+            placeholder={messages.length === 0 ? "A pricing card with three tiers..." : "Make the buttons rounder..."}
             className="flex-1 bg-zinc-800 border border-zinc-600 rounded-lg px-3 py-2 text-sm text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-zinc-500 resize-none"
             disabled={isGenerating}
           />
@@ -82,7 +102,7 @@ export default function Chat({ onGenerate, isGenerating }: ChatProps) {
             disabled={isGenerating || !input.trim()}
             className="mt-3 px-4 py-2 bg-zinc-100 text-zinc-900 rounded-lg text-sm font-medium hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            Generate
+            {messages.length === 0 ? 'Generate' : 'Update'}
           </button>
         </form>
       </Panel>
