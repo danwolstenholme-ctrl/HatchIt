@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 
 interface Point {
@@ -43,13 +43,6 @@ interface Tool {
   name: string
 }
 
-interface ResizeHandle {
-  id: string
-  x: number
-  y: number
-  cursor: string
-}
-
 interface Layer {
   id: string
   type: 'path' | 'shape' | 'text'
@@ -57,23 +50,20 @@ interface Layer {
   name: string
   visible: boolean
   icon: string
-  element: Path | Shape | TextElement
 }
 
 export default function CanvasPage() {
-  const [selectedTool, setSelectedTool] = useState('select')
+  // Canvas state
+  const [selectedTool, setSelectedTool] = useState('pen')
   const [selectedColor, setSelectedColor] = useState('#3b82f6')
   const [fillColor, setFillColor] = useState('transparent')
-  const [strokeWidth, setStrokeWidth] = useState(2)
+  const [strokeWidth, setStrokeWidth] = useState(3)
   const [zoomLevel, setZoomLevel] = useState(100)
-  const [projectName, setProjectName] = useState('HatchIt Canvas')
-  const [isEditing, setIsEditing] = useState(false)
-  const [showShareModal, setShowShareModal] = useState(false)
-  const [showAIModal, setShowAIModal] = useState(false)
-  const [showColorPalette, setShowColorPalette] = useState(false)
-  const [showFillPalette, setShowFillPalette] = useState(false)
-  const [showShortcuts, setShowShortcuts] = useState(false)
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 })
+  
+  // Drawing state
   const [isDrawing, setIsDrawing] = useState(false)
+  const [isPanning, setIsPanning] = useState(false)
   const [paths, setPaths] = useState<Path[]>([])
   const [currentPath, setCurrentPath] = useState<Point[]>([])
   const [shapes, setShapes] = useState<Shape[]>([])
@@ -82,318 +72,76 @@ export default function CanvasPage() {
   const [currentShape, setCurrentShape] = useState<Shape | null>(null)
   const [selectedElement, setSelectedElement] = useState<number | null>(null)
   const [selectedElementType, setSelectedElementType] = useState<'path' | 'shape' | 'text' | null>(null)
+  
+  // History
   const [history, setHistory] = useState<{ paths: Path[]; shapes: Shape[]; texts: TextElement[] }[]>([])
   const [historyIndex, setHistoryIndex] = useState(-1)
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  
+  // Text input
   const [isAddingText, setIsAddingText] = useState(false)
   const [textInput, setTextInput] = useState('')
   const [textPosition, setTextPosition] = useState<Point | null>(null)
-  const [aiPrompt, setAIPrompt] = useState('')
-  const [aiStyle, setAIStyle] = useState('minimalist')
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [activePanel, setActivePanel] = useState('properties')
-  const [isResizing, setIsResizing] = useState(false)
-  const [resizeHandle, setResizeHandle] = useState<string | null>(null)
-  const [dragStart, setDragStart] = useState<Point | null>(null)
-  const [isDragging, setIsDragging] = useState(false)
+  
+  // UI state
+  const [isMobile, setIsMobile] = useState(false)
+  const [showMobilePanel, setShowMobilePanel] = useState<'layers' | 'colors' | 'export' | null>(null)
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
   
-  // Mobile-specific state
-  const [isMobile, setIsMobile] = useState(false)
-  const [showMobilePanel, setShowMobilePanel] = useState<'properties' | 'layers' | 'colors' | null>(null)
-  const [showMobileMenu, setShowMobileMenu] = useState(false)
+  // Touch tracking
+  const lastTouchRef = useRef<Point | null>(null)
+  const lastPinchDistanceRef = useRef<number | null>(null)
+  const canvasRef = useRef<HTMLDivElement>(null)
 
-  // Detect mobile viewport
+  // Detect mobile
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
+  // Initialize history
+  useEffect(() => {
+    if (history.length === 0) {
+      saveToHistory()
+    }
+  }, [])
+
   const tools: Tool[] = [
-    { id: 'select', icon: '↖', name: 'Select' },
-    { id: 'pen', icon: '✎', name: 'Pen' },
-    { id: 'rectangle', icon: '□', name: 'Rectangle' },
-    { id: 'circle', icon: '○', name: 'Circle' },
-    { id: 'text', icon: 'T', name: 'Text' },
-    { id: 'eraser', icon: '⌦', name: 'Eraser' }
+    { id: 'pen', icon: '✏️', name: 'Pen' },
+    { id: 'rectangle', icon: '⬜', name: 'Rectangle' },
+    { id: 'circle', icon: '⭕', name: 'Circle' },
+    { id: 'text', icon: '📝', name: 'Text' },
+    { id: 'select', icon: '👆', name: 'Select' },
+    { id: 'pan', icon: '✋', name: 'Pan' },
+    { id: 'eraser', icon: '🧹', name: 'Eraser' },
   ]
 
   const colors = [
     '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
     '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#6366f1',
-    '#000000', '#ffffff', '#6b7280', '#fbbf24', '#34d399', '#e11d48'
+    '#000000', '#ffffff', '#6b7280', '#fbbf24', '#14b8a6'
   ]
 
-  const fillColors = [
-    'transparent', '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
-    '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#6366f1',
-    '#000000', '#ffffff', '#6b7280', '#fbbf24', '#34d399', '#e11d48'
-  ]
+  const strokeWidths = [1, 2, 3, 5, 8, 12]
 
-  const aiStyles = [
-    { value: 'minimalist', label: 'Minimalist' },
-    { value: 'abstract', label: 'Abstract' },
-    { value: 'geometric', label: 'Geometric' }
-  ]
-
-  const shortcuts = [
-    { key: 'V', action: 'Select' },
-    { key: 'P', action: 'Pen' },
-    { key: 'R', action: 'Rectangle' },
-    { key: 'C', action: 'Circle' },
-    { key: 'T', action: 'Text' },
-    { key: 'E', action: 'Eraser' },
-    { key: 'Ctrl+Z', action: 'Undo' },
-    { key: 'Ctrl+Y', action: 'Redo' },
-    { key: 'Ctrl+C', action: 'Copy' },
-    { key: 'Delete', action: 'Delete Selected' }
-  ]
-
+  // Toast notification
   const showToastNotification = (message: string) => {
     setToastMessage(message)
     setShowToast(true)
     setTimeout(() => setShowToast(false), 2000)
   }
 
-  const copyElement = () => {
-    if (selectedElement !== null && selectedElementType) {
-      showToastNotification('Copied!')
-    }
-  }
-
-  const getAllLayers = (): Layer[] => {
-    const layers: Layer[] = []
-
-    paths.forEach((path, index) => {
-      layers.push({
-        id: `path-${index}`,
-        type: 'path',
-        index,
-        name: `Path ${index + 1}`,
-        visible: path.visible !== false,
-        icon: '✎',
-        element: path
-      })
-    })
-
-    shapes.forEach((shape, index) => {
-      layers.push({
-        id: `shape-${index}`,
-        type: 'shape',
-        index,
-        name: `${shape.type === 'rectangle' ? 'Rectangle' : 'Circle'} ${index + 1}`,
-        visible: shape.visible !== false,
-        icon: shape.type === 'rectangle' ? '□' : '○',
-        element: shape
-      })
-    })
-
-    texts.forEach((text, index) => {
-      layers.push({
-        id: `text-${index}`,
-        type: 'text',
-        index,
-        name: text.text.length > 15 ? `${text.text.substring(0, 15)}...` : text.text,
-        visible: text.visible !== false,
-        icon: 'T',
-        element: text
-      })
-    })
-
-    return layers.reverse()
-  }
-
-  const toggleLayerVisibility = (layerId: string, type: 'path' | 'shape' | 'text', index: number) => {
-    if (type === 'path') {
-      setPaths(prev => prev.map((path, i) =>
-        i === index ? { ...path, visible: path.visible !== false ? false : true } : path
-      ))
-    } else if (type === 'shape') {
-      setShapes(prev => prev.map((shape, i) =>
-        i === index ? { ...shape, visible: shape.visible !== false ? false : true } : shape
-      ))
-    } else if (type === 'text') {
-      setTexts(prev => prev.map((text, i) =>
-        i === index ? { ...text, visible: text.visible !== false ? false : true } : text
-      ))
-    }
-    saveToHistory()
-  }
-
-  const deleteLayer = (type: 'path' | 'shape' | 'text', index: number) => {
-    if (type === 'path') {
-      setPaths(prev => prev.filter((_, i) => i !== index))
-    } else if (type === 'shape') {
-      setShapes(prev => prev.filter((_, i) => i !== index))
-    } else if (type === 'text') {
-      setTexts(prev => prev.filter((_, i) => i !== index))
-    }
-
-    if (selectedElement === index && selectedElementType === type) {
-      setSelectedElement(null)
-      setSelectedElementType(null)
-    }
-
-    saveToHistory()
-  }
-
-  const deleteSelectedElement = () => {
-    if (selectedElement !== null && selectedElementType) {
-      deleteLayer(selectedElementType, selectedElement)
-    }
-  }
-
-  const selectLayer = (type: 'path' | 'shape' | 'text', index: number) => {
-    setSelectedElement(index)
-    setSelectedElementType(type)
-    setSelectedTool('select')
-  }
-
-  const isPointInRectangle = (px: number, py: number, rect: Shape) => {
-    const x = Math.min(rect.startX, rect.endX)
-    const y = Math.min(rect.startY, rect.endY)
-    const width = Math.abs(rect.endX - rect.startX)
-    const height = Math.abs(rect.endY - rect.startY)
-
-    return px >= x && px <= x + width && py >= y && py <= y + height
-  }
-
-  const isPointInCircle = (px: number, py: number, circle: Shape) => {
-    const centerX = (circle.startX + circle.endX) / 2
-    const centerY = (circle.startY + circle.endY) / 2
-    const radiusX = Math.abs(circle.endX - circle.startX) / 2
-    const radiusY = Math.abs(circle.endY - circle.startY) / 2
-
-    const normalizedX = (px - centerX) / radiusX
-    const normalizedY = (py - centerY) / radiusY
-
-    return (normalizedX * normalizedX + normalizedY * normalizedY) <= 1
-  }
-
-  const isPointNearPath = (px: number, py: number, path: Path, threshold = 10) => {
-    return path.points.some(point =>
-      Math.abs(point.x - px) < threshold && Math.abs(point.y - py) < threshold
-    )
-  }
-
-  const isPointNearText = (px: number, py: number, text: TextElement, threshold = 20) => {
-    const width = text.text.length * (text.size * 0.6)
-    const height = text.size
-
-    return px >= text.x - threshold &&
-      px <= text.x + width + threshold &&
-      py >= text.y - height - threshold &&
-      py <= text.y + threshold
-  }
-
-  const findElementAtPoint = (x: number, y: number): { type: 'path' | 'shape' | 'text'; index: number } | null => {
-    for (let i = texts.length - 1; i >= 0; i--) {
-      if (texts[i].visible !== false && isPointNearText(x, y, texts[i])) {
-        return { type: 'text', index: i }
-      }
-    }
-
-    for (let i = shapes.length - 1; i >= 0; i--) {
-      if (shapes[i].visible !== false) {
-        if (shapes[i].type === 'rectangle' && isPointInRectangle(x, y, shapes[i])) {
-          return { type: 'shape', index: i }
-        } else if (shapes[i].type === 'circle' && isPointInCircle(x, y, shapes[i])) {
-          return { type: 'shape', index: i }
-        }
-      }
-    }
-
-    for (let i = paths.length - 1; i >= 0; i--) {
-      if (paths[i].visible !== false && isPointNearPath(x, y, paths[i])) {
-        return { type: 'path', index: i }
-      }
-    }
-
-    return null
-  }
-
-  const getResizeHandles = (element: Shape | TextElement, type: 'shape' | 'text'): ResizeHandle[] => {
-    if (type === 'shape') {
-      const shape = element as Shape
-      const x = Math.min(shape.startX, shape.endX)
-      const y = Math.min(shape.startY, shape.endY)
-      const width = Math.abs(shape.endX - shape.startX)
-      const height = Math.abs(shape.endY - shape.startY)
-
-      return [
-        { id: 'nw', x: x, y: y, cursor: 'nw-resize' },
-        { id: 'ne', x: x + width, y: y, cursor: 'ne-resize' },
-        { id: 'sw', x: x, y: y + height, cursor: 'sw-resize' },
-        { id: 'se', x: x + width, y: y + height, cursor: 'se-resize' },
-        { id: 'n', x: x + width / 2, y: y, cursor: 'n-resize' },
-        { id: 's', x: x + width / 2, y: y + height, cursor: 's-resize' },
-        { id: 'w', x: x, y: y + height / 2, cursor: 'w-resize' },
-        { id: 'e', x: x + width, y: y + height / 2, cursor: 'e-resize' }
-      ]
-    } else if (type === 'text') {
-      const text = element as TextElement
-      const width = text.text.length * (text.size * 0.6)
-      const height = text.size
-
-      return [
-        { id: 'nw', x: text.x, y: text.y - height, cursor: 'nw-resize' },
-        { id: 'ne', x: text.x + width, y: text.y - height, cursor: 'ne-resize' },
-        { id: 'sw', x: text.x, y: text.y, cursor: 'sw-resize' },
-        { id: 'se', x: text.x + width, y: text.y, cursor: 'se-resize' }
-      ]
-    }
-
-    return []
-  }
-
-  const isPointInHandle = (px: number, py: number, handle: ResizeHandle, threshold = 6) => {
-    return Math.abs(px - handle.x) < threshold && Math.abs(py - handle.y) < threshold
-  }
-
-  const findHandleAtPoint = (x: number, y: number): ResizeHandle | undefined => {
-    if (selectedElement !== null && selectedElementType && selectedElementType !== 'path') {
-      let element: Shape | TextElement | undefined
-      if (selectedElementType === 'shape') element = shapes[selectedElement]
-      else if (selectedElementType === 'text') element = texts[selectedElement]
-      else return undefined
-
-      if (!element) return undefined
-
-      const handles = getResizeHandles(element, selectedElementType)
-      return handles.find(handle => isPointInHandle(x, y, handle))
-    }
-    return undefined
-  }
-
-  const addNewLayer = () => {
-    const newShape: Shape = {
-      type: 'rectangle',
-      startX: 100 + (shapes.length * 20),
-      startY: 100 + (shapes.length * 20),
-      endX: 200 + (shapes.length * 20),
-      endY: 160 + (shapes.length * 20),
-      color: selectedColor,
-      fillColor: 'transparent',
-      strokeWidth: strokeWidth,
-      visible: true
-    }
-
-    setShapes(prev => [...prev, newShape])
-    saveToHistory()
-  }
-
-  const saveToHistory = () => {
+  // History management
+  const saveToHistory = useCallback(() => {
     const state = { paths: [...paths], shapes: [...shapes], texts: [...texts] }
     const newHistory = history.slice(0, historyIndex + 1)
     newHistory.push(state)
     setHistory(newHistory)
     setHistoryIndex(newHistory.length - 1)
-  }
+  }, [paths, shapes, texts, history, historyIndex])
 
   const undo = () => {
     if (historyIndex > 0) {
@@ -414,58 +162,37 @@ export default function CanvasPage() {
       setShapes(nextState.shapes)
       setTexts(nextState.texts)
       setHistoryIndex(historyIndex + 1)
-      setSelectedElement(null)
-      setSelectedElementType(null)
     }
   }
 
-  const getMousePos = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect()
-    let clientX: number, clientY: number
-    
-    if ('touches' in e) {
-      clientX = e.touches[0]?.clientX ?? 0
-      clientY = e.touches[0]?.clientY ?? 0
-    } else {
-      clientX = e.clientX
-      clientY = e.clientY
+  // Get canvas coordinates from event
+  const getCanvasPoint = (clientX: number, clientY: number): Point => {
+    if (!canvasRef.current) return { x: 0, y: 0 }
+    const rect = canvasRef.current.getBoundingClientRect()
+    return {
+      x: ((clientX - rect.left) / (zoomLevel / 100)) - panOffset.x,
+      y: ((clientY - rect.top) / (zoomLevel / 100)) - panOffset.y
     }
-    
-    const pos = {
-      x: (clientX - rect.left) * (100 / zoomLevel),
-      y: (clientY - rect.top) * (100 / zoomLevel)
-    }
-    setMousePos(pos)
-    return pos
   }
 
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
-    const pos = getMousePos(e)
+  // Touch handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      // Pinch to zoom
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      )
+      lastPinchDistanceRef.current = dist
+      return
+    }
 
-    if (selectedTool === 'select') {
-      const handle = findHandleAtPoint(pos.x, pos.y)
+    const touch = e.touches[0]
+    const pos = getCanvasPoint(touch.clientX, touch.clientY)
+    lastTouchRef.current = { x: touch.clientX, y: touch.clientY }
 
-      if (handle) {
-        setIsResizing(true)
-        setResizeHandle(handle.id)
-        setDragStart(pos)
-        return
-      }
-
-      const element = findElementAtPoint(pos.x, pos.y)
-
-      if (element) {
-        setSelectedElement(element.index)
-        setSelectedElementType(element.type)
-
-        if (selectedElement === element.index && selectedElementType === element.type) {
-          setIsDragging(true)
-          setDragStart(pos)
-        }
-      } else {
-        setSelectedElement(null)
-        setSelectedElementType(null)
-      }
+    if (selectedTool === 'pan') {
+      setIsPanning(true)
       return
     }
 
@@ -476,14 +203,31 @@ export default function CanvasPage() {
       return
     }
 
+    if (selectedTool === 'eraser') {
+      eraseAtPoint(pos)
+      return
+    }
+
+    if (selectedTool === 'select') {
+      const element = findElementAtPoint(pos.x, pos.y)
+      if (element) {
+        setSelectedElement(element.index)
+        setSelectedElementType(element.type)
+      } else {
+        setSelectedElement(null)
+        setSelectedElementType(null)
+      }
+      return
+    }
+
+    setIsDrawing(true)
+
     if (selectedTool === 'pen') {
-      setIsDrawing(true)
       setCurrentPath([pos])
     } else if (selectedTool === 'rectangle' || selectedTool === 'circle') {
-      setIsDrawing(true)
       setStartPoint(pos)
       setCurrentShape({
-        type: selectedTool as 'rectangle' | 'circle',
+        type: selectedTool,
         startX: pos.x,
         startY: pos.y,
         endX: pos.x,
@@ -493,125 +237,39 @@ export default function CanvasPage() {
         strokeWidth: strokeWidth,
         visible: true
       })
-    } else if (selectedTool === 'eraser') {
-      const threshold = 10
-      setPaths(prev => prev.filter(path => {
-        return !path.points.some(point =>
-          Math.abs(point.x - pos.x) < threshold && Math.abs(point.y - pos.y) < threshold
-        )
-      }))
-      setShapes(prev => prev.filter(shape => {
-        const centerX = (shape.startX + shape.endX) / 2
-        const centerY = (shape.startY + shape.endY) / 2
-        return !(Math.abs(centerX - pos.x) < threshold && Math.abs(centerY - pos.y) < threshold)
-      }))
-      setTexts(prev => prev.filter(text =>
-        !(Math.abs(text.x - pos.x) < threshold && Math.abs(text.y - pos.y) < threshold)
-      ))
     }
   }
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
-    const pos = getMousePos(e)
+  const handleTouchMove = (e: React.TouchEvent) => {
+    e.preventDefault()
 
-    if (selectedTool === 'select' && isResizing && resizeHandle && selectedElement !== null && dragStart) {
-      const deltaX = pos.x - dragStart.x
-      const deltaY = pos.y - dragStart.y
-
-      if (selectedElementType === 'shape') {
-        setShapes(prev => prev.map((shape, i) => {
-          if (i !== selectedElement) return shape
-
-          const newShape = { ...shape }
-          const currentX = Math.min(shape.startX, shape.endX)
-          const currentY = Math.min(shape.startY, shape.endY)
-          const currentWidth = Math.abs(shape.endX - shape.startX)
-          const currentHeight = Math.abs(shape.endY - shape.startY)
-
-          switch (resizeHandle) {
-            case 'nw':
-              newShape.startX = currentX + deltaX
-              newShape.startY = currentY + deltaY
-              newShape.endX = currentX + currentWidth
-              newShape.endY = currentY + currentHeight
-              break
-            case 'ne':
-              newShape.startX = currentX
-              newShape.startY = currentY + deltaY
-              newShape.endX = currentX + currentWidth + deltaX
-              newShape.endY = currentY + currentHeight
-              break
-            case 'sw':
-              newShape.startX = currentX + deltaX
-              newShape.startY = currentY
-              newShape.endX = currentX + currentWidth
-              newShape.endY = currentY + currentHeight + deltaY
-              break
-            case 'se':
-              newShape.startX = currentX
-              newShape.startY = currentY
-              newShape.endX = currentX + currentWidth + deltaX
-              newShape.endY = currentY + currentHeight + deltaY
-              break
-            case 'n':
-              newShape.startX = currentX
-              newShape.startY = currentY + deltaY
-              newShape.endX = currentX + currentWidth
-              newShape.endY = currentY + currentHeight
-              break
-            case 's':
-              newShape.startX = currentX
-              newShape.startY = currentY
-              newShape.endX = currentX + currentWidth
-              newShape.endY = currentY + currentHeight + deltaY
-              break
-            case 'w':
-              newShape.startX = currentX + deltaX
-              newShape.startY = currentY
-              newShape.endX = currentX + currentWidth
-              newShape.endY = currentY + currentHeight
-              break
-            case 'e':
-              newShape.startX = currentX
-              newShape.startY = currentY
-              newShape.endX = currentX + currentWidth + deltaX
-              newShape.endY = currentY + currentHeight
-              break
-          }
-
-          return newShape
-        }))
+    if (e.touches.length === 2) {
+      // Pinch to zoom
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      )
+      if (lastPinchDistanceRef.current) {
+        const delta = dist - lastPinchDistanceRef.current
+        setZoomLevel(prev => Math.min(300, Math.max(25, prev + delta * 0.5)))
       }
+      lastPinchDistanceRef.current = dist
       return
     }
 
-    if (selectedTool === 'select' && isDragging && selectedElement !== null && dragStart) {
-      const deltaX = pos.x - dragStart.x
-      const deltaY = pos.y - dragStart.y
+    const touch = e.touches[0]
+    const pos = getCanvasPoint(touch.clientX, touch.clientY)
 
-      if (selectedElementType === 'shape') {
-        setShapes(prev => prev.map((shape, i) => {
-          if (i !== selectedElement) return shape
-          return {
-            ...shape,
-            startX: shape.startX + deltaX,
-            startY: shape.startY + deltaY,
-            endX: shape.endX + deltaX,
-            endY: shape.endY + deltaY
-          }
-        }))
-      } else if (selectedElementType === 'text') {
-        setTexts(prev => prev.map((text, i) => {
-          if (i !== selectedElement) return text
-          return {
-            ...text,
-            x: text.x + deltaX,
-            y: text.y + deltaY
-          }
-        }))
-      }
+    if (isPanning && lastTouchRef.current) {
+      const deltaX = (touch.clientX - lastTouchRef.current.x) / (zoomLevel / 100)
+      const deltaY = (touch.clientY - lastTouchRef.current.y) / (zoomLevel / 100)
+      setPanOffset(prev => ({ x: prev.x + deltaX, y: prev.y + deltaY }))
+      lastTouchRef.current = { x: touch.clientX, y: touch.clientY }
+      return
+    }
 
-      setDragStart(pos)
+    if (selectedTool === 'eraser') {
+      eraseAtPoint(pos)
       return
     }
 
@@ -620,27 +278,16 @@ export default function CanvasPage() {
     if (selectedTool === 'pen') {
       setCurrentPath(prev => [...prev, pos])
     } else if ((selectedTool === 'rectangle' || selectedTool === 'circle') && startPoint) {
-      setCurrentShape(prev => prev ? {
-        ...prev,
-        endX: pos.x,
-        endY: pos.y
-      } : null)
+      setCurrentShape(prev => prev ? { ...prev, endX: pos.x, endY: pos.y } : null)
     }
   }
 
-  const handleMouseUp = () => {
-    if (isResizing) {
-      setIsResizing(false)
-      setResizeHandle(null)
-      setDragStart(null)
-      saveToHistory()
-      return
-    }
+  const handleTouchEnd = () => {
+    lastTouchRef.current = null
+    lastPinchDistanceRef.current = null
 
-    if (isDragging) {
-      setIsDragging(false)
-      setDragStart(null)
-      saveToHistory()
+    if (isPanning) {
+      setIsPanning(false)
       return
     }
 
@@ -654,14 +301,13 @@ export default function CanvasPage() {
         tool: selectedTool,
         visible: true
       }])
-      saveToHistory()
+      setTimeout(saveToHistory, 0)
     } else if ((selectedTool === 'rectangle' || selectedTool === 'circle') && currentShape) {
       const width = Math.abs(currentShape.endX - currentShape.startX)
       const height = Math.abs(currentShape.endY - currentShape.startY)
-
       if (width > 5 && height > 5) {
         setShapes(prev => [...prev, currentShape])
-        saveToHistory()
+        setTimeout(saveToHistory, 0)
       }
     }
 
@@ -671,6 +317,199 @@ export default function CanvasPage() {
     setCurrentShape(null)
   }
 
+  // Mouse handlers (for desktop)
+  const handleMouseDown = (e: React.MouseEvent) => {
+    const pos = getCanvasPoint(e.clientX, e.clientY)
+    lastTouchRef.current = { x: e.clientX, y: e.clientY }
+
+    if (selectedTool === 'pan') {
+      setIsPanning(true)
+      return
+    }
+
+    if (selectedTool === 'text') {
+      setIsAddingText(true)
+      setTextPosition(pos)
+      setTextInput('')
+      return
+    }
+
+    if (selectedTool === 'eraser') {
+      eraseAtPoint(pos)
+      return
+    }
+
+    if (selectedTool === 'select') {
+      const element = findElementAtPoint(pos.x, pos.y)
+      if (element) {
+        setSelectedElement(element.index)
+        setSelectedElementType(element.type)
+      } else {
+        setSelectedElement(null)
+        setSelectedElementType(null)
+      }
+      return
+    }
+
+    setIsDrawing(true)
+
+    if (selectedTool === 'pen') {
+      setCurrentPath([pos])
+    } else if (selectedTool === 'rectangle' || selectedTool === 'circle') {
+      setStartPoint(pos)
+      setCurrentShape({
+        type: selectedTool,
+        startX: pos.x,
+        startY: pos.y,
+        endX: pos.x,
+        endY: pos.y,
+        color: selectedColor,
+        fillColor: fillColor,
+        strokeWidth: strokeWidth,
+        visible: true
+      })
+    }
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const pos = getCanvasPoint(e.clientX, e.clientY)
+
+    if (isPanning && lastTouchRef.current) {
+      const deltaX = (e.clientX - lastTouchRef.current.x) / (zoomLevel / 100)
+      const deltaY = (e.clientY - lastTouchRef.current.y) / (zoomLevel / 100)
+      setPanOffset(prev => ({ x: prev.x + deltaX, y: prev.y + deltaY }))
+      lastTouchRef.current = { x: e.clientX, y: e.clientY }
+      return
+    }
+
+    if (selectedTool === 'eraser' && e.buttons === 1) {
+      eraseAtPoint(pos)
+      return
+    }
+
+    if (!isDrawing) return
+
+    if (selectedTool === 'pen') {
+      setCurrentPath(prev => [...prev, pos])
+    } else if ((selectedTool === 'rectangle' || selectedTool === 'circle') && startPoint) {
+      setCurrentShape(prev => prev ? { ...prev, endX: pos.x, endY: pos.y } : null)
+    }
+  }
+
+  const handleMouseUp = () => {
+    lastTouchRef.current = null
+
+    if (isPanning) {
+      setIsPanning(false)
+      return
+    }
+
+    if (!isDrawing) return
+
+    if (selectedTool === 'pen' && currentPath.length > 1) {
+      setPaths(prev => [...prev, {
+        points: currentPath,
+        color: selectedColor,
+        strokeWidth: strokeWidth,
+        tool: selectedTool,
+        visible: true
+      }])
+      setTimeout(saveToHistory, 0)
+    } else if ((selectedTool === 'rectangle' || selectedTool === 'circle') && currentShape) {
+      const width = Math.abs(currentShape.endX - currentShape.startX)
+      const height = Math.abs(currentShape.endY - currentShape.startY)
+      if (width > 5 && height > 5) {
+        setShapes(prev => [...prev, currentShape])
+        setTimeout(saveToHistory, 0)
+      }
+    }
+
+    setIsDrawing(false)
+    setCurrentPath([])
+    setStartPoint(null)
+    setCurrentShape(null)
+  }
+
+  // Eraser
+  const eraseAtPoint = (pos: Point) => {
+    const threshold = 20
+    let erased = false
+
+    setPaths(prev => {
+      const newPaths = prev.filter(path => {
+        const hit = path.points.some(point =>
+          Math.abs(point.x - pos.x) < threshold && Math.abs(point.y - pos.y) < threshold
+        )
+        if (hit) erased = true
+        return !hit
+      })
+      return newPaths
+    })
+
+    setShapes(prev => {
+      const newShapes = prev.filter(shape => {
+        const centerX = (shape.startX + shape.endX) / 2
+        const centerY = (shape.startY + shape.endY) / 2
+        const hit = Math.abs(centerX - pos.x) < threshold && Math.abs(centerY - pos.y) < threshold
+        if (hit) erased = true
+        return !hit
+      })
+      return newShapes
+    })
+
+    setTexts(prev => {
+      const newTexts = prev.filter(text => {
+        const hit = Math.abs(text.x - pos.x) < threshold && Math.abs(text.y - pos.y) < threshold
+        if (hit) erased = true
+        return !hit
+      })
+      return newTexts
+    })
+
+    if (erased) {
+      setTimeout(saveToHistory, 100)
+    }
+  }
+
+  // Find element at point
+  const findElementAtPoint = (x: number, y: number): { type: 'path' | 'shape' | 'text'; index: number } | null => {
+    for (let i = texts.length - 1; i >= 0; i--) {
+      const text = texts[i]
+      if (text.visible !== false) {
+        const width = text.text.length * (text.size * 0.6)
+        if (x >= text.x && x <= text.x + width && y >= text.y - text.size && y <= text.y) {
+          return { type: 'text', index: i }
+        }
+      }
+    }
+
+    for (let i = shapes.length - 1; i >= 0; i--) {
+      const shape = shapes[i]
+      if (shape.visible !== false) {
+        const minX = Math.min(shape.startX, shape.endX)
+        const maxX = Math.max(shape.startX, shape.endX)
+        const minY = Math.min(shape.startY, shape.endY)
+        const maxY = Math.max(shape.startY, shape.endY)
+        if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
+          return { type: 'shape', index: i }
+        }
+      }
+    }
+
+    for (let i = paths.length - 1; i >= 0; i--) {
+      const path = paths[i]
+      if (path.visible !== false) {
+        const hit = path.points.some(point =>
+          Math.abs(point.x - x) < 15 && Math.abs(point.y - y) < 15
+        )
+        if (hit) return { type: 'path', index: i }
+      }
+    }
+
+    return null
+  }
+
+  // Text submit
   const handleTextSubmit = () => {
     if (textInput.trim() && textPosition) {
       setTexts(prev => [...prev, {
@@ -678,464 +517,257 @@ export default function CanvasPage() {
         x: textPosition.x,
         y: textPosition.y,
         color: selectedColor,
-        size: 16,
+        size: 20,
         visible: true
       }])
-      saveToHistory()
+      setTimeout(saveToHistory, 0)
     }
     setIsAddingText(false)
     setTextInput('')
     setTextPosition(null)
   }
 
-  const handleAIGenerate = async () => {
-    if (!aiPrompt.trim()) return
-
-    setIsGenerating(true)
-
-    await new Promise(resolve => setTimeout(resolve, 2000))
-
-    const newShape: Shape = {
-      type: 'rectangle',
-      startX: 100,
-      startY: 100,
-      endX: 250,
-      endY: 180,
-      color: aiStyle === 'minimalist' ? '#000000' : aiStyle === 'abstract' ? '#8b5cf6' : '#3b82f6',
-      fillColor: aiStyle === 'minimalist' ? 'transparent' : aiStyle === 'abstract' ? '#ec4899' : '#10b981',
-      strokeWidth: aiStyle === 'minimalist' ? 1 : 2,
-      visible: true
-    }
-
-    setShapes(prev => [...prev, newShape])
-    saveToHistory()
-
-    setIsGenerating(false)
-    setShowAIModal(false)
-    setAIPrompt('')
-  }
-
-  const pathToSVGPath = (points: Point[]) => {
-    if (points.length < 2) return ''
-
-    let path = `M ${points[0].x} ${points[0].y}`
-    for (let i = 1; i < points.length; i++) {
-      path += ` L ${points[i].x} ${points[i].y}`
-    }
-    return path
-  }
-
+  // Clear canvas
   const clearCanvas = () => {
     setPaths([])
     setShapes([])
     setTexts([])
-    setCurrentPath([])
-    setCurrentShape(null)
     setSelectedElement(null)
     setSelectedElementType(null)
-    saveToHistory()
+    setTimeout(saveToHistory, 0)
+    showToastNotification('Canvas cleared')
   }
 
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
-      e.preventDefault()
-      undo()
-    } else if (e.ctrlKey && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
-      e.preventDefault()
-      redo()
-    } else if (e.ctrlKey && e.key === 'c') {
-      e.preventDefault()
-      copyElement()
-    } else if (e.key === 'Delete' || e.key === 'Backspace') {
-      deleteSelectedElement()
-      e.preventDefault()
-    }
-
-    const toolMap: Record<string, string> = { 'v': 'select', 'p': 'pen', 'r': 'rectangle', 'c': 'circle', 't': 'text', 'e': 'eraser' }
-    if (toolMap[e.key.toLowerCase()] && !e.ctrlKey && !e.altKey) {
-      setSelectedTool(toolMap[e.key.toLowerCase()])
+  // Delete selected
+  const deleteSelected = () => {
+    if (selectedElement !== null && selectedElementType) {
+      if (selectedElementType === 'path') {
+        setPaths(prev => prev.filter((_, i) => i !== selectedElement))
+      } else if (selectedElementType === 'shape') {
+        setShapes(prev => prev.filter((_, i) => i !== selectedElement))
+      } else if (selectedElementType === 'text') {
+        setTexts(prev => prev.filter((_, i) => i !== selectedElement))
+      }
+      setSelectedElement(null)
+      setSelectedElementType(null)
+      setTimeout(saveToHistory, 0)
+      showToastNotification('Deleted')
     }
   }
 
-  useEffect(() => {
-    if (history.length === 0) {
-      saveToHistory()
+  // Export as PNG
+  const exportAsPNG = () => {
+    const svg = document.getElementById('canvas-svg')
+    if (!svg) return
+
+    const svgData = new XMLSerializer().serializeToString(svg)
+    const canvas = document.createElement('canvas')
+    canvas.width = 1920
+    canvas.height = 1080
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const img = new Image()
+    img.onload = () => {
+      ctx.fillStyle = '#18181b'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      ctx.drawImage(img, 0, 0)
+      
+      const link = document.createElement('a')
+      link.download = 'hatchit-canvas.png'
+      link.href = canvas.toDataURL('image/png')
+      link.click()
+      showToastNotification('Exported as PNG!')
     }
-  }, [])
+    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)))
+  }
 
+  // Export as SVG
+  const exportAsSVG = () => {
+    const svg = document.getElementById('canvas-svg')
+    if (!svg) return
+
+    const svgData = new XMLSerializer().serializeToString(svg)
+    const blob = new Blob([svgData], { type: 'image/svg+xml' })
+    const url = URL.createObjectURL(blob)
+    
+    const link = document.createElement('a')
+    link.download = 'hatchit-canvas.svg'
+    link.href = url
+    link.click()
+    URL.revokeObjectURL(url)
+    showToastNotification('Exported as SVG!')
+  }
+
+  // Get all layers
+  const getAllLayers = (): Layer[] => {
+    const layers: Layer[] = []
+    paths.forEach((_, index) => {
+      layers.push({ id: `path-${index}`, type: 'path', index, name: `Path ${index + 1}`, visible: paths[index].visible !== false, icon: '✏️' })
+    })
+    shapes.forEach((shape, index) => {
+      layers.push({ id: `shape-${index}`, type: 'shape', index, name: `${shape.type} ${index + 1}`, visible: shape.visible !== false, icon: shape.type === 'rectangle' ? '⬜' : '⭕' })
+    })
+    texts.forEach((text, index) => {
+      layers.push({ id: `text-${index}`, type: 'text', index, name: text.text.slice(0, 15), visible: text.visible !== false, icon: '📝' })
+    })
+    return layers.reverse()
+  }
+
+  // Toggle layer visibility
+  const toggleLayerVisibility = (type: 'path' | 'shape' | 'text', index: number) => {
+    if (type === 'path') {
+      setPaths(prev => prev.map((p, i) => i === index ? { ...p, visible: !p.visible } : p))
+    } else if (type === 'shape') {
+      setShapes(prev => prev.map((s, i) => i === index ? { ...s, visible: !s.visible } : s))
+    } else if (type === 'text') {
+      setTexts(prev => prev.map((t, i) => i === index ? { ...t, visible: !t.visible } : t))
+    }
+  }
+
+  // Path to SVG
+  const pathToSVG = (points: Point[]) => {
+    if (points.length < 2) return ''
+    let d = `M ${points[0].x} ${points[0].y}`
+    for (let i = 1; i < points.length; i++) {
+      d += ` L ${points[i].x} ${points[i].y}`
+    }
+    return d
+  }
+
+  // Reset view
+  const resetView = () => {
+    setZoomLevel(100)
+    setPanOffset({ x: 0, y: 0 })
+  }
+
+  // Keyboard shortcuts
   useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [selectedElement, selectedElementType, historyIndex, history])
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+      
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'z') { e.preventDefault(); undo() }
+        if (e.key === 'y') { e.preventDefault(); redo() }
+      }
+      if (e.key === 'Delete' || e.key === 'Backspace') deleteSelected()
+      if (e.key === 'p') setSelectedTool('pen')
+      if (e.key === 'r') setSelectedTool('rectangle')
+      if (e.key === 'c') setSelectedTool('circle')
+      if (e.key === 't') setSelectedTool('text')
+      if (e.key === 'v') setSelectedTool('select')
+      if (e.key === 'h') setSelectedTool('pan')
+      if (e.key === 'e') setSelectedTool('eraser')
+      if (e.key === 'Escape') {
+        setSelectedElement(null)
+        setSelectedElementType(null)
+        setIsAddingText(false)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [historyIndex, selectedElement, selectedElementType])
 
-  // Canvas rendering component (shared between mobile and desktop)
-  const CanvasArea = () => (
-    <div
-      className="w-full h-full relative origin-top-left touch-none"
-      style={{
-        backgroundImage: `radial-gradient(circle, rgba(75, 85, 99, 0.5) 1px, transparent 1px)`,
-        backgroundSize: `${20 * (zoomLevel / 100)}px ${20 * (zoomLevel / 100)}px`,
-        cursor: selectedTool === 'pen' || selectedTool === 'eraser' ? 'crosshair' :
-          selectedTool === 'rectangle' || selectedTool === 'circle' ? 'crosshair' :
-            selectedTool === 'text' ? 'text' :
-              selectedTool === 'select' ? 'default' : 'default',
-        transform: `scale(${zoomLevel / 100})`,
-        transformOrigin: '0 0',
-        width: `${100 * (100 / zoomLevel)}%`,
-        height: `${100 * (100 / zoomLevel)}%`
-      }}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
-      onTouchStart={handleMouseDown}
-      onTouchMove={handleMouseMove}
-      onTouchEnd={handleMouseUp}
-    >
-      <svg className="absolute inset-0 w-full h-full pointer-events-none">
-        {paths.map((path, index) => path.visible !== false && (
-          <g key={`path-${index}`}>
-            <path
-              d={pathToSVGPath(path.points)}
-              stroke={path.color}
-              strokeWidth={path.strokeWidth || 2}
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            {selectedElement === index && selectedElementType === 'path' && (
-              <path
-                d={pathToSVGPath(path.points)}
-                stroke="#3b82f6"
-                strokeWidth="2"
-                fill="none"
-                strokeDasharray="5,5"
-              />
-            )}
-          </g>
-        ))}
-
-        {shapes.map((shape, index) => {
-          if (shape.visible === false) return null
-
-          const isSelected = selectedElement === index && selectedElementType === 'shape'
-
-          if (shape.type === 'rectangle') {
-            const x = Math.min(shape.startX, shape.endX)
-            const y = Math.min(shape.startY, shape.endY)
-            const width = Math.abs(shape.endX - shape.startX)
-            const height = Math.abs(shape.endY - shape.startY)
-
-            return (
-              <g key={`rect-${index}`}>
-                <rect
-                  x={x}
-                  y={y}
-                  width={width}
-                  height={height}
-                  stroke={shape.color}
-                  strokeWidth={shape.strokeWidth || 2}
-                  fill={shape.fillColor === 'transparent' ? 'none' : shape.fillColor}
-                />
-                {isSelected && (
-                  <>
-                    <rect
-                      x={x - 2}
-                      y={y - 2}
-                      width={width + 4}
-                      height={height + 4}
-                      stroke="#3b82f6"
-                      strokeWidth="2"
-                      fill="none"
-                      strokeDasharray="5,5"
-                    />
-                    {getResizeHandles(shape, 'shape').map(handle => (
-                      <rect
-                        key={handle.id}
-                        x={handle.x - 4}
-                        y={handle.y - 4}
-                        width="8"
-                        height="8"
-                        fill="#3b82f6"
-                        stroke="#ffffff"
-                        strokeWidth="1"
-                        className="pointer-events-auto cursor-pointer"
-                        style={{ cursor: handle.cursor }}
-                      />
-                    ))}
-                  </>
-                )}
-              </g>
-            )
-          } else if (shape.type === 'circle') {
-            const centerX = (shape.startX + shape.endX) / 2
-            const centerY = (shape.startY + shape.endY) / 2
-            const radiusX = Math.abs(shape.endX - shape.startX) / 2
-            const radiusY = Math.abs(shape.endY - shape.startY) / 2
-
-            return (
-              <g key={`circle-${index}`}>
-                <ellipse
-                  cx={centerX}
-                  cy={centerY}
-                  rx={radiusX}
-                  ry={radiusY}
-                  stroke={shape.color}
-                  strokeWidth={shape.strokeWidth || 2}
-                  fill={shape.fillColor === 'transparent' ? 'none' : shape.fillColor}
-                />
-                {isSelected && (
-                  <>
-                    <ellipse
-                      cx={centerX}
-                      cy={centerY}
-                      rx={radiusX + 2}
-                      ry={radiusY + 2}
-                      stroke="#3b82f6"
-                      strokeWidth="2"
-                      fill="none"
-                      strokeDasharray="5,5"
-                    />
-                    {getResizeHandles(shape, 'shape').map(handle => (
-                      <rect
-                        key={handle.id}
-                        x={handle.x - 4}
-                        y={handle.y - 4}
-                        width="8"
-                        height="8"
-                        fill="#3b82f6"
-                        stroke="#ffffff"
-                        strokeWidth="1"
-                        className="pointer-events-auto cursor-pointer"
-                        style={{ cursor: handle.cursor }}
-                      />
-                    ))}
-                  </>
-                )}
-              </g>
-            )
-          }
-          return null
-        })}
-
-        {texts.map((text, index) => {
-          if (text.visible === false) return null
-
-          const isSelected = selectedElement === index && selectedElementType === 'text'
-
-          return (
-            <g key={`text-${index}`}>
-              <text
-                x={text.x}
-                y={text.y}
-                fill={text.color}
-                fontSize={text.size}
-                fontFamily="Arial, sans-serif"
-              >
-                {text.text}
-              </text>
-              {isSelected && (
-                <>
-                  <rect
-                    x={text.x - 2}
-                    y={text.y - text.size - 2}
-                    width={text.text.length * (text.size * 0.6) + 4}
-                    height={text.size + 4}
-                    stroke="#3b82f6"
-                    strokeWidth="2"
-                    fill="none"
-                    strokeDasharray="5,5"
-                  />
-                  {getResizeHandles(text, 'text').map(handle => (
-                    <rect
-                      key={handle.id}
-                      x={handle.x - 3}
-                      y={handle.y - 3}
-                      width="6"
-                      height="6"
-                      fill="#3b82f6"
-                      stroke="#ffffff"
-                      strokeWidth="1"
-                      className="pointer-events-auto cursor-pointer"
-                      style={{ cursor: handle.cursor }}
-                    />
-                  ))}
-                </>
-              )}
-            </g>
-          )
-        })}
-
-        {isDrawing && selectedTool === 'pen' && currentPath.length > 1 && (
-          <path
-            d={pathToSVGPath(currentPath)}
-            stroke={selectedColor}
-            strokeWidth={strokeWidth}
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        )}
-
-        {isDrawing && currentShape && (
-          <>
-            {currentShape.type === 'rectangle' && (
-              <rect
-                x={Math.min(currentShape.startX, currentShape.endX)}
-                y={Math.min(currentShape.startY, currentShape.endY)}
-                width={Math.abs(currentShape.endX - currentShape.startX)}
-                height={Math.abs(currentShape.endY - currentShape.startY)}
-                stroke={currentShape.color}
-                strokeWidth={currentShape.strokeWidth}
-                fill={currentShape.fillColor === 'transparent' ? 'none' : currentShape.fillColor}
-                opacity="0.7"
-              />
-            )}
-            {currentShape.type === 'circle' && (
-              <ellipse
-                cx={(currentShape.startX + currentShape.endX) / 2}
-                cy={(currentShape.startY + currentShape.endY) / 2}
-                rx={Math.abs(currentShape.endX - currentShape.startX) / 2}
-                ry={Math.abs(currentShape.endY - currentShape.startY) / 2}
-                stroke={currentShape.color}
-                strokeWidth={currentShape.strokeWidth}
-                fill={currentShape.fillColor === 'transparent' ? 'none' : currentShape.fillColor}
-                opacity="0.7"
-              />
-            )}
-          </>
-        )}
-      </svg>
-
-      {isAddingText && textPosition && (
-        <input
-          type="text"
-          value={textInput}
-          onChange={(e) => setTextInput(e.target.value)}
-          onBlur={handleTextSubmit}
-          onKeyPress={(e) => e.key === 'Enter' && handleTextSubmit()}
-          className="absolute bg-transparent border-b border-gray-400 text-white outline-none"
-          style={{
-            left: textPosition.x,
-            top: textPosition.y,
-            color: selectedColor,
-            fontSize: '16px'
-          }}
-          autoFocus
-          placeholder="Type text..."
-        />
-      )}
-    </div>
-  )
-
-  // Mobile slide-up panel component
-  const MobilePanel = ({ type, onClose }: { type: 'properties' | 'layers' | 'colors', onClose: () => void }) => (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end" onClick={onClose}>
-      <div 
-        className="bg-zinc-900 border-t border-zinc-700 rounded-t-2xl max-h-[70vh] overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Handle */}
+  // Mobile Panel Component
+  const MobilePanel = ({ type, onClose }: { type: 'layers' | 'colors' | 'export', onClose: () => void }) => (
+    <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/40" onClick={onClose}>
+      <div className="bg-zinc-900 border-t border-zinc-700 rounded-t-2xl max-h-[70vh] overflow-hidden" onClick={e => e.stopPropagation()}>
         <div className="flex justify-center py-2">
-          <div className="w-10 h-1 bg-zinc-600 rounded-full"></div>
+          <div className="w-10 h-1 bg-zinc-600 rounded-full" />
         </div>
         
-        {/* Panel Header */}
         <div className="px-4 pb-2 border-b border-zinc-800 flex items-center justify-between">
           <h3 className="font-semibold text-white">
-            {type === 'properties' && 'Properties'}
             {type === 'layers' && 'Layers'}
-            {type === 'colors' && 'Colors'}
+            {type === 'colors' && 'Colors & Stroke'}
+            {type === 'export' && 'Export'}
           </h3>
-          <button onClick={onClose} className="p-2 text-zinc-400 hover:text-white">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 6L6 18M6 6l12 12"/>
-            </svg>
-          </button>
+          <button onClick={onClose} className="p-2 text-zinc-400">✕</button>
         </div>
 
-        {/* Panel Content */}
-        <div className="p-4 overflow-y-auto max-h-[60vh]">
-          {type === 'properties' && (
-            <div className="space-y-4">
+        <div className="p-4 overflow-y-auto max-h-[55vh]">
+          {type === 'colors' && (
+            <div className="space-y-6">
               <div>
-                <label className="text-sm text-zinc-400">Tool</label>
-                <div className="text-sm text-white">{tools.find(t => t.id === selectedTool)?.name}</div>
-              </div>
-              {selectedElement !== null && selectedElementType && (
-                <div>
-                  <label className="text-sm text-zinc-400">Selected</label>
-                  <div className="text-sm text-blue-400">
-                    {selectedElementType === 'shape' && shapes[selectedElement] &&
-                      `${shapes[selectedElement].type} ${selectedElement + 1}`}
-                    {selectedElementType === 'path' && `Path ${selectedElement + 1}`}
-                    {selectedElementType === 'text' && texts[selectedElement] &&
-                      texts[selectedElement].text}
-                  </div>
+                <label className="text-sm text-zinc-400 mb-3 block">Stroke Color</label>
+                <div className="grid grid-cols-5 gap-3">
+                  {colors.map(color => (
+                    <button
+                      key={color}
+                      className={`w-12 h-12 rounded-xl border-2 ${selectedColor === color ? 'border-white scale-110' : 'border-zinc-600'}`}
+                      style={{ backgroundColor: color }}
+                      onClick={() => setSelectedColor(color)}
+                    />
+                  ))}
                 </div>
-              )}
-              <div>
-                <label className="text-sm text-zinc-400">Stroke Width</label>
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={strokeWidth}
-                  onChange={(e) => setStrokeWidth(Number(e.target.value))}
-                  className="w-full mt-2"
-                />
-                <div className="text-sm text-white">{strokeWidth}px</div>
               </div>
+              
               <div>
-                <label className="text-sm text-zinc-400">Elements</label>
-                <div className="text-sm text-white">{paths.length + shapes.length + texts.length}</div>
+                <label className="text-sm text-zinc-400 mb-3 block">Fill Color</label>
+                <div className="grid grid-cols-5 gap-3">
+                  <button
+                    className={`w-12 h-12 rounded-xl border-2 relative ${fillColor === 'transparent' ? 'border-white' : 'border-zinc-600'}`}
+                    style={{ backgroundColor: '#374151' }}
+                    onClick={() => setFillColor('transparent')}
+                  >
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-8 h-0.5 bg-red-500 rotate-45" />
+                    </div>
+                  </button>
+                  {colors.slice(0, 14).map(color => (
+                    <button
+                      key={color}
+                      className={`w-12 h-12 rounded-xl border-2 ${fillColor === color ? 'border-white scale-110' : 'border-zinc-600'}`}
+                      style={{ backgroundColor: color }}
+                      onClick={() => setFillColor(color)}
+                    />
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-sm text-zinc-400 mb-3 block">Stroke Width: {strokeWidth}px</label>
+                <div className="flex gap-2">
+                  {strokeWidths.map(w => (
+                    <button
+                      key={w}
+                      className={`flex-1 py-3 rounded-xl text-sm ${strokeWidth === w ? 'bg-blue-600' : 'bg-zinc-800'}`}
+                      onClick={() => setStrokeWidth(w)}
+                    >
+                      {w}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           )}
 
           {type === 'layers' && (
             <div className="space-y-2">
-              <button
-                onClick={addNewLayer}
-                className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-xl text-sm transition-colors flex items-center justify-center gap-2 mb-4"
-              >
-                <span>+</span>
-                <span>New Layer</span>
-              </button>
               {getAllLayers().length === 0 ? (
-                <div className="text-center text-zinc-500 text-sm py-8">No layers yet</div>
+                <div className="text-center text-zinc-500 py-8">No layers yet. Start drawing!</div>
               ) : (
-                getAllLayers().map((layer) => (
+                getAllLayers().map(layer => (
                   <div
                     key={layer.id}
-                    className={`flex items-center gap-3 px-3 py-3 rounded-xl ${
+                    className={`flex items-center gap-3 p-3 rounded-xl ${
                       selectedElement === layer.index && selectedElementType === layer.type
-                        ? 'bg-blue-600/20 border border-blue-500/50'
+                        ? 'bg-blue-600/30 border border-blue-500'
                         : 'bg-zinc-800'
                     }`}
-                    onClick={() => selectLayer(layer.type, layer.index)}
+                    onClick={() => {
+                      setSelectedElement(layer.index)
+                      setSelectedElementType(layer.type)
+                      setSelectedTool('select')
+                    }}
                   >
-                    <span className="text-lg">{layer.icon}</span>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm truncate text-white">{layer.name}</div>
-                    </div>
+                    <span className="text-xl">{layer.icon}</span>
+                    <span className="flex-1 text-sm truncate">{layer.name}</span>
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        toggleLayerVisibility(layer.id, layer.type, layer.index)
-                      }}
-                      className="p-2 text-zinc-400"
+                      onClick={e => { e.stopPropagation(); toggleLayerVisibility(layer.type, layer.index) }}
+                      className="p-2 text-lg"
                     >
-                      {layer.visible ? '👁' : '🚫'}
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        deleteLayer(layer.type, layer.index)
-                      }}
-                      className="p-2 text-red-400"
-                    >
-                      🗑
+                      {layer.visible ? '👁️' : '🚫'}
                     </button>
                   </div>
                 ))
@@ -1143,44 +775,28 @@ export default function CanvasPage() {
             </div>
           )}
 
-          {type === 'colors' && (
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm text-zinc-400 mb-2 block">Stroke Color</label>
-                <div className="grid grid-cols-8 gap-2">
-                  {colors.map(color => (
-                    <div
-                      key={color}
-                      className={`w-10 h-10 rounded-lg cursor-pointer border-2 ${
-                        selectedColor === color ? 'border-white' : 'border-zinc-600'
-                      }`}
-                      style={{ backgroundColor: color }}
-                      onClick={() => setSelectedColor(color)}
-                    />
-                  ))}
+          {type === 'export' && (
+            <div className="space-y-3">
+              <button
+                onClick={() => { exportAsPNG(); onClose() }}
+                className="w-full p-4 bg-zinc-800 rounded-xl flex items-center gap-3"
+              >
+                <span className="text-2xl">🖼️</span>
+                <div className="text-left">
+                  <div className="font-medium">Export as PNG</div>
+                  <div className="text-sm text-zinc-400">High quality image</div>
                 </div>
-              </div>
-              <div>
-                <label className="text-sm text-zinc-400 mb-2 block">Fill Color</label>
-                <div className="grid grid-cols-8 gap-2">
-                  {fillColors.map((color) => (
-                    <div
-                      key={color}
-                      className={`w-10 h-10 rounded-lg cursor-pointer border-2 relative ${
-                        fillColor === color ? 'border-white' : 'border-zinc-600'
-                      }`}
-                      style={{ backgroundColor: color === 'transparent' ? '#374151' : color }}
-                      onClick={() => setFillColor(color)}
-                    >
-                      {color === 'transparent' && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="w-6 h-0.5 bg-red-500 rotate-45"></div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+              </button>
+              <button
+                onClick={() => { exportAsSVG(); onClose() }}
+                className="w-full p-4 bg-zinc-800 rounded-xl flex items-center gap-3"
+              >
+                <span className="text-2xl">📐</span>
+                <div className="text-left">
+                  <div className="font-medium">Export as SVG</div>
+                  <div className="text-sm text-zinc-400">Vector format, scalable</div>
                 </div>
-              </div>
+              </button>
             </div>
           )}
         </div>
@@ -1188,730 +804,270 @@ export default function CanvasPage() {
     </div>
   )
 
-  // Mobile Layout
-  if (isMobile) {
-    return (
-      <div className="h-screen bg-zinc-950 flex flex-col">
-        {/* Toast */}
-        {showToast && (
-          <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
-            <div className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg text-sm">
-              ✓ {toastMessage}
+  return (
+    <div className="h-screen bg-zinc-950 flex flex-col touch-none">
+      {/* Toast */}
+      {showToast && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg text-sm">
+          ✓ {toastMessage}
+        </div>
+      )}
+
+      {/* Mobile Panels */}
+      {showMobilePanel && <MobilePanel type={showMobilePanel} onClose={() => setShowMobilePanel(null)} />}
+
+      {/* Mobile Menu */}
+      {showMobileMenu && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/40" onClick={() => setShowMobileMenu(false)}>
+          <div className="bg-zinc-900 border-t border-zinc-700 rounded-t-2xl p-4" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-center mb-3">
+              <div className="w-10 h-1 bg-zinc-600 rounded-full" />
             </div>
-          </div>
-        )}
-
-        {/* Mobile Panels */}
-        {showMobilePanel && (
-          <MobilePanel type={showMobilePanel} onClose={() => setShowMobilePanel(null)} />
-        )}
-
-        {/* Mobile Menu */}
-        {showMobileMenu && (
-          <div className="fixed inset-0 z-50 flex flex-col justify-end" onClick={() => setShowMobileMenu(false)}>
-            <div 
-              className="bg-zinc-900 border-t border-zinc-700 rounded-t-2xl p-4"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex justify-center mb-2">
-                <div className="w-10 h-1 bg-zinc-600 rounded-full"></div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => { setShowAIModal(true); setShowMobileMenu(false); }}
-                  className="flex items-center gap-2 p-3 bg-zinc-800 rounded-xl text-sm"
-                >
-                  <span>✨</span> AI Generate
-                </button>
-                <button
-                  onClick={() => { clearCanvas(); setShowMobileMenu(false); }}
-                  className="flex items-center gap-2 p-3 bg-zinc-800 rounded-xl text-sm"
-                >
-                  <span>🗑</span> Clear
-                </button>
-                <button
-                  onClick={() => { undo(); setShowMobileMenu(false); }}
-                  disabled={historyIndex <= 0}
-                  className="flex items-center gap-2 p-3 bg-zinc-800 rounded-xl text-sm disabled:opacity-50"
-                >
-                  <span>↶</span> Undo
-                </button>
-                <button
-                  onClick={() => { redo(); setShowMobileMenu(false); }}
-                  disabled={historyIndex >= history.length - 1}
-                  className="flex items-center gap-2 p-3 bg-zinc-800 rounded-xl text-sm disabled:opacity-50"
-                >
-                  <span>↷</span> Redo
-                </button>
-                <button
-                  onClick={() => { setShowShareModal(true); setShowMobileMenu(false); }}
-                  className="flex items-center gap-2 p-3 bg-blue-600 rounded-xl text-sm col-span-2"
-                >
-                  <span>📤</span> Share
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* AI Modal */}
-        {showAIModal && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-zinc-900 rounded-2xl p-6 w-full max-w-sm border border-zinc-700">
-              <div className="flex items-center gap-2 mb-4">
-                <span className="text-xl">✨</span>
-                <h3 className="text-lg font-semibold">AI Generate</h3>
-              </div>
-              <textarea
-                value={aiPrompt}
-                onChange={(e) => setAIPrompt(e.target.value)}
-                placeholder="Describe what you want to create..."
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-sm resize-none"
-                rows={3}
-              />
-              <select
-                value={aiStyle}
-                onChange={(e) => setAIStyle(e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-sm mt-3"
-              >
-                {aiStyles.map(style => (
-                  <option key={style.value} value={style.value}>{style.label}</option>
-                ))}
-              </select>
-              <div className="flex gap-3 mt-4">
-                <button
-                  onClick={() => setShowAIModal(false)}
-                  className="flex-1 py-3 bg-zinc-800 rounded-xl text-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleAIGenerate}
-                  disabled={!aiPrompt.trim() || isGenerating}
-                  className="flex-1 py-3 bg-blue-600 rounded-xl text-sm disabled:opacity-50"
-                >
-                  {isGenerating ? 'Generating...' : 'Generate'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Share Modal */}
-        {showShareModal && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-zinc-900 rounded-2xl p-6 w-full max-w-sm border border-zinc-700">
-              <h3 className="text-lg font-semibold mb-4">Share Project</h3>
-              <div className="flex gap-2">
-                <input
-                  value={typeof window !== 'undefined' ? window.location.href : ''}
-                  readOnly
-                  className="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-sm"
-                />
-                <button
-                  onClick={() => {
-                    navigator.clipboard?.writeText(window.location.href)
-                    showToastNotification('Copied!')
-                  }}
-                  className="px-4 py-3 bg-blue-600 rounded-xl text-sm"
-                >
-                  Copy
-                </button>
-              </div>
-              <button
-                onClick={() => setShowShareModal(false)}
-                className="w-full mt-4 py-3 bg-zinc-800 rounded-xl text-sm"
-              >
-                Close
+            <div className="grid grid-cols-3 gap-3">
+              <button onClick={() => { undo(); setShowMobileMenu(false) }} disabled={historyIndex <= 0} className="p-4 bg-zinc-800 rounded-xl disabled:opacity-40">
+                <span className="text-2xl">↩️</span>
+                <div className="text-xs mt-1">Undo</div>
+              </button>
+              <button onClick={() => { redo(); setShowMobileMenu(false) }} disabled={historyIndex >= history.length - 1} className="p-4 bg-zinc-800 rounded-xl disabled:opacity-40">
+                <span className="text-2xl">↪️</span>
+                <div className="text-xs mt-1">Redo</div>
+              </button>
+              <button onClick={() => { deleteSelected(); setShowMobileMenu(false) }} disabled={selectedElement === null} className="p-4 bg-zinc-800 rounded-xl disabled:opacity-40">
+                <span className="text-2xl">🗑️</span>
+                <div className="text-xs mt-1">Delete</div>
+              </button>
+              <button onClick={() => { clearCanvas(); setShowMobileMenu(false) }} className="p-4 bg-zinc-800 rounded-xl">
+                <span className="text-2xl">🧹</span>
+                <div className="text-xs mt-1">Clear</div>
+              </button>
+              <button onClick={() => { resetView(); setShowMobileMenu(false) }} className="p-4 bg-zinc-800 rounded-xl">
+                <span className="text-2xl">🔄</span>
+                <div className="text-xs mt-1">Reset View</div>
+              </button>
+              <button onClick={() => { setShowMobilePanel('export'); setShowMobileMenu(false) }} className="p-4 bg-blue-600 rounded-xl">
+                <span className="text-2xl">💾</span>
+                <div className="text-xs mt-1">Export</div>
               </button>
             </div>
-          </div>
-        )}
-
-        {/* Header */}
-        <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between bg-zinc-900">
-          <Link href="/" className="text-xl font-black">
-            <span className="bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent">Hatch</span>
-            <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">It</span>
-          </Link>
-          <div className="flex items-center gap-2">
-            <span className="text-zinc-500 text-sm">Canvas</span>
-            <button
-              onClick={() => setShowMobileMenu(true)}
-              className="p-2 text-zinc-400 hover:text-white"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>
-              </svg>
-            </button>
           </div>
         </div>
+      )}
 
-        {/* Canvas */}
-        <div className="flex-1 overflow-hidden relative">
-          <CanvasArea />
-          
-          {/* Zoom controls */}
-          <div className="absolute top-4 right-4 flex items-center gap-1 bg-zinc-900/90 backdrop-blur-sm rounded-lg border border-zinc-700 p-1">
-            <button
-              onClick={() => setZoomLevel(Math.max(25, zoomLevel - 25))}
-              className="w-8 h-8 flex items-center justify-center text-zinc-400 hover:text-white"
-            >
-              -
-            </button>
-            <span className="text-xs text-zinc-400 w-12 text-center">{zoomLevel}%</span>
-            <button
-              onClick={() => setZoomLevel(Math.min(400, zoomLevel + 25))}
-              className="w-8 h-8 flex items-center justify-center text-zinc-400 hover:text-white"
-            >
-              +
-            </button>
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between bg-zinc-900 shrink-0">
+        <Link href="/" className="text-xl font-black">
+          <span className="bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent">Hatch</span>
+          <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">It</span>
+        </Link>
+        <div className="flex items-center gap-3">
+          <span className="text-zinc-500 text-sm">Canvas</span>
+          <div className="flex items-center gap-1 bg-zinc-800 rounded-lg px-2 py-1">
+            <button onClick={() => setZoomLevel(prev => Math.max(25, prev - 25))} className="w-6 h-6 text-zinc-400">-</button>
+            <span className="text-xs text-zinc-400 w-10 text-center">{zoomLevel}%</span>
+            <button onClick={() => setZoomLevel(prev => Math.min(300, prev + 25))} className="w-6 h-6 text-zinc-400">+</button>
           </div>
-        </div>
-
-        {/* Bottom Toolbar */}
-        <div className="border-t border-zinc-800 bg-zinc-900 px-2 py-2">
-          <div className="flex items-center justify-between">
-            {/* Tools */}
-            <div className="flex gap-1">
-              {tools.map(tool => (
-                <button
-                  key={tool.id}
-                  onClick={() => setSelectedTool(tool.id)}
-                  className={`w-11 h-11 rounded-xl flex items-center justify-center text-lg transition-colors ${
-                    selectedTool === tool.id
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-zinc-800 text-zinc-400'
-                  }`}
-                >
-                  {tool.icon}
-                </button>
-              ))}
-            </div>
-            
-            {/* Quick actions */}
-            <div className="flex gap-1">
-              <button
-                onClick={() => setShowMobilePanel('colors')}
-                className="w-11 h-11 rounded-xl flex items-center justify-center bg-zinc-800 border-2 border-zinc-600"
-                style={{ backgroundColor: selectedColor }}
-              />
-              <button
-                onClick={() => setShowMobilePanel('layers')}
-                className="w-11 h-11 rounded-xl flex items-center justify-center bg-zinc-800 text-zinc-400 text-sm"
-              >
-                📑
-              </button>
-              <button
-                onClick={() => setShowMobilePanel('properties')}
-                className="w-11 h-11 rounded-xl flex items-center justify-center bg-zinc-800 text-zinc-400 text-sm"
-              >
-                ⚙️
-              </button>
-            </div>
-          </div>
+          <button onClick={() => setShowMobileMenu(true)} className="p-2 text-zinc-400">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>
+            </svg>
+          </button>
         </div>
       </div>
-    )
-  }
 
-  // Desktop Layout (original)
-  return (
-    <div className="h-screen bg-zinc-950 p-3">
-      <div className="h-full bg-gray-900 text-white flex flex-col overflow-hidden rounded-2xl border border-zinc-800">
-        {/* Built with HatchIt Badge */}
-        <Link
-          href="/builder"
-          className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-3 py-2 bg-zinc-800/90 backdrop-blur-sm border border-zinc-700 rounded-full text-xs text-zinc-400 hover:text-white hover:border-zinc-600 transition-all"
+      {/* Canvas Area */}
+      <div 
+        ref={canvasRef}
+        className="flex-1 overflow-hidden relative bg-zinc-900"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        style={{ 
+          cursor: selectedTool === 'pan' ? 'grab' : selectedTool === 'eraser' ? 'crosshair' : 'default',
+          touchAction: 'none'
+        }}
+      >
+        <svg
+          id="canvas-svg"
+          className="absolute inset-0"
+          style={{
+            width: '100%',
+            height: '100%',
+            transform: `scale(${zoomLevel / 100})`,
+            transformOrigin: '0 0'
+          }}
         >
-          <span>Built with</span>
-          <span className="font-bold">
-            <span className="text-white">Hatch</span>
-            <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">It</span>
-          </span>
-        </Link>
+          {/* Grid */}
+          <defs>
+            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+              <circle cx="10" cy="10" r="1" fill="rgba(75, 85, 99, 0.4)" />
+            </pattern>
+          </defs>
+          <rect 
+            x={-panOffset.x - 5000} 
+            y={-panOffset.y - 5000} 
+            width="10000" 
+            height="10000" 
+            fill="url(#grid)" 
+          />
 
-        {/* Toast Notification */}
-        {showToast && (
-          <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 animate-pulse">
-            <div className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg flex items-center space-x-2">
-              <span className="text-sm">✓</span>
-              <span className="text-sm font-medium">{toastMessage}</span>
-            </div>
+          {/* Content group with pan offset */}
+          <g transform={`translate(${panOffset.x}, ${panOffset.y})`}>
+            {/* Paths */}
+            {paths.map((path, index) => path.visible !== false && (
+              <path
+                key={`path-${index}`}
+                d={pathToSVG(path.points)}
+                stroke={path.color}
+                strokeWidth={path.strokeWidth}
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={selectedElement === index && selectedElementType === 'path' ? 'opacity-80' : ''}
+              />
+            ))}
+
+            {/* Shapes */}
+            {shapes.map((shape, index) => {
+              if (shape.visible === false) return null
+              const isSelected = selectedElement === index && selectedElementType === 'shape'
+              
+              if (shape.type === 'rectangle') {
+                const x = Math.min(shape.startX, shape.endX)
+                const y = Math.min(shape.startY, shape.endY)
+                const w = Math.abs(shape.endX - shape.startX)
+                const h = Math.abs(shape.endY - shape.startY)
+                return (
+                  <g key={`shape-${index}`}>
+                    <rect x={x} y={y} width={w} height={h} stroke={shape.color} strokeWidth={shape.strokeWidth} fill={shape.fillColor === 'transparent' ? 'none' : shape.fillColor} />
+                    {isSelected && <rect x={x-3} y={y-3} width={w+6} height={h+6} stroke="#3b82f6" strokeWidth="2" fill="none" strokeDasharray="5,5" />}
+                  </g>
+                )
+              } else {
+                const cx = (shape.startX + shape.endX) / 2
+                const cy = (shape.startY + shape.endY) / 2
+                const rx = Math.abs(shape.endX - shape.startX) / 2
+                const ry = Math.abs(shape.endY - shape.startY) / 2
+                return (
+                  <g key={`shape-${index}`}>
+                    <ellipse cx={cx} cy={cy} rx={rx} ry={ry} stroke={shape.color} strokeWidth={shape.strokeWidth} fill={shape.fillColor === 'transparent' ? 'none' : shape.fillColor} />
+                    {isSelected && <ellipse cx={cx} cy={cy} rx={rx+3} ry={ry+3} stroke="#3b82f6" strokeWidth="2" fill="none" strokeDasharray="5,5" />}
+                  </g>
+                )
+              }
+            })}
+
+            {/* Texts */}
+            {texts.map((text, index) => text.visible !== false && (
+              <g key={`text-${index}`}>
+                <text x={text.x} y={text.y} fill={text.color} fontSize={text.size} fontFamily="Arial, sans-serif">{text.text}</text>
+                {selectedElement === index && selectedElementType === 'text' && (
+                  <rect x={text.x - 3} y={text.y - text.size - 3} width={text.text.length * text.size * 0.6 + 6} height={text.size + 6} stroke="#3b82f6" strokeWidth="2" fill="none" strokeDasharray="5,5" />
+                )}
+              </g>
+            ))}
+
+            {/* Current drawing */}
+            {isDrawing && selectedTool === 'pen' && currentPath.length > 1 && (
+              <path d={pathToSVG(currentPath)} stroke={selectedColor} strokeWidth={strokeWidth} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+            )}
+
+            {isDrawing && currentShape && (
+              currentShape.type === 'rectangle' ? (
+                <rect
+                  x={Math.min(currentShape.startX, currentShape.endX)}
+                  y={Math.min(currentShape.startY, currentShape.endY)}
+                  width={Math.abs(currentShape.endX - currentShape.startX)}
+                  height={Math.abs(currentShape.endY - currentShape.startY)}
+                  stroke={currentShape.color}
+                  strokeWidth={currentShape.strokeWidth}
+                  fill={currentShape.fillColor === 'transparent' ? 'none' : currentShape.fillColor}
+                  opacity="0.7"
+                />
+              ) : (
+                <ellipse
+                  cx={(currentShape.startX + currentShape.endX) / 2}
+                  cy={(currentShape.startY + currentShape.endY) / 2}
+                  rx={Math.abs(currentShape.endX - currentShape.startX) / 2}
+                  ry={Math.abs(currentShape.endY - currentShape.startY) / 2}
+                  stroke={currentShape.color}
+                  strokeWidth={currentShape.strokeWidth}
+                  fill={currentShape.fillColor === 'transparent' ? 'none' : currentShape.fillColor}
+                  opacity="0.7"
+                />
+              )
+            )}
+          </g>
+        </svg>
+
+        {/* Text input overlay */}
+        {isAddingText && textPosition && (
+          <div 
+            className="absolute"
+            style={{ 
+              left: (textPosition.x + panOffset.x) * (zoomLevel / 100),
+              top: (textPosition.y + panOffset.y) * (zoomLevel / 100)
+            }}
+          >
+            <input
+              type="text"
+              value={textInput}
+              onChange={e => setTextInput(e.target.value)}
+              onBlur={handleTextSubmit}
+              onKeyDown={e => e.key === 'Enter' && handleTextSubmit()}
+              className="bg-zinc-800 border border-blue-500 rounded px-2 py-1 text-white outline-none min-w-[150px]"
+              style={{ color: selectedColor }}
+              autoFocus
+              placeholder="Type here..."
+            />
           </div>
         )}
 
-        {/* Top Bar */}
-        <div className="flex items-center justify-between px-4 py-3 bg-gray-800 border-b border-gray-700">
-          <div className="flex items-center space-x-3">
-            <Link href="/" className="text-xl font-black">
-              <span className="bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent">Hatch</span>
-              <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">It</span>
-            </Link>
-            <span className="text-zinc-600">|</span>
-            {isEditing ? (
-              <input
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-                onBlur={() => setIsEditing(false)}
-                onKeyPress={(e) => e.key === 'Enter' && setIsEditing(false)}
-                className="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm"
-                autoFocus
-              />
-            ) : (
-              <h1
-                className="text-sm text-zinc-400 cursor-pointer hover:text-white transition-colors"
-                onClick={() => setIsEditing(true)}
-              >
-                {projectName}
-              </h1>
-            )}
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => setShowAIModal(true)}
-              className="p-2 hover:bg-gray-700 rounded transition-colors flex items-center space-x-1"
-              title="AI Generate"
-            >
-              <span>✨</span>
-              <span className="text-sm hidden sm:inline">AI Generate</span>
-            </button>
-            <button
-              onClick={clearCanvas}
-              className="p-2 hover:bg-gray-700 rounded transition-colors"
-              title="Clear Canvas"
-            >
-              🗑
-            </button>
-            <button
-              onClick={undo}
-              disabled={historyIndex <= 0}
-              className={`p-2 rounded transition-colors ${historyIndex <= 0 ? 'text-gray-600' : 'hover:bg-gray-700'}`}
-              title="Undo"
-            >
-              ↶
-            </button>
-            <button
-              onClick={redo}
-              disabled={historyIndex >= history.length - 1}
-              className={`p-2 rounded transition-colors ${historyIndex >= history.length - 1 ? 'text-gray-600' : 'hover:bg-gray-700'}`}
-              title="Redo"
-            >
-              ↷
-            </button>
-            <button
-              onClick={() => setShowShareModal(true)}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded transition-colors text-sm"
-            >
-              Share
-            </button>
-          </div>
+        {/* Tool indicator */}
+        <div className="absolute top-4 left-4 bg-zinc-800/90 backdrop-blur rounded-lg px-3 py-1.5 text-sm text-zinc-300">
+          {tools.find(t => t.id === selectedTool)?.icon} {tools.find(t => t.id === selectedTool)?.name}
         </div>
+      </div>
 
-        <div className="flex flex-1 overflow-hidden">
-          {/* Left Toolbar */}
-          <div className="w-16 bg-gray-800 border-r border-gray-700 flex flex-col items-center py-4 space-y-2">
+      {/* Bottom Toolbar */}
+      <div 
+        className="border-t border-zinc-800 bg-zinc-900 px-2 py-2 shrink-0"
+        style={{ paddingBottom: 'max(8px, env(safe-area-inset-bottom))' }}
+      >
+        <div className="flex items-center justify-between gap-2">
+          {/* Tools - scrollable */}
+          <div className="flex gap-1 overflow-x-auto flex-1">
             {tools.map(tool => (
               <button
                 key={tool.id}
                 onClick={() => setSelectedTool(tool.id)}
-                className={`w-12 h-12 rounded-lg flex items-center justify-center text-xl transition-colors ${selectedTool === tool.id
-                    ? 'bg-blue-600 text-white'
-                    : 'hover:bg-gray-700 text-gray-400'
-                  }`}
-                title={tool.name}
+                className={`w-11 h-11 shrink-0 rounded-xl flex items-center justify-center text-lg transition-all ${
+                  selectedTool === tool.id ? 'bg-blue-600 scale-105' : 'bg-zinc-800'
+                }`}
               >
                 {tool.icon}
               </button>
             ))}
-
-            <div className="text-xs text-gray-400 mt-4">Stroke</div>
-            <div className="w-8 h-8 border-2 border-gray-600 cursor-pointer rounded"
-              style={{ backgroundColor: selectedColor }}
-              onClick={() => setShowColorPalette(!showColorPalette)}>
-            </div>
-
-            <div className="text-xs text-gray-400 mt-2">Fill</div>
-            <div
-              className="w-8 h-8 border-2 border-gray-600 cursor-pointer rounded relative"
-              style={{ backgroundColor: fillColor === 'transparent' ? 'transparent' : fillColor }}
-              onClick={() => setShowFillPalette(!showFillPalette)}
-            >
-              {fillColor === 'transparent' && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-6 h-0.5 bg-red-500 rotate-45"></div>
-                </div>
-              )}
-            </div>
-
-            <div className="mt-4 flex flex-col items-center space-y-1">
-              <div className="text-xs text-gray-400">Size</div>
-              <input
-                type="range"
-                min="1"
-                max="10"
-                value={strokeWidth}
-                onChange={(e) => setStrokeWidth(Number(e.target.value))}
-                className="w-10 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer"
-              />
-              <div className="text-xs">{strokeWidth}</div>
-            </div>
           </div>
-
-          {/* Main Canvas Area */}
-          <div className="flex-1 relative overflow-hidden">
-            <CanvasArea />
-
-            {showColorPalette && (
-              <div className="absolute top-4 left-20 bg-gray-800 border border-gray-700 rounded-lg p-2 grid grid-cols-5 gap-1 shadow-lg z-10">
-                <div className="col-span-5 text-xs text-gray-400 mb-2 px-1">Stroke Color</div>
-                {colors.map(color => (
-                  <div
-                    key={color}
-                    className={`w-8 h-8 rounded cursor-pointer border-2 hover:scale-110 transition-transform ${color === '#ffffff' ? 'border-gray-400' : 'border-gray-600'}`}
-                    style={{ backgroundColor: color }}
-                    onClick={() => {
-                      setSelectedColor(color)
-                      setShowColorPalette(false)
-                    }}
-                  />
-                ))}
-              </div>
-            )}
-
-            {showFillPalette && (
-              <div className="absolute top-4 left-20 bg-gray-800 border border-gray-700 rounded-lg p-2 grid grid-cols-5 gap-1 shadow-lg z-10">
-                <div className="col-span-5 text-xs text-gray-400 mb-2 px-1">Fill Color</div>
-                {fillColors.map((color) => (
-                  <div
-                    key={color}
-                    className={`w-8 h-8 rounded cursor-pointer border-2 hover:scale-110 transition-transform relative ${color === '#ffffff' ? 'border-gray-400' : 'border-gray-600'}`}
-                    style={{ backgroundColor: color === 'transparent' ? '#374151' : color }}
-                    onClick={() => {
-                      setFillColor(color)
-                      setShowFillPalette(false)
-                    }}
-                  >
-                    {color === 'transparent' && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-6 h-0.5 bg-red-500 rotate-45"></div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
+          
+          {/* Quick actions */}
+          <div className="flex gap-1 shrink-0">
             <button
-              onClick={() => setShowShortcuts(!showShortcuts)}
-              className="absolute bottom-4 left-4 text-xs text-gray-500 hover:text-gray-400 cursor-pointer"
+              onClick={() => setShowMobilePanel('colors')}
+              className="w-11 h-11 rounded-xl border-2 border-zinc-600"
+              style={{ backgroundColor: selectedColor }}
+            />
+            <button
+              onClick={() => setShowMobilePanel('layers')}
+              className="w-11 h-11 rounded-xl bg-zinc-800 flex items-center justify-center text-lg"
             >
-              Press ? for shortcuts
+              📑
             </button>
-
-            {showShortcuts && (
-              <div className="absolute bottom-12 left-4 bg-gray-800 border border-gray-700 rounded-lg p-3 shadow-lg z-10">
-                <div className="text-xs font-medium mb-2">Keyboard Shortcuts</div>
-                {shortcuts.map(shortcut => (
-                  <div key={shortcut.key} className="flex justify-between text-xs py-1">
-                    <span className="text-gray-400">{shortcut.key}</span>
-                    <span className="ml-4">{shortcut.action}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Right Panel */}
-          <div className="w-64 bg-gray-800 border-l border-gray-700 flex flex-col">
-            <div className="flex border-b border-gray-700">
-              <button
-                onClick={() => setActivePanel('properties')}
-                className={`flex-1 px-4 py-2 text-sm transition-colors ${activePanel === 'properties'
-                    ? 'bg-gray-700 text-white border-b-2 border-blue-500'
-                    : 'text-gray-400 hover:text-white hover:bg-gray-700'
-                  }`}
-              >
-                Properties
-              </button>
-              <button
-                onClick={() => setActivePanel('layers')}
-                className={`flex-1 px-4 py-2 text-sm transition-colors ${activePanel === 'layers'
-                    ? 'bg-gray-700 text-white border-b-2 border-blue-500'
-                    : 'text-gray-400 hover:text-white hover:bg-gray-700'
-                  }`}
-              >
-                Layers
-              </button>
-            </div>
-
-            {activePanel === 'properties' && (
-              <div className="flex-1 overflow-y-auto">
-                <div className="p-4 space-y-4">
-                  <div>
-                    <label className="text-sm text-gray-400">Tool</label>
-                    <div className="text-sm">{tools.find(t => t.id === selectedTool)?.name}</div>
-                  </div>
-
-                  {selectedElement !== null && selectedElementType && (
-                    <div>
-                      <label className="text-sm text-gray-400">Selected</label>
-                      <div className="text-sm text-blue-400">
-                        {selectedElementType === 'shape' && shapes[selectedElement] &&
-                          `${shapes[selectedElement].type} ${selectedElement + 1}`}
-                        {selectedElementType === 'path' && `Path ${selectedElement + 1}`}
-                        {selectedElementType === 'text' && texts[selectedElement] &&
-                          texts[selectedElement].text}
-                      </div>
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="text-sm text-gray-400">Stroke Color</label>
-                    <div className="flex items-center space-x-2 mt-1">
-                      <div
-                        className="w-6 h-6 rounded border border-gray-600"
-                        style={{ backgroundColor: selectedColor }}
-                      />
-                      <span className="text-sm">{selectedColor}</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-sm text-gray-400">Fill Color</label>
-                    <div className="flex items-center space-x-2 mt-1">
-                      <div
-                        className="w-6 h-6 rounded border border-gray-600 relative"
-                        style={{ backgroundColor: fillColor === 'transparent' ? 'transparent' : fillColor }}
-                      >
-                        {fillColor === 'transparent' && (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="w-4 h-0.5 bg-red-500 rotate-45"></div>
-                          </div>
-                        )}
-                      </div>
-                      <span className="text-sm">{fillColor === 'transparent' ? 'None' : fillColor}</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-sm text-gray-400">Stroke Width</label>
-                    <div className="text-sm">{strokeWidth}px</div>
-                  </div>
-
-                  <div>
-                    <label className="text-sm text-gray-400">Elements</label>
-                    <div className="text-sm">{paths.length + shapes.length + texts.length}</div>
-                  </div>
-
-                  <div>
-                    <label className="text-sm text-gray-400">Mouse Position</label>
-                    <div className="text-xs text-gray-500">X: {Math.round(mousePos.x)}, Y: {Math.round(mousePos.y)}</div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activePanel === 'layers' && (
-              <div className="flex-1 flex flex-col">
-                <div className="p-3 border-b border-gray-700">
-                  <button
-                    onClick={addNewLayer}
-                    className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded text-sm transition-colors flex items-center justify-center space-x-2"
-                  >
-                    <span>+</span>
-                    <span>New Layer</span>
-                  </button>
-                </div>
-
-                <div className="flex-1 overflow-y-auto">
-                  <div className="p-2 space-y-1">
-                    {getAllLayers().length === 0 ? (
-                      <div className="text-center text-gray-500 text-sm py-8">
-                        No layers yet
-                      </div>
-                    ) : (
-                      getAllLayers().map((layer) => (
-                        <div
-                          key={layer.id}
-                          className={`group flex items-center space-x-2 px-2 py-2 rounded cursor-pointer transition-colors ${selectedElement === layer.index && selectedElementType === layer.type
-                              ? 'bg-blue-600/20 border border-blue-500/50'
-                              : 'hover:bg-gray-700'
-                            }`}
-                          onClick={() => selectLayer(layer.type, layer.index)}
-                        >
-                          <span className="text-xs">{layer.icon}</span>
-
-                          <div className="flex-1 min-w-0">
-                            <div className="text-xs truncate">{layer.name}</div>
-                          </div>
-
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              toggleLayerVisibility(layer.id, layer.type, layer.index)
-                            }}
-                            className={`opacity-0 group-hover:opacity-100 transition-opacity text-xs ${layer.visible ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-400'}`}
-                          >
-                            {layer.visible ? '👁' : '🚫'}
-                          </button>
-
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              deleteLayer(layer.type, layer.index)
-                            }}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-red-400 hover:text-red-300"
-                          >
-                            🗑
-                          </button>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
-
-        {/* Bottom Bar */}
-        <div className="flex items-center justify-between px-4 py-2 bg-gray-800 border-t border-gray-700 text-sm">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => setZoomLevel(Math.max(25, zoomLevel - 25))}
-                className="px-2 py-1 hover:bg-gray-700 rounded"
-              >
-                -
-              </button>
-              <span className="min-w-12 text-center">{zoomLevel}%</span>
-              <button
-                onClick={() => setZoomLevel(Math.min(400, zoomLevel + 25))}
-                className="px-2 py-1 hover:bg-gray-700 rounded"
-              >
-                +
-              </button>
-              <button
-                onClick={() => setZoomLevel(100)}
-                className="px-2 py-1 hover:bg-gray-700 rounded text-xs"
-              >
-                Reset
-              </button>
-            </div>
-
-            <div className="text-gray-400">
-              {selectedElement !== null && selectedElementType ? 'Element selected' : 'Ready'}
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <span className="text-gray-400">HatchIt Canvas</span>
-          </div>
-        </div>
-
-        {/* AI Generate Modal */}
-        {showAIModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-gray-800 rounded-lg p-6 w-96 border border-gray-700">
-              <div className="flex items-center space-x-2 mb-4">
-                <span className="text-xl">✨</span>
-                <h3 className="text-lg font-medium">AI Generate</h3>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">Describe what you want to create</label>
-                  <textarea
-                    value={aiPrompt}
-                    onChange={(e) => setAIPrompt(e.target.value)}
-                    placeholder="e.g., Create a modern dashboard layout with cards and charts"
-                    className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm resize-none"
-                    rows={3}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">Style</label>
-                  <select
-                    value={aiStyle}
-                    onChange={(e) => setAIStyle(e.target.value)}
-                    className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm"
-                  >
-                    {aiStyles.map(style => (
-                      <option key={style.value} value={style.value}>
-                        {style.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex justify-end space-x-2 mt-6">
-                <button
-                  onClick={() => setShowAIModal(false)}
-                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleAIGenerate}
-                  disabled={!aiPrompt.trim() || isGenerating}
-                  className={`px-4 py-2 rounded text-sm transition-colors flex items-center space-x-2 ${!aiPrompt.trim() || isGenerating
-                      ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                      : 'bg-blue-600 hover:bg-blue-700 text-white'
-                    }`}
-                >
-                  {isGenerating ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      <span>Generating...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>✨</span>
-                      <span>Generate</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Share Modal */}
-        {showShareModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-gray-800 rounded-lg p-6 w-96 border border-gray-700">
-              <h3 className="text-lg font-medium mb-4">Share Project</h3>
-              <div className="flex space-x-2 mb-4">
-                <input
-                  value={typeof window !== 'undefined' ? window.location.href : ''}
-                  readOnly
-                  className="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm"
-                />
-                <button
-                  onClick={() => navigator.clipboard?.writeText(window.location.href)}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-sm transition-colors"
-                >
-                  Copy
-                </button>
-              </div>
-              <div className="text-xs text-gray-400 mb-4">
-                Share this link with others to show them the canvas
-              </div>
-              <div className="flex justify-end">
-                <button
-                  onClick={() => setShowShareModal(false)}
-                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm transition-colors"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   )

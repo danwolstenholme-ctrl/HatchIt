@@ -249,7 +249,10 @@ export default function Home() {
 
         {/* Mobile Bottom Bar */}
         {code && (
-          <div className="px-4 py-3 border-t border-zinc-800 bg-zinc-900 flex gap-2">
+          <div 
+            className="px-4 py-3 border-t border-zinc-800 bg-zinc-900 flex gap-2"
+            style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
+          >
             <button
               onClick={() => setMobileModal('preview')}
               className="flex-1 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2"
