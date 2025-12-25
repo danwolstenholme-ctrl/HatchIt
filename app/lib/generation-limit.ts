@@ -1,4 +1,4 @@
-const DAILY_LIMIT = 20
+const DAILY_LIMIT = 10
 const STORAGE_KEY = 'hatchit_generations'
 
 interface GenerationData {

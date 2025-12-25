@@ -212,6 +212,13 @@ export default function Home() {
   }
 
   const createProject = () => {
+    // Free users can only have 1 project
+    if (!isPaid && projects.length >= 1) {
+      setShowUpgradeModal(true)
+      setShowProjectDropdown(false)
+      return
+    }
+    
     const newProject = createNewProject()
     setProjects(prev => [newProject, ...prev])
     setCurrentProjectId(newProject.id)
@@ -384,11 +391,26 @@ export default function Home() {
 
   const ProjectDropdown = () => (
     <div ref={dropdownRef} className="absolute top-full left-0 mt-2 w-72 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-50 overflow-hidden">
-      <button onClick={createProject} className="w-full px-4 py-3 flex items-center gap-3 hover:bg-zinc-800 transition-colors border-b border-zinc-800">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
+      <button 
+        onClick={createProject} 
+        className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-zinc-800 transition-colors border-b border-zinc-800 ${!isPaid && projects.length >= 1 ? 'opacity-50' : ''}`}
+      >
+        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${!isPaid && projects.length >= 1 ? 'bg-zinc-700' : 'bg-gradient-to-r from-blue-600 to-purple-600'}`}>
+          {!isPaid && projects.length >= 1 ? (
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-400">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
+          )}
         </div>
-        <span className="text-sm font-medium text-white">New Project</span>
+        <div className="flex-1 text-left">
+          <span className="text-sm font-medium text-white">New Project</span>
+          {!isPaid && projects.length >= 1 && (
+            <span className="block text-xs text-purple-400">Upgrade to unlock</span>
+          )}
+        </div>
       </button>
       <div className="max-h-64 overflow-y-auto">
         {projects.map(project => (

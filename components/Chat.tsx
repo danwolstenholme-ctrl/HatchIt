@@ -107,36 +107,45 @@ export default function Chat({ onGenerate, isGenerating, currentCode }: ChatProp
 
   return (
     <div className="flex flex-col h-full">
-      {/* Generation limit indicator for free users */}
-      {!isPaid && remaining !== null && (
+      {/* Generation limit indicator */}
+      {remaining !== null && (
         <div className="px-4 py-2 border-b border-zinc-800/50">
-          <div className="flex items-center justify-between">
+          {isPaid ? (
+            // Paid users - unlimited
             <div className="flex items-center gap-2">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={remaining <= 5 ? 'text-amber-400' : 'text-zinc-500'}>
-                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-              </svg>
-              <span className={`text-xs ${remaining <= 5 ? 'text-amber-400' : 'text-zinc-500'}`}>
-                {remaining} generations left today
-              </span>
+              <span className="text-lg">∞</span>
+              <span className="text-xs text-zinc-400">Unlimited generations</span>
             </div>
-            {remaining <= 10 && (
-              <button 
-                onClick={() => setShowUpgradeModal(true)}
-                className="text-xs text-purple-400 hover:text-purple-300 font-medium transition-colors"
-              >
-                Upgrade
-              </button>
-            )}
-          </div>
-          {/* Progress bar */}
-          <div className="mt-1.5 h-1 bg-zinc-800 rounded-full overflow-hidden">
-            <div 
-              className={`h-full transition-all duration-300 ${
-                remaining <= 5 ? 'bg-amber-500' : 'bg-blue-500'
-              }`}
-              style={{ width: `${(remaining / limit) * 100}%` }}
-            />
-          </div>
+          ) : (
+            // Free users - countdown
+            <>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={remaining <= 3 ? 'text-amber-400' : 'text-zinc-500'}>
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                  </svg>
+                  <span className={`text-xs ${remaining <= 3 ? 'text-amber-400' : 'text-zinc-500'}`}>
+                    {remaining} generations left today
+                  </span>
+                </div>
+                <button 
+                  onClick={() => setShowUpgradeModal(true)}
+                  className="text-xs text-purple-400 hover:text-purple-300 font-medium transition-colors"
+                >
+                  Upgrade
+                </button>
+              </div>
+              {/* Progress bar */}
+              <div className="mt-1.5 h-1 bg-zinc-800 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full transition-all duration-300 ${
+                    remaining <= 3 ? 'bg-amber-500' : 'bg-blue-500'
+                  }`}
+                  style={{ width: `${(remaining / limit) * 100}%` }}
+                />
+              </div>
+            </>
+          )}
         </div>
       )}
 
