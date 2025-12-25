@@ -1,7 +1,7 @@
 'use client'
-
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { useUser } from '@clerk/nextjs'
 import { Group, Panel, Separator } from 'react-resizable-panels'
 import Chat from '@/components/Chat'
 import CodePreview from '@/components/CodePreview'
@@ -107,7 +107,8 @@ export default function Home() {
   const [isMobile, setIsMobile] = useState(false)
   const [mobileModal, setMobileModal] = useState<'preview' | 'code' | null>(null)
   const [copied, setCopied] = useState(false)
-  const [isPaid, setIsPaid] = useState(false)
+  const { user } = useUser()
+const [isPaid, setIsPaid] = useState(false)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [upgradeReason, setUpgradeReason] = useState<'generation_limit' | 'code_access' | 'deploy' | 'download'>('deploy')
   const previewContainerRef = useRef<HTMLDivElement>(null)
@@ -150,8 +151,13 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
+  // Check Clerk metadata first, fallback to localStorage
+  if (user?.publicMetadata?.paid) {
+    setIsPaid(true)
+  } else {
     setIsPaid(isPaidUser())
-  }, [])
+  }
+}, [user])
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)

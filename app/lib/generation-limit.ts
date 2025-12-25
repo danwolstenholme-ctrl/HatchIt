@@ -1,12 +1,9 @@
-// Generation limit utility for free tier
-// Tracks daily generation count in localStorage
-
 const DAILY_LIMIT = 20
 const STORAGE_KEY = 'hatchit_generations'
 
 interface GenerationData {
   count: number
-  date: string // YYYY-MM-DD
+  date: string
 }
 
 function getToday(): string {
@@ -83,6 +80,7 @@ export function getDailyLimit(): number {
   return DAILY_LIMIT
 }
 
+// Legacy localStorage check (fallback)
 export function isPaidUser(): boolean {
   if (typeof window === 'undefined') return false
   return localStorage.getItem('hatchit_paid') === 'true'
