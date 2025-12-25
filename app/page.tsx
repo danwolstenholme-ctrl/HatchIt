@@ -32,7 +32,7 @@ export default function Home() {
             <a href="#pricing" className="text-zinc-400 hover:text-white transition-colors hidden sm:block">Pricing</a>
             <SignedOut>
               <SignInButton mode="modal">
-                <button className="text-zinc-400 hover:text-white transition-colors text-sm">Sign In</button>
+                <button className="text-zinc-400 hover:text-white transition-colors text-sm cursor-pointer">Sign In</button>
               </SignInButton>
               <Link href="/builder" className="px-5 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-semibold text-sm transition-all">
                 Launch App

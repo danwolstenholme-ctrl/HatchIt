@@ -17,25 +17,25 @@ interface ChatProps {
 }
 
 const thinkingMessages = [
-  "On it...",
-  "Building that...",
-  "Working on it...",
-  "Let me cook...",
-  "Generating...",
-  "On the case...",
+  "Architecting your site...",
+  "Spinning up the code...",
+  "Weaving the magic...",
+  "Compiling your vision...",
+  "Crafting the component...",
+  "Building in real-time...",
 ]
 
 const responses = [
-  "Done — take a look →",
-  "There you go ✓",
-  "Ready for you",
-  "Built it →",
-  "All set",
-  "That's live now",
-  "Fresh out the oven 🍳",
-  "Shipped it →",
-  "Your turn to break it",
-  "Made the thing",
+  "Code's ready — take a look",
+  "Component generated ✓",
+  "Preview is live",
+  "Fresh React built",
+  "Ready to preview",
+  "Markup complete",
+  "Component shipped",
+  "Go break it →",
+  "Your turn to edit",
+  "Generated and live",
 ]
 
 function getRandomThinking() {
@@ -153,10 +153,10 @@ export default function Chat({ onGenerate, isGenerating, currentCode }: ChatProp
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center px-4">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center mb-4">
-              <span className="text-2xl">✨</span>
+              <span className="text-2xl">⚡</span>
             </div>
-            <p className="text-zinc-300 text-sm font-medium mb-1">What do you want to build?</p>
-            <p className="text-zinc-600 text-xs max-w-[200px]">Describe a component, page, or full site and watch it come to life.</p>
+            <p className="text-zinc-300 text-sm font-medium mb-2">Describe. Generate. Ship.</p>
+            <p className="text-zinc-600 text-xs max-w-[220px]">Tell us what UI you want. We'll generate production React code in real-time. Not a chatbot — instant component generation.</p>
           </div>
         ) : (
           <>
@@ -198,7 +198,7 @@ export default function Chat({ onGenerate, isGenerating, currentCode }: ChatProp
                 handleSubmit(e)
               }
             }}
-            placeholder={isGenerating ? "" : messages.length === 0 ? "A landing page for my coffee shop..." : "What's next?"}
+            placeholder={isGenerating ? "" : messages.length === 0 ? "A landing page with a hero section and pricing table..." : "Modify the design..."}
             className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-700 focus:ring-1 focus:ring-zinc-700 resize-none transition-all"
             rows={3}
             disabled={isGenerating}
