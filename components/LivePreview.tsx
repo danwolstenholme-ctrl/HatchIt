@@ -9,6 +9,203 @@ interface LivePreviewProps {
 
 export default function LivePreview({ code, isLoading = false }: LivePreviewProps) {
   const [iframeLoaded, setIframeLoaded] = useState(false)
+  const [iframeKey, setIframeKey] = useState(0)
+  const [isDownloading, setIsDownloading] = useState(false)
+
+  const refreshPreview = () => {
+    setIframeLoaded(false)
+    setIframeKey(prev => prev + 1)
+  }
+
+  const downloadZip = async () => {
+    if (!code) return
+    setIsDownloading(true)
+    
+    try {
+      // Dynamically import JSZip
+      const JSZip = (await import('jszip')).default
+      const zip = new JSZip()
+      
+      // Package.json
+      zip.file('package.json', JSON.stringify({
+        name: 'hatchit-project',
+        version: '1.0.0',
+        private: true,
+        scripts: {
+          dev: 'next dev',
+          build: 'next build',
+          start: 'next start',
+          lint: 'next lint'
+        },
+        dependencies: {
+          next: '^14.0.0',
+          react: '^18.2.0',
+          'react-dom': '^18.2.0'
+        },
+        devDependencies: {
+          typescript: '^5.0.0',
+          '@types/node': '^20.0.0',
+          '@types/react': '^18.2.0',
+          '@types/react-dom': '^18.2.0',
+          tailwindcss: '^3.4.0',
+          postcss: '^8.4.0',
+          autoprefixer: '^10.4.0'
+        }
+      }, null, 2))
+      
+      // Next config
+      zip.file('next.config.js', `/** @type {import('next').NextConfig} */
+const nextConfig = {}
+module.exports = nextConfig`)
+      
+      // Tailwind config
+      zip.file('tailwind.config.js', `/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    './pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}`)
+      
+      // PostCSS config
+      zip.file('postcss.config.js', `module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}`)
+      
+      // TypeScript config
+      zip.file('tsconfig.json', JSON.stringify({
+        compilerOptions: {
+          target: 'es5',
+          lib: ['dom', 'dom.iterable', 'esnext'],
+          allowJs: true,
+          skipLibCheck: true,
+          strict: true,
+          noEmit: true,
+          esModuleInterop: true,
+          module: 'esnext',
+          moduleResolution: 'bundler',
+          resolveJsonModule: true,
+          isolatedModules: true,
+          jsx: 'preserve',
+          incremental: true,
+          plugins: [{ name: 'next' }],
+          paths: { '@/*': ['./*'] }
+        },
+        include: ['next-env.d.ts', '**/*.ts', '**/*.tsx', '.next/types/**/*.ts'],
+        exclude: ['node_modules']
+      }, null, 2))
+      
+      // .gitignore
+      zip.file('.gitignore', `# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Next.js
+.next
+out
+
+# Production
+build
+
+# Misc
+.DS_Store
+*.pem
+
+# Debug
+npm-debug.log*
+
+# Local env
+.env*.local
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts`)
+      
+      // README
+      zip.file('README.md', `# HatchIt Project
+
+This project was built with [HatchIt](https://hatchit.dev).
+
+## Getting Started
+
+1. Install dependencies:
+   \`\`\`bash
+   npm install
+   \`\`\`
+
+2. Run the development server:
+   \`\`\`bash
+   npm run dev
+   \`\`\`
+
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Deploy
+
+The easiest way to deploy is with [Vercel](https://vercel.com):
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
+`)
+      
+      // App folder
+      const app = zip.folder('app')
+      
+      // Layout
+      app?.file('layout.tsx', `import type { Metadata } from 'next'
+import './globals.css'
+
+export const metadata: Metadata = {
+  title: 'HatchIt Project',
+  description: 'Built with HatchIt',
+}
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  )
+}`)
+      
+      // Global CSS
+      app?.file('globals.css', `@tailwind base;
+@tailwind components;
+@tailwind utilities;`)
+      
+      // Page component
+      const pageCode = code.includes("'use client'") ? code : `'use client'\nimport { useState, useEffect } from 'react'\n\n${code}`
+      app?.file('page.tsx', pageCode)
+      
+      // Generate and download
+      const blob = await zip.generateAsync({ type: 'blob' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'hatchit-project.zip'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Download failed:', error)
+      alert('Failed to download project')
+    } finally {
+      setIsDownloading(false)
+    }
+  }
 
   const srcDoc = useMemo(() => {
     setIframeLoaded(false)
@@ -67,6 +264,36 @@ export default function LivePreview({ code, isLoading = false }: LivePreviewProp
     <div className="h-full bg-zinc-900 overflow-auto">
       {code ? (
         <div className="relative h-full">
+          {/* Toolbar */}
+          <div className="absolute top-2 right-2 z-20 flex items-center gap-1">
+            <button
+              onClick={refreshPreview}
+              className="p-1.5 bg-zinc-800/80 hover:bg-zinc-700 border border-zinc-700 rounded-lg text-zinc-400 hover:text-white transition-colors backdrop-blur-sm"
+              title="Refresh preview"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
+              </svg>
+            </button>
+            <button
+              onClick={downloadZip}
+              disabled={isDownloading}
+              className="p-1.5 bg-zinc-800/80 hover:bg-zinc-700 border border-zinc-700 rounded-lg text-zinc-400 hover:text-white transition-colors backdrop-blur-sm disabled:opacity-50"
+              title="Download as ZIP"
+            >
+              {isDownloading ? (
+                <svg className="animate-spin" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+              )}
+            </button>
+          </div>
+          
           {showSpinner && (
             <div className="absolute inset-0 bg-zinc-900 flex items-center justify-center z-10">
               <div className="flex flex-col items-center gap-3">
@@ -76,6 +303,7 @@ export default function LivePreview({ code, isLoading = false }: LivePreviewProp
             </div>
           )}
           <iframe
+            key={iframeKey}
             srcDoc={srcDoc}
             className="w-full h-full border-0"
             sandbox="allow-scripts"

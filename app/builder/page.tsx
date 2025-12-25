@@ -13,13 +13,24 @@ interface Message {
   code?: string
 }
 
+interface Version {
+  id: string
+  code: string
+  timestamp: string
+  prompt?: string
+}
+
 interface Project {
   id: string
   name: string
-  code: string
-  codeHistory: string[]
+  versions: Version[]
+  currentVersionIndex: number
   createdAt: string
   updatedAt: string
+  deployedSlug?: string
+  customDomain?: string
+  code?: string
+  codeHistory?: string[]
 }
 
 const generateId = () => Math.random().toString(36).substring(2, 9)
@@ -27,48 +38,87 @@ const generateId = () => Math.random().toString(36).substring(2, 9)
 const createNewProject = (name?: string): Project => ({
   id: generateId(),
   name: name || 'Untitled Project',
-  code: '',
-  codeHistory: [],
+  versions: [],
+  currentVersionIndex: -1,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 })
 
+const migrateProject = (project: Project): Project => {
+  if (project.versions && project.versions.length > 0) return project
+  
+  if (project.code || (project.codeHistory && project.codeHistory.length > 0)) {
+    const versions: Version[] = []
+    if (project.codeHistory) {
+      project.codeHistory.forEach((code, index) => {
+        versions.push({
+          id: generateId(),
+          code,
+          timestamp: new Date(Date.now() - (project.codeHistory!.length - index) * 60000).toISOString(),
+        })
+      })
+    }
+    if (project.code) {
+      versions.push({
+        id: generateId(),
+        code: project.code,
+        timestamp: project.updatedAt || new Date().toISOString(),
+      })
+    }
+    return { ...project, versions, currentVersionIndex: versions.length - 1, code: undefined, codeHistory: undefined }
+  }
+  
+  return { ...project, versions: project.versions || [], currentVersionIndex: project.currentVersionIndex ?? -1 }
+}
+
 export default function Home() {
-  // Project state
   const [projects, setProjects] = useState<Project[]>([])
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null)
   const [showProjectDropdown, setShowProjectDropdown] = useState(false)
   const [showRenameModal, setShowRenameModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showHistoryModal, setShowHistoryModal] = useState(false)
+  const [previewVersionIndex, setPreviewVersionIndex] = useState<number | null>(null)
   const [renameValue, setRenameValue] = useState('')
   
-  // Current project derived state
   const currentProject = projects.find(p => p.id === currentProjectId)
-  const code = currentProject?.code || ''
-  const codeHistory = currentProject?.codeHistory || []
+  const versions = currentProject?.versions || []
+  const currentVersionIndex = currentProject?.currentVersionIndex ?? -1
+  const code = previewVersionIndex !== null 
+    ? versions[previewVersionIndex]?.code || ''
+    : versions[currentVersionIndex]?.code || ''
+  const isDeployed = !!currentProject?.deployedSlug
+  const canUndo = currentVersionIndex > 0
+  const canRedo = currentVersionIndex < versions.length - 1
   
-  // UI state
   const [isGenerating, setIsGenerating] = useState(false)
+  const [isDeploying, setIsDeploying] = useState(false)
+  const [deployedUrl, setDeployedUrl] = useState<string | null>(null)
+  const [showDeployModal, setShowDeployModal] = useState(false)
+  const [showDomainModal, setShowDomainModal] = useState(false)
+  const [customDomain, setCustomDomain] = useState('')
+  const [domainStatus, setDomainStatus] = useState<'idle' | 'adding' | 'pending' | 'success' | 'error'>('idle')
+  const [domainError, setDomainError] = useState('')
+  const [deployName, setDeployName] = useState('')
   const [activeTab, setActiveTab] = useState<'preview' | 'code'>('preview')
   const [previewWidth, setPreviewWidth] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
   const [mobileModal, setMobileModal] = useState<'preview' | 'code' | null>(null)
+  const [copied, setCopied] = useState(false)
   const previewContainerRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  // Load projects from localStorage on mount
   useEffect(() => {
     const savedProjects = localStorage.getItem('hatchit-projects')
     const savedCurrentId = localStorage.getItem('hatchit-current-project')
-    
     if (savedProjects) {
       const parsed = JSON.parse(savedProjects) as Project[]
-      setProjects(parsed)
-      
-      if (savedCurrentId && parsed.find(p => p.id === savedCurrentId)) {
+      const migrated = parsed.map(migrateProject)
+      setProjects(migrated)
+      if (savedCurrentId && migrated.find(p => p.id === savedCurrentId)) {
         setCurrentProjectId(savedCurrentId)
-      } else if (parsed.length > 0) {
-        setCurrentProjectId(parsed[0].id)
+      } else if (migrated.length > 0) {
+        setCurrentProjectId(migrated[0].id)
       }
     } else {
       const defaultProject = createNewProject('My First Project')
@@ -77,32 +127,22 @@ export default function Home() {
     }
   }, [])
 
-  // Save projects to localStorage whenever they change
   useEffect(() => {
-    if (projects.length > 0) {
-      localStorage.setItem('hatchit-projects', JSON.stringify(projects))
-    }
+    if (projects.length > 0) localStorage.setItem('hatchit-projects', JSON.stringify(projects))
   }, [projects])
 
-  // Save current project ID
   useEffect(() => {
-    if (currentProjectId) {
-      localStorage.setItem('hatchit-current-project', currentProjectId)
-    }
+    if (currentProjectId) localStorage.setItem('hatchit-current-project', currentProjectId)
   }, [currentProjectId])
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setShowProjectDropdown(false)
-      }
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) setShowProjectDropdown(false)
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Detect mobile viewport
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
     checkMobile()
@@ -110,41 +150,45 @@ export default function Home() {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // Preview width observer
   useEffect(() => {
     if (!previewContainerRef.current) return
     const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        setPreviewWidth(entry.contentRect.width)
-      }
+      for (const entry of entries) setPreviewWidth(entry.contentRect.width)
     })
     observer.observe(previewContainerRef.current)
     return () => observer.disconnect()
   }, [])
 
-  const breakpoint = previewWidth < 640 ? 'Mobile' : previewWidth < 1024 ? 'Tablet' : 'Desktop'
+  // Device breakpoints based on common screen sizes
+  const getDevice = (width: number) => {
+    if (width < 375) return { name: 'iPhone SE', icon: '📱' }
+    if (width < 430) return { name: 'iPhone', icon: '📱' }
+    if (width < 640) return { name: 'Mobile', icon: '📱' }
+    if (width < 768) return { name: 'iPad Mini', icon: '📱' }
+    if (width < 1024) return { name: 'iPad', icon: '⬛' }
+    if (width < 1280) return { name: 'Laptop', icon: '💻' }
+    return { name: 'Desktop', icon: '🖥️' }
+  }
+  const device = getDevice(previewWidth)
 
-  // Update current project
   const updateCurrentProject = (updates: Partial<Project>) => {
     if (!currentProjectId) return
-    setProjects(prev => prev.map(p => 
-      p.id === currentProjectId 
-        ? { ...p, ...updates, updatedAt: new Date().toISOString() }
-        : p
-    ))
+    setProjects(prev => prev.map(p => p.id === currentProjectId ? { ...p, ...updates, updatedAt: new Date().toISOString() } : p))
   }
 
-  // Project actions
   const createProject = () => {
     const newProject = createNewProject()
     setProjects(prev => [newProject, ...prev])
     setCurrentProjectId(newProject.id)
     setShowProjectDropdown(false)
+    setDeployedUrl(null)
   }
 
   const switchProject = (id: string) => {
     setCurrentProjectId(id)
     setShowProjectDropdown(false)
+    setDeployedUrl(null)
+    setPreviewVersionIndex(null)
   }
 
   const renameProject = () => {
@@ -156,11 +200,11 @@ export default function Home() {
 
   const deleteProject = () => {
     if (!currentProjectId || projects.length <= 1) return
-    
     const newProjects = projects.filter(p => p.id !== currentProjectId)
     setProjects(newProjects)
     setCurrentProjectId(newProjects[0]?.id || null)
     setShowDeleteModal(false)
+    setDeployedUrl(null)
   }
 
   const duplicateProject = () => {
@@ -171,20 +215,16 @@ export default function Home() {
       name: `${currentProject.name} (Copy)`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      deployedSlug: undefined,
     }
     setProjects(prev => [duplicate, ...prev])
     setCurrentProjectId(duplicate.id)
     setShowProjectDropdown(false)
+    setDeployedUrl(null)
   }
 
-  // Handle code generation
   const handleGenerate = async (prompt: string, history: Message[], currentCode: string) => {
     setIsGenerating(true)
-    
-    if (code) {
-      updateCurrentProject({ codeHistory: [...codeHistory, code] })
-    }
-    
     try {
       const response = await fetch('/api/generate', {
         method: 'POST',
@@ -193,10 +233,10 @@ export default function Home() {
       })
       const data = await response.json()
       if (data.code) {
-        updateCurrentProject({ code: data.code })
-        if (isMobile) {
-          setMobileModal('preview')
-        }
+        const newVersion: Version = { id: generateId(), code: data.code, timestamp: new Date().toISOString(), prompt }
+        const newVersions = currentVersionIndex >= 0 ? [...versions.slice(0, currentVersionIndex + 1), newVersion] : [newVersion]
+        updateCurrentProject({ versions: newVersions, currentVersionIndex: newVersions.length - 1 })
+        if (isMobile) setMobileModal('preview')
       }
     } catch (error) {
       console.error('Generation failed:', error)
@@ -205,94 +245,111 @@ export default function Home() {
     }
   }
 
-  const handleUndo = () => {
-    if (codeHistory.length > 0) {
-      const previousCode = codeHistory[codeHistory.length - 1]
-      updateCurrentProject({
-        code: previousCode,
-        codeHistory: codeHistory.slice(0, -1)
+  const handleUndo = () => { if (canUndo) updateCurrentProject({ currentVersionIndex: currentVersionIndex - 1 }) }
+  const handleRedo = () => { if (canRedo) updateCurrentProject({ currentVersionIndex: currentVersionIndex + 1 }) }
+  const restoreVersion = (index: number) => { updateCurrentProject({ currentVersionIndex: index }); setShowHistoryModal(false); setPreviewVersionIndex(null) }
+
+  const handleDeploy = async (customName?: string) => {
+    if (!code || isDeploying) return
+    const slugName = customName || currentProject?.deployedSlug || currentProject?.name
+    setIsDeploying(true)
+    try {
+      const response = await fetch('/api/deploy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, projectName: slugName }),
       })
+      const data = await response.json()
+      if (data.url) {
+        await new Promise(resolve => setTimeout(resolve, 45000))
+        const startTime = Date.now()
+        while (Date.now() - startTime < 90000) {
+          try { await fetch(data.url, { method: 'HEAD', mode: 'no-cors' }); break } catch { await new Promise(r => setTimeout(r, 3000)) }
+        }
+        setDeployedUrl(data.url)
+        updateCurrentProject({ deployedSlug: customName || slugName?.toLowerCase().replace(/[^a-z0-9-]/g, '-') })
+      } else {
+        alert('Deploy failed: ' + (data.error || 'Unknown error'))
+      }
+    } catch (error) {
+      console.error('Deploy failed:', error)
+      alert('Deploy failed')
+    } finally {
+      setIsDeploying(false)
     }
   }
 
-  // Project Dropdown Component
+  const formatRelativeTime = (timestamp: string) => {
+    const diffMs = Date.now() - new Date(timestamp).getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    if (diffMins < 1) return 'Just now'
+    if (diffMins < 60) return `${diffMins}m ago`
+    if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h ago`
+    if (diffMins < 10080) return `${Math.floor(diffMins / 1440)}d ago`
+    return new Date(timestamp).toLocaleDateString()
+  }
+
+  const connectDomain = async () => {
+    if (!customDomain || !currentProject?.deployedSlug) return
+    
+    const domain = customDomain.toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '').trim()
+    
+    setDomainStatus('adding')
+    setDomainError('')
+    
+    try {
+      const response = await fetch('/api/domain', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          domain,
+          projectSlug: currentProject.deployedSlug 
+        }),
+      })
+      const data = await response.json()
+      
+      if (data.success) {
+        setDomainStatus('pending')
+        updateCurrentProject({ customDomain: domain })
+      } else {
+        setDomainStatus('error')
+        setDomainError(data.error || 'Failed to add domain')
+      }
+    } catch (error) {
+      console.error('Domain connection failed:', error)
+      setDomainStatus('error')
+      setDomainError('Failed to connect domain')
+    }
+  }
+
   const ProjectDropdown = () => (
-    <div 
-      ref={dropdownRef}
-      className="absolute top-full left-0 mt-2 w-72 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-50 overflow-hidden"
-    >
-      <button
-        onClick={createProject}
-        className="w-full px-4 py-3 flex items-center gap-3 hover:bg-zinc-800 transition-colors border-b border-zinc-800"
-      >
+    <div ref={dropdownRef} className="absolute top-full left-0 mt-2 w-72 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-50 overflow-hidden">
+      <button onClick={createProject} className="w-full px-4 py-3 flex items-center gap-3 hover:bg-zinc-800 transition-colors border-b border-zinc-800">
         <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-            <path d="M12 5v14M5 12h14"/>
-          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
         </div>
         <span className="text-sm font-medium text-white">New Project</span>
       </button>
-
       <div className="max-h-64 overflow-y-auto">
         {projects.map(project => (
-          <button
-            key={project.id}
-            onClick={() => switchProject(project.id)}
-            className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-zinc-800 transition-colors ${
-              project.id === currentProjectId ? 'bg-zinc-800' : ''
-            }`}
-          >
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium ${
-              project.id === currentProjectId 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-zinc-700 text-zinc-400'
-            }`}>
-              {project.name.charAt(0).toUpperCase()}
-            </div>
+          <button key={project.id} onClick={() => switchProject(project.id)} className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-zinc-800 transition-colors ${project.id === currentProjectId ? 'bg-zinc-800' : ''}`}>
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium ${project.id === currentProjectId ? 'bg-blue-600 text-white' : 'bg-zinc-700 text-zinc-400'}`}>{project.name.charAt(0).toUpperCase()}</div>
             <div className="flex-1 text-left min-w-0">
-              <div className="text-sm font-medium text-white truncate">{project.name}</div>
-              <div className="text-xs text-zinc-500">
-                {new Date(project.updatedAt).toLocaleDateString()}
+              <div className="text-sm font-medium text-white truncate flex items-center gap-2">
+                {project.name}
+                {project.deployedSlug && <span className="text-[10px] px-1.5 py-0.5 bg-green-500/20 text-green-400 rounded">LIVE</span>}
               </div>
+              <div className="text-xs text-zinc-500">{project.versions?.length || 0} versions</div>
             </div>
-            {project.id === currentProjectId && (
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-            )}
+            {project.id === currentProjectId && <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>}
           </button>
         ))}
       </div>
-
       {currentProject && (
         <div className="border-t border-zinc-800 p-2 flex gap-1">
-          <button
-            onClick={() => {
-              setRenameValue(currentProject.name)
-              setShowRenameModal(true)
-              setShowProjectDropdown(false)
-            }}
-            className="flex-1 px-3 py-2 text-xs text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
-          >
-            Rename
-          </button>
-          <button
-            onClick={duplicateProject}
-            className="flex-1 px-3 py-2 text-xs text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
-          >
-            Duplicate
-          </button>
-          {projects.length > 1 && (
-            <button
-              onClick={() => {
-                setShowDeleteModal(true)
-                setShowProjectDropdown(false)
-              }}
-              className="flex-1 px-3 py-2 text-xs text-red-400 hover:text-red-300 hover:bg-zinc-800 rounded-lg transition-colors"
-            >
-              Delete
-            </button>
-          )}
+          <button onClick={() => { setRenameValue(currentProject.name); setShowRenameModal(true); setShowProjectDropdown(false) }} className="flex-1 px-3 py-2 text-xs text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">Rename</button>
+          <button onClick={duplicateProject} className="flex-1 px-3 py-2 text-xs text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">Duplicate</button>
+          {projects.length > 1 && <button onClick={() => { setShowDeleteModal(true); setShowProjectDropdown(false) }} className="flex-1 px-3 py-2 text-xs text-red-400 hover:text-red-300 hover:bg-zinc-800 rounded-lg transition-colors">Delete</button>}
         </div>
       )}
     </div>
@@ -302,28 +359,10 @@ export default function Home() {
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 max-w-sm mx-4 shadow-2xl">
         <h2 className="text-lg font-semibold text-white mb-4">Rename Project</h2>
-        <input
-          type="text"
-          value={renameValue}
-          onChange={(e) => setRenameValue(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && renameProject()}
-          className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500"
-          placeholder="Project name"
-          autoFocus
-        />
+        <input type="text" value={renameValue} onChange={(e) => setRenameValue(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && renameProject()} className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500" placeholder="Project name" autoFocus />
         <div className="flex gap-3 justify-end mt-4">
-          <button
-            onClick={() => setShowRenameModal(false)}
-            className="px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={renameProject}
-            className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-colors"
-          >
-            Save
-          </button>
+          <button onClick={() => setShowRenameModal(false)} className="px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors">Cancel</button>
+          <button onClick={renameProject} className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-colors">Save</button>
         </div>
       </div>
     </div>
@@ -333,22 +372,218 @@ export default function Home() {
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 max-w-sm mx-4 shadow-2xl">
         <h2 className="text-lg font-semibold text-white mb-2">Delete Project?</h2>
-        <p className="text-zinc-400 text-sm mb-6">
-          This will permanently delete "{currentProject?.name}". This action cannot be undone.
-        </p>
+        <p className="text-zinc-400 text-sm mb-4">This will permanently delete "{currentProject?.name}". This action cannot be undone.</p>
+        {currentProject?.deployedSlug && (
+          <div className="flex items-center gap-2 px-3 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span className="text-amber-400 text-xs">This site is live at {currentProject.deployedSlug}.hatchitsites.dev</span>
+          </div>
+        )}
         <div className="flex gap-3 justify-end">
-          <button
-            onClick={() => setShowDeleteModal(false)}
-            className="px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors"
-          >
-            Cancel
+          <button onClick={() => setShowDeleteModal(false)} className="px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors">Cancel</button>
+          <button onClick={deleteProject} className="px-4 py-2 text-sm bg-red-600 hover:bg-red-500 text-white rounded-xl transition-colors">Delete</button>
+        </div>
+      </div>
+    </div>
+  )
+
+  const HistoryModal = () => (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-4xl w-full mx-4 shadow-2xl max-h-[80vh] flex flex-col">
+        <div className="px-6 py-4 border-b border-zinc-800 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-white">Version History</h2>
+          <button onClick={() => { setShowHistoryModal(false); setPreviewVersionIndex(null) }} className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
-          <button
-            onClick={deleteProject}
-            className="px-4 py-2 text-sm bg-red-600 hover:bg-red-500 text-white rounded-xl transition-colors"
-          >
-            Delete
+        </div>
+        <div className="flex-1 flex overflow-hidden">
+          <div className="w-72 border-r border-zinc-800 overflow-y-auto">
+            {versions.length === 0 ? (
+              <div className="p-4 text-zinc-500 text-sm text-center">No versions yet</div>
+            ) : (
+              [...versions].reverse().map((version, reversedIndex) => {
+                const index = versions.length - 1 - reversedIndex
+                const isCurrent = index === currentVersionIndex
+                const isPreviewing = index === previewVersionIndex
+                return (
+                  <button key={version.id} onClick={() => setPreviewVersionIndex(index)} className={`w-full px-4 py-3 text-left border-b border-zinc-800/50 transition-colors ${isPreviewing ? 'bg-blue-600/20' : isCurrent ? 'bg-zinc-800' : 'hover:bg-zinc-800/50'}`}>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm font-medium text-white">v{index + 1}</span>
+                      {isCurrent && <span className="text-[10px] px-1.5 py-0.5 bg-blue-500/20 text-blue-400 rounded">CURRENT</span>}
+                    </div>
+                    <div className="text-xs text-zinc-500 mb-1">{formatRelativeTime(version.timestamp)}</div>
+                    {version.prompt && <div className="text-xs text-zinc-400 truncate">"{version.prompt}"</div>}
+                  </button>
+                )
+              })
+            )}
+          </div>
+          <div className="flex-1 flex flex-col min-w-0">
+            {previewVersionIndex !== null ? (
+              <>
+                <div className="flex-1 overflow-auto bg-zinc-950"><LivePreview code={versions[previewVersionIndex]?.code || ''} isLoading={false} /></div>
+                <div className="px-4 py-3 border-t border-zinc-800 flex items-center justify-between">
+                  <span className="text-sm text-zinc-400">Previewing v{previewVersionIndex + 1}</span>
+                  {previewVersionIndex !== currentVersionIndex && <button onClick={() => restoreVersion(previewVersionIndex)} className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-colors">Restore This Version</button>}
+                </div>
+              </>
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-zinc-500">Select a version to preview</div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  const DeployConfirmModal = () => (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 max-w-md mx-4 shadow-2xl">
+        <h2 className="text-lg font-semibold text-white mb-2">{isDeployed ? 'Update Site' : 'Deploy Site'}</h2>
+        <p className="text-zinc-400 text-sm mb-4">{isDeployed ? 'Update your live site with the latest changes' : 'Choose a name for your site URL'}</p>
+        {isDeployed ? (
+          <div className="text-sm text-zinc-500 mb-6">Updating: <span className="text-blue-400">{currentProject?.deployedSlug}.hatchitsites.dev</span></div>
+        ) : (
+          <>
+            <input type="text" value={deployName} onChange={(e) => setDeployName(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))} className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 mb-2" placeholder="my-awesome-site" autoFocus />
+            <div className="text-sm text-zinc-500 mb-6">Your site will be live at: <span className="text-blue-400">{deployName || 'your-site'}.hatchitsites.dev</span></div>
+          </>
+        )}
+        <div className="flex gap-3">
+          <button onClick={() => setShowDeployModal(false)} className="flex-1 px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors">Cancel</button>
+          <button onClick={() => { setShowDeployModal(false); handleDeploy(isDeployed ? currentProject?.deployedSlug : deployName) }} disabled={!isDeployed && !deployName} className="flex-1 px-4 py-2 text-sm bg-green-600 hover:bg-green-500 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white rounded-xl transition-colors">{isDeployed ? 'Update 🔄' : 'Deploy 🚀'}</button>
+        </div>
+      </div>
+    </div>
+  )
+
+  const DeployedModal = () => (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 max-w-md mx-4 shadow-2xl">
+        <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mb-4 mx-auto">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h2 className="text-lg font-semibold text-white mb-2 text-center">{isDeployed ? 'Site Updated! 🔄' : 'Site Deployed! 🚀'}</h2>
+        <p className="text-zinc-400 text-sm mb-4 text-center">Your site is now live at:</p>
+        <a href={deployedUrl!} target="_blank" rel="noopener noreferrer" className="block w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-blue-400 hover:text-blue-300 text-center text-sm break-all transition-colors">{deployedUrl}</a>
+        <div className="flex gap-2 mt-4">
+          <button onClick={() => setDeployedUrl(null)} className="px-3 py-2 text-sm text-zinc-400 hover:text-white transition-colors">Close</button>
+          <a href={deployedUrl!} target="_blank" rel="noopener noreferrer" className="flex-1 px-3 py-2 text-sm bg-zinc-700 hover:bg-zinc-600 text-white rounded-xl transition-colors text-center flex items-center justify-center gap-1.5 whitespace-nowrap">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            View Site
+          </a>
+          <button onClick={() => { navigator.clipboard.writeText(deployedUrl!); setCopied(true); setTimeout(() => setCopied(false), 2000) }} className="flex-1 px-3 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-colors whitespace-nowrap">{copied ? '✓ Copied!' : 'Copy URL'}</button>
+        </div>
+      </div>
+    </div>
+  )
+
+  const domainInputRef = useRef<HTMLInputElement>(null)
+  
+  // Keep focus on domain input when modal is open
+  useEffect(() => {
+    if (showDomainModal && domainStatus === 'idle' || domainStatus === 'error') {
+      domainInputRef.current?.focus()
+    }
+  }, [showDomainModal, customDomain, domainStatus])
+  
+  const DomainModal = () => (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 max-w-lg mx-4 shadow-2xl">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-white">Domain Settings</h2>
+          <button onClick={() => setShowDomainModal(false)} className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
+        </div>
+
+        {/* Base Domain - Always shown */}
+        <div className="mb-4">
+          <div className="text-xs text-zinc-500 mb-1">Base Domain</div>
+          <div className="flex items-center gap-2 px-3 py-2 bg-zinc-800 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
+            <a href={`https://${currentProject?.deployedSlug}.hatchitsites.dev`} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-400 hover:text-blue-300 transition-colors">
+              {currentProject?.deployedSlug}.hatchitsites.dev
+            </a>
+            <button onClick={() => { navigator.clipboard.writeText(`https://${currentProject?.deployedSlug}.hatchitsites.dev`); setCopied(true); setTimeout(() => setCopied(false), 2000) }} className="ml-auto text-zinc-400 hover:text-white">
+              {copied ? <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>}
+            </button>
+          </div>
+        </div>
+
+        {/* Custom Domain Section */}
+        <div className="border-t border-zinc-800 pt-4">
+          <div className="text-xs text-zinc-500 mb-2">Custom Domain</div>
+          
+          {currentProject?.customDomain && domainStatus !== 'idle' && domainStatus !== 'adding' && domainStatus !== 'error' ? (
+            /* Has connected domain */
+            <div className="flex items-center gap-2 px-3 py-2 bg-zinc-800 rounded-lg mb-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
+              <a href={`https://${currentProject.customDomain}`} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-400 hover:text-blue-300 transition-colors">
+                {currentProject.customDomain}
+              </a>
+              <button onClick={() => { setDomainStatus('idle'); setCustomDomain('') }} className="ml-auto text-xs text-zinc-500 hover:text-white">Change</button>
+            </div>
+          ) : null}
+        
+          {domainStatus === 'idle' || domainStatus === 'adding' || domainStatus === 'error' ? (
+            <>
+              <input 
+                ref={domainInputRef}
+                type="text" 
+                value={customDomain} 
+                onChange={(e) => setCustomDomain(e.target.value.toLowerCase())} 
+                onKeyDown={(e) => e.key === 'Enter' && customDomain && connectDomain()}
+                className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 mb-2" 
+                placeholder="example.com or www.example.com"
+                autoFocus
+              />
+              {domainError && <p className="text-red-400 text-sm mb-2">{domainError}</p>}
+              <button 
+                onClick={connectDomain} 
+                disabled={!customDomain || domainStatus === 'adding'} 
+                className="w-full px-4 py-3 text-sm bg-blue-600 hover:bg-blue-500 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white rounded-xl transition-colors flex items-center justify-center gap-2"
+              >
+                {domainStatus === 'adding' ? (
+                  <><svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Adding Domain...</>
+                ) : currentProject?.customDomain ? 'Update Domain' : 'Connect Domain'}
+              </button>
+            </>
+          ) : domainStatus === 'pending' || domainStatus === 'success' ? (
+            <>
+              <div className="flex items-center gap-2 px-3 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span className="text-amber-400 text-sm">DNS Configuration Required</span>
+              </div>
+              
+              <div className="bg-zinc-800 rounded-xl p-4 mb-4 space-y-3">
+                <div>
+                  <div className="text-xs text-zinc-500 mb-1">Type</div>
+                  <div className="text-white font-mono text-sm">CNAME</div>
+                </div>
+                <div>
+                  <div className="text-xs text-zinc-500 mb-1">Name / Host</div>
+                  <div className="text-white font-mono text-sm">{customDomain.startsWith('www.') ? 'www' : '@'}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-zinc-500 mb-1">Value / Target</div>
+                  <div className="text-white font-mono text-sm flex items-center gap-2">
+                    cname.vercel-dns.com
+                    <button onClick={() => { navigator.clipboard.writeText('cname.vercel-dns.com'); setCopied(true); setTimeout(() => setCopied(false), 2000) }} className="text-zinc-400 hover:text-white">
+                      {copied ? <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>}
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <p className="text-zinc-500 text-xs mb-4">DNS changes can take 5-30 minutes to propagate.</p>
+              
+              <div className="flex gap-2">
+                <button onClick={() => setShowDomainModal(false)} className="flex-1 px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors">Done</button>
+                <a href={`https://${customDomain}`} target="_blank" rel="noopener noreferrer" className="flex-1 px-4 py-2 text-sm bg-zinc-700 hover:bg-zinc-600 text-white rounded-xl transition-colors text-center">Check Domain</a>
+              </div>
+            </>
+          ) : null}
         </div>
       </div>
     </div>
@@ -359,73 +594,61 @@ export default function Home() {
       <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-900">
         <div className="flex items-center gap-4">
           <button onClick={onClose} className="p-2 -ml-2 text-zinc-400 hover:text-white transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 12H5M12 19l-7-7 7-7"/>
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
           </button>
           <div className="flex gap-1">
-            <button
-              onClick={() => setMobileModal('preview')}
-              className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all ${
-                type === 'preview' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-zinc-300'
-              }`}
-            >
-              Preview
-            </button>
-            <button
-              onClick={() => setMobileModal('code')}
-              className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all ${
-                type === 'code' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-zinc-300'
-              }`}
-            >
-              Code
-            </button>
+            <button onClick={() => setMobileModal('preview')} className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all ${type === 'preview' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>Preview</button>
+            <button onClick={() => setMobileModal('code')} className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all ${type === 'code' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>Code</button>
           </div>
         </div>
-        {type === 'preview' && (
-          <div className="flex items-center gap-2 text-xs text-zinc-600">
-            <span className="px-2 py-1 bg-zinc-800/50 rounded-md">
-              {typeof window !== 'undefined' && window.innerWidth < 640 ? 'Mobile' : 'Tablet'}
-            </span>
-          </div>
-        )}
+        {type === 'preview' && <div className="flex items-center gap-2 text-xs text-zinc-600"><span className="px-2 py-1 bg-zinc-800/50 rounded-md">{typeof window !== 'undefined' && window.innerWidth < 640 ? 'Mobile' : 'Tablet'}</span></div>}
       </div>
-      <div className="flex-1 overflow-auto">
-        {type === 'preview' ? (
-          <LivePreview code={code} isLoading={isGenerating} />
-        ) : (
-          <CodePreview code={code} />
-        )}
-      </div>
+      <div className="flex-1 overflow-auto">{type === 'preview' ? <LivePreview code={code} isLoading={isGenerating} /> : <CodePreview code={code} />}</div>
     </div>
   )
 
   const ProjectSelector = ({ mobile = false }: { mobile?: boolean }) => (
     <div className="relative">
-      <button
-        onClick={() => setShowProjectDropdown(!showProjectDropdown)}
-        className={`flex items-center gap-2 hover:bg-zinc-800 rounded-lg transition-colors ${
-          mobile ? 'px-2 py-1.5' : 'px-3 py-1.5'
-        }`}
-      >
-        <span className={`font-medium text-white truncate ${mobile ? 'max-w-[120px] text-sm' : 'max-w-[180px]'}`}>
-          {currentProject?.name || 'Select Project'}
-        </span>
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          width="14" 
-          height="14" 
-          viewBox="0 0 24 24" 
-          fill="none" 
-          stroke="currentColor" 
-          strokeWidth="2"
-          className={`text-zinc-500 transition-transform ${showProjectDropdown ? 'rotate-180' : ''}`}
-        >
-          <polyline points="6 9 12 15 18 9"/>
-        </svg>
+      <button onClick={() => setShowProjectDropdown(!showProjectDropdown)} className={`flex items-center gap-2 hover:bg-zinc-800 rounded-lg transition-colors ${mobile ? 'px-2 py-1.5' : 'px-3 py-1.5'}`}>
+        <span className={`font-medium text-white truncate ${mobile ? 'max-w-[120px] text-sm' : 'max-w-[180px]'}`}>{currentProject?.name || 'Select Project'}</span>
+        {isDeployed && <span className="text-[10px] px-1.5 py-0.5 bg-green-500/20 text-green-400 rounded">LIVE</span>}
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`text-zinc-500 transition-transform ${showProjectDropdown ? 'rotate-180' : ''}`}><polyline points="6 9 12 15 18 9"/></svg>
       </button>
       {showProjectDropdown && <ProjectDropdown />}
     </div>
+  )
+
+  const HistoryButton = () => (
+    <button onClick={() => setShowHistoryModal(true)} disabled={versions.length === 0} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed" title={`Version history (${versions.length} versions)`}>
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    </button>
+  )
+
+  const DeployButton = ({ mobile = false }: { mobile?: boolean }) => (
+    <button onClick={() => { if (isDeployed) { handleDeploy(currentProject?.deployedSlug) } else { setDeployName(currentProject?.name?.toLowerCase().replace(/[^a-z0-9-]/g, '-') || ''); setShowDeployModal(true) } }} disabled={!code || isDeploying} className={`${mobile ? 'flex-1 py-3 rounded-xl font-semibold' : 'px-3 py-1.5 rounded-lg text-xs font-medium'} ${isDeployed ? 'bg-blue-600 hover:bg-blue-500' : 'bg-green-600 hover:bg-green-500'} disabled:bg-zinc-700 disabled:cursor-not-allowed text-white transition-all flex items-center justify-center gap-1.5`}>
+      {isDeploying ? (
+        <div className="flex items-center gap-1.5">
+          <svg className="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          <span>Building...</span>
+        </div>
+      ) : isDeployed ? (
+        <><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>Update</>
+      ) : (
+        <><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 2L11 13"/><path d="M22 2L15 22l-4-9-9-4 20-7z"/></svg>Deploy</>
+      )}
+    </button>
+  )
+
+  const DomainButton = ({ mobile = false }: { mobile?: boolean }) => (
+    <button 
+      onClick={() => { setShowDomainModal(true); setDomainStatus('idle'); setCustomDomain(currentProject?.customDomain || '') }}
+      disabled={!isDeployed}
+      className={`${mobile ? 'py-3 px-4 rounded-xl font-semibold' : 'px-2.5 py-1.5 rounded-lg text-xs font-medium'} border border-zinc-700 hover:border-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed text-zinc-300 hover:text-white transition-all flex items-center justify-center gap-1.5`}
+      title={isDeployed ? 'Manage domain' : 'Deploy first to connect a domain'}
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      {!mobile && (currentProject?.customDomain || 'Domain')}
+    </button>
   )
 
   if (isMobile) {
@@ -433,8 +656,11 @@ export default function Home() {
       <div className="h-screen bg-zinc-950 flex flex-col">
         {showRenameModal && <RenameModal />}
         {showDeleteModal && <DeleteModal />}
+        {showDeployModal && <DeployConfirmModal />}
+        {showHistoryModal && <HistoryModal />}
+        {showDomainModal && <DomainModal />}
+        {deployedUrl && <DeployedModal />}
         {mobileModal && <MobileModal type={mobileModal} onClose={() => setMobileModal(null)} />}
-
         <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between bg-zinc-900">
           <div className="flex items-center gap-2">
             <Link href="/" className="text-xl font-black hover:opacity-80 transition-opacity">
@@ -445,55 +671,21 @@ export default function Home() {
             <ProjectSelector mobile />
           </div>
           <div className="flex items-center gap-1">
-            {codeHistory.length > 0 && (
-              <button
-                onClick={handleUndo}
-                className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all"
-                title={`Undo (${codeHistory.length} in history)`}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 7v6h6"/>
-                  <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
-                </svg>
-              </button>
-            )}
+            <HistoryButton />
+            {canRedo && <button onClick={handleRedo} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" title="Redo"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"/></svg></button>}
+            {canUndo && <button onClick={handleUndo} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" title="Undo"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg></button>}
           </div>
         </div>
-
         <div className="flex-1 overflow-hidden">
-          <Chat 
-            onGenerate={handleGenerate} 
-            isGenerating={isGenerating} 
-            currentCode={code}
-            key={currentProjectId}
-          />
+          <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} key={currentProjectId} />
         </div>
-
         {code && (
-          <div 
-            className="px-4 py-3 border-t border-zinc-800 bg-zinc-900 flex gap-2"
-            style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
-          >
-            <button
-              onClick={() => setMobileModal('preview')}
-              className="flex-1 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                <circle cx="12" cy="12" r="3"/>
-              </svg>
+          <div className="px-4 py-3 border-t border-zinc-800 bg-zinc-900 flex gap-2" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
+            <button onClick={() => setMobileModal('preview')} className="flex-1 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
               Preview
             </button>
-            <button
-              onClick={() => setMobileModal('code')}
-              className="flex-1 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="16 18 22 12 16 6"/>
-                <polyline points="8 6 2 12 8 18"/>
-              </svg>
-              Code
-            </button>
+            <DeployButton mobile />
           </div>
         )}
       </div>
@@ -504,7 +696,10 @@ export default function Home() {
     <div className="h-screen bg-zinc-950 p-3">
       {showRenameModal && <RenameModal />}
       {showDeleteModal && <DeleteModal />}
-
+      {showDeployModal && <DeployConfirmModal />}
+      {showHistoryModal && <HistoryModal />}
+      {showDomainModal && <DomainModal />}
+      {deployedUrl && <DeployedModal />}
       <Group orientation="horizontal" className="h-full rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl">
         <Panel id="chat" defaultSize={28} minSize={20}>
           <div className="h-full flex flex-col bg-zinc-900">
@@ -518,73 +713,46 @@ export default function Home() {
                 <ProjectSelector />
               </div>
               <div className="flex items-center gap-1">
-                {codeHistory.length > 0 && (
-                  <button
-                    onClick={handleUndo}
-                    className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all"
-                    title={`Undo (${codeHistory.length} in history)`}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M3 7v6h6"/>
-                      <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
-                    </svg>
-                  </button>
-                )}
+                <HistoryButton />
+                {canRedo && <button onClick={handleRedo} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" title="Redo"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"/></svg></button>}
+                {canUndo && <button onClick={handleUndo} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" title="Undo"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg></button>}
               </div>
             </div>
-            <Chat 
-              onGenerate={handleGenerate} 
-              isGenerating={isGenerating} 
-              currentCode={code}
-              key={currentProjectId}
-            />
+            <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} key={currentProjectId} />
           </div>
         </Panel>
-
-        <Separator className="w-px bg-zinc-800 hover:bg-purple-500/50 transition-colors cursor-col-resize" />
-
+        <Separator className="w-2 bg-zinc-800 hover:bg-zinc-700 transition-colors cursor-col-resize flex items-center justify-center group">
+          <div className="w-1 h-8 bg-zinc-600 group-hover:bg-purple-500 rounded-full transition-colors" />
+        </Separator>
         <Panel id="right" defaultSize={72} minSize={40}>
           <div className="h-full flex flex-col bg-zinc-900">
             <div className="flex items-center justify-between border-b border-zinc-800 px-4">
               <div className="flex">
-                <button
-                  onClick={() => setActiveTab('preview')}
-                  className={`px-4 py-3 text-sm font-medium transition-all relative ${
-                    activeTab === 'preview' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'
-                  }`}
-                >
+                <button onClick={() => setActiveTab('preview')} className={`px-4 py-3 text-sm font-medium transition-all relative ${activeTab === 'preview' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>
                   Preview
-                  {activeTab === 'preview' && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500"></div>
-                  )}
+                  {activeTab === 'preview' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500"></div>}
                 </button>
-                <button
-                  onClick={() => setActiveTab('code')}
-                  className={`px-4 py-3 text-sm font-medium transition-all relative ${
-                    activeTab === 'code' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'
-                  }`}
-                >
+                <button onClick={() => setActiveTab('code')} className={`px-4 py-3 text-sm font-medium transition-all relative ${activeTab === 'code' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>
                   Code
-                  {activeTab === 'code' && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500"></div>
-                  )}
+                  {activeTab === 'code' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500"></div>}
                 </button>
               </div>
-              {activeTab === 'preview' && previewWidth > 0 && (
-                <div className="flex items-center gap-2 text-xs text-zinc-600">
-                  <span className="px-2 py-1 bg-zinc-800/50 rounded-md">{breakpoint}</span>
-                  <span className="text-zinc-700">•</span>
-                  <span className="font-mono">{Math.round(previewWidth)}px</span>
-                </div>
-              )}
+              <div className="flex items-center gap-3">
+                {activeTab === 'preview' && previewWidth > 0 && (
+                  <div className="flex items-center gap-2 text-xs text-zinc-500">
+                    <span className="flex items-center gap-1.5 px-2 py-1 bg-zinc-800/50 rounded-md">
+                      <span>{device.icon}</span>
+                      <span>{device.name}</span>
+                    </span>
+                    <span className="font-mono text-zinc-600">{Math.round(previewWidth)}px</span>
+                  </div>
+                )}
+                <DomainButton />
+                <DeployButton />
+              </div>
             </div>
-
             <div ref={previewContainerRef} className="flex-1 overflow-auto min-h-0">
-              {activeTab === 'preview' ? (
-                <LivePreview code={code} isLoading={isGenerating} />
-              ) : (
-                <CodePreview code={code} />
-              )}
+              {activeTab === 'preview' ? <LivePreview code={code} isLoading={isGenerating} /> : <CodePreview code={code} />}
             </div>
           </div>
         </Panel>
