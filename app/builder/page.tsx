@@ -109,7 +109,7 @@ export default function Home() {
   const [isMobile, setIsMobile] = useState(false)
   const [mobileModal, setMobileModal] = useState<'preview' | 'code' | null>(null)
   const [copied, setCopied] = useState(false)
-  const { user } = useUser()
+  const { user, isLoaded } = useUser()
   const searchParams = useSearchParams()
   const [isPaid, setIsPaid] = useState(false)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
@@ -155,13 +155,16 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-  // Check Clerk metadata first, fallback to localStorage
-  if (user?.publicMetadata?.paid) {
-    setIsPaid(true)
-  } else {
-    setIsPaid(isPaidUser())
-  }
-}, [user])
+    // Wait for Clerk to finish loading before checking paid status
+    if (!isLoaded) return
+    
+    // Check Clerk metadata for paid status
+    if (user?.publicMetadata?.paid === true) {
+      setIsPaid(true)
+    } else {
+      setIsPaid(false)
+    }
+  }, [isLoaded, user?.publicMetadata?.paid])
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)

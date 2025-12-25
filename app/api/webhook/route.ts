@@ -43,7 +43,11 @@ export async function POST(req: Request) {
             subscriptionId: session.subscription,
           },
         })
-        console.log(`User ${userId} marked as paid`)
+        console.log(`User ${userId} marked as paid in Clerk`, {
+          paid: true,
+          stripeCustomerId: session.customer,
+          subscriptionId: session.subscription,
+        })
       } catch (err) {
         console.error('Failed to update user:', err)
       }
