@@ -53,9 +53,6 @@ export async function POST(req: Request) {
   if (event.type === 'customer.subscription.deleted') {
     const subscription = event.data.object as Stripe.Subscription
     const customerId = subscription.customer as string
-
-    // Find user by stripeCustomerId and remove paid status
-    // For now, log it - you'd need to search Clerk users
     console.log(`Subscription canceled for customer: ${customerId}`)
   }
 
