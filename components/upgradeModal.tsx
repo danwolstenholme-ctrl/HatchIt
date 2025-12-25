@@ -40,10 +40,23 @@ export default function UpgradeModal({ isOpen, onClose, reason }: UpgradeModalPr
 
   const handleUpgrade = async () => {
     setIsLoading(true)
-    // TODO: Integrate Stripe checkout
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    alert('Stripe integration coming soon!')
-    setIsLoading(false)
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+      })
+      const data = await response.json()
+      
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        alert('Failed to start checkout. Please try again.')
+      }
+    } catch (error) {
+      console.error('Checkout error:', error)
+      alert('Failed to start checkout. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -74,7 +87,7 @@ export default function UpgradeModal({ isOpen, onClose, reason }: UpgradeModalPr
 
         <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-6 mb-6">
           <div className="flex items-baseline justify-center gap-1 mb-2">
-            <span className="text-4xl font-bold text-white">$49</span>
+            <span className="text-4xl font-bold text-white">€49</span>
             <span className="text-zinc-400">/month</span>
           </div>
           <p className="text-zinc-500 text-sm text-center">per live site</p>
