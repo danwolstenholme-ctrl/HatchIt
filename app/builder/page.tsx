@@ -677,20 +677,26 @@ export default function Home() {
             
             const content = await fileResponse.text()
             const fileName = file.path.split('/').pop() || file.path
-            const pageName = fileName.replace(/\.(html|htm)$/i, '')
+            const isIndexFile = fileName.toLowerCase() === 'index.html' || fileName.toLowerCase() === 'index.htm'
             
-            // Determine URL path from file name
-            let urlPath = '/'
-            if (fileName.toLowerCase() === 'index.html' || fileName.toLowerCase() === 'index.htm') {
+            // Determine page name and URL path
+            let pageName: string
+            let urlPath: string
+            
+            if (isIndexFile) {
+              pageName = 'Home'
               urlPath = '/'
             } else {
-              urlPath = '/' + pageName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+              pageName = fileName.replace(/\.(html|htm)$/i, '')
+              // Capitalize first letter
+              pageName = pageName.charAt(0).toUpperCase() + pageName.slice(1).replace(/-/g, ' ')
+              urlPath = '/' + fileName.replace(/\.(html|htm)$/i, '').toLowerCase().replace(/[^a-z0-9]+/g, '-')
             }
             
             // Create page
             const newPage: Page = {
               id: generateId(),
-              name: pageName.charAt(0).toUpperCase() + pageName.slice(1),
+              name: pageName,
               path: urlPath,
               versions: [{
                 id: generateId(),
@@ -703,21 +709,35 @@ export default function Home() {
             newPages.push(newPage)
           }
           
+          // Only proceed if we successfully imported at least one page
+          if (newPages.length === 0) {
+            throw new Error('Failed to import any files from repository')
+          }
+          
           // Convert current project to multi-page if it isn't already
           const migratedProject = migrateToMultiPage(currentProject)
           
-          // Remove the default Home page if it's empty
+          // Remove the default empty Home page if we're importing a new Home page
           let existingPages = migratedProject.pages || []
-          const homePage = existingPages.find(p => p.path === '/')
-          if (homePage && homePage.versions[0]?.code === '') {
+          const importingHomePage = newPages.some(p => p.path === '/')
+          const currentHomePage = existingPages.find(p => p.path === '/')
+          
+          if (importingHomePage && currentHomePage && currentHomePage.versions[0]?.code === '') {
+            // Remove empty existing Home page since we're importing a new one
             existingPages = existingPages.filter(p => p.path !== '/')
+          } else if (importingHomePage && currentHomePage) {
+            // Rename existing Home page to avoid collision
+            currentHomePage.name = 'Home (Original)'
+            currentHomePage.path = '/home-original'
           }
           
-          // Add new pages
-          const updatedPages = [...existingPages, ...newPages]
+          // Add new pages (avoiding duplicates by path)
+          const existingPaths = new Set(existingPages.map(p => p.path))
+          const uniqueNewPages = newPages.filter(p => !existingPaths.has(p.path))
+          const updatedPages = [...existingPages, ...uniqueNewPages]
           
           // Set first imported page as current
-          const firstImportedPage = newPages[0]
+          const firstImportedPage = uniqueNewPages[0] || newPages[0]
           
           updateCurrentProject({ 
             pages: updatedPages,
