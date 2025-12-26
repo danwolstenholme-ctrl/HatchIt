@@ -871,14 +871,19 @@ export default function Home() {
   }
 
   const handleDeploy = async (customName?: string) => {
-    if (!code || isDeploying) return
+    if ((!code && !previewPages) || isDeploying) return
     const slugName = customName || currentProject?.deployedSlug || currentProject?.name
     setIsDeploying(true)
     try {
+      // Prepare payload based on project type
+      const payload = previewPages 
+        ? { pages: previewPages, projectName: slugName }
+        : { code, projectName: slugName }
+      
       const response = await fetch('/api/deploy', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, projectName: slugName }),
+        body: JSON.stringify(payload),
       })
       const data = await response.json()
       if (data.url) {
