@@ -242,10 +242,11 @@ export default function Home() {
   }
 
   const deleteProject = () => {
-    if (!currentProjectId || projects.length <= 1) return
+    if (!currentProjectId) return
     const newProjects = projects.filter(p => p.id !== currentProjectId)
-    setProjects(newProjects)
-    setCurrentProjectId(newProjects[0]?.id || null)
+    const remaining = newProjects.length > 0 ? newProjects : [createNewProject()]
+    setProjects(remaining)
+    setCurrentProjectId(remaining[0]?.id || null)
     setShowDeleteModal(false)
     setDeployedUrl(null)
   }
@@ -449,7 +450,7 @@ export default function Home() {
         <div className="border-t border-zinc-800 p-2 flex gap-1">
           <button onClick={() => { setRenameValue(currentProject.name); setShowRenameModal(true); setShowProjectDropdown(false) }} className="flex-1 px-3 py-2 text-xs text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">Rename</button>
           <button onClick={duplicateProject} disabled={!isPaid && projects.length >= 1} className={`flex-1 px-3 py-2 text-xs rounded-lg transition-colors ${!isPaid && projects.length >= 1 ? 'text-zinc-600 cursor-not-allowed opacity-50' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`} title={!isPaid && projects.length >= 1 ? 'Upgrade to duplicate projects' : ''}>Duplicate</button>
-          {projects.length > 1 && <button onClick={() => { setShowDeleteModal(true); setShowProjectDropdown(false) }} className="flex-1 px-3 py-2 text-xs text-red-400 hover:text-red-300 hover:bg-zinc-800 rounded-lg transition-colors">Delete</button>}
+          <button onClick={() => { setShowDeleteModal(true); setShowProjectDropdown(false) }} className="flex-1 px-3 py-2 text-xs text-red-400 hover:text-red-300 hover:bg-zinc-800 rounded-lg transition-colors">Delete</button>
         </div>
       )}
     </div>

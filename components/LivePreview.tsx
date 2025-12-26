@@ -319,36 +319,6 @@ export default function RootLayout({
     <div className="h-full bg-zinc-900 overflow-auto">
       {code ? (
         <div className="relative h-full">
-          {/* Toolbar */}
-          <div className="absolute top-2 right-2 z-20 flex items-center gap-1">
-            <button
-              onClick={refreshPreview}
-              className="p-1.5 bg-zinc-800/80 hover:bg-zinc-700 border border-zinc-700 rounded-lg text-zinc-400 hover:text-white transition-colors backdrop-blur-sm"
-              title="Refresh preview"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
-              </svg>
-            </button>
-            <button
-              onClick={downloadZip}
-              disabled={isDownloading}
-              className="p-1.5 bg-zinc-800/80 hover:bg-zinc-700 border border-zinc-700 rounded-lg text-zinc-400 hover:text-white transition-colors backdrop-blur-sm disabled:opacity-50"
-              title="Download as ZIP"
-            >
-              {isDownloading ? (
-                <svg className="animate-spin" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
-              )}
-            </button>
-          </div>
-          
           {showSpinner && (
             <div className="absolute inset-0 bg-zinc-900 flex items-center justify-center z-10">
               <div className="flex flex-col items-center gap-3">
