@@ -579,6 +579,7 @@ export default function Home() {
             <div className="flex-1 text-left min-w-0">
               <div className="text-sm font-medium text-white truncate flex items-center gap-2">
                 {project.name}
+                {subscriptions.some(s => s.projectSlug === project.deployedSlug && s.status === 'active') && <span className="text-[10px]">🐣</span>}
                 {project.deployedSlug && <span className="text-[10px] px-1.5 py-0.5 bg-green-500/20 text-green-400 rounded">LIVE</span>}
               </div>
               <div className="text-xs text-zinc-500">{project.versions?.length || 0} versions</div>
@@ -917,12 +918,13 @@ export default function Home() {
   )
 
   const MobileModal = ({ type, onClose }: { type: 'preview' | 'code', onClose: () => void }) => (
-    <div className="fixed inset-0 z-50 bg-zinc-950 flex flex-col">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-900">
-        <button onClick={onClose} className="p-2 -ml-2 text-zinc-400 hover:text-white transition-colors">
+    <div className="fixed inset-0 z-50 bg-zinc-950 flex flex-col overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-900 flex-shrink-0">
+        <button onClick={onClose} className="p-2 -ml-2 text-zinc-400 hover:text-white transition-colors flex-shrink-0">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         </button>
-        {type === 'preview' && <div className="flex items-center gap-2 text-xs text-zinc-600"><span className="px-2 py-1 bg-zinc-800/50 rounded-md">{typeof window !== 'undefined' && window.innerWidth < 640 ? 'Mobile' : 'Tablet'}</span></div>}
+        <span className="text-sm font-medium text-white truncate mx-3">{currentProject?.name}</span>
+        {type === 'preview' && <div className="flex items-center gap-2 text-xs text-zinc-600 flex-shrink-0"><span className="px-2 py-1 bg-zinc-800/50 rounded-md">{typeof window !== 'undefined' && window.innerWidth < 640 ? 'Mobile' : 'Tablet'}</span></div>}
       </div>
       <div className="flex-1 overflow-auto">{type === 'preview' ? <LivePreview code={code} isLoading={isGenerating} isPaid={isCurrentProjectPaid} setShowUpgradeModal={setShowUpgradeModal} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} />}</div>
     </div>
@@ -1295,7 +1297,7 @@ export default function Home() {
 
   if (isMobile) {
     return (
-      <div className="h-dvh bg-zinc-950 flex flex-col">
+      <div className="h-dvh bg-zinc-950 flex flex-col overflow-x-hidden">
         {showRenameModal && <RenameModal />}
         {showDeleteModal && <DeleteModal />}
         {showDeployModal && <DeployConfirmModal />}
@@ -1375,7 +1377,7 @@ export default function Home() {
           </div>
         </div>
         <div className="flex-1 overflow-hidden">
-          <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} isPaid={hasAnyPaidSubscription} onOpenAssets={() => setShowAssetsModal(true)} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} key={currentProjectId} />
+          <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} isPaid={isCurrentProjectPaid} onOpenAssets={() => setShowAssetsModal(true)} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} key={currentProjectId} />
         </div>
         {code && (
           <div className="px-4 py-3 border-t border-zinc-800 bg-zinc-900 flex gap-2" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
@@ -1429,7 +1431,7 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} isPaid={hasAnyPaidSubscription} onOpenAssets={() => setShowAssetsModal(true)} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} key={currentProjectId} />
+            <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} isPaid={isCurrentProjectPaid} onOpenAssets={() => setShowAssetsModal(true)} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} key={currentProjectId} />
           </div>
         </Panel>
         <Separator className="w-2 bg-zinc-800 hover:bg-zinc-700 transition-colors cursor-col-resize flex items-center justify-center group">
