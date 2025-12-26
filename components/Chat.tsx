@@ -16,6 +16,8 @@ interface ChatProps {
   currentCode: string
   isPaid?: boolean
   onOpenAssets?: () => void
+  projectSlug?: string
+  projectName?: string
 }
 
 const thinkingMessages = [
@@ -48,7 +50,7 @@ function getRandomResponse() {
   return responses[Math.floor(Math.random() * responses.length)]
 }
 
-export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = false, onOpenAssets }: ChatProps) {
+export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = false, onOpenAssets, projectSlug = '', projectName = '' }: ChatProps) {
   const [input, setInput] = useState('')
   const [buildMessages, setBuildMessages] = useState<Message[]>([])
   const [chatMessages, setChatMessages] = useState<Message[]>([])
@@ -350,8 +352,8 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
         isOpen={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
         reason="generation_limit"
-        projectSlug=""
-        projectName=""
+        projectSlug={projectSlug}
+        projectName={projectName}
       />
     </div>
   )

@@ -1375,7 +1375,7 @@ export default function Home() {
           </div>
         </div>
         <div className="flex-1 overflow-hidden">
-          <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} isPaid={hasAnyPaidSubscription} onOpenAssets={() => setShowAssetsModal(true)} key={currentProjectId} />
+          <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} isPaid={hasAnyPaidSubscription} onOpenAssets={() => setShowAssetsModal(true)} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} key={currentProjectId} />
         </div>
         {code && (
           <div className="px-4 py-3 border-t border-zinc-800 bg-zinc-900 flex gap-2" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
@@ -1429,7 +1429,7 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} isPaid={hasAnyPaidSubscription} onOpenAssets={() => setShowAssetsModal(true)} key={currentProjectId} />
+            <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} isPaid={hasAnyPaidSubscription} onOpenAssets={() => setShowAssetsModal(true)} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} key={currentProjectId} />
           </div>
         </Panel>
         <Separator className="w-2 bg-zinc-800 hover:bg-zinc-700 transition-colors cursor-col-resize flex items-center justify-center group">
