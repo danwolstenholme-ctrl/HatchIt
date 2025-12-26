@@ -205,7 +205,7 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
             className={`flex-1 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
               mode === 'chat' 
                 ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white' 
-                : 'text-zinc-400 hover:text-white'
+                : 'text-zinc-400 border border-zinc-700 hover:text-white hover:border-zinc-600'
             }`}
           >
             💬 Chat
