@@ -132,6 +132,7 @@ const migrateProject = (project: Project): Project => {
 export default function Home() {
   const [projects, setProjects] = useState<Project[]>([])
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null)
+  const [isLoadingProjects, setIsLoadingProjects] = useState(true)
   const [showProjectDropdown, setShowProjectDropdown] = useState(false)
   const [showRenameModal, setShowRenameModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -234,6 +235,7 @@ export default function Home() {
       setProjects([defaultProject])
       setCurrentProjectId(defaultProject.id)
     }
+    setIsLoadingProjects(false)
   }, [])
 
   useEffect(() => {
@@ -1659,7 +1661,7 @@ export default function Home() {
   if (isMobile) {
     return (
       <div className="h-dvh bg-zinc-950 flex flex-col overflow-hidden relative">
-        {!isDeployed && (
+        {!isLoadingProjects && !isDeployed && (
           <div className="absolute top-0 left-0 right-0 bg-amber-500/20 border-b border-amber-400/30 text-amber-100 text-xs px-3 py-2 z-50">
             <div className="flex items-center gap-2">
               <span role="img" aria-label="warning">⚠️</span>
@@ -1667,7 +1669,7 @@ export default function Home() {
             </div>
           </div>
         )}
-        <div className={`flex-1 flex flex-col min-h-0 ${!isDeployed ? 'pt-10' : ''}`}>
+        <div className={`flex-1 flex flex-col min-h-0 ${!isLoadingProjects && !isDeployed ? 'pt-10' : ''}`}>
         {showRenameModal && <RenameModal />}
         {showDeleteModal && <DeleteModal />}
         {showDeployModal && <DeployConfirmModal />}
@@ -1831,7 +1833,7 @@ export default function Home() {
 
   return (
     <div className="h-dvh bg-zinc-950 p-3 overflow-hidden relative">
-      {!isDeployed && (
+      {!isLoadingProjects && !isDeployed && (
         <div className="absolute top-3 left-3 right-3 bg-amber-500/20 border-b border-amber-400/30 text-amber-100 text-xs px-4 py-2 rounded-t-2xl z-50">
           <div className="flex items-center gap-2">
             <span role="img" aria-label="warning">⚠️</span>
@@ -1851,7 +1853,7 @@ export default function Home() {
       {showUpgradeModal && <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} reason={upgradeReason} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} />}
       {showSuccessModal && <SuccessModal isOpen={showSuccessModal} onClose={() => setShowSuccessModal(false)} />}
       {showGithubModal && <GithubModal />}
-      <div className={`h-full ${!isDeployed ? 'pt-10' : ''}`}>
+      <div className={`h-full ${!isLoadingProjects && !isDeployed ? 'pt-10' : ''}`}>
       <Group orientation="horizontal" className="h-full rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl">
         <Panel id="chat" defaultSize={28} minSize={20}>
           <div className="h-full flex flex-col bg-zinc-900">
