@@ -32,15 +32,15 @@ export default function Home() {
             <a href="#pricing" className="text-zinc-400 hover:text-white transition-colors hidden sm:block">Pricing</a>
             <SignedOut>
               <SignInButton mode="modal">
-                <button className="text-zinc-400 hover:text-white transition-colors text-sm cursor-pointer">Sign In</button>
+                <button className="text-zinc-400 hover:text-white transition-colors text-sm cursor-pointer hidden sm:block">Sign In</button>
               </SignInButton>
               <Link href="/builder" className="px-5 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-semibold text-sm transition-all">
-                Launch App
+                Open App
               </Link>
             </SignedOut>
             <SignedIn>
               <Link href="/builder" className="px-5 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-semibold text-sm transition-all">
-                Launch App
+                Open App
               </Link>
               <UserButton afterSignOutUrl="/" />
             </SignedIn>
@@ -49,15 +49,16 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative px-8 pt-20 pb-32">
+      <section className="relative px-6 pt-12 pb-20 md:px-8 md:pt-20 md:pb-32">
         <div className={`max-w-6xl mx-auto text-center transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          <div className="mb-12">
-            <div className="inline-flex items-center gap-2 bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-full px-6 py-3 mb-8">
+          <div className="mb-8 md:mb-12">
+            <div className="inline-flex items-center gap-2 bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-full px-4 py-2 md:px-6 md:py-3 mb-6">
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="text-sm text-zinc-400">Build for free. Pay when you go live.</span>
+              <span className="text-xs md:text-sm text-zinc-400">Build for free. Pay when you go live.</span>
             </div>
             
-            <h1 className="text-6xl md:text-8xl font-black mb-6 leading-tight">
+            {/* Hero logo - hidden on mobile since it's in nav */}
+            <h1 className="hidden md:block text-6xl md:text-8xl font-black mb-6 leading-tight">
               <span className="bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent">
                 Hatch
               </span>
@@ -67,38 +68,38 @@ export default function Home() {
               <span className="text-zinc-600">.</span>
             </h1>
             
-            <div className="text-3xl md:text-5xl font-bold mb-8">
+            <div className="text-2xl md:text-5xl font-bold mb-6 md:mb-8">
               <span className="bg-gradient-to-r from-zinc-300 to-zinc-500 bg-clip-text text-transparent">Describe. </span>
               <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Build. Ship.</span>
             </div>
             
-            <p className="text-xl md:text-2xl text-zinc-400 max-w-4xl mx-auto leading-relaxed mb-4">
+            <p className="text-lg md:text-2xl text-zinc-400 max-w-4xl mx-auto leading-relaxed mb-3">
               AI-powered website builder that outputs real code.
             </p>
-            <p className="text-lg text-zinc-500 max-w-3xl mx-auto mb-12">
+            <p className="text-base md:text-lg text-zinc-500 max-w-3xl mx-auto mb-8 md:mb-12">
               Describe what you want. Get production-ready React + Tailwind. Deploy in one click.
             </p>
           </div>
           
-          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-16">
-            <Link href="/builder" className="group px-10 py-5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-2xl shadow-purple-500/20">
-              Start Building — Free
+          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-10 md:mb-16">
+            <Link href="/builder" className="group px-8 py-4 md:px-10 md:py-5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-xl font-bold text-base md:text-lg transition-all duration-300 transform hover:scale-105 shadow-2xl shadow-purple-500/20">
+              Start Free
             </Link>
           </div>
 
           {/* Social Proof */}
-          <div className="flex flex-wrap justify-center items-center gap-8 text-zinc-500 text-sm">
+          <div className="flex flex-wrap justify-center items-center gap-4 md:gap-8 text-zinc-500 text-xs md:text-sm">
             <div className="flex items-center gap-2">
               <span className="text-green-400">●</span>
               <span>Live Now</span>
             </div>
             <div className="flex items-center gap-2">
               <span>🔧</span>
-              <span>Auto-fixes broken code</span>
+              <span>Auto-fixes</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span>⚡</span>
-              <span>Powered by Claude</span>
+            <div className="flex items-center gap-1.5 text-zinc-600">
+              <span className="text-xs">⚡</span>
+              <span className="text-xs">Claude</span>
             </div>
           </div>
         </div>
