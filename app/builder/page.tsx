@@ -33,9 +33,20 @@ interface Version {
   prompt?: string
 }
 
+interface Page {
+  id: string
+  name: string
+  path: string // URL path like '/', '/about', '/contact'
+  versions: Version[]
+  currentVersionIndex: number
+}
+
 interface Project {
   id: string
   name: string
+  pages?: Page[] // New multi-page structure
+  currentPageId?: string // Currently active page
+  // Legacy single-page support
   versions: Version[]
   currentVersionIndex: number
   createdAt: string
@@ -93,14 +104,27 @@ const generateProjectName = (): string => {
   return `${suggestion} ${num}`
 }
 
-const createNewProject = (name?: string): Project => ({
-  id: generateId(),
-  name: name || generateProjectName(),
-  versions: [],
-  currentVersionIndex: -1,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-})
+const createNewProject = (name?: string): Project => {
+  const homePage: Page = {
+    id: generateId(),
+    name: 'Home',
+    path: '/',
+    versions: [],
+    currentVersionIndex: -1
+  }
+  
+  return {
+    id: generateId(),
+    name: name || generateProjectName(),
+    pages: [homePage],
+    currentPageId: homePage.id,
+    // Legacy fields for backward compatibility
+    versions: [],
+    currentVersionIndex: -1,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  }
+}
 
 const migrateProject = (project: Project): Project => {
   if (project.versions && project.versions.length > 0) return project
@@ -129,6 +153,37 @@ const migrateProject = (project: Project): Project => {
   return { ...project, versions: project.versions || [], currentVersionIndex: project.currentVersionIndex ?? -1 }
 }
 
+// Helper to check if project uses new multi-page structure
+const isMultiPageProject = (project: Project): boolean => {
+  return !!(project.pages && project.pages.length > 0)
+}
+
+// Get current page from project
+const getCurrentPage = (project: Project): Page | null => {
+  if (!isMultiPageProject(project)) return null
+  return project.pages!.find(p => p.id === project.currentPageId) || project.pages![0]
+}
+
+// Migrate single-page project to multi-page structure
+const migrateToMultiPage = (project: Project): Project => {
+  if (isMultiPageProject(project)) return project
+  
+  // Convert single-page to multi-page with a home page
+  const homePage: Page = {
+    id: generateId(),
+    name: 'Home',
+    path: '/',
+    versions: project.versions || [],
+    currentVersionIndex: project.currentVersionIndex ?? 0
+  }
+  
+  return {
+    ...project,
+    pages: [homePage],
+    currentPageId: homePage.id
+  }
+}
+
 export default function Home() {
   const [projects, setProjects] = useState<Project[]>([])
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null)
@@ -142,8 +197,12 @@ export default function Home() {
   const [showMobileMenu, setShowMobileMenu] = useState(false)
   
   const currentProject = projects.find(p => p.id === currentProjectId)
-  const versions = currentProject?.versions || []
-  const currentVersionIndex = currentProject?.currentVersionIndex ?? -1
+  
+  // Support both multi-page and legacy single-page projects
+  const currentPage = currentProject ? getCurrentPage(currentProject) : null
+  const versions = currentPage?.versions || currentProject?.versions || []
+  const currentVersionIndex = currentPage?.currentVersionIndex ?? currentProject?.currentVersionIndex ?? -1
+  
   const code = previewVersionIndex !== null 
     ? versions[previewVersionIndex]?.code || ''
     : versions[currentVersionIndex]?.code || ''
@@ -223,7 +282,8 @@ export default function Home() {
     const savedCurrentId = localStorage.getItem('hatchit-current-project')
     if (savedProjects) {
       const parsed = JSON.parse(savedProjects) as Project[]
-      const migrated = parsed.map(migrateProject)
+      // First migrate old format, then convert to multi-page
+      const migrated = parsed.map(p => migrateToMultiPage(migrateProject(p)))
       setProjects(migrated)
       if (savedCurrentId && migrated.find(p => p.id === savedCurrentId)) {
         setCurrentProjectId(savedCurrentId)
@@ -495,15 +555,10 @@ export default function Home() {
         
         const data = await response.json()
         
-        // Filter for relevant files
+        // Filter for HTML files only (not JS/TS/CSS since they're not useful as standalone projects)
         const relevantFiles = data.tree.filter((item: any) => 
           item.type === 'blob' && 
-          (item.path.endsWith('.html') || 
-           item.path.endsWith('.htm') ||
-           item.path.endsWith('.jsx') ||
-           item.path.endsWith('.tsx') ||
-           item.path.endsWith('.js') ||
-           item.path.endsWith('.ts'))
+          (item.path.endsWith('.html') || item.path.endsWith('.htm'))
         )
         
         if (relevantFiles.length === 0) {
