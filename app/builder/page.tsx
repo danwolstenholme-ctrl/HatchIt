@@ -1856,8 +1856,9 @@ export default function Home() {
                       title="Options"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="3"/>
-                        <path d="M12 1v6m0 6v6m5.196-15.804l-4.243 4.243m-6.364 6.364L2.346 17.052M23 12h-6m-6 0H1m15.804 5.196l-4.243-4.243m-6.364-6.364L2.346 6.948"/>
+                        <circle cx="12" cy="12" r="1"/>
+                        <circle cx="12" cy="5" r="1"/>
+                        <circle cx="12" cy="19" r="1"/>
                       </svg>
                     </button>
                     {showDesktopMenu && (
