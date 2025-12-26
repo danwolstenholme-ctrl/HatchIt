@@ -90,9 +90,18 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
             currentCode 
           })
         })
+        
+        if (!response.ok) {
+          const error = await response.json()
+          const errorMsg = error.error || 'Failed to get response'
+          setMessages(prev => [...prev, { role: 'assistant', content: `⚠️ ${errorMsg}` }])
+          return
+        }
+        
         const data = await response.json()
         setMessages(prev => [...prev, { role: 'assistant', content: data.message }])
       } catch (error) {
+        console.error('Chat error:', error)
         setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I had trouble responding.' }])
       } finally {
         setIsChatLoading(false)
