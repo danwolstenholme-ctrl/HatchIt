@@ -15,7 +15,8 @@ interface SiteSubscription {
 interface DeployedProject {
   slug: string
   name: string
-  code: string
+  code?: string
+  pages?: PageToDeploy[]
   deployedAt: string
 }
 
@@ -270,7 +271,8 @@ export default function RootLayout({
       updatedProjects.push({
         slug,
         name: projectName || slug,
-        code,
+        code: pages && pages.length > 0 ? undefined : code,
+        pages: pages && pages.length > 0 ? pages : undefined,
         deployedAt: new Date().toISOString()
       })
 

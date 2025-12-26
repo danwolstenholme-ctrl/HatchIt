@@ -9,16 +9,22 @@ interface Page {
   code: string
 }
 
+interface Asset {
+  name: string
+  dataUrl: string
+}
+
 interface LivePreviewProps {
   code?: string
   pages?: Page[]
   currentPageId?: string
   isLoading?: boolean
   isPaid?: boolean
+  assets?: Asset[]
   setShowUpgradeModal?: (show: boolean) => void
 }
 
-export default function LivePreview({ code, pages, currentPageId, isLoading = false, isPaid = false, setShowUpgradeModal }: LivePreviewProps) {
+export default function LivePreview({ code, pages, currentPageId, isLoading = false, isPaid = false, assets = [], setShowUpgradeModal }: LivePreviewProps) {
   const [iframeLoaded, setIframeLoaded] = useState(false)
   const [iframeKey, setIframeKey] = useState(0)
   const [isDownloading, setIsDownloading] = useState(false)
@@ -42,8 +48,34 @@ export default function LivePreview({ code, pages, currentPageId, isLoading = fa
       setShowUpgradeModal?.(true)
       return
     }
-    if (!code && (!pages || pages.length === 0)) return
+    if (!code && (!pages || pages.length === 0)) {
+      alert('Nothing to download: no pages or code available')
+      return
+    }
+    if (pages && pages.length === 0) {
+      alert('Nothing to download: pages list is empty')
+      return
+    }
     setIsDownloading(true)
+
+    const decodeDataUrl = (dataUrl: string) => {
+      const match = dataUrl.match(/^data:([^;]+);base64,(.*)$/)
+      if (!match) return null
+      const [, mime, base64] = match
+      try {
+        const binary = atob(base64)
+        const bytes = new Uint8Array(binary.length)
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+        return { mime, bytes }
+      } catch {
+        return null
+      }
+    }
+
+    const sanitizeName = (name: string, fallback: string) => {
+      const cleaned = name.replace(/[^a-zA-Z0-9._-]/g, '-') || fallback
+      return cleaned.replace(/\.{2,}/g, '-')
+    }
     
     try {
       // Dynamically import JSZip
@@ -179,6 +211,24 @@ The easiest way to deploy is with [Vercel](https://vercel.com):
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
 `)
+
+      const assetsToInclude = Array.isArray(assets) ? assets.slice(0, 20) : []
+      let assetBytes = 0
+      if (assetsToInclude.length > 0) {
+        const assetFolder = zip.folder('public/assets')
+        for (const asset of assetsToInclude) {
+          const decoded = decodeDataUrl(asset.dataUrl)
+          if (!decoded) continue
+          assetBytes += decoded.bytes.length
+          if (assetBytes > 5_000_000) {
+            alert('Assets exceed 5MB. Remove some files and try again.')
+            setIsDownloading(false)
+            return
+          }
+          const safeName = sanitizeName(asset.name, 'asset')
+          assetFolder?.file(safeName, decoded.bytes)
+        }
+      }
       
       // App folder
       const app = zip.folder('app')
@@ -269,59 +319,74 @@ export default function RootLayout({
       }
       
       const hooksDestructure = 'const { useState, useEffect, useMemo, useCallback, useRef } = React;'
-      
-      // Create router component
+
+      const serializedPages = pages.map((page, idx) => {
+        const regex = /(?:function|const|let|var)\s+([A-Z][a-zA-Z0-9]*)(?:\s*[=:(]|\s*:)/g
+        const matches = [...page.code.matchAll(regex)]
+        const componentName = matches.length > 0 ? matches[matches.length - 1][1] : `Page${idx}`
+
+        const cleanedCode = page.code
+          .replace(/interface\s+\w+\s*\{[\s\S]*?\}/g, '')
+          .replace(/type\s+\w+\s*=[^;]+;/g, '')
+          .replace(/\s+as\s+[A-Za-z][A-Za-z0-9\[\]<>|&\s,'_]*/g, '')
+          .replace(/(useState|useRef|useMemo|useCallback|useEffect)<[^>]+>/g, '$1')
+          .replace(/:\s*(React\.)?FC(<[^>]*>)?/g, '')
+          .replace(/:\s*[A-Z][A-Za-z0-9\[\]<>|&\s,']*(?=\s*=\s*[\[{(])/g, '')
+          .replace(/(\(\s*\w+):\s*(?:keyof\s+|typeof\s+|readonly\s+)?[A-Z][^,)]*(?=[,)])/g, '$1')
+          .replace(/,(\s*\w+):\s*(?:keyof\s+|typeof\s+|readonly\s+)?[A-Z][^,)]*(?=[,)])/g, ',$1')
+          .replace(/(\(\s*\w+):\s*(?:string|number|boolean|any|void|never|unknown)(?:\[\])?(?=[,)])/g, '$1')
+          .replace(/,(\s*\w+):\s*(?:string|number|boolean|any|void|never|unknown)(?:\[\])?(?=[,)])/g, ',$1')
+          .replace(/\):\s*[A-Za-z][A-Za-z0-9\[\]<>|&\s,']*(?=\s*[{=])/g, ')')
+          .replace(/export\s+default\s+/g, '')
+          .replace(/export\s+/g, '')
+          .replace(/React\.useState/g, 'useState')
+          .replace(/React\.useEffect/g, 'useEffect')
+          .replace(/React\.useMemo/g, 'useMemo')
+          .replace(/React\.useCallback/g, 'useCallback')
+          .replace(/React\.useRef/g, 'useRef')
+
+        return {
+          path: page.path,
+          componentName,
+          code: `${cleanedCode}\nreturn typeof ${componentName} === "function" ? ${componentName} : (typeof Component === "function" ? Component : null);`
+        }
+      })
+
       const routerCode = `
+      const pages = ${JSON.stringify(serializedPages)};
+      const pageCache = new Map();
+
+      const loadPage = (path) => {
+        const target = pages.find(p => p.path === path) || pages[0];
+        if (!target) return null;
+        if (pageCache.has(target.path)) return pageCache.get(target.path);
+        try {
+          const factory = new Function('React', 'useState', 'useEffect', 'useMemo', 'useCallback', 'useRef', target.code);
+          const Component = factory(React, useState, useEffect, useMemo, useCallback, useRef);
+          if (Component) pageCache.set(target.path, Component);
+          return Component;
+        } catch (err) {
+          console.error('Preview render error', err);
+          return null;
+        }
+      };
+
       const Router = () => {
-        const [currentPath, setCurrentPath] = useState(window.location.hash.slice(1) || '${currentPage.path}')
-        
+        const [currentPath, setCurrentPath] = useState(window.location.hash.slice(1) || '${currentPage.path}');
+
         useEffect(() => {
-          const handleHashChange = () => {
-            setCurrentPath(window.location.hash.slice(1) || '${currentPage.path}')
-          }
-          window.addEventListener('hashchange', handleHashChange)
-          return () => window.removeEventListener('hashchange', handleHashChange)
-        }, [])
-        
-        ${pages.map((page, idx) => {
-          const regex = /(?:function|const|let|var)\s+([A-Z][a-zA-Z0-9]*)(?:\s*[=:(]|\s*:)/g
-          const matches = [...page.code.matchAll(regex)]
-          const componentName = matches.length > 0 ? matches[matches.length - 1][1] : `Page${idx}`
-          
-          const cleanedCode = page.code
-            .replace(/interface\s+\w+\s*\{[\s\S]*?\}/g, '')
-            .replace(/type\s+\w+\s*=[^;]+;/g, '')
-            .replace(/\s+as\s+[A-Za-z][A-Za-z0-9\[\]<>|&\s,'_]*/g, '')
-            .replace(/(useState|useRef|useMemo|useCallback|useEffect)<[^>]+>/g, '$1')
-            .replace(/:\s*(React\.)?FC(<[^>]*>)?/g, '')
-            .replace(/:\s*[A-Z][A-Za-z0-9\[\]<>|&\s,']*(?=\s*=\s*[\[{(])/g, '')
-            .replace(/(\(\s*\w+):\s*(?:keyof\s+|typeof\s+|readonly\s+)?[A-Z][^,)]*(?=[,)])/g, '$1')
-            .replace(/,(\s*\w+):\s*(?:keyof\s+|typeof\s+|readonly\s+)?[A-Z][^,)]*(?=[,)])/g, ',$1')
-            .replace(/(\(\s*\w+):\s*(?:string|number|boolean|any|void|never|unknown)(?:\[\])?(?=[,)])/g, '$1')
-            .replace(/,(\s*\w+):\s*(?:string|number|boolean|any|void|never|unknown)(?:\[\])?(?=[,)])/g, ',$1')
-            .replace(/\):\s*[A-Za-z][A-Za-z0-9\[\]<>|&\s,']*(?=\s*[{=])/g, ')')
-            .replace(/export\s+default\s+/g, '')
-            .replace(/export\s+/g, '')
-            .replace(/React\.useState/g, 'useState')
-            .replace(/React\.useEffect/g, 'useEffect')
-            .replace(/React\.useMemo/g, 'useMemo')
-            .replace(/React\.useCallback/g, 'useCallback')
-            .replace(/React\.useRef/g, 'useRef')
-            
-          return `${cleanedCode}\nconst ${componentName}Component = ${componentName};`
-        }).join('\n')}
-        
-        ${pages.map((page, idx) => {
-          const regex = /(?:function|const|let|var)\s+([A-Z][a-zA-Z0-9]*)(?:\s*[=:(]|\s*:)/g
-          const matches = [...page.code.matchAll(regex)]
-          const componentName = matches.length > 0 ? matches[matches.length - 1][1] : `Page${idx}`
-          return `if (currentPath === '${page.path}') return React.createElement(${componentName}Component);`
-        }).join('\n')}
-        
-        return React.createElement('div', { style: { padding: '2rem', color: '#a1a1aa', textAlign: 'center' } }, '404 - Page not found')
-      }
+          const handleHashChange = () => setCurrentPath(window.location.hash.slice(1) || '${currentPage.path}');
+          window.addEventListener('hashchange', handleHashChange);
+          return () => window.removeEventListener('hashchange', handleHashChange);
+        }, []);
+
+        const Component = loadPage(currentPath) || loadPage('${currentPage.path}');
+        if (Component) return React.createElement(Component);
+
+        return React.createElement('div', { style: { padding: '2rem', color: '#a1a1aa', textAlign: 'center' } }, '404 - Page not found');
+      };
       `
-      
+
       const html = '<!DOCTYPE html>' +
         '<html><head>' +
         '<script src="https://cdn.tailwindcss.com"></script>' +
@@ -331,7 +396,7 @@ export default function RootLayout({
         '<script src="https://unpkg.com/react@18/umd/react.development.js"></script>' +
         '<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>' +
         '<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>' +
-        '<script>document.addEventListener("click", function(e) { var link = e.target.closest("a"); if (link) { e.preventDefault(); var href = link.getAttribute("href"); if (href && href.startsWith("#")) { window.location.hash = href; } else if (href) { var target = document.querySelector(href); if (target) target.scrollIntoView({ behavior: "smooth" }); } } });</script>' +
+        '<script>document.addEventListener("click", function(e) { var link = e.target.closest("a"); if (!link) return; var href = link.getAttribute("href"); if (!href) return; if (href.startsWith("http://") || href.startsWith("https://")) { e.preventDefault(); window.open(href, "_blank", "noopener,noreferrer"); return; } if (href.startsWith("/")) { e.preventDefault(); window.location.hash = href; return; } if (href.startsWith("#")) { e.preventDefault(); var target = document.querySelector(href); if (target) target.scrollIntoView({ behavior: "smooth" }); else window.location.hash = href; } });</script>' +
         '<script>' +
         'window.onerror = function(msg, url, line, col, error) {' +
         '  document.getElementById("root").innerHTML = ' +

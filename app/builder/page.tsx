@@ -256,6 +256,7 @@ export default function Home() {
   const previewContainerRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const domainInputRef = useRef<HTMLInputElement>(null)
+  const generationRequestIdRef = useRef(0)
 
   // Get subscriptions from user metadata
   const subscriptions = useMemo(() => {
@@ -620,6 +621,19 @@ export default function Home() {
 
   const handleGithubImport = async (url: string, onProgress?: (message: string) => void) => {
     try {
+      const targetProjectId = currentProjectId
+      const fetchWithTimeout = async (requestUrl: string, ms: number) => {
+        const controller = new AbortController()
+        const timer = setTimeout(() => controller.abort(), ms)
+        const response = await fetch(requestUrl, { signal: controller.signal })
+        clearTimeout(timer)
+        return response
+      }
+
+      if (!targetProjectId) {
+        throw new Error('Select a project before importing')
+      }
+
       // Check if it's a repo URL (no blob/tree in path)
       const isRepoUrl = url.match(/github\.com\/([^\/]+)\/([^\/]+)\/?$/)
       
@@ -630,12 +644,12 @@ export default function Home() {
         
         // Try main branch first, then master
         let apiUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/main?recursive=1`
-        let response = await fetch(apiUrl)
+        let response = await fetchWithTimeout(apiUrl, 12000)
         
         if (!response.ok) {
           // Try master branch
           apiUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/master?recursive=1`
-          response = await fetch(apiUrl)
+          response = await fetchWithTimeout(apiUrl, 12000)
         }
         
         if (!response.ok) {
@@ -647,12 +661,25 @@ export default function Home() {
         }
         
         const data = await response.json()
+
+        if (data.truncated) {
+          throw new Error('Repository is too large to import (truncated by GitHub)')
+        }
         
         // Filter for HTML files only (not JS/TS/CSS since they're not useful as standalone projects)
         const relevantFiles = data.tree.filter((item: any) => 
           item.type === 'blob' && 
           (item.path.endsWith('.html') || item.path.endsWith('.htm'))
         )
+        
+        if (relevantFiles.length > 80) {
+          throw new Error('Repository has too many HTML files. Limit to 80 for import.')
+        }
+
+        const totalBytes = relevantFiles.reduce((sum: number, item: any) => sum + (item.size || 0), 0)
+        if (totalBytes > 5_000_000) {
+          throw new Error('Repository HTML content exceeds 5MB. Please trim files and try again.')
+        }
         
         if (relevantFiles.length === 0) {
           throw new Error('No importable files found in repository')
@@ -665,6 +692,9 @@ export default function Home() {
         
         // Import each HTML file as a page in the current project
         if (currentProject && relevantFiles.length > 0) {
+          if (currentProjectId !== targetProjectId) {
+            throw new Error('Project changed during import. Please retry.')
+          }
           const newPages: Page[] = []
           
           for (let i = 0; i < relevantFiles.length; i++) {
@@ -672,7 +702,7 @@ export default function Home() {
             onProgress?.(`Importing ${i + 1}/${relevantFiles.length}: ${file.path}`)
             
             const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${file.path}`
-            const fileResponse = await fetch(rawUrl)
+            const fileResponse = await fetchWithTimeout(rawUrl, 12000)
             if (!fileResponse.ok) continue
             
             const content = await fileResponse.text()
@@ -725,14 +755,27 @@ export default function Home() {
           if (importingHomePage && currentHomePage && currentHomePage.versions[0]?.code === '') {
             // Remove empty existing Home page since we're importing a new one
             existingPages = existingPages.filter(p => p.path !== '/')
-          } else if (importingHomePage && currentHomePage) {
-            // Rename existing Home page to avoid collision
-            currentHomePage.name = 'Home (Original)'
-            currentHomePage.path = '/home-original'
+          }
+          
+          // Track existing paths for collision handling
+          const existingPaths = new Set(existingPages.map(p => p.path))
+          
+          if (importingHomePage && currentHomePage && currentHomePage.versions[0]?.code !== '') {
+            // Rename existing Home page to avoid collision, ensuring unique path
+            const basePath = '/home-original'
+            let candidate = basePath
+            let counter = 1
+            while (existingPaths.has(candidate)) {
+              counter += 1
+              candidate = `${basePath}-${counter}`
+            }
+            const nameSuffix = counter === 1 ? '' : ` ${counter}`
+            currentHomePage.name = `Home (Original${nameSuffix})`
+            currentHomePage.path = candidate
+            existingPaths.add(candidate)
           }
           
           // Add new pages (avoiding duplicates by path)
-          const existingPaths = new Set(existingPages.map(p => p.path))
           const uniqueNewPages = newPages.filter(p => !existingPaths.has(p.path))
           const updatedPages = [...existingPages, ...uniqueNewPages]
           
@@ -765,7 +808,7 @@ export default function Home() {
           rawUrl = url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/')
         }
 
-        const response = await fetch(rawUrl)
+        const response = await fetchWithTimeout(rawUrl, 12000)
         if (!response.ok) throw new Error('Failed to fetch from GitHub')
         
         const content = await response.text()
@@ -856,6 +899,9 @@ export default function Home() {
   }
 
   const handleGenerate = async (prompt: string, history: Message[], currentCode: string) => {
+    const requestId = ++generationRequestIdRef.current
+    const targetProjectId = currentProjectId
+    const targetPageId = currentPage?.id
     setIsGenerating(true)
     try {
       // Prepare page context for multi-page projects
@@ -880,10 +926,11 @@ export default function Home() {
       })
       const data = await response.json()
       if (data.code) {
+        if (generationRequestIdRef.current !== requestId || currentProjectId !== targetProjectId) return
         const newVersion: Version = { id: generateId(), code: data.code, timestamp: new Date().toISOString(), prompt }
         
         // Handle multi-page vs single-page projects
-        if (currentProject && isMultiPageProject(currentProject) && currentPage) {
+        if (currentProject && isMultiPageProject(currentProject) && currentPage && currentProject.id === targetProjectId && currentPage.id === targetPageId) {
           // Update the current page's versions
           const updatedPages = currentProject.pages!.map(page =>
             page.id === currentPage.id
@@ -1512,7 +1559,7 @@ export default function Home() {
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
-      <div className="flex-1 overflow-auto">{type === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} isPaid={isCurrentProjectPaid} setShowUpgradeModal={setShowUpgradeModal} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} />}</div>
+      <div className="flex-1 overflow-auto">{type === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} isPaid={isCurrentProjectPaid} assets={currentProject?.assets} setShowUpgradeModal={setShowUpgradeModal} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} />}</div>
     </div>
   )
 
@@ -2401,7 +2448,7 @@ export default function Home() {
               </div>
             </div>
             <div ref={previewContainerRef} className="flex-1 overflow-auto min-h-0">
-              {activeTab === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} isPaid={isCurrentProjectPaid} setShowUpgradeModal={setShowUpgradeModal} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} />}
+              {activeTab === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} isPaid={isCurrentProjectPaid} assets={currentProject?.assets} setShowUpgradeModal={setShowUpgradeModal} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} />}
             </div>
           </div>
         </Panel>

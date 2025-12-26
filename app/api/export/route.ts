@@ -11,6 +11,30 @@ interface SiteSubscription {
   createdAt: string
 }
 
+interface Asset {
+  name: string
+  dataUrl: string
+}
+
+const MAX_ASSET_BYTES = 5_000_000
+const MAX_ASSET_COUNT = 20
+
+const sanitizeName = (name: string, fallback: string) => {
+  const cleaned = name.replace(/[^a-zA-Z0-9._-]/g, '-') || fallback
+  return cleaned.replace(/\.{2,}/g, '-')
+}
+
+const parseDataUrl = (dataUrl: string) => {
+  const match = dataUrl.match(/^data:([^;]+);base64,(.*)$/)
+  if (!match) return null
+  const [, mime, base64] = match
+  try {
+    return { mime, data: Buffer.from(base64, 'base64') }
+  } catch {
+    return null
+  }
+}
+
 export async function POST(req: NextRequest) {
   // Authenticate user
   const { userId } = await auth()
@@ -18,14 +42,33 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { code, pages, projectSlug } = await req.json()
+  const { code, pages, projectSlug, assets } = await req.json()
 
   if (!code && (!pages || pages.length === 0)) {
     return NextResponse.json({ error: 'No code or pages provided' }, { status: 400 })
   }
+  if (pages && pages.length === 0) {
+    return NextResponse.json({ error: 'No pages to export' }, { status: 400 })
+  }
 
   if (!projectSlug) {
     return NextResponse.json({ error: 'Project slug required' }, { status: 400 })
+  }
+
+  const safeAssets: Asset[] = Array.isArray(assets) ? assets.slice(0, MAX_ASSET_COUNT) : []
+  const assetFiles: Array<{ path: string; content: Buffer }> = []
+  if (safeAssets.length > 0) {
+    let assetBytes = 0
+    for (const asset of safeAssets) {
+      const parsed = parseDataUrl(asset.dataUrl)
+      if (!parsed) continue
+      assetBytes += parsed.data.length
+      if (assetBytes > MAX_ASSET_BYTES) {
+        return NextResponse.json({ error: 'Assets exceed 5MB total. Remove some files and try again.' }, { status: 400 })
+      }
+      const safeName = sanitizeName(asset.name, 'asset')
+      assetFiles.push({ path: `public/assets/${safeName}`, content: parsed.data })
+    }
   }
 
   // Check if this specific project has an active subscription
@@ -190,6 +233,10 @@ ${code}`
 
   for (const [path, content] of Object.entries(files)) {
     zip.file(path, content)
+  }
+
+  for (const asset of assetFiles) {
+    zip.file(asset.path, asset.content)
   }
 
   const zipBuffer = await zip.generateAsync({ type: 'uint8array' })
