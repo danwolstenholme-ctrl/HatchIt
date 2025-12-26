@@ -226,7 +226,7 @@ export default function RootLayout({
             pageFolder?.file('page.tsx', pageCode)
           }
         })
-      } else {
+      } else if (code) {
         // Single-page project (legacy)
         const pageCode = code.includes("'use client'") ? code : `'use client'\nimport { useState, useEffect } from 'react'\n\n${code}`
         app?.file('page.tsx', pageCode)
