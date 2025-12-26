@@ -18,10 +18,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { code, projectSlug } = await req.json()
+  const { code, pages, projectSlug } = await req.json()
 
-  if (!code) {
-    return NextResponse.json({ error: 'No code provided' }, { status: 400 })
+  if (!code && (!pages || pages.length === 0)) {
+    return NextResponse.json({ error: 'No code or pages provided' }, { status: 400 })
   }
 
   if (!projectSlug) {
@@ -45,10 +45,6 @@ export async function POST(req: NextRequest) {
     }
   } catch {
     return NextResponse.json({ error: 'Failed to verify subscription' }, { status: 500 })
-  }
-
-  if (!code) {
-    return NextResponse.json({ error: 'No code provided' }, { status: 400 })
   }
 
   const files: Record<string, string> = {
@@ -138,19 +134,6 @@ export default function RootLayout({
   );
 }`,
 
-    'app/page.tsx': `'use client'
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-import Component from '@/components/Generated'
-
-export default function Home() {
-  return <Component />
-}`,
-
-    'components/Generated.tsx': `'use client'
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-
-${code}`,
-
     'README.md': `# My Hatchit Project
 
 Built with [Hatchit](https://hatchit.dev)
@@ -168,6 +151,38 @@ Open [http://localhost:3000](http://localhost:3000) to see your component.
 
 Push to GitHub and connect to [Vercel](https://vercel.com) for instant deployment.
 `
+  }
+
+  // Add page files
+  if (pages && pages.length > 0) {
+    // Multi-page project
+    pages.forEach((page: { path: string; code: string }) => {
+      const pageCode = `'use client'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+
+${page.code}`
+      
+      if (page.path === '/') {
+        files['app/page.tsx'] = pageCode
+      } else {
+        const routeName = page.path.slice(1)
+        files[`app/${routeName}/page.tsx`] = pageCode
+      }
+    })
+  } else {
+    // Single-page project
+    files['app/page.tsx'] = `'use client'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import Component from '@/components/Generated'
+
+export default function Home() {
+  return <Component />
+}`
+    
+    files['components/Generated.tsx'] = `'use client'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+
+${code}`
   }
 
   const JSZip = (await import('jszip')).default

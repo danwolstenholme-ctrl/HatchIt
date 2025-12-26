@@ -35,14 +35,14 @@ export default function LivePreview({ code, pages, currentPageId, isLoading = fa
     
     window.addEventListener('triggerDownload', handleDownloadTrigger)
     return () => window.removeEventListener('triggerDownload', handleDownloadTrigger)
-  }, [code])
+  }, [code, pages])
 
   const downloadZip = async () => {
     if (!isPaid) {
       setShowUpgradeModal?.(true)
       return
     }
-    if (!code) return
+    if (!code && (!pages || pages.length === 0)) return
     setIsDownloading(true)
     
     try {
@@ -209,9 +209,28 @@ export default function RootLayout({
 @tailwind components;
 @tailwind utilities;`)
       
-      // Page component
-      const pageCode = code.includes("'use client'") ? code : `'use client'\nimport { useState, useEffect } from 'react'\n\n${code}`
-      app?.file('page.tsx', pageCode)
+      // Add page files - multi-page or single-page
+      if (pages && pages.length > 0) {
+        // Multi-page project
+        pages.forEach(page => {
+          const pageCode = page.code.includes("'use client'") 
+            ? page.code 
+            : `'use client'\nimport { useState, useEffect } from 'react'\n\n${page.code}`
+          
+          if (page.path === '/') {
+            app?.file('page.tsx', pageCode)
+          } else {
+            // Create folder for route: /about -> about/page.tsx
+            const routeName = page.path.slice(1) // Remove leading /
+            const pageFolder = app?.folder(routeName)
+            pageFolder?.file('page.tsx', pageCode)
+          }
+        })
+      } else {
+        // Single-page project (legacy)
+        const pageCode = code.includes("'use client'") ? code : `'use client'\nimport { useState, useEffect } from 'react'\n\n${code}`
+        app?.file('page.tsx', pageCode)
+      }
       
       // Generate and download
       const blob = await zip.generateAsync({ type: 'blob' })
