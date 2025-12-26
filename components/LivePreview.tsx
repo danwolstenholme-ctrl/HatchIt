@@ -227,6 +227,26 @@ export default function RootLayout({
     
     if (!code) return ''
 
+    // Check if code is too large (prevent srcDoc URL length issues)
+    if (code.length > 50000) {
+      const html = '<!DOCTYPE html><html><body>' +
+        '<div style="color: #f87171; padding: 2rem; font-family: monospace; line-height: 1.6; background: #18181b; height: 100vh; display: flex; align-items: center; justify-content: center;">' +
+        '<div style="max-width: 500px;">' +
+        '<div style="font-size: 2rem; margin-bottom: 1rem;">⚠️</div>' +
+        '<h2 style="color: white; margin-bottom: 0.5rem; font-size: 1.25rem;">Code Too Large</h2>' +
+        '<p>The generated code is ' + Math.round(code.length / 1000) + 'KB, which exceeds the preview limit of 50KB.</p>' +
+        '<p style="margin-top: 1rem; color: #a1a1aa;">💡 Try:</p>' +
+        '<ul style="margin: 0.5rem 0 0 1.5rem; color: #a1a1aa;">' +
+        '<li>Breaking the component into smaller pieces</li>' +
+        '<li>Simplifying the design</li>' +
+        '<li>Downloading the full code to view locally</li>' +
+        '</ul>' +
+        '</div>' +
+        '</div>' +
+        '</body></html>'
+      return html
+    }
+
     const hooksDestructure = 'const { useState, useEffect, useMemo, useCallback, useRef } = React;'
 
     const regex = /(?:function|const|let|var)\s+([A-Z][a-zA-Z0-9]*)(?:\s*[=:(]|\s*:)/g
@@ -256,7 +276,7 @@ export default function RootLayout({
     const html = '<!DOCTYPE html>' +
       '<html><head>' +
       '<script src="https://cdn.tailwindcss.com"></script>' +
-      '<style>* { margin: 0; padding: 0; box-sizing: border-box; } html, body, #root { min-height: 100%; width: 100%; } body { background: #18181b; } .error { color: #ef4444; padding: 1rem; font-family: monospace; white-space: pre-wrap; background: #18181b; } .loading { color: #71717a; padding: 2rem; text-align: center; font-family: system-ui; }</style>' +
+      '<style>* { margin: 0; padding: 0; box-sizing: border-box; } html, body, #root { min-height: 100%; width: 100%; } body { background: #18181b; } .error { color: #ef4444; padding: 2rem; font-family: monospace; white-space: pre-wrap; background: #18181b; line-height: 1.6; } .error h2 { color: #fecaca; margin-bottom: 1rem; font-size: 1rem; font-weight: bold; } .loading { color: #71717a; padding: 2rem; text-align: center; font-family: system-ui; }</style>' +
       '</head><body>' +
       '<div id="root"><div class="loading">Loading preview...</div></div>' +
       '<script src="https://unpkg.com/react@18/umd/react.development.js"></script>' +
@@ -265,7 +285,7 @@ export default function RootLayout({
       '<script>document.addEventListener("click", function(e) { var link = e.target.closest("a"); if (link) { e.preventDefault(); var href = link.getAttribute("href"); if (href && href.startsWith("#")) { var target = document.querySelector(href); if (target) target.scrollIntoView({ behavior: "smooth" }); } } });</script>' +
       '<script>' +
       'window.onerror = function(msg, url, line, col, error) {' +
-      '  document.getElementById("root").innerHTML = "<div class=\'error\'>Error: " + msg + "</div>";' +
+      '  document.getElementById("root").innerHTML = "<div class=\'error\'><h2>JavaScript Error:</h2>" + msg + "</div>";' +
       '  return true;' +
       '};' +
       '</script>' +
@@ -279,13 +299,15 @@ export default function RootLayout({
       '  } else if (typeof Component === "function") {\n' +
       '    root.render(React.createElement(Component));\n' +
       '  } else {\n' +
-      '    document.getElementById("root").innerHTML = "<div class=\'error\'>Component not found. Make sure code exports a function component.</div>";\n' +
+      '    document.getElementById("root").innerHTML = "<div class=\'error\'><h2>Component Not Found</h2>Make sure your code exports a function component. The first exported function should be your main component.</div>";\n' +
       '  }\n' +
       '} catch (err) {\n' +
-      '  document.getElementById("root").innerHTML = "<div class=\'error\'>Render Error: " + err.message + "</div>";\n' +
+      '  var msg = err.message || "Unknown error";\n' +
+      '  if (msg.includes("is not defined")) { msg += " — Check your variable names and imports"; }\n' +
+      '  document.getElementById("root").innerHTML = "<div class=\'error\'><h2>Render Error:</h2>" + msg + "</div>";\n' +
       '}\n' +
       '</script>' +
-      '<script>setTimeout(function() { if (document.querySelector(".loading")) { document.getElementById("root").innerHTML = "<div class=\'error\'>Preview timed out. Component may have an error.</div>"; } }, 5000);</script>' +
+      '<script>setTimeout(function() { if (document.querySelector(".loading")) { document.getElementById("root").innerHTML = "<div class=\'error\'><h2>Preview Timeout</h2>The component took too long to render. It may have an infinite loop or blocking operation. Check the console for errors.</div>"; } }, 8000);</script>' +
       '</body></html>'
 
     return html
