@@ -398,6 +398,26 @@ export default function Home() {
     setDeployedUrl(null)
   }
 
+  const handleCodeChange = (newCode: string) => {
+    if (!currentProject) return
+    
+    const newVersion: Version = {
+      id: generateId(),
+      code: newCode,
+      timestamp: new Date().toISOString(),
+      prompt: 'Manual edit'
+    }
+    
+    const updatedProject = {
+      ...currentProject,
+      versions: [...currentProject.versions, newVersion],
+      currentVersionIndex: currentProject.versions.length,
+      updatedAt: new Date().toISOString()
+    }
+    
+    setProjects(prev => prev.map(p => p.id === currentProject.id ? updatedProject : p))
+  }
+
   const handleCodeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files || files.length === 0) return
@@ -1211,7 +1231,7 @@ export default function Home() {
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
-      <div className="flex-1 overflow-auto">{type === 'preview' ? <LivePreview code={code} isLoading={isGenerating} isPaid={isCurrentProjectPaid} setShowUpgradeModal={setShowUpgradeModal} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} />}</div>
+      <div className="flex-1 overflow-auto">{type === 'preview' ? <LivePreview code={code} isLoading={isGenerating} isPaid={isCurrentProjectPaid} setShowUpgradeModal={setShowUpgradeModal} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} />}</div>
     </div>
   )
 
@@ -1990,7 +2010,7 @@ export default function Home() {
               </div>
             </div>
             <div ref={previewContainerRef} className="flex-1 overflow-auto min-h-0">
-              {activeTab === 'preview' ? <LivePreview code={code} isLoading={isGenerating} isPaid={isCurrentProjectPaid} setShowUpgradeModal={setShowUpgradeModal} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} />}
+              {activeTab === 'preview' ? <LivePreview code={code} isLoading={isGenerating} isPaid={isCurrentProjectPaid} setShowUpgradeModal={setShowUpgradeModal} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} />}
             </div>
           </div>
         </Panel>

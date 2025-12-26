@@ -6,11 +6,13 @@ import UpgradeModal from './upgradeModal'
 interface CodePreviewProps {
   code: string
   isPaid?: boolean
+  onCodeChange?: (newCode: string) => void
 }
 
-export default function CodePreview({ code, isPaid = false }: CodePreviewProps) {
+export default function CodePreview({ code, isPaid = false, onCodeChange }: CodePreviewProps) {
   const [copied, setCopied] = useState(false)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
 
   const lines = code.split('\n')
   const visibleLines = isPaid ? lines : lines.slice(0, 15)
@@ -38,10 +40,23 @@ export default function CodePreview({ code, isPaid = false }: CodePreviewProps) 
             <span className="ml-2 px-2 py-0.5 bg-amber-500/20 text-amber-400 rounded text-xs font-medium">(Preview)</span>
           )}
         </div>
-        <button
-          onClick={handleCopy}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded-lg transition-colors"
-        >
+        <div className="flex items-center gap-2">
+          {onCodeChange && (
+            <button
+              onClick={() => setIsEditing(!isEditing)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded-lg transition-colors"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+              {isEditing ? 'Done' : 'Edit'}
+            </button>
+          )}
+          <button
+            onClick={handleCopy}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded-lg transition-colors"
+          >
           {copied ? (
             <>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -62,7 +77,16 @@ export default function CodePreview({ code, isPaid = false }: CodePreviewProps) 
       </div>
 
       <div className="flex-1 overflow-auto relative bg-zinc-950">
-        <pre className="p-4 text-sm font-mono leading-relaxed">
+        {isEditing ? (
+          <textarea
+            value={code}
+            onChange={(e) => onCodeChange?.(e.target.value)}
+            className="w-full h-full p-4 bg-zinc-950 text-zinc-300 font-mono text-sm leading-relaxed resize-none focus:outline-none"
+            spellCheck={false}
+          />
+        ) : (
+          <>
+            <pre className="p-4 text-sm font-mono leading-relaxed">
           <code>
             {visibleLines.map((line, i) => (
               <div key={i} className="flex hover:bg-zinc-900/30 transition-colors">
@@ -112,6 +136,8 @@ export default function CodePreview({ code, isPaid = false }: CodePreviewProps) 
               </div>
             </div>
           </div>
+        )}
+          </>
         )}
       </div>
 
