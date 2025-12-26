@@ -242,7 +242,7 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
             {messages.map((msg, i) => (
               <div
                 key={i}
-                className={`text-sm px-3 py-2 rounded-2xl max-w-[85%] ${
+                className={`text-sm px-3 py-2 rounded-2xl max-w-[85%] animate-in fade-in slide-in-from-bottom-2 duration-300 ${
                   msg.role === 'user' 
                     ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white ml-auto' 
                     : msg.isThinking
