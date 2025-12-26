@@ -285,7 +285,18 @@ export default function RootLayout({
       '<script>document.addEventListener("click", function(e) { var link = e.target.closest("a"); if (link) { e.preventDefault(); var href = link.getAttribute("href"); if (href && href.startsWith("#")) { var target = document.querySelector(href); if (target) target.scrollIntoView({ behavior: "smooth" }); } } });</script>' +
       '<script>' +
       'window.onerror = function(msg, url, line, col, error) {' +
-      '  document.getElementById("root").innerHTML = "<div class=\'error\'><h2>⚠️ Preview Unavailable</h2><p>Your code is ready in the <strong>Code</strong> tab</p><p style=\'font-size: 0.9em; color: #a1a1aa; margin-top: 1rem;\'>This component has a JavaScript issue. Check the browser console for details.</p></div>";' +
+      '  document.getElementById("root").innerHTML = ' +
+      '    "<div class=\'error\'>" +' +
+      '    "<h2>⚠️ Could not render preview</h2>" +' +
+      '    "<p style=\'color: #f87171;\'>The AI generated code that could not be displayed.</p>" +' +
+      '    "<p style=\'font-size: 0.9em; color: #d4d4d8; margin-top: 1rem;\'><strong>Tips to fix this:</strong></p>" +' +
+      '    "<ul style=\'text-align: left; margin-top: 0.5rem; padding-left: 1.5rem; color: #a1a1aa; font-size: 0.85em;\'>" +' +
+      '    "<li style=\'margin-bottom: 0.5rem;\'>Try describing a <strong>webpage or UI</strong> instead of images/logos</li>" +' +
+      '    "<li style=\'margin-bottom: 0.5rem;\'>For logos, use the <strong>Assets</strong> button to upload your own</li>" +' +
+      '    "<li>Ask for a landing page or a contact form</li>" +' +
+      '    "</ul>" +' +
+      '    "<p style=\'margin-top: 1rem; font-size: 0.85em; color: #71717a;\'>Your code is still available in the Code tab.</p>" +' +
+      '    "</div>";' +
       '  return true;' +
       '};' +
       '</script>' +
@@ -303,7 +314,18 @@ export default function RootLayout({
       '  }\n' +
       '} catch (err) {\n' +
       '  var msg = err.message || "Unknown error";\n' +
-      '  document.getElementById("root").innerHTML = "<div class=\'error\'><h2>⚠️ Preview Unavailable</h2><p>Your code is ready in the <strong>Code</strong> tab</p><p style=\'font-size: 0.9em; color: #a1a1aa; margin-top: 1rem;\'>Issue: " + msg + "</p></div>";\n' +
+      '  document.getElementById("root").innerHTML = ' +
+      '    "<div class=\'error\'>" +' +
+      '    "<h2>⚠️ Could not render preview</h2>" +' +
+      '    "<p style=\'color: #f87171; font-size: 0.9em;\'>" + msg + "</p>" +' +
+      '    "<p style=\'font-size: 0.9em; color: #d4d4d8; margin-top: 1rem;\'><strong>Tips:</strong></p>" +' +
+      '    "<ul style=\'text-align: left; margin-top: 0.5rem; padding-left: 1.5rem; color: #a1a1aa; font-size: 0.85em;\'>" +' +
+      '    "<li style=\'margin-bottom: 0.5rem;\'>Try a simpler request like a landing page</li>" +' +
+      '    "<li style=\'margin-bottom: 0.5rem;\'>For images/logos, upload them via <strong>Assets</strong></li>" +' +
+      '    "<li>Click <strong>Update</strong> to regenerate</li>" +' +
+      '    "</ul>" +' +
+      '    "<p style=\'margin-top: 1rem; font-size: 0.85em; color: #71717a;\'>Your code is still available in the Code tab.</p>" +' +
+      '    "</div>";\n' +
       '}\n' +
       '</script>' +
       '<script>setTimeout(function() { if (document.querySelector(".loading")) { document.getElementById("root").innerHTML = "<div class=\'error\'><h2>⚠️ Preview Timeout</h2><p>Your code is ready in the <strong>Code</strong> tab</p><p style=\'font-size: 0.9em; color: #a1a1aa; margin-top: 1rem;\'>The component took too long to render. Check for infinite loops.</p></div>"; } }, 8000);</script>' +
