@@ -791,7 +791,7 @@ export default function Home() {
           </div>
         </div>
         <div className="flex-1 overflow-hidden">
-          <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} key={currentProjectId} />
+          <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} isPaid={isPaid} key={currentProjectId} />
         </div>
         {code && (
           <div className="px-4 py-3 border-t border-zinc-800 bg-zinc-900 flex gap-2" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
@@ -835,7 +835,7 @@ export default function Home() {
                 {canUndo && <button onClick={handleUndo} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" title="Undo"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg></button>}
               </div>
             </div>
-            <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} key={currentProjectId} />
+            <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} isPaid={isPaid} key={currentProjectId} />
           </div>
         </Panel>
         <Separator className="w-2 bg-zinc-800 hover:bg-zinc-700 transition-colors cursor-col-resize flex items-center justify-center group">

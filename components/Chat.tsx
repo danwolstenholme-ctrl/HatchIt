@@ -14,6 +14,7 @@ interface ChatProps {
   onGenerate: (prompt: string, history: Message[], currentCode: string) => Promise<void>
   isGenerating: boolean
   currentCode: string
+  isPaid?: boolean
 }
 
 const thinkingMessages = [
@@ -46,18 +47,16 @@ function getRandomResponse() {
   return responses[Math.floor(Math.random() * responses.length)]
 }
 
-export default function Chat({ onGenerate, isGenerating, currentCode }: ChatProps) {
+export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = false }: ChatProps) {
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [remaining, setRemaining] = useState<number | null>(null)
-  const [isPaid, setIsPaid] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setRemaining(getGenerationsRemaining())
-    setIsPaid(isPaidUser())
-  }, [])
+  }, [isPaid])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
