@@ -807,16 +807,53 @@ export default function Home() {
   const handleGenerate = async (prompt: string, history: Message[], currentCode: string) => {
     setIsGenerating(true)
     try {
+      // Prepare page context for multi-page projects
+      const payload: Record<string, unknown> = { prompt, history, currentCode }
+      if (currentProject && isMultiPageProject(currentProject)) {
+        payload.currentPage = {
+          id: currentPage?.id,
+          name: currentPage?.name,
+          path: currentPage?.path
+        }
+        payload.allPages = currentProject.pages!.map(p => ({
+          id: p.id,
+          name: p.name,
+          path: p.path
+        }))
+      }
+      
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, history, currentCode }),
+        body: JSON.stringify(payload),
       })
       const data = await response.json()
       if (data.code) {
         const newVersion: Version = { id: generateId(), code: data.code, timestamp: new Date().toISOString(), prompt }
-        const newVersions = currentVersionIndex >= 0 ? [...versions.slice(0, currentVersionIndex + 1), newVersion] : [newVersion]
-        updateCurrentProject({ versions: newVersions, currentVersionIndex: newVersions.length - 1 })
+        
+        // Handle multi-page vs single-page projects
+        if (currentProject && isMultiPageProject(currentProject) && currentPage) {
+          // Update the current page's versions
+          const updatedPages = currentProject.pages!.map(page =>
+            page.id === currentPage.id
+              ? {
+                  ...page,
+                  versions: page.currentVersionIndex >= 0 
+                    ? [...page.versions.slice(0, page.currentVersionIndex + 1), newVersion]
+                    : [newVersion],
+                  currentVersionIndex: page.currentVersionIndex >= 0 
+                    ? page.currentVersionIndex + 1
+                    : 0
+                }
+              : page
+          )
+          updateCurrentProject({ pages: updatedPages })
+        } else {
+          // Legacy single-page project
+          const newVersions = currentVersionIndex >= 0 ? [...versions.slice(0, currentVersionIndex + 1), newVersion] : [newVersion]
+          updateCurrentProject({ versions: newVersions, currentVersionIndex: newVersions.length - 1 })
+        }
+        
         if (isMobile) setMobileModal('preview')
       }
     } catch (error) {
