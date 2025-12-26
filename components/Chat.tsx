@@ -49,12 +49,17 @@ function getRandomResponse() {
 
 export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = false }: ChatProps) {
   const [input, setInput] = useState('')
-  const [messages, setMessages] = useState<Message[]>([])
+  const [buildMessages, setBuildMessages] = useState<Message[]>([])
+  const [chatMessages, setChatMessages] = useState<Message[]>([])
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [remaining, setRemaining] = useState<number | null>(null)
   const [mode, setMode] = useState<'build' | 'chat'>('build')
   const [isChatLoading, setIsChatLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Use the appropriate message array based on current mode
+  const messages = mode === 'build' ? buildMessages : chatMessages
+  const setMessages = mode === 'build' ? setBuildMessages : setChatMessages
 
   useEffect(() => {
     setRemaining(getGenerationsRemaining())
