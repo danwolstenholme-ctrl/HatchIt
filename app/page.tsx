@@ -54,7 +54,7 @@ export default function Home() {
           <div className="mb-8 md:mb-12">
             <div className="inline-flex items-center gap-2 bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-full px-4 py-2 md:px-6 md:py-3 mb-6">
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="text-xs md:text-sm text-zinc-400">Build for free. Pay when you go live.</span>
+              <span className="text-sm text-zinc-400">Build for free. Pay when you go live.</span>
             </div>
             
             {/* Hero logo - hidden on mobile since it's in nav */}
@@ -68,7 +68,7 @@ export default function Home() {
               <span className="text-zinc-600">.</span>
             </h1>
             
-            <div className="text-3xl md:text-5xl font-bold mb-6 md:mb-8">
+            <div className="text-4xl md:text-5xl font-bold mb-6 md:mb-8">
               <span className="bg-gradient-to-r from-zinc-300 to-zinc-500 bg-clip-text text-transparent">Describe. </span>
               <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Build. Ship.</span>
             </div>
