@@ -1,3 +1,68 @@
+  // Auto-prompt export modal state
+  const [showExportReminder, setShowExportReminder] = useState(false);
+  // Track if user has dismissed export reminder for this project
+  const [exportReminderDismissed, setExportReminderDismissed] = useState(() => {
+    if (typeof window !== 'undefined' && currentProjectId) {
+      return localStorage.getItem(`hatchit-export-reminder-dismissed-${currentProjectId}`) === 'true';
+    }
+    return false;
+  });
+
+  // Helper: has exported (downloaded) or deployed?
+  const hasExportedOrDeployed = useMemo(() => {
+    if (!currentProject) return false;
+    // Check for deployed
+    if (currentProject.deployedSlug) return true;
+    // Check for export/download event in localStorage
+    return localStorage.getItem(`hatchit-exported-${currentProject.id}`) === 'true';
+  }, [currentProject]);
+
+  // Listen for download event to mark as exported
+  useEffect(() => {
+    const handler = () => {
+      if (currentProject) {
+        localStorage.setItem(`hatchit-exported-${currentProject.id}`, 'true');
+        setShowExportReminder(false);
+      }
+    };
+    window.addEventListener('triggerDownload', handler);
+    return () => window.removeEventListener('triggerDownload', handler);
+  }, [currentProject]);
+
+  // Show export reminder modal logic
+  useEffect(() => {
+    if (!currentProject || exportReminderDismissed || hasExportedOrDeployed) return;
+    if ((currentProject.versions?.length || 0) >= 5) {
+      setShowExportReminder(true);
+    }
+  }, [currentProject, exportReminderDismissed, hasExportedOrDeployed]);
+
+  const handleDismissExportReminder = () => {
+    setShowExportReminder(false);
+    setExportReminderDismissed(true);
+    if (currentProjectId) {
+      localStorage.setItem(`hatchit-export-reminder-dismissed-${currentProjectId}`, 'true');
+    }
+  };
+
+  const handleExportFromReminder = () => {
+    setShowExportReminder(false);
+    handleDownloadClick();
+  };
+
+  // Export reminder modal component
+  const ExportReminderModal = () => (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100]">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 max-w-sm mx-4 shadow-2xl">
+        <h2 className="text-lg font-semibold text-white mb-2">You’ve been working hard!</h2>
+        <p className="text-zinc-400 text-sm mb-4">Want to export a backup of your code?</p>
+        <div className="flex gap-3 justify-end mt-2">
+          <button onClick={handleDismissExportReminder} className="px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors">Not now</button>
+          <button onClick={handleExportFromReminder} className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-colors">Export ZIP</button>
+        </div>
+      </div>
+    </div>
+  );
 'use client'
 import { useState, useEffect, useRef, useMemo } from 'react'
 import Link from 'next/link'
@@ -1317,9 +1382,33 @@ export default function Home() {
     </div>
   )
 
+  // Warning banner state
+  const [showWarningBanner, setShowWarningBanner] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('hatchit-warning-banner-dismissed') !== 'true';
+    }
+    return true;
+  });
+
+  const handleDismissWarning = () => {
+    setShowWarningBanner(false);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('hatchit-warning-banner-dismissed', 'true');
+    }
+  };
+
   if (isMobile) {
     return (
       <div className="h-dvh bg-zinc-950 flex flex-col overflow-x-hidden">
+        {showExportReminder && <ExportReminderModal />}
+        {showWarningBanner && (
+          <div className="w-full bg-amber-500/20 border-b border-amber-400/30 text-amber-900 text-xs flex items-center justify-between px-3 py-2 z-50">
+            <span className="flex items-center gap-2"><span role="img" aria-label="floppy">💾</span> Your projects are saved in your browser. <span className="hidden xs:inline">Deploy or export regularly to keep your work safe.</span></span>
+            <button onClick={handleDismissWarning} className="ml-2 text-amber-700 hover:text-amber-900 p-1 rounded transition-colors" aria-label="Dismiss">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+        )}
         {showRenameModal && <RenameModal />}
         {showDeleteModal && <DeleteModal />}
         {showDeployModal && <DeployConfirmModal />}
@@ -1432,6 +1521,15 @@ export default function Home() {
 
   return (
     <div className="h-dvh bg-zinc-950 p-3">
+      {showExportReminder && <ExportReminderModal />}
+      {showWarningBanner && (
+        <div className="w-full bg-amber-500/20 border-b border-amber-400/30 text-amber-900 text-xs flex items-center justify-between px-4 py-2 rounded-t-2xl z-50">
+          <span className="flex items-center gap-2"><span role="img" aria-label="floppy">💾</span> Your projects are saved in your browser. <span className="hidden sm:inline">Deploy or export regularly to keep your work safe.</span></span>
+          <button onClick={handleDismissWarning} className="ml-2 text-amber-700 hover:text-amber-900 p-1 rounded transition-colors" aria-label="Dismiss">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+      )}
       {showRenameModal && <RenameModal />}
       {showDeleteModal && <DeleteModal />}
       {showDeployModal && <DeployConfirmModal />}
