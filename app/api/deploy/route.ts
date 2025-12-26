@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@clerk/nextjs/server'
+import { clerkClient } from '@clerk/nextjs/server'
 
 export async function POST(req: NextRequest) {
   try {
+    // Authenticate user
+    const { userId } = await auth()
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { code, projectName } = await req.json()
 
     if (!code) {
@@ -186,6 +194,30 @@ export default function RootLayout({
         { error: deployment.error?.message || 'Deployment failed' },
         { status: response.status }
       )
+    }
+
+    // Store the deployed slug in Clerk metadata
+    try {
+      const client = await clerkClient()
+      const user = await client.users.getUser(userId)
+      const existingDeployedSlugs = (user.publicMetadata?.deployedSlugs as string[]) || []
+      
+      // Add the new slug if not already in the list
+      if (!existingDeployedSlugs.includes(slug)) {
+        existingDeployedSlugs.push(slug)
+      }
+
+      await client.users.updateUser(userId, {
+        publicMetadata: {
+          ...user.publicMetadata,
+          deployedSlugs: existingDeployedSlugs,
+        },
+      })
+
+      console.log(`Stored deployed slug ${slug} for user ${userId}`)
+    } catch (err) {
+      console.error('Failed to store deployed slug in metadata:', err)
+      // Don't fail the deployment if metadata update fails
     }
 
     // Return the clean URL
