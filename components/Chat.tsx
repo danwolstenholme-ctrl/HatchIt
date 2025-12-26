@@ -148,51 +148,37 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
 
   return (
     <div className="flex flex-col h-full">
-      {/* Generation limit indicator */}
-      {remaining !== null && (
-        <div className="px-4 py-2 border-b border-zinc-800/50">
-          {isPaid ? (
-            // Paid users - unlimited
-            <div className="flex items-center gap-2">
-              <span className="text-lg text-zinc-200">∞</span>
-              <span className="text-xs text-zinc-400">Unlimited generations</span>
+      {/* Generation limit indicator - compact */}
+      {remaining !== null && !isPaid && (
+        <div className="px-3 py-1.5 border-b border-zinc-800/50 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={remaining <= 3 ? 'text-amber-400' : 'text-zinc-500'}>
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+              </svg>
+              <span className={`text-xs ${remaining <= 3 ? 'text-amber-400' : 'text-zinc-500'}`}>
+                {remaining}/{limit}
+              </span>
             </div>
-          ) : (
-            // Free users - countdown
-            <>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={remaining <= 3 ? 'text-amber-400' : 'text-zinc-500'}>
-                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-                  </svg>
-                  <span className={`text-xs ${remaining <= 3 ? 'text-amber-400' : 'text-zinc-500'}`}>
-                    {remaining} generations left today
-                  </span>
-                </div>
-                <button 
-                  onClick={() => setShowUpgradeModal(true)}
-                  className="text-xs text-purple-400 hover:text-purple-300 font-medium transition-colors"
-                >
-                  Upgrade
-                </button>
-              </div>
-              {/* Progress bar */}
-              <div className="mt-1.5 h-1 bg-zinc-800 rounded-full overflow-hidden">
-                <div 
-                  className={`h-full transition-all duration-300 ${
-                    remaining <= 3 ? 'bg-amber-500' : 'bg-blue-500'
-                  }`}
-                  style={{ width: `${(remaining / limit) * 100}%` }}
-                />
-              </div>
-            </>
-          )}
+            <div className="w-16 h-1 bg-zinc-800 rounded-full overflow-hidden">
+              <div 
+                className={`h-full transition-all duration-300 ${remaining <= 3 ? 'bg-amber-500' : 'bg-blue-500'}`}
+                style={{ width: `${(remaining / limit) * 100}%` }}
+              />
+            </div>
+          </div>
+          <button 
+            onClick={() => setShowUpgradeModal(true)}
+            className="text-xs text-purple-400 hover:text-purple-300 font-medium transition-colors"
+          >
+            Upgrade
+          </button>
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div className="flex-1 overflow-y-auto p-3 space-y-3">
         {/* Mode toggle */}
-        <div className="flex items-center gap-1 p-1 bg-zinc-900 rounded-lg sticky top-0 z-10 mb-3">
+        <div className="flex items-center gap-1 p-1 bg-zinc-900 rounded-lg sticky top-0 z-10 mb-2">
           <button
             onClick={() => setMode('build')}
             className={`flex-1 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
@@ -217,20 +203,19 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
 
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center px-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center mb-4">
-              <span className="text-2xl">{mode === 'chat' ? '💬' : '⚡'}</span>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center mb-3">
+              <span className="text-xl">{mode === 'chat' ? '💬' : '⚡'}</span>
             </div>
-            <p className="text-zinc-300 text-sm font-medium mb-2">{mode === 'chat' ? 'Ask me anything' : 'Describe. Generate. Ship.'}</p>
-            <p className="text-zinc-600 text-xs max-w-[220px] mb-6">{mode === 'chat' ? 'I can explain your code, suggest improvements, or help you brainstorm.' : 'Tell us what UI you want. We\'ll generate production React code in real-time. Not a chatbot — instant component generation.'}</p>
+            <p className="text-zinc-300 text-sm font-medium mb-1">{mode === 'chat' ? 'Ask me anything' : 'Describe → Generate → Ship'}</p>
+            <p className="text-zinc-600 text-xs max-w-[200px] mb-4">{mode === 'chat' ? 'Get help with your code or brainstorm ideas.' : 'Describe any UI. We generate real React code.'}</p>
             
             {mode === 'build' && (
               <div className="w-full space-y-2">
-                <p className="text-xs text-zinc-500 font-medium mb-3">Try these:</p>
+                <p className="text-xs text-zinc-500 font-medium mb-2">Try these:</p>
                 {[
-                  'A landing page for my photography business with a contact form',
+                  'A landing page for my business',
                   'A coming soon page with email signup',
-                  'A pricing page with three tiers',
-                  'A portfolio showcase with image gallery'
+                  'A pricing page with three tiers'
                 ].map((prompt, i) => (
                   <button
                     key={i}
@@ -245,12 +230,11 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
 
             {mode === 'chat' && (
               <div className="w-full space-y-2">
-                <p className="text-xs text-zinc-500 font-medium mb-3">Try asking:</p>
+                <p className="text-xs text-zinc-500 font-medium mb-2">Try asking:</p>
                 {[
                   'What does this component do?',
-                  'How can I make the design more modern?',
-                  'What features should I add next?',
-                  'Explain the responsive design'
+                  'How can I improve the design?',
+                  'What features should I add?'
                 ].map((prompt, i) => (
                   <button
                     key={i}
@@ -318,7 +302,7 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
                 : messages.length === 0 ? "A landing page with a hero section and pricing table..." : "Modify the design..."
             }
             className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-700 focus:ring-1 focus:ring-zinc-700 resize-none transition-all"
-            rows={3}
+            rows={2}
             disabled={isGenerating || isChatLoading}
           />
           <div className="flex gap-2">
@@ -326,17 +310,17 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
               <button
                 type="button"
                 onClick={onOpenAssets}
-                className="px-3 py-2.5 rounded-xl text-sm font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-all flex items-center gap-2"
+                className="hidden sm:flex px-3 py-2 rounded-xl text-sm font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-all items-center gap-2"
                 title="Upload images"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                <span className="hidden sm:inline">Assets</span>
+                Assets
               </button>
             )}
             <button
               type="submit"
               disabled={isGenerating || isChatLoading || !input.trim()}
-              className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+              className={`flex-1 px-4 py-2 rounded-xl text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
                 mode === 'chat'
                   ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white'
                   : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white'
