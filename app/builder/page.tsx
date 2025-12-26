@@ -130,6 +130,14 @@ interface SiteSubscription {
   createdAt: string
 }
 
+// Type for deployed project (from user metadata)
+interface DeployedProject {
+  slug: string
+  name: string
+  code: string
+  deployedAt: string
+}
+
 const generateId = () => Math.random().toString(36).substring(2, 9)
 
 const projectNameSuggestions = [
@@ -260,6 +268,18 @@ export default function Home() {
   const hasAnyPaidSubscription = useMemo(() => {
     return subscriptions.some(s => s.status === 'active')
   }, [subscriptions])
+
+  // Get deployed projects from Clerk metadata
+  const deployedProjects = useMemo(() => {
+    return (user?.publicMetadata?.deployedProjects as DeployedProject[]) || []
+  }, [user?.publicMetadata?.deployedProjects])
+
+  // Get projects that exist in Clerk but not in localStorage
+  const projectsToPull = useMemo(() => {
+    return deployedProjects.filter(deployed => 
+      !projects.some(local => local.deployedSlug === deployed.slug)
+    )
+  }, [deployedProjects, projects])
 
   useEffect(() => {
     const savedProjects = localStorage.getItem('hatchit-projects')
@@ -437,6 +457,42 @@ export default function Home() {
     setCurrentProjectId(duplicate.id)
     setShowProjectDropdown(false)
     setDeployedUrl(null)
+  }
+
+  const pullProject = (deployedProject: DeployedProject) => {
+    // Create a new local project with the deployed code
+    const newProject: Project = {
+      id: generateId(),
+      name: deployedProject.name,
+      versions: [{
+        id: generateId(),
+        code: deployedProject.code,
+        timestamp: deployedProject.deployedAt,
+        prompt: 'Pulled from deployed project'
+      }],
+      currentVersionIndex: 0,
+      createdAt: deployedProject.deployedAt,
+      updatedAt: new Date().toISOString(),
+      deployedSlug: deployedProject.slug,
+    }
+    setProjects(prev => [newProject, ...prev])
+    setCurrentProjectId(newProject.id)
+    
+    // Show success toast
+    const toast = document.createElement('div')
+    toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[9999] bg-green-600 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-2 animate-fade-in'
+    toast.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      <span>Project pulled successfully!</span>
+    `
+    document.body.appendChild(toast)
+    setTimeout(() => {
+      toast.style.opacity = '0'
+      toast.style.transition = 'opacity 0.3s'
+      setTimeout(() => document.body.removeChild(toast), 300)
+    }, 3000)
   }
 
   const handleGenerate = async (prompt: string, history: Message[], currentCode: string) => {
@@ -1404,7 +1460,7 @@ export default function Home() {
         {showExportReminder && <ExportReminderModal />}
         {showWarningBanner && (
           <div className="w-full bg-amber-500/20 border-b border-amber-400/30 text-amber-900 text-xs flex items-center justify-between px-3 py-2 z-50">
-            <span className="flex items-center gap-2"><span role="img" aria-label="floppy">💾</span> Your projects are saved in your browser. <span className="hidden xs:inline">Deploy or export regularly to keep your work safe.</span></span>
+            <span className="flex items-center gap-2"><span role="img" aria-label="floppy">💾</span> Projects are saved on this device. Deploy to sync across devices.</span>
             <button onClick={handleDismissWarning} className="ml-2 text-amber-700 hover:text-amber-900 p-1 rounded transition-colors" aria-label="Dismiss">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
             </button>
@@ -1504,6 +1560,44 @@ export default function Home() {
             </button>
           </div>
         </div>
+        {projectsToPull.length > 0 && (
+          <div className="p-3 border-b border-zinc-800 bg-zinc-900">
+            <div className="bg-blue-600/10 border border-blue-500/20 rounded-xl p-3">
+              <div className="flex items-start gap-2 mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-blue-400 flex-shrink-0 mt-0.5">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-xs font-semibold text-white mb-0.5">Projects on other devices</h3>
+                  <p className="text-[10px] text-zinc-400">Pull to continue working</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                {projectsToPull.map((project) => (
+                  <div key={project.slug} className="flex items-center justify-between bg-zinc-800/50 rounded-lg p-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-medium text-white truncate">{project.name}</div>
+                      <div className="text-[10px] text-zinc-500">{new Date(project.deployedAt).toLocaleDateString()}</div>
+                    </div>
+                    <button
+                      onClick={() => pullProject(project)}
+                      className="ml-2 px-2 py-1 text-[10px] bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors whitespace-nowrap flex items-center gap-1"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                      </svg>
+                      Pull
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
         <div className="flex-1 overflow-hidden">
           <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} isPaid={isCurrentProjectPaid} onOpenAssets={() => setShowAssetsModal(true)} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} key={currentProjectId} />
         </div>
@@ -1525,7 +1619,7 @@ export default function Home() {
       {showExportReminder && <ExportReminderModal />}
       {showWarningBanner && (
         <div className="w-full bg-amber-500/20 border-b border-amber-400/30 text-amber-900 text-xs flex items-center justify-between px-4 py-2 rounded-t-2xl z-50">
-          <span className="flex items-center gap-2"><span role="img" aria-label="floppy">💾</span> Your projects are saved in your browser. <span className="hidden sm:inline">Deploy or export regularly to keep your work safe.</span></span>
+          <span className="flex items-center gap-2"><span role="img" aria-label="floppy">💾</span> Projects are saved on this device. Deploy to sync across devices.</span>
           <button onClick={handleDismissWarning} className="ml-2 text-amber-700 hover:text-amber-900 p-1 rounded transition-colors" aria-label="Dismiss">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
@@ -1569,6 +1663,44 @@ export default function Home() {
                 </div>
               </div>
             </div>
+            {projectsToPull.length > 0 && (
+              <div className="p-4 border-b border-zinc-800">
+                <div className="bg-blue-600/10 border border-blue-500/20 rounded-xl p-4">
+                  <div className="flex items-start gap-3 mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-blue-400 flex-shrink-0 mt-0.5">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="7 10 12 15 17 10"/>
+                      <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-semibold text-white mb-1">You have projects on other devices</h3>
+                      <p className="text-xs text-zinc-400">Pull them to this device to continue working</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    {projectsToPull.map((project) => (
+                      <div key={project.slug} className="flex items-center justify-between bg-zinc-800/50 rounded-lg p-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-white truncate">{project.name}</div>
+                          <div className="text-xs text-zinc-500">Deployed {new Date(project.deployedAt).toLocaleDateString()}</div>
+                        </div>
+                        <button
+                          onClick={() => pullProject(project)}
+                          className="ml-3 px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors whitespace-nowrap flex items-center gap-1"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                          </svg>
+                          Pull Code
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
             <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} isPaid={isCurrentProjectPaid} onOpenAssets={() => setShowAssetsModal(true)} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} key={currentProjectId} />
           </div>
         </Panel>

@@ -11,6 +11,14 @@ interface SiteSubscription {
   createdAt: string
 }
 
+// Type for deployed project
+interface DeployedProject {
+  slug: string
+  name: string
+  code: string
+  deployedAt: string
+}
+
 export async function POST(req: NextRequest) {
   try {
     // Authenticate user
@@ -221,27 +229,31 @@ export default function RootLayout({
       )
     }
 
-    // Store the deployed slug in Clerk metadata
+    // Store the deployed project with code in Clerk metadata
     try {
       const client = await clerkClient()
       const user = await client.users.getUser(userId)
-      const existingDeployedSlugs = (user.publicMetadata?.deployedSlugs as string[]) || []
+      const existingDeployedProjects = (user.publicMetadata?.deployedProjects as DeployedProject[]) || []
       
-      // Add the new slug if not already in the list
-      if (!existingDeployedSlugs.includes(slug)) {
-        existingDeployedSlugs.push(slug)
-      }
+      // Remove existing project with same slug if it exists, then add new one
+      const updatedProjects = existingDeployedProjects.filter(p => p.slug !== slug)
+      updatedProjects.push({
+        slug,
+        name: projectName || slug,
+        code,
+        deployedAt: new Date().toISOString()
+      })
 
       await client.users.updateUser(userId, {
         publicMetadata: {
           ...user.publicMetadata,
-          deployedSlugs: existingDeployedSlugs,
+          deployedProjects: updatedProjects,
         },
       })
 
-      console.log(`Stored deployed slug ${slug} for user ${userId}`)
+      console.log(`Stored deployed project ${slug} for user ${userId}`)
     } catch (err) {
-      console.error('Failed to store deployed slug in metadata:', err)
+      console.error('Failed to store deployed project in metadata:', err)
       // Don't fail the deployment if metadata update fails
     }
 
