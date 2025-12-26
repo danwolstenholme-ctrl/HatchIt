@@ -39,9 +39,28 @@ interface Project {
 
 const generateId = () => Math.random().toString(36).substring(2, 9)
 
+const projectNameSuggestions = [
+  'Fresh Canvas',
+  'Quick Build',
+  'New Creation',
+  'Blank Slate',
+  'Fresh Start',
+  'Quick Design',
+  'New Project',
+  'Fresh Idea',
+  'Quick Sketch',
+  'New Vision',
+]
+
+const generateProjectName = (): string => {
+  const suggestion = projectNameSuggestions[Math.floor(Math.random() * projectNameSuggestions.length)]
+  const num = Math.floor(Math.random() * 999) + 1
+  return `${suggestion} ${num}`
+}
+
 const createNewProject = (name?: string): Project => ({
   id: generateId(),
-  name: name || 'Untitled Project',
+  name: name || generateProjectName(),
   versions: [],
   currentVersionIndex: -1,
   createdAt: new Date().toISOString(),
@@ -729,7 +748,7 @@ export default function Home() {
 
   if (isMobile) {
     return (
-      <div className="h-screen bg-zinc-950 flex flex-col">
+      <div className="h-dvh bg-zinc-950 flex flex-col">
         {showRenameModal && <RenameModal />}
         {showDeleteModal && <DeleteModal />}
         {showDeployModal && <DeployConfirmModal />}
@@ -821,7 +840,7 @@ export default function Home() {
   }
 
   return (
-    <div className="h-screen bg-zinc-950 p-3">
+    <div className="h-dvh bg-zinc-950 p-3">
       {showRenameModal && <RenameModal />}
       {showDeleteModal && <DeleteModal />}
       {showDeployModal && <DeployConfirmModal />}
