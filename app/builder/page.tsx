@@ -1513,7 +1513,7 @@ export default function Home() {
   const ShipModal = () => (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-zinc-900 rounded-xl p-6 md:p-8 w-full max-w-md border border-zinc-800">
-        <h2 className="text-2xl font-bold mb-2">Ship your site</h2>
+        <h2 className="text-2xl font-bold mb-2 text-white">Ship your site</h2>
         <p className="text-zinc-400 mb-6">Manage your deployed project</p>
         
         <div className="space-y-3">
@@ -1703,7 +1703,7 @@ export default function Home() {
         {showShipModal && !isDeploying && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-zinc-900 rounded-xl p-6 md:p-8 w-full max-w-md border border-zinc-800">
-              <h2 className="text-2xl font-bold mb-2">Ship your site</h2>
+              <h2 className="text-2xl font-bold mb-2 text-white">Ship your site</h2>
               <p className="text-zinc-400 mb-6">Manage your deployed project</p>
               
               <div className="space-y-3">
