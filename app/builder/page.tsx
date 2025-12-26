@@ -453,10 +453,20 @@ export default function Home() {
         const [, owner, repo] = isRepoUrl
         onProgress?.('Fetching repository structure...')
         
-        // Get repo contents via GitHub API
-        const apiUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/main?recursive=1`
-        const response = await fetch(apiUrl)
-        if (!response.ok) throw new Error('Failed to fetch repository')
+        // Try main branch first, then master
+        let apiUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/main?recursive=1`
+        let response = await fetch(apiUrl)
+        
+        if (!response.ok) {
+          // Try master branch
+          apiUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/master?recursive=1`
+          response = await fetch(apiUrl)
+        }
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(errorData.message || 'Repository not found or inaccessible')
+        }
         
         const data = await response.json()
         
@@ -477,13 +487,16 @@ export default function Home() {
         
         onProgress?.(`Found ${relevantFiles.length} files. Importing...`)
         
+        // Determine branch (main or master)
+        const branch = apiUrl.includes('/main?') ? 'main' : 'master'
+        
         // Import each file
         const newProjects: Project[] = []
         for (let i = 0; i < relevantFiles.length; i++) {
           const file = relevantFiles[i]
           onProgress?.(`Importing ${i + 1}/${relevantFiles.length}: ${file.path}`)
           
-          const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/main/${file.path}`
+          const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${file.path}`
           const fileResponse = await fetch(rawUrl)
           if (!fileResponse.ok) continue
           
