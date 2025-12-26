@@ -1,6 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@clerk/nextjs/server'
+import { clerkClient } from '@clerk/nextjs/server'
 
 export async function POST(req: NextRequest) {
+  // Authenticate user
+  const { userId } = await auth()
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  // Check if user is paid (export is a paid feature)
+  try {
+    const client = await clerkClient()
+    const user = await client.users.getUser(userId)
+    if (user.publicMetadata?.paid !== true) {
+      return NextResponse.json({ error: 'Upgrade required to download projects' }, { status: 403 })
+    }
+  } catch {
+    return NextResponse.json({ error: 'Failed to verify subscription' }, { status: 500 })
+  }
+
   const { code } = await req.json()
 
   if (!code) {

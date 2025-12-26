@@ -1,8 +1,56 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@clerk/nextjs/server'
+import { clerkClient } from '@clerk/nextjs/server'
 
 interface Message {
   role: 'user' | 'assistant'
   content: string
+}
+
+// Server-side rate limiting (userId -> timestamps)
+const rateLimits = new Map<string, number[]>()
+const RATE_LIMIT_PER_MINUTE = 20
+const RATE_LIMIT_WINDOW = 60000 // 1 minute
+
+function checkRateLimit(userId: string): boolean {
+  const now = Date.now()
+  const timestamps = rateLimits.get(userId) || []
+  const recent = timestamps.filter(t => now - t < RATE_LIMIT_WINDOW)
+  
+  if (recent.length >= RATE_LIMIT_PER_MINUTE) {
+    return false
+  }
+  
+  recent.push(now)
+  rateLimits.set(userId, recent)
+  return true
+}
+
+// Server-side daily generation tracking
+const dailyGenerations = new Map<string, { count: number; date: string }>()
+const FREE_DAILY_LIMIT = 10
+
+function checkAndRecordGeneration(userId: string, isPaid: boolean): { allowed: boolean; remaining: number } {
+  if (isPaid) {
+    return { allowed: true, remaining: -1 } // Unlimited for paid users
+  }
+  
+  const today = new Date().toISOString().split('T')[0]
+  const userGen = dailyGenerations.get(userId) || { count: 0, date: today }
+  
+  // Reset if new day
+  if (userGen.date !== today) {
+    userGen.count = 0
+    userGen.date = today
+  }
+  
+  if (userGen.count >= FREE_DAILY_LIMIT) {
+    return { allowed: false, remaining: 0 }
+  }
+  
+  userGen.count++
+  dailyGenerations.set(userId, userGen)
+  return { allowed: true, remaining: FREE_DAILY_LIMIT - userGen.count }
 }
 
 // Simple syntax check
@@ -138,7 +186,49 @@ When user asks to modify existing code:
 - Maintain consistent styling`
 
 export async function POST(request: NextRequest) {
+  // Authenticate user
+  const { userId } = await auth()
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  // Check rate limit
+  if (!checkRateLimit(userId)) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded. Maximum 20 requests per minute.' },
+      { status: 429 }
+    )
+  }
+
+  // Check if user is paid
+  let isPaid = false
+  try {
+    const client = await clerkClient()
+    const user = await client.users.getUser(userId)
+    isPaid = user.publicMetadata?.paid === true
+  } catch {
+    // Continue as free user if lookup fails
+  }
+
+  // Check daily generation limit for free users
+  const genCheck = checkAndRecordGeneration(userId, isPaid)
+  if (!genCheck.allowed) {
+    return NextResponse.json(
+      { error: 'Daily generation limit reached. Upgrade to continue building.' },
+      { status: 429 }
+    )
+  }
+
   const { prompt, history, currentCode } = await request.json()
+
+  // Input validation
+  if (!prompt || typeof prompt !== 'string') {
+    return NextResponse.json({ error: 'Invalid prompt' }, { status: 400 })
+  }
+
+  if (prompt.length > 10000) {
+    return NextResponse.json({ error: 'Prompt too long (max 10,000 characters)' }, { status: 400 })
+  }
 
   const messages: Message[] = []
   

@@ -60,14 +60,17 @@ export async function POST(req: Request) {
     console.log(`Subscription canceled for customer: ${customerId}`)
 
     try {
-      // Find the user by Stripe customer ID and mark them as unpaid
+      // Find the user by Stripe customer ID stored in their metadata
       const client = await clerkClient()
-      const users = await client.users.getUserList({
-        query: customerId,
-      })
+      
+      // Get all users and filter by stripeCustomerId in metadata
+      // This is more reliable than text search
+      const allUsers = await client.users.getUserList({ limit: 100 })
+      const user = allUsers.data.find(
+        u => u.publicMetadata?.stripeCustomerId === customerId
+      )
 
-      if (users.data && users.data.length > 0) {
-        const user = users.data[0]
+      if (user) {
         const deployedSlugs = (user.publicMetadata?.deployedSlugs as string[]) || []
 
         // Update Clerk to mark user as unpaid

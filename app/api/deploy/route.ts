@@ -10,6 +10,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Verify user is paid (deploy is a paid feature)
+    const client = await clerkClient()
+    const user = await client.users.getUser(userId)
+    if (user.publicMetadata?.paid !== true) {
+      return NextResponse.json({ error: 'Upgrade required to deploy' }, { status: 403 })
+    }
+
     const { code, projectName } = await req.json()
 
     if (!code) {

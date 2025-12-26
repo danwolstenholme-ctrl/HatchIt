@@ -1,7 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@clerk/nextjs/server'
+import { clerkClient } from '@clerk/nextjs/server'
 
 export async function POST(request: NextRequest) {
   try {
+    // Authenticate user
+    const { userId } = await auth()
+    if (!userId) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check if user is paid (custom domains are a paid feature)
+    try {
+      const client = await clerkClient()
+      const user = await client.users.getUser(userId)
+      if (user.publicMetadata?.paid !== true) {
+        return NextResponse.json({ success: false, error: 'Upgrade required for custom domains' }, { status: 403 })
+      }
+    } catch {
+      return NextResponse.json({ success: false, error: 'Failed to verify subscription' }, { status: 500 })
+    }
+
     const { domain, projectSlug } = await request.json()
 
     if (!domain || !projectSlug) {
@@ -68,6 +87,12 @@ export async function POST(request: NextRequest) {
 // Check domain verification status
 export async function GET(request: NextRequest) {
   try {
+    // Authenticate user
+    const { userId } = await auth()
+    if (!userId) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { searchParams } = new URL(request.url)
     const domain = searchParams.get('domain')
     const projectSlug = searchParams.get('projectSlug')
