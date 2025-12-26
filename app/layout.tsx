@@ -11,6 +11,7 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://hatchit.dev'),
   title: 'HatchIt - AI Website Builder',
   description: 'Build production-ready React websites with AI. Describe what you want, get real code, deploy in one click.',
   keywords: ['AI website builder', 'React', 'Tailwind CSS', 'no-code', 'code generator', 'web development'],
