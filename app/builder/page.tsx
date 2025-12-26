@@ -723,6 +723,26 @@ export default function Home() {
     </div>
   )
 
+  const DeployingOverlay = () => (
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999]">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-8 max-w-sm w-full mx-4 text-center shadow-2xl">
+        <div className="w-16 h-16 mx-auto mb-6 relative">
+          <div className="absolute inset-0 border-4 border-zinc-700 rounded-full"></div>
+          <div className="absolute inset-0 border-4 border-transparent border-t-purple-500 rounded-full animate-spin"></div>
+          <div className="absolute inset-2 border-4 border-transparent border-t-blue-500 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '0.8s' }}></div>
+        </div>
+        <h2 className="text-xl font-bold text-white mb-2">Deploying your site...</h2>
+        <p className="text-zinc-400 text-sm mb-4">This usually takes about a minute.</p>
+        <div className="flex items-center justify-center gap-2 text-zinc-500 text-xs">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          <span>Building & optimizing</span>
+        </div>
+      </div>
+    </div>
+  )
+
   const DomainModal = () => (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
@@ -1307,7 +1327,8 @@ export default function Home() {
         {showDomainModal && <DomainModal />}
         {deployedUrl && <DeployedModal />}
         {showFaqModal && <FaqModal />}
-        {showShipModal && (
+        {isDeploying && <DeployingOverlay />}
+        {showShipModal && !isDeploying && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-zinc-900 rounded-xl p-6 md:p-8 w-full max-w-md border border-zinc-800">
               <h2 className="text-2xl font-bold mb-2">Ship your site</h2>
@@ -1416,8 +1437,9 @@ export default function Home() {
       {showHistoryModal && <HistoryModal />}
       {showAssetsModal && <AssetsModal />}
       {showDomainModal && <DomainModal />}
-      {showShipModal && <ShipModal />}
+      {showShipModal && !isDeploying && <ShipModal />}
       {deployedUrl && <DeployedModal />}
+      {isDeploying && <DeployingOverlay />}
       {showUpgradeModal && <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} reason={upgradeReason} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} />}
       {showSuccessModal && <SuccessModal isOpen={showSuccessModal} onClose={() => setShowSuccessModal(false)} />}
       <Group orientation="horizontal" className="h-full rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl">
