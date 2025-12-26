@@ -19,6 +19,13 @@ interface DeployedProject {
   deployedAt: string
 }
 
+// Type for page to deploy
+interface PageToDeploy {
+  name: string
+  path: string
+  code: string
+}
+
 export async function POST(req: NextRequest) {
   try {
     // Authenticate user
@@ -27,10 +34,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { code, projectName } = await req.json()
+    const { code, pages, projectName } = await req.json()
 
-    if (!code) {
-      return NextResponse.json({ error: 'No code provided' }, { status: 400 })
+    // Support both single-page (legacy) and multi-page projects
+    if (!code && (!pages || pages.length === 0)) {
+      return NextResponse.json({ error: 'No code or pages provided' }, { status: 400 })
     }
 
     const slug = projectName
@@ -165,37 +173,59 @@ export default function RootLayout({
         data: `@tailwind base;
 @tailwind components;
 @tailwind utilities;`
-      },
-      {
-        file: 'app/page.tsx',
-        data: (() => {
-          // Ensure proper Next.js page structure
-          let pageCode = code
-          
-          // Add 'use client' if not present
-          if (!pageCode.includes("'use client'")) {
-            pageCode = `'use client'\n${pageCode}`
-          }
-          
-          // Add all required React imports if not present
-          if (!pageCode.includes('import')) {
-            pageCode = pageCode.replace(
-              "'use client'\n",
-              "'use client'\nimport { useState, useEffect, useRef, useMemo, useCallback } from 'react'\n\n"
-            )
-          }
-          
-          // Ensure proper export default
-          if (!pageCode.includes('export default')) {
-            // Remove any trailing function or component declaration and re-export
-            pageCode = pageCode.replace(/function\s+\w+\s*\(/, 'function Component(')
-            pageCode = pageCode + '\n\nexport default Component'
-          }
-          
-          return pageCode
-        })()
       }
     ]
+    
+    // Helper function to prepare page code
+    const preparePageCode = (pageCode: string) => {
+      let prepared = pageCode
+      
+      // Add 'use client' if not present
+      if (!prepared.includes("'use client'")) {
+        prepared = `'use client'\n${prepared}`
+      }
+      
+      // Add all required React imports if not present
+      if (!prepared.includes('import')) {
+        prepared = prepared.replace(
+          "'use client'\n",
+          "'use client'\nimport { useState, useEffect, useRef, useMemo, useCallback } from 'react'\n\n"
+        )
+      }
+      
+      // Ensure proper export default
+      if (!prepared.includes('export default')) {
+        prepared = prepared.replace(/function\s+\w+\s*\(/, 'function Component(')
+        prepared = prepared + '\n\nexport default Component'
+      }
+      
+      return prepared
+    }
+    
+    // Add page files
+    if (pages && pages.length > 0) {
+      // Multi-page project - create a file for each page
+      pages.forEach((page: PageToDeploy) => {
+        // Convert path to Next.js route
+        // "/" -> "app/page.tsx"
+        // "/about" -> "app/about/page.tsx"
+        // "/contact" -> "app/contact/page.tsx"
+        const filePath = page.path === '/' 
+          ? 'app/page.tsx'
+          : `app${page.path}/page.tsx`
+        
+        files.push({
+          file: filePath,
+          data: preparePageCode(page.code)
+        })
+      })
+    } else {
+      // Legacy single-page project
+      files.push({
+        file: 'app/page.tsx',
+        data: preparePageCode(code)
+      })
+    }
 
     // Deploy to Vercel
     const response = await fetch('https://api.vercel.com/v13/deployments', {

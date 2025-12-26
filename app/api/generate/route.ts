@@ -219,7 +219,7 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const { prompt, history, currentCode } = await request.json()
+  const { prompt, history, currentCode, currentPage, allPages } = await request.json()
 
   // Input validation
   if (!prompt || typeof prompt !== 'string') {
@@ -231,6 +231,14 @@ export async function POST(request: NextRequest) {
   }
 
   const messages: Message[] = []
+  
+  // Add context about the current page for multi-page projects
+  if (currentPage && allPages && allPages.length > 1) {
+    messages.push({
+      role: 'user',
+      content: `CONTEXT: This is a multi-page website. You are currently editing the "${currentPage.name}" page (route: ${currentPage.path}). Other pages in this site: ${allPages.filter((p: { id: string }) => p.id !== currentPage.id).map((p: { name: string; path: string }) => `${p.name} (${p.path})`).join(', ')}. Focus your changes on the ${currentPage.name} page unless the user specifically asks to modify multiple pages.`
+    })
+  }
   
   if (history && history.length > 0) {
     for (const msg of history) {

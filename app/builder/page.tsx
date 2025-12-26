@@ -33,9 +33,20 @@ interface Version {
   prompt?: string
 }
 
+interface Page {
+  id: string
+  name: string
+  path: string // URL path like '/', '/about', '/contact'
+  versions: Version[]
+  currentVersionIndex: number
+}
+
 interface Project {
   id: string
   name: string
+  pages?: Page[] // New multi-page structure
+  currentPageId?: string // Currently active page
+  // Legacy single-page support
   versions: Version[]
   currentVersionIndex: number
   createdAt: string
@@ -93,14 +104,27 @@ const generateProjectName = (): string => {
   return `${suggestion} ${num}`
 }
 
-const createNewProject = (name?: string): Project => ({
-  id: generateId(),
-  name: name || generateProjectName(),
-  versions: [],
-  currentVersionIndex: -1,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-})
+const createNewProject = (name?: string): Project => {
+  const homePage: Page = {
+    id: generateId(),
+    name: 'Home',
+    path: '/',
+    versions: [],
+    currentVersionIndex: -1
+  }
+  
+  return {
+    id: generateId(),
+    name: name || generateProjectName(),
+    pages: [homePage],
+    currentPageId: homePage.id,
+    // Legacy fields for backward compatibility
+    versions: [],
+    currentVersionIndex: -1,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  }
+}
 
 const migrateProject = (project: Project): Project => {
   if (project.versions && project.versions.length > 0) return project
@@ -129,6 +153,37 @@ const migrateProject = (project: Project): Project => {
   return { ...project, versions: project.versions || [], currentVersionIndex: project.currentVersionIndex ?? -1 }
 }
 
+// Helper to check if project uses new multi-page structure
+const isMultiPageProject = (project: Project): boolean => {
+  return !!(project.pages && project.pages.length > 0)
+}
+
+// Get current page from project
+const getCurrentPage = (project: Project): Page | null => {
+  if (!isMultiPageProject(project)) return null
+  return project.pages!.find(p => p.id === project.currentPageId) || project.pages![0]
+}
+
+// Migrate single-page project to multi-page structure
+const migrateToMultiPage = (project: Project): Project => {
+  if (isMultiPageProject(project)) return project
+  
+  // Convert single-page to multi-page with a home page
+  const homePage: Page = {
+    id: generateId(),
+    name: 'Home',
+    path: '/',
+    versions: project.versions || [],
+    currentVersionIndex: project.currentVersionIndex ?? 0
+  }
+  
+  return {
+    ...project,
+    pages: [homePage],
+    currentPageId: homePage.id
+  }
+}
+
 export default function Home() {
   const [projects, setProjects] = useState<Project[]>([])
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null)
@@ -142,11 +197,26 @@ export default function Home() {
   const [showMobileMenu, setShowMobileMenu] = useState(false)
   
   const currentProject = projects.find(p => p.id === currentProjectId)
-  const versions = currentProject?.versions || []
-  const currentVersionIndex = currentProject?.currentVersionIndex ?? -1
+  
+  // Support both multi-page and legacy single-page projects
+  const currentPage = currentProject ? getCurrentPage(currentProject) : null
+  const versions = currentPage?.versions || currentProject?.versions || []
+  const currentVersionIndex = currentPage?.currentVersionIndex ?? currentProject?.currentVersionIndex ?? -1
+  
   const code = previewVersionIndex !== null 
     ? versions[previewVersionIndex]?.code || ''
     : versions[currentVersionIndex]?.code || ''
+  
+  // Get all pages with their current code for multi-page preview
+  const previewPages = currentProject && isMultiPageProject(currentProject) 
+    ? currentProject.pages!.map(page => ({
+        id: page.id,
+        name: page.name,
+        path: page.path,
+        code: page.versions[page.currentVersionIndex]?.code || ''
+      }))
+    : undefined
+    
   const isDeployed = !!currentProject?.deployedSlug
   const canUndo = currentVersionIndex > 0
   const canRedo = currentVersionIndex < versions.length - 1
@@ -164,6 +234,10 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<'preview' | 'code'>('preview')
   const [previewWidth, setPreviewWidth] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
+  const [showPagesPanel, setShowPagesPanel] = useState(false)
+  const [showAddPageModal, setShowAddPageModal] = useState(false)
+  const [newPageName, setNewPageName] = useState('')
+  const [newPagePath, setNewPagePath] = useState('')
   const [mobileModal, setMobileModal] = useState<'preview' | 'code' | null>(null)
   const [copied, setCopied] = useState(false)
   const { user, isLoaded } = useUser()
@@ -223,7 +297,8 @@ export default function Home() {
     const savedCurrentId = localStorage.getItem('hatchit-current-project')
     if (savedProjects) {
       const parsed = JSON.parse(savedProjects) as Project[]
-      const migrated = parsed.map(migrateProject)
+      // First migrate old format, then convert to multi-page
+      const migrated = parsed.map(p => migrateToMultiPage(migrateProject(p)))
       setProjects(migrated)
       if (savedCurrentId && migrated.find(p => p.id === savedCurrentId)) {
         setCurrentProjectId(savedCurrentId)
@@ -398,6 +473,62 @@ export default function Home() {
     setDeployedUrl(null)
   }
 
+  const addPage = () => {
+    if (!currentProject || !newPageName.trim()) return
+    
+    const path = newPagePath.trim() || `/${newPageName.toLowerCase().replace(/\s+/g, '-')}`
+    const newPage: Page = {
+      id: generateId(),
+      name: newPageName.trim(),
+      path: path.startsWith('/') ? path : `/${path}`,
+      versions: [],
+      currentVersionIndex: -1
+    }
+    
+    const updatedProject = {
+      ...currentProject,
+      pages: [...(currentProject.pages || []), newPage],
+      currentPageId: newPage.id,
+      updatedAt: new Date().toISOString()
+    }
+    
+    setProjects(prev => prev.map(p => p.id === currentProject.id ? updatedProject : p))
+    setShowAddPageModal(false)
+    setNewPageName('')
+    setNewPagePath('')
+  }
+
+  const deletePage = (pageId: string) => {
+    if (!currentProject || !currentProject.pages) return
+    if (currentProject.pages.length <= 1) return // Keep at least one page
+    
+    const updatedPages = currentProject.pages.filter(p => p.id !== pageId)
+    const newCurrentPageId = currentProject.currentPageId === pageId 
+      ? updatedPages[0].id 
+      : currentProject.currentPageId
+    
+    const updatedProject = {
+      ...currentProject,
+      pages: updatedPages,
+      currentPageId: newCurrentPageId,
+      updatedAt: new Date().toISOString()
+    }
+    
+    setProjects(prev => prev.map(p => p.id === currentProject.id ? updatedProject : p))
+  }
+
+  const switchPage = (pageId: string) => {
+    if (!currentProject) return
+    
+    const updatedProject = {
+      ...currentProject,
+      currentPageId: pageId
+    }
+    
+    setProjects(prev => prev.map(p => p.id === currentProject.id ? updatedProject : p))
+    setShowPagesPanel(false)
+  }
+
   const handleCodeChange = (newCode: string) => {
     if (!currentProject) return
     
@@ -408,14 +539,36 @@ export default function Home() {
       prompt: 'Manual edit'
     }
     
-    const updatedProject = {
-      ...currentProject,
-      versions: [...currentProject.versions, newVersion],
-      currentVersionIndex: currentProject.versions.length,
-      updatedAt: new Date().toISOString()
+    if (isMultiPageProject(currentProject) && currentPage) {
+      // Update the current page's versions
+      const updatedPages = currentProject.pages!.map(page => 
+        page.id === currentPage.id
+          ? {
+              ...page,
+              versions: [...page.versions, newVersion],
+              currentVersionIndex: page.versions.length
+            }
+          : page
+      )
+      
+      const updatedProject = {
+        ...currentProject,
+        pages: updatedPages,
+        updatedAt: new Date().toISOString()
+      }
+      
+      setProjects(prev => prev.map(p => p.id === currentProject.id ? updatedProject : p))
+    } else {
+      // Legacy single-page project
+      const updatedProject = {
+        ...currentProject,
+        versions: [...currentProject.versions, newVersion],
+        currentVersionIndex: currentProject.versions.length,
+        updatedAt: new Date().toISOString()
+      }
+      
+      setProjects(prev => prev.map(p => p.id === currentProject.id ? updatedProject : p))
     }
-    
-    setProjects(prev => prev.map(p => p.id === currentProject.id ? updatedProject : p))
   }
 
   const handleCodeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -495,15 +648,10 @@ export default function Home() {
         
         const data = await response.json()
         
-        // Filter for relevant files
+        // Filter for HTML files only (not JS/TS/CSS since they're not useful as standalone projects)
         const relevantFiles = data.tree.filter((item: any) => 
           item.type === 'blob' && 
-          (item.path.endsWith('.html') || 
-           item.path.endsWith('.htm') ||
-           item.path.endsWith('.jsx') ||
-           item.path.endsWith('.tsx') ||
-           item.path.endsWith('.js') ||
-           item.path.endsWith('.ts'))
+          (item.path.endsWith('.html') || item.path.endsWith('.htm'))
         )
         
         if (relevantFiles.length === 0) {
@@ -659,16 +807,53 @@ export default function Home() {
   const handleGenerate = async (prompt: string, history: Message[], currentCode: string) => {
     setIsGenerating(true)
     try {
+      // Prepare page context for multi-page projects
+      const payload: Record<string, unknown> = { prompt, history, currentCode }
+      if (currentProject && isMultiPageProject(currentProject)) {
+        payload.currentPage = {
+          id: currentPage?.id,
+          name: currentPage?.name,
+          path: currentPage?.path
+        }
+        payload.allPages = currentProject.pages!.map(p => ({
+          id: p.id,
+          name: p.name,
+          path: p.path
+        }))
+      }
+      
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, history, currentCode }),
+        body: JSON.stringify(payload),
       })
       const data = await response.json()
       if (data.code) {
         const newVersion: Version = { id: generateId(), code: data.code, timestamp: new Date().toISOString(), prompt }
-        const newVersions = currentVersionIndex >= 0 ? [...versions.slice(0, currentVersionIndex + 1), newVersion] : [newVersion]
-        updateCurrentProject({ versions: newVersions, currentVersionIndex: newVersions.length - 1 })
+        
+        // Handle multi-page vs single-page projects
+        if (currentProject && isMultiPageProject(currentProject) && currentPage) {
+          // Update the current page's versions
+          const updatedPages = currentProject.pages!.map(page =>
+            page.id === currentPage.id
+              ? {
+                  ...page,
+                  versions: page.currentVersionIndex >= 0 
+                    ? [...page.versions.slice(0, page.currentVersionIndex + 1), newVersion]
+                    : [newVersion],
+                  currentVersionIndex: page.currentVersionIndex >= 0 
+                    ? page.currentVersionIndex + 1
+                    : 0
+                }
+              : page
+          )
+          updateCurrentProject({ pages: updatedPages })
+        } else {
+          // Legacy single-page project
+          const newVersions = currentVersionIndex >= 0 ? [...versions.slice(0, currentVersionIndex + 1), newVersion] : [newVersion]
+          updateCurrentProject({ versions: newVersions, currentVersionIndex: newVersions.length - 1 })
+        }
+        
         if (isMobile) setMobileModal('preview')
       }
     } catch (error) {
@@ -678,19 +863,64 @@ export default function Home() {
     }
   }
 
-  const handleUndo = () => { if (canUndo) updateCurrentProject({ currentVersionIndex: currentVersionIndex - 1 }) }
-  const handleRedo = () => { if (canRedo) updateCurrentProject({ currentVersionIndex: currentVersionIndex + 1 }) }
-  const restoreVersion = (index: number) => { updateCurrentProject({ currentVersionIndex: index }); setShowHistoryModal(false); setPreviewVersionIndex(null) }
+  const handleUndo = () => {
+    if (!canUndo || !currentProject) return
+    if (isMultiPageProject(currentProject) && currentPage) {
+      const updatedPages = currentProject.pages!.map(page =>
+        page.id === currentPage.id
+          ? { ...page, currentVersionIndex: page.currentVersionIndex - 1 }
+          : page
+      )
+      updateCurrentProject({ pages: updatedPages })
+    } else {
+      updateCurrentProject({ currentVersionIndex: currentVersionIndex - 1 })
+    }
+  }
+
+  const handleRedo = () => {
+    if (!canRedo || !currentProject) return
+    if (isMultiPageProject(currentProject) && currentPage) {
+      const updatedPages = currentProject.pages!.map(page =>
+        page.id === currentPage.id
+          ? { ...page, currentVersionIndex: page.currentVersionIndex + 1 }
+          : page
+      )
+      updateCurrentProject({ pages: updatedPages })
+    } else {
+      updateCurrentProject({ currentVersionIndex: currentVersionIndex + 1 })
+    }
+  }
+
+  const restoreVersion = (index: number) => {
+    if (!currentProject) return
+    if (isMultiPageProject(currentProject) && currentPage) {
+      const updatedPages = currentProject.pages!.map(page =>
+        page.id === currentPage.id
+          ? { ...page, currentVersionIndex: index }
+          : page
+      )
+      updateCurrentProject({ pages: updatedPages })
+    } else {
+      updateCurrentProject({ currentVersionIndex: index })
+    }
+    setShowHistoryModal(false)
+    setPreviewVersionIndex(null)
+  }
 
   const handleDeploy = async (customName?: string) => {
-    if (!code || isDeploying) return
+    if ((!code && !previewPages) || isDeploying) return
     const slugName = customName || currentProject?.deployedSlug || currentProject?.name
     setIsDeploying(true)
     try {
+      // Prepare payload based on project type
+      const payload = previewPages 
+        ? { pages: previewPages, projectName: slugName }
+        : { code, projectName: slugName }
+      
       const response = await fetch('/api/deploy', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, projectName: slugName }),
+        body: JSON.stringify(payload),
       })
       const data = await response.json()
       if (data.url) {
@@ -948,7 +1178,7 @@ export default function Home() {
           <div className="flex-1 flex flex-col min-w-0 min-h-0">
             {previewVersionIndex !== null ? (
               <>
-                <div className="flex-1 overflow-auto bg-zinc-950 min-h-0"><LivePreview code={versions[previewVersionIndex]?.code || ''} isLoading={false} isPaid={isCurrentProjectPaid} setShowUpgradeModal={setShowUpgradeModal} /></div>
+                <div className="flex-1 overflow-auto bg-zinc-950 min-h-0"><LivePreview code={versions[previewVersionIndex]?.code || ''} pages={undefined} currentPageId={undefined} isLoading={false} isPaid={isCurrentProjectPaid} setShowUpgradeModal={setShowUpgradeModal} /></div>
                 <div className="px-4 py-3 border-t border-zinc-800 flex items-center justify-between flex-shrink-0">
                   <span className="text-sm text-zinc-400">Previewing v{previewVersionIndex + 1}</span>
                   {previewVersionIndex !== currentVersionIndex && <button onClick={() => restoreVersion(previewVersionIndex)} className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-colors whitespace-nowrap ml-2">Restore</button>}
@@ -1231,7 +1461,7 @@ export default function Home() {
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
-      <div className="flex-1 overflow-auto">{type === 'preview' ? <LivePreview code={code} isLoading={isGenerating} isPaid={isCurrentProjectPaid} setShowUpgradeModal={setShowUpgradeModal} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} />}</div>
+      <div className="flex-1 overflow-auto">{type === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} isPaid={isCurrentProjectPaid} setShowUpgradeModal={setShowUpgradeModal} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} />}</div>
     </div>
   )
 
@@ -1243,6 +1473,107 @@ export default function Home() {
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`text-zinc-500 flex-shrink-0 transition-transform ${showProjectDropdown ? 'rotate-180' : ''}`}><polyline points="6 9 12 15 18 9"/></svg>
       </button>
       {showProjectDropdown && <ProjectDropdown />}
+    </div>
+  )
+
+  const PagesButton = ({ mobile = false }: { mobile?: boolean }) => (
+    <button 
+      onClick={() => setShowPagesPanel(!showPagesPanel)} 
+      className={`flex items-center gap-1 hover:bg-zinc-800 rounded-lg transition-colors ${mobile ? 'px-2 py-1.5' : 'px-3 py-1.5'}`}
+      title="Manage Pages"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span className="text-sm text-zinc-400">{currentPage?.name || 'Home'}</span>
+    </button>
+  )
+
+  const PagesPanel = () => (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowPagesPanel(false)}>
+      <div className="bg-zinc-900 rounded-xl p-6 w-full max-w-md border border-zinc-800" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-white">Pages</h2>
+          <button onClick={() => setShowPagesPanel(false)} className="text-zinc-400 hover:text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        
+        <div className="space-y-2 mb-4">
+          {currentProject?.pages?.map(page => (
+            <div key={page.id} className={`flex items-center justify-between p-3 rounded-lg transition-colors ${page.id === currentPage?.id ? 'bg-blue-600/20 border border-blue-500/30' : 'bg-zinc-800 hover:bg-zinc-700'}`}>
+              <button onClick={() => switchPage(page.id)} className="flex-1 text-left">
+                <div className="font-medium text-white">{page.name}</div>
+                <div className="text-xs text-zinc-400">{page.path}</div>
+              </button>
+              {currentProject.pages!.length > 1 && (
+                <button onClick={() => deletePage(page.id)} className="p-1.5 text-zinc-400 hover:text-red-400 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+        
+        <button 
+          onClick={() => { setShowPagesPanel(false); setShowAddPageModal(true) }} 
+          className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Page
+        </button>
+      </div>
+    </div>
+  )
+
+  const AddPageModal = () => (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowAddPageModal(false)}>
+      <div className="bg-zinc-900 rounded-xl p-6 w-full max-w-md border border-zinc-800" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-white">Add New Page</h2>
+          <button onClick={() => setShowAddPageModal(false)} className="text-zinc-400 hover:text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm text-zinc-400 mb-2">Page Name</label>
+            <input
+              type="text"
+              value={newPageName}
+              onChange={(e) => setNewPageName(e.target.value)}
+              placeholder="About, Contact, Services..."
+              className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm text-zinc-400 mb-2">URL Path</label>
+            <input
+              type="text"
+              value={newPagePath}
+              onChange={(e) => setNewPagePath(e.target.value)}
+              placeholder="/about (optional - auto-generated)"
+              className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          
+          <div className="flex gap-3">
+            <button
+              onClick={() => { setShowAddPageModal(false); setNewPageName(''); setNewPagePath('') }}
+              className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white font-medium py-2.5 rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={addPage}
+              disabled={!newPageName.trim()}
+              className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg transition-colors"
+            >
+              Add Page
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   )
 
@@ -1699,6 +2030,8 @@ export default function Home() {
         {deployedUrl && <DeployedModal />}
         {showFaqModal && <FaqModal />}
         {showGithubModal && <GithubModal />}
+        {showPagesPanel && <PagesPanel />}
+        {showAddPageModal && <AddPageModal />}
         {isDeploying && <DeployingOverlay />}
         {showShipModal && !isDeploying && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -1786,6 +2119,8 @@ export default function Home() {
         <div className="px-3 py-2.5 border-b border-zinc-800 flex items-center justify-between bg-zinc-900">
           <div className="flex items-center gap-2 min-w-0">
             <ProjectSelector mobile />
+            <span className="text-zinc-700">|</span>
+            <PagesButton />
             {isCurrentProjectPaid && <span className="text-xs">🐣</span>}
           </div>
           <div className="flex items-center gap-1 flex-shrink-0">
@@ -1873,6 +2208,8 @@ export default function Home() {
       {showUpgradeModal && <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} reason={upgradeReason} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} />}
       {showSuccessModal && <SuccessModal isOpen={showSuccessModal} onClose={() => setShowSuccessModal(false)} />}
       {showGithubModal && <GithubModal />}
+      {showPagesPanel && <PagesPanel />}
+      {showAddPageModal && <AddPageModal />}
       <div className={`h-full ${!isLoadingProjects && !isDeployed ? 'pt-10' : ''}`}>
       <Group orientation="horizontal" className="h-full rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl">
         <Panel id="chat" defaultSize={28} minSize={20}>
@@ -1886,6 +2223,8 @@ export default function Home() {
                   </Link>
                   <span className="text-zinc-700 flex-shrink-0">|</span>
                   <ProjectSelector />
+                  <span className="text-zinc-700 flex-shrink-0">|</span>
+                  <PagesButton />
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0 ml-2">
                   <div className="relative desktop-menu-container">
@@ -2010,7 +2349,7 @@ export default function Home() {
               </div>
             </div>
             <div ref={previewContainerRef} className="flex-1 overflow-auto min-h-0">
-              {activeTab === 'preview' ? <LivePreview code={code} isLoading={isGenerating} isPaid={isCurrentProjectPaid} setShowUpgradeModal={setShowUpgradeModal} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} />}
+              {activeTab === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} isPaid={isCurrentProjectPaid} setShowUpgradeModal={setShowUpgradeModal} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} />}
             </div>
           </div>
         </Panel>
