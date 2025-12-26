@@ -45,11 +45,13 @@ export async function POST(request: NextRequest) {
     const { userId } = await auth()
     
     if (!userId) {
+      console.error('Assistant: No user ID from auth')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Check rate limit
     if (!checkRateLimit(userId)) {
+      console.warn(`Assistant: Rate limit exceeded for user ${userId}`)
       return NextResponse.json(
         { error: 'Rate limit exceeded. Maximum 30 requests per minute.' }, 
         { status: 429 }
@@ -57,6 +59,10 @@ export async function POST(request: NextRequest) {
     }
 
     const { message, currentCode } = await request.json()
+
+    if (!message) {
+      return NextResponse.json({ error: 'No message provided' }, { status: 400 })
+    }
 
     const systemPrompt = `You are a helpful assistant for HatchIt, an AI website builder.
 
@@ -80,6 +86,8 @@ Current generated code:
 ${currentCode || 'No code generated yet'}
 \`\`\``
 
+    console.log(`Assistant: Calling API for user ${userId}`)
+    
     const response = await anthropic.messages.create({
       model: 'claude-haiku-4-5-20250514',
       max_tokens: 500,
@@ -100,7 +108,8 @@ ${currentCode || 'No code generated yet'}
 
     return NextResponse.json({ message: assistantMessage })
   } catch (error) {
-    console.error('Assistant error:', error)
+    console.error('Assistant error:', error instanceof Error ? error.message : String(error))
+    console.error('Full error:', error)
     return NextResponse.json({ error: 'Assistant failed' }, { status: 500 })
   }
 }
