@@ -429,7 +429,7 @@ export default function Home() {
   )
 
   const ProjectDropdown = () => (
-    <div ref={dropdownRef} className="absolute top-full left-0 mt-2 w-72 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-50 overflow-hidden">
+    <div ref={dropdownRef} className="absolute top-full left-0 mt-2 w-72 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-[9999] overflow-hidden">
       <button 
         onClick={createProject} 
         className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-zinc-800 transition-colors border-b border-zinc-800 ${!isPaid && projects.length >= 1 ? 'opacity-50' : ''}`}
@@ -683,7 +683,7 @@ export default function Home() {
   )
 
   const ProjectSelector = ({ mobile = false }: { mobile?: boolean }) => (
-    <div className="relative">
+    <div className="relative z-[9999]">
       <button onClick={() => setShowProjectDropdown(!showProjectDropdown)} className={`flex items-center gap-2 hover:bg-zinc-800 rounded-lg transition-colors ${mobile ? 'px-2 py-1.5' : 'px-3 py-1.5'}`}>
         <span className={`font-medium text-white truncate ${mobile ? 'max-w-[120px] text-sm' : 'max-w-[180px]'}`}>{currentProject?.name || 'Select Project'}</span>
         {isDeployed && <span className="text-[10px] px-1.5 py-0.5 bg-green-500/20 text-green-400 rounded">LIVE</span>}
