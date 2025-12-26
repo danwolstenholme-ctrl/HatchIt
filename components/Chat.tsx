@@ -265,6 +265,7 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
                     {prompt}
                   </button>
                 ))}
+                <p className="text-[10px] text-zinc-600 text-center mt-3">💡 Already have code? Use the upload button above</p>
               </div>
             )}
 
