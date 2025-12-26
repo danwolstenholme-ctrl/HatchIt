@@ -2,14 +2,23 @@
 
 import { useMemo, useState, useEffect } from 'react'
 
-interface LivePreviewProps {
+interface Page {
+  id: string
+  name: string
+  path: string
   code: string
+}
+
+interface LivePreviewProps {
+  code?: string
+  pages?: Page[]
+  currentPageId?: string
   isLoading?: boolean
   isPaid?: boolean
   setShowUpgradeModal?: (show: boolean) => void
 }
 
-export default function LivePreview({ code, isLoading = false, isPaid = false, setShowUpgradeModal }: LivePreviewProps) {
+export default function LivePreview({ code, pages, currentPageId, isLoading = false, isPaid = false, setShowUpgradeModal }: LivePreviewProps) {
   const [iframeLoaded, setIframeLoaded] = useState(false)
   const [iframeKey, setIframeKey] = useState(0)
   const [isDownloading, setIsDownloading] = useState(false)
@@ -225,6 +234,112 @@ export default function RootLayout({
   const srcDoc = useMemo(() => {
     setIframeLoaded(false)
     
+    // Multi-page mode
+    if (pages && pages.length > 0) {
+      const currentPage = pages.find(p => p.id === currentPageId) || pages[0]
+      const displayCode = currentPage.code
+      
+      if (displayCode.length > 50000) {
+        return '<!DOCTYPE html><html><body>' +
+          '<div style="color: #f87171; padding: 2rem; font-family: monospace; line-height: 1.6; background: #18181b; height: 100vh; display: flex; align-items: center; justify-content: center;">' +
+          '<div style="max-width: 500px;">' +
+          '<div style="font-size: 2rem; margin-bottom: 1rem;">⚠️</div>' +
+          '<h2 style="color: white; margin-bottom: 0.5rem; font-size: 1.25rem;">Code Too Large</h2>' +
+          '<p>The generated code is ' + Math.round(displayCode.length / 1000) + 'KB, which exceeds the preview limit of 50KB.</p>' +
+          '</div></div></body></html>'
+      }
+      
+      const hooksDestructure = 'const { useState, useEffect, useMemo, useCallback, useRef } = React;'
+      
+      // Create router component
+      const routerCode = `
+      const Router = () => {
+        const [currentPath, setCurrentPath] = useState(window.location.hash.slice(1) || '${currentPage.path}')
+        
+        useEffect(() => {
+          const handleHashChange = () => {
+            setCurrentPath(window.location.hash.slice(1) || '${currentPage.path}')
+          }
+          window.addEventListener('hashchange', handleHashChange)
+          return () => window.removeEventListener('hashchange', handleHashChange)
+        }, [])
+        
+        ${pages.map((page, idx) => {
+          const regex = /(?:function|const|let|var)\s+([A-Z][a-zA-Z0-9]*)(?:\s*[=:(]|\s*:)/g
+          const matches = [...page.code.matchAll(regex)]
+          const componentName = matches.length > 0 ? matches[matches.length - 1][1] : `Page${idx}`
+          
+          const cleanedCode = page.code
+            .replace(/interface\s+\w+\s*\{[\s\S]*?\}/g, '')
+            .replace(/type\s+\w+\s*=[^;]+;/g, '')
+            .replace(/\s+as\s+[A-Za-z][A-Za-z0-9\[\]<>|&\s,'_]*/g, '')
+            .replace(/(useState|useRef|useMemo|useCallback|useEffect)<[^>]+>/g, '$1')
+            .replace(/:\s*(React\.)?FC(<[^>]*>)?/g, '')
+            .replace(/:\s*[A-Z][A-Za-z0-9\[\]<>|&\s,']*(?=\s*=\s*[\[{(])/g, '')
+            .replace(/(\(\s*\w+):\s*(?:keyof\s+|typeof\s+|readonly\s+)?[A-Z][^,)]*(?=[,)])/g, '$1')
+            .replace(/,(\s*\w+):\s*(?:keyof\s+|typeof\s+|readonly\s+)?[A-Z][^,)]*(?=[,)])/g, ',$1')
+            .replace(/(\(\s*\w+):\s*(?:string|number|boolean|any|void|never|unknown)(?:\[\])?(?=[,)])/g, '$1')
+            .replace(/,(\s*\w+):\s*(?:string|number|boolean|any|void|never|unknown)(?:\[\])?(?=[,)])/g, ',$1')
+            .replace(/\):\s*[A-Za-z][A-Za-z0-9\[\]<>|&\s,']*(?=\s*[{=])/g, ')')
+            .replace(/export\s+default\s+/g, '')
+            .replace(/export\s+/g, '')
+            .replace(/React\.useState/g, 'useState')
+            .replace(/React\.useEffect/g, 'useEffect')
+            .replace(/React\.useMemo/g, 'useMemo')
+            .replace(/React\.useCallback/g, 'useCallback')
+            .replace(/React\.useRef/g, 'useRef')
+            
+          return `${cleanedCode}\nconst ${componentName}Component = ${componentName};`
+        }).join('\n')}
+        
+        ${pages.map((page, idx) => {
+          const regex = /(?:function|const|let|var)\s+([A-Z][a-zA-Z0-9]*)(?:\s*[=:(]|\s*:)/g
+          const matches = [...page.code.matchAll(regex)]
+          const componentName = matches.length > 0 ? matches[matches.length - 1][1] : `Page${idx}`
+          return `if (currentPath === '${page.path}') return React.createElement(${componentName}Component);`
+        }).join('\n')}
+        
+        return React.createElement('div', { style: { padding: '2rem', color: '#a1a1aa', textAlign: 'center' } }, '404 - Page not found')
+      }
+      `
+      
+      const html = '<!DOCTYPE html>' +
+        '<html><head>' +
+        '<script src="https://cdn.tailwindcss.com"></script>' +
+        '<style>* { margin: 0; padding: 0; box-sizing: border-box; } html, body, #root { min-height: 100%; width: 100%; } body { background: #18181b; } .error { color: #ef4444; padding: 2rem; font-family: monospace; white-space: pre-wrap; background: #18181b; line-height: 1.6; } .error h2 { color: #fecaca; margin-bottom: 1rem; font-size: 1rem; font-weight: bold; } .loading { color: #71717a; padding: 2rem; text-align: center; font-family: system-ui; }</style>' +
+        '</head><body>' +
+        '<div id="root"><div class="loading">Loading preview...</div></div>' +
+        '<script src="https://unpkg.com/react@18/umd/react.development.js"></script>' +
+        '<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>' +
+        '<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>' +
+        '<script>document.addEventListener("click", function(e) { var link = e.target.closest("a"); if (link) { e.preventDefault(); var href = link.getAttribute("href"); if (href && href.startsWith("#")) { window.location.hash = href; } else if (href) { var target = document.querySelector(href); if (target) target.scrollIntoView({ behavior: "smooth" }); } } });</script>' +
+        '<script>' +
+        'window.onerror = function(msg, url, line, col, error) {' +
+        '  document.getElementById("root").innerHTML = ' +
+        '    "<div class=\'error\'>" +' +
+        '    "<h2>⚠️ Could not render preview</h2>" +' +
+        '    "<p style=\'color: #f87171;\'>The AI generated code that could not be displayed.</p>" +' +
+        '    "</div>";' +
+        '  return true;' +
+        '};' +
+        '</script>' +
+        '<script type="text/babel" data-presets="react,typescript">' +
+        hooksDestructure + '\n' +
+        'try {\n' +
+        routerCode + '\n' +
+        '  const root = ReactDOM.createRoot(document.getElementById("root"));\n' +
+        '  root.render(React.createElement(Router));\n' +
+        '} catch (err) {\n' +
+        '  document.getElementById("root").innerHTML = "<div class=\'error\'><h2>⚠️ Could not render preview</h2><p style=\'color: #f87171;\'>" + (err.message || "Unknown error") + "</p></div>";\n' +
+        '}\n' +
+        '</script>' +
+        '<script>setTimeout(function() { if (document.querySelector(".loading")) { document.getElementById("root").innerHTML = "<div class=\'error\'><h2>⚠️ Preview Timeout</h2><p>Your code is ready in the <strong>Code</strong> tab</p></div>"; } }, 8000);</script>' +
+        '</body></html>'
+        
+      return html
+    }
+    
+    // Legacy single-page mode
     if (!code) return ''
 
     // Check if code is too large (prevent srcDoc URL length issues)
@@ -332,13 +447,13 @@ export default function RootLayout({
       '</body></html>'
 
     return html
-  }, [code])
+  }, [code, pages, currentPageId])
 
-  const showSpinner = isLoading || (code && !iframeLoaded)
+  const showSpinner = isLoading || ((code || pages) && !iframeLoaded)
 
   return (
     <div className="h-full bg-zinc-900 overflow-auto">
-      {code ? (
+      {(code || (pages && pages.length > 0)) ? (
         <div className="relative h-full">
           {showSpinner && (
             <div className="absolute inset-0 bg-zinc-900 flex items-center justify-center z-10">
