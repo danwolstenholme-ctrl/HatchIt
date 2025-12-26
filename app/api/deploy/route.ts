@@ -126,7 +126,32 @@ export default function RootLayout({
       },
       {
         file: 'app/page.tsx',
-        data: code.includes("'use client'") ? code : `'use client'\nimport { useState, useEffect } from 'react'\n\n${code}`
+        data: (() => {
+          // Ensure proper Next.js page structure
+          let pageCode = code
+          
+          // Add 'use client' if not present
+          if (!pageCode.includes("'use client'")) {
+            pageCode = `'use client'\n${pageCode}`
+          }
+          
+          // Add all required React imports if not present
+          if (!pageCode.includes('import')) {
+            pageCode = pageCode.replace(
+              "'use client'\n",
+              "'use client'\nimport { useState, useEffect, useRef, useMemo, useCallback } from 'react'\n\n"
+            )
+          }
+          
+          // Ensure proper export default
+          if (!pageCode.includes('export default')) {
+            // Remove any trailing function or component declaration and re-export
+            pageCode = pageCode.replace(/function\s+\w+\s*\(/, 'function Component(')
+            pageCode = pageCode + '\n\nexport default Component'
+          }
+          
+          return pageCode
+        })()
       }
     ]
 
