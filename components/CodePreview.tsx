@@ -29,13 +29,15 @@ export default function CodePreview({ code, isPaid = false }: CodePreviewProps) 
 
   return (
     <div className="h-full bg-zinc-950 flex flex-col">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-800">
-        <span className="text-xs text-zinc-500 font-medium">
-          component.tsx
+      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-900/50">
+        <div className="flex items-center gap-2 text-xs font-mono text-zinc-400">
+          <span className="text-zinc-600">📁</span>
+          <span>app/</span>
+          <span className="text-purple-400 font-semibold">page.tsx</span>
           {!isPaid && (
-            <span className="ml-2 text-amber-500">(Preview)</span>
+            <span className="ml-2 px-2 py-0.5 bg-amber-500/20 text-amber-400 rounded text-xs font-medium">(Preview)</span>
           )}
-        </span>
+        </div>
         <button
           onClick={handleCopy}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded-lg transition-colors"
@@ -59,15 +61,15 @@ export default function CodePreview({ code, isPaid = false }: CodePreviewProps) 
         </button>
       </div>
 
-      <div className="flex-1 overflow-auto relative">
-        <pre className="p-4 text-sm font-mono">
+      <div className="flex-1 overflow-auto relative bg-zinc-950">
+        <pre className="p-4 text-sm font-mono leading-relaxed">
           <code>
             {visibleLines.map((line, i) => (
-              <div key={i} className="flex">
-                <span className="w-8 text-zinc-600 text-right pr-4 select-none text-xs">
-                  {i + 1}
+              <div key={i} className="flex hover:bg-zinc-900/30 transition-colors">
+                <span className="w-10 text-zinc-700 text-right pr-4 select-none flex-shrink-0 text-xs">
+                  {String(i + 1).padStart(3, ' ')}
                 </span>
-                <span className="text-zinc-300 whitespace-pre">{line}</span>
+                <span className="text-zinc-300">{line || '\u00A0'}</span>
               </div>
             ))}
           </code>
