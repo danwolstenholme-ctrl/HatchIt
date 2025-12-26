@@ -219,7 +219,7 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const { prompt, history, currentCode, currentPage, allPages } = await request.json()
+  const { prompt, history, currentCode, currentPage, allPages, assets } = await request.json()
 
   // Input validation
   if (!prompt || typeof prompt !== 'string') {
@@ -237,6 +237,17 @@ export async function POST(request: NextRequest) {
     messages.push({
       role: 'user',
       content: `CONTEXT: This is a multi-page website. You are currently editing the "${currentPage.name}" page (route: ${currentPage.path}). Other pages in this site: ${allPages.filter((p: { id: string }) => p.id !== currentPage.id).map((p: { name: string; path: string }) => `${p.name} (${p.path})`).join(', ')}. Focus your changes on the ${currentPage.name} page unless the user specifically asks to modify multiple pages.`
+    })
+  }
+  
+  // Add context about uploaded assets
+  if (assets && assets.length > 0) {
+    const assetList = assets.map((a: { name: string; dataUrl: string; type: string }) => 
+      `- ${a.name} (${a.type}): Use this as an <img src="${a.dataUrl}" /> or as a background-image style`
+    ).join('\n')
+    messages.push({
+      role: 'user',
+      content: `AVAILABLE ASSETS: The user has uploaded the following assets that you can use in the code. Each asset is a base64 data URL that can be used directly in img src or CSS:\n${assetList}\n\nWhen the user asks to use an image/logo/asset, prefer using these uploaded assets over placeholder URLs.`
     })
   }
   

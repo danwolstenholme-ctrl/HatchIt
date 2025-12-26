@@ -42,8 +42,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No code or pages provided' }, { status: 400 })
     }
 
-    const slug = projectName
-      ?.toLowerCase()
+    // Sanitize and validate project name
+    if (!projectName || typeof projectName !== 'string') {
+      return NextResponse.json({ error: 'Project name is required' }, { status: 400 })
+    }
+    
+    // Strip HTML/script tags and limit length
+    const sanitizedName = projectName
+      .replace(/<[^>]*>/g, '') // Remove HTML tags
+      .replace(/[<>'"&]/g, '') // Remove dangerous characters
+      .trim()
+      .slice(0, 100) // Limit length
+
+    if (!sanitizedName || sanitizedName.length < 2) {
+      return NextResponse.json({ error: 'Invalid project name' }, { status: 400 })
+    }
+
+    const slug = sanitizedName
+      .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '') || `site-${Date.now()}`
 

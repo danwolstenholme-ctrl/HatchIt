@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import UpgradeModal from './upgradeModal'
 
 interface CodePreviewProps {
@@ -9,10 +9,63 @@ interface CodePreviewProps {
   onCodeChange?: (newCode: string) => void
 }
 
+// Basic syntax validation for JSX/TSX code
+function validateSyntax(code: string): { valid: boolean; error?: string } {
+  // Check for balanced braces
+  let braceCount = 0
+  let parenCount = 0
+  let bracketCount = 0
+  
+  for (const char of code) {
+    if (char === '{') braceCount++
+    if (char === '}') braceCount--
+    if (char === '(') parenCount++
+    if (char === ')') parenCount--
+    if (char === '[') bracketCount++
+    if (char === ']') bracketCount--
+    
+    if (braceCount < 0) return { valid: false, error: 'Unexpected closing brace }' }
+    if (parenCount < 0) return { valid: false, error: 'Unexpected closing parenthesis )' }
+    if (bracketCount < 0) return { valid: false, error: 'Unexpected closing bracket ]' }
+  }
+  
+  if (braceCount !== 0) return { valid: false, error: `Unbalanced braces: ${braceCount > 0 ? 'missing }' : 'extra }'}` }
+  if (parenCount !== 0) return { valid: false, error: `Unbalanced parentheses: ${parenCount > 0 ? 'missing )' : 'extra )'}` }
+  if (bracketCount !== 0) return { valid: false, error: `Unbalanced brackets: ${bracketCount > 0 ? 'missing ]' : 'extra ]'}` }
+  
+  // Check for unclosed JSX tags (basic check)
+  const selfClosingTags = ['img', 'br', 'hr', 'input', 'meta', 'link', 'area', 'base', 'col', 'embed', 'param', 'source', 'track', 'wbr']
+  const openingTags = code.match(/<([a-zA-Z][a-zA-Z0-9]*)[^>]*(?<!\/)\s*>/g) || []
+  const closingTags = code.match(/<\/([a-zA-Z][a-zA-Z0-9]*)\s*>/g) || []
+  
+  // Extract tag names
+  const openNames = openingTags
+    .map(t => t.match(/<([a-zA-Z][a-zA-Z0-9]*)/)?.[1]?.toLowerCase())
+    .filter((t): t is string => !!t && !selfClosingTags.includes(t))
+  
+  const closeNames = closingTags
+    .map(t => t.match(/<\/([a-zA-Z][a-zA-Z0-9]*)/)?.[1]?.toLowerCase())
+    .filter((t): t is string => !!t)
+  
+  // Simple check: warn if vastly different counts (not perfect but catches obvious errors)
+  if (Math.abs(openNames.length - closeNames.length) > 3) {
+    return { valid: false, error: 'Possibly unclosed JSX tags detected' }
+  }
+  
+  // Check for export default function
+  if (!code.includes('export default function') && !code.includes('export default')) {
+    return { valid: false, error: 'Missing export default function' }
+  }
+  
+  return { valid: true }
+}
+
 export default function CodePreview({ code, isPaid = false, onCodeChange }: CodePreviewProps) {
   const [copied, setCopied] = useState(false)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
+  const [editedCode, setEditedCode] = useState(code)
+  const [syntaxError, setSyntaxError] = useState<string | null>(null)
 
   const lines = code.split('\n')
   const visibleLines = isPaid ? lines : lines.slice(0, 15)
@@ -29,6 +82,34 @@ export default function CodePreview({ code, isPaid = false, onCodeChange }: Code
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const handleEditToggle = useCallback(() => {
+    if (isEditing) {
+      // Validate before saving
+      const validation = validateSyntax(editedCode)
+      if (!validation.valid) {
+        setSyntaxError(validation.error || 'Invalid syntax')
+        return
+      }
+      setSyntaxError(null)
+      onCodeChange?.(editedCode)
+    } else {
+      setEditedCode(code)
+      setSyntaxError(null)
+    }
+    setIsEditing(!isEditing)
+  }, [isEditing, editedCode, code, onCodeChange])
+
+  const handleCodeEdit = useCallback((newCode: string) => {
+    setEditedCode(newCode)
+    // Clear error when user starts typing
+    if (syntaxError) {
+      const validation = validateSyntax(newCode)
+      if (validation.valid) {
+        setSyntaxError(null)
+      }
+    }
+  }, [syntaxError])
+
   return (
     <div className="h-full bg-zinc-950 flex flex-col">
       <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-900/50">
@@ -43,14 +124,24 @@ export default function CodePreview({ code, isPaid = false, onCodeChange }: Code
         <div className="flex items-center gap-2">
           {onCodeChange && (
             <button
-              onClick={() => setIsEditing(!isEditing)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded-lg transition-colors"
+              onClick={handleEditToggle}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-colors ${
+                isEditing 
+                  ? 'bg-green-600 hover:bg-green-500 text-white' 
+                  : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white'
+              }`}
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                {isEditing ? (
+                  <path d="M20 6L9 17l-5-5" />
+                ) : (
+                  <>
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                  </>
+                )}
               </svg>
-              {isEditing ? 'Done' : 'Edit'}
+              {isEditing ? 'Save' : 'Edit'}
             </button>
           )}
           <button
@@ -78,11 +169,23 @@ export default function CodePreview({ code, isPaid = false, onCodeChange }: Code
       </div>
 
       <div className="flex-1 overflow-auto relative bg-zinc-950">
+        {syntaxError && (
+          <div className="absolute top-2 left-2 right-2 z-10 px-3 py-2 bg-red-900/90 border border-red-700 rounded-lg text-red-200 text-xs font-mono flex items-center gap-2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="15" y1="9" x2="9" y2="15"/>
+              <line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>
+            {syntaxError}
+          </div>
+        )}
         {isEditing ? (
           <textarea
-            value={code}
-            onChange={(e) => onCodeChange?.(e.target.value)}
-            className="w-full h-full p-4 bg-zinc-950 text-zinc-300 font-mono text-sm leading-relaxed resize-none focus:outline-none"
+            value={editedCode}
+            onChange={(e) => handleCodeEdit(e.target.value)}
+            className={`w-full h-full p-4 bg-zinc-950 text-zinc-300 font-mono text-sm leading-relaxed resize-none focus:outline-none ${
+              syntaxError ? 'pt-12' : ''
+            }`}
             spellCheck={false}
           />
         ) : (

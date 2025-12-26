@@ -16,6 +16,7 @@ interface ChatProps {
   currentCode: string
   isPaid?: boolean
   onOpenAssets?: () => void
+  projectId?: string
   projectSlug?: string
   projectName?: string
 }
@@ -50,7 +51,7 @@ function getRandomResponse() {
   return responses[Math.floor(Math.random() * responses.length)]
 }
 
-export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = false, onOpenAssets, projectSlug = '', projectName = '' }: ChatProps) {
+export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = false, onOpenAssets, projectId = '', projectSlug = '', projectName = '' }: ChatProps) {
   const [input, setInput] = useState('')
   const [buildMessages, setBuildMessages] = useState<Message[]>([])
   const [chatMessages, setChatMessages] = useState<Message[]>([])
@@ -66,35 +67,35 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
 
   // Load chat history from localStorage on mount/project change
   useEffect(() => {
-    if (!projectSlug) return
+    if (!projectId) return
     try {
-      const savedBuild = localStorage.getItem(`chat-build-${projectSlug}`)
-      const savedChat = localStorage.getItem(`chat-chat-${projectSlug}`)
+      const savedBuild = localStorage.getItem(`chat-build-${projectId}`)
+      const savedChat = localStorage.getItem(`chat-chat-${projectId}`)
       if (savedBuild) setBuildMessages(JSON.parse(savedBuild))
       if (savedChat) setChatMessages(JSON.parse(savedChat))
     } catch (e) {
       console.error('Failed to load chat history:', e)
     }
-  }, [projectSlug])
+  }, [projectId])
 
   // Save chat history to localStorage when messages change
   useEffect(() => {
-    if (!projectSlug || buildMessages.length === 0) return
+    if (!projectId || buildMessages.length === 0) return
     try {
-      localStorage.setItem(`chat-build-${projectSlug}`, JSON.stringify(buildMessages.filter(m => !m.isThinking)))
+      localStorage.setItem(`chat-build-${projectId}`, JSON.stringify(buildMessages.filter(m => !m.isThinking)))
     } catch (e) {
       console.error('Failed to save build history:', e)
     }
-  }, [buildMessages, projectSlug])
+  }, [buildMessages, projectId])
 
   useEffect(() => {
-    if (!projectSlug || chatMessages.length === 0) return
+    if (!projectId || chatMessages.length === 0) return
     try {
-      localStorage.setItem(`chat-chat-${projectSlug}`, JSON.stringify(chatMessages))
+      localStorage.setItem(`chat-chat-${projectId}`, JSON.stringify(chatMessages))
     } catch (e) {
       console.error('Failed to save chat history:', e)
     }
-  }, [chatMessages, projectSlug])
+  }, [chatMessages, projectId])
 
   useEffect(() => {
     setRemaining(getGenerationsRemaining())
@@ -175,9 +176,9 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
   const clearChat = () => {
     setMessages([])
     // Also clear from localStorage
-    if (projectSlug) {
+    if (projectId) {
       try {
-        localStorage.removeItem(`chat-${mode}-${projectSlug}`)
+        localStorage.removeItem(`chat-${mode}-${projectId}`)
       } catch (e) {
         console.error('Failed to clear chat history:', e)
       }
@@ -319,11 +320,17 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
         )}
       </div>
 
-      <div className="p-3 border-t border-zinc-800/50">
+      <div className="p-3 pb-safe border-t border-zinc-800/50">
         <form onSubmit={handleSubmit} className="flex flex-col gap-2">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            onFocus={() => {
+              // Scroll into view on mobile to handle keyboard
+              setTimeout(() => {
+                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+              }, 300)
+            }}
             onKeyDown={(e) => {
               // Enter to submit, Shift+Enter for newline
               if (e.key === 'Enter' && !e.shiftKey) {

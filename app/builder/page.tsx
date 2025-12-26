@@ -425,6 +425,10 @@ export default function Home() {
   }
 
   const switchProject = (id: string) => {
+    if (id === currentProjectId) {
+      setShowProjectDropdown(false)
+      return
+    }
     setCurrentProjectId(id)
     setShowProjectDropdown(false)
     setDeployedUrl(null)
@@ -664,14 +668,15 @@ export default function Home() {
           throw new Error('Repository is too large to import (truncated by GitHub)')
         }
         
-        // Filter for HTML files only (not JS/TS/CSS since they're not useful as standalone projects)
+        // Filter for HTML and JSX/TSX files (React components that could work as pages)
         const relevantFiles = data.tree.filter((item: any) => 
           item.type === 'blob' && 
-          (item.path.endsWith('.html') || item.path.endsWith('.htm'))
+          (item.path.endsWith('.html') || item.path.endsWith('.htm') || 
+           item.path.endsWith('.jsx') || item.path.endsWith('.tsx'))
         )
         
         if (relevantFiles.length > 80) {
-          throw new Error('Repository has too many HTML files. Limit to 80 for import.')
+          throw new Error('Repository has too many importable files. Limit to 80 for import.')
         }
 
         const totalBytes = relevantFiles.reduce((sum: number, item: any) => sum + (item.size || 0), 0)
@@ -705,7 +710,9 @@ export default function Home() {
             
             const content = await fileResponse.text()
             const fileName = file.path.split('/').pop() || file.path
-            const isIndexFile = fileName.toLowerCase() === 'index.html' || fileName.toLowerCase() === 'index.htm'
+            const isIndexFile = fileName.toLowerCase() === 'index.html' || fileName.toLowerCase() === 'index.htm' || 
+                               fileName.toLowerCase() === 'index.jsx' || fileName.toLowerCase() === 'index.tsx' ||
+                               fileName.toLowerCase() === 'page.tsx' || fileName.toLowerCase() === 'page.jsx'
             
             // Determine page name and URL path
             let pageName: string
@@ -715,10 +722,11 @@ export default function Home() {
               pageName = 'Home'
               urlPath = '/'
             } else {
-              pageName = fileName.replace(/\.(html|htm)$/i, '')
+              // Remove file extension
+              pageName = fileName.replace(/\.(html|htm|jsx|tsx)$/i, '')
               // Capitalize first letter
               pageName = pageName.charAt(0).toUpperCase() + pageName.slice(1).replace(/-/g, ' ')
-              urlPath = '/' + fileName.replace(/\.(html|htm)$/i, '').toLowerCase().replace(/[^a-z0-9]+/g, '-')
+              urlPath = '/' + fileName.replace(/\.(html|htm|jsx|tsx)$/i, '').toLowerCase().replace(/[^a-z0-9]+/g, '-')
             }
             
             // Create page
@@ -914,6 +922,15 @@ export default function Home() {
           id: p.id,
           name: p.name,
           path: p.path
+        }))
+      }
+      
+      // Include uploaded assets so AI can reference them
+      if (currentProject?.assets && currentProject.assets.length > 0) {
+        payload.assets = currentProject.assets.map(a => ({
+          name: a.name,
+          dataUrl: a.dataUrl,
+          type: a.type
         }))
       }
       
@@ -2357,7 +2374,7 @@ export default function Home() {
           </div>
         )}
         <div className="flex-1 overflow-hidden">
-          <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} isPaid={isCurrentProjectPaid} onOpenAssets={() => setShowAssetsModal(true)} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} key={currentProjectId} />
+          <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} isPaid={isCurrentProjectPaid} onOpenAssets={() => setShowAssetsModal(true)} projectId={currentProjectId || ''} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} key={currentProjectId} />
         </div>
         {code && (
           <div className="px-4 py-3 border-t border-zinc-800 bg-zinc-900 flex gap-2" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
@@ -2490,7 +2507,7 @@ export default function Home() {
               </div>
             )}
             <div className="flex-1 overflow-hidden">
-              <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} isPaid={isCurrentProjectPaid} onOpenAssets={() => setShowAssetsModal(true)} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} key={currentProjectId} />
+              <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} isPaid={isCurrentProjectPaid} onOpenAssets={() => setShowAssetsModal(true)} projectId={currentProjectId || ''} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} key={currentProjectId} />
             </div>
           </div>
         </Panel>

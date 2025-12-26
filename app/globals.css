@@ -11,3 +11,15 @@ input, textarea, select {
   font-size: 16px;
   touch-action: manipulation;
 }
+
+/* Safe area padding for mobile devices */
+.pb-safe {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
+/* Ensure viewport resizes with mobile keyboard */
+@supports (height: 100dvh) {
+  .h-dvh {
+    height: 100dvh;
+  }
+}

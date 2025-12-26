@@ -209,5 +209,96 @@ export async function POST(req: Request) {
     }
   }
 
+  // Handle failed payment - mark subscription as past_due
+  if (event.type === 'invoice.payment_failed') {
+    const invoice = event.data.object as Stripe.Invoice
+    const subscriptionId = (invoice as { subscription?: string }).subscription
+    const customerId = invoice.customer as string
+    
+    console.log(`Payment failed for subscription ${subscriptionId}, customer: ${customerId}`)
+
+    if (subscriptionId && customerId) {
+      try {
+        const client = await clerkClient()
+        
+        // Find user by stripeCustomerId
+        const allUsers = await client.users.getUserList({ limit: 100 })
+        const user = allUsers.data.find(
+          u => u.publicMetadata?.stripeCustomerId === customerId
+        )
+
+        if (user) {
+          const existingSubscriptions = (user.publicMetadata?.subscriptions as SiteSubscription[]) || []
+          
+          // Find and update the subscription status to past_due
+          const updatedSubscriptions = existingSubscriptions.map(s => 
+            s.stripeSubscriptionId === subscriptionId 
+              ? { ...s, status: 'past_due' as const }
+              : s
+          )
+
+          // Update user metadata
+          await client.users.updateUser(user.id, {
+            publicMetadata: {
+              ...user.publicMetadata,
+              subscriptions: updatedSubscriptions,
+            },
+          })
+
+          console.log(`Marked subscription ${subscriptionId} as past_due for user ${user.id}`)
+        }
+      } catch (err) {
+        console.error('Failed to process payment failure:', err)
+      }
+    }
+  }
+
+  // Handle successful payment after past_due - restore to active
+  if (event.type === 'invoice.payment_succeeded') {
+    const invoice = event.data.object as Stripe.Invoice
+    const subscriptionId = (invoice as { subscription?: string }).subscription
+    const customerId = invoice.customer as string
+    
+    // Only process if this is for a subscription (not one-time payments)
+    if (subscriptionId && customerId) {
+      try {
+        const client = await clerkClient()
+        
+        const allUsers = await client.users.getUserList({ limit: 100 })
+        const user = allUsers.data.find(
+          u => u.publicMetadata?.stripeCustomerId === customerId
+        )
+
+        if (user) {
+          const existingSubscriptions = (user.publicMetadata?.subscriptions as SiteSubscription[]) || []
+          
+          // Find and update the subscription status to active (in case it was past_due)
+          const updatedSubscriptions = existingSubscriptions.map(s => 
+            s.stripeSubscriptionId === subscriptionId && s.status === 'past_due'
+              ? { ...s, status: 'active' as const }
+              : s
+          )
+
+          // Only update if something changed
+          const hasChange = existingSubscriptions.some(s => 
+            s.stripeSubscriptionId === subscriptionId && s.status === 'past_due'
+          )
+
+          if (hasChange) {
+            await client.users.updateUser(user.id, {
+              publicMetadata: {
+                ...user.publicMetadata,
+                subscriptions: updatedSubscriptions,
+              },
+            })
+            console.log(`Restored subscription ${subscriptionId} to active for user ${user.id}`)
+          }
+        }
+      } catch (err) {
+        console.error('Failed to process payment success:', err)
+      }
+    }
+  }
+
   return NextResponse.json({ received: true })
 }
