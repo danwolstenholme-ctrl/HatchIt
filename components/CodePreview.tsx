@@ -11,12 +11,39 @@ interface CodePreviewProps {
 
 // Basic syntax validation for JSX/TSX code
 function validateSyntax(code: string): { valid: boolean; error?: string } {
-  // Check for balanced braces
+  // Check for balanced braces (but ignore braces inside strings)
   let braceCount = 0
   let parenCount = 0
   let bracketCount = 0
+  let inString = false
+  let stringChar = ''
+  let inTemplate = false
   
-  for (const char of code) {
+  for (let i = 0; i < code.length; i++) {
+    const char = code[i]
+    const prevChar = i > 0 ? code[i - 1] : ''
+    
+    // Handle string detection (skip escaped quotes)
+    if ((char === '"' || char === "'" || char === '`') && prevChar !== '\\') {
+      if (!inString && !inTemplate) {
+        if (char === '`') {
+          inTemplate = true
+        } else {
+          inString = true
+          stringChar = char
+        }
+      } else if (inTemplate && char === '`') {
+        inTemplate = false
+      } else if (inString && char === stringChar) {
+        inString = false
+        stringChar = ''
+      }
+      continue
+    }
+    
+    // Skip counting inside strings
+    if (inString || inTemplate) continue
+    
     if (char === '{') braceCount++
     if (char === '}') braceCount--
     if (char === '(') parenCount++
@@ -33,28 +60,18 @@ function validateSyntax(code: string): { valid: boolean; error?: string } {
   if (parenCount !== 0) return { valid: false, error: `Unbalanced parentheses: ${parenCount > 0 ? 'missing )' : 'extra )'}` }
   if (bracketCount !== 0) return { valid: false, error: `Unbalanced brackets: ${bracketCount > 0 ? 'missing ]' : 'extra ]'}` }
   
-  // Check for unclosed JSX tags (basic check)
-  const selfClosingTags = ['img', 'br', 'hr', 'input', 'meta', 'link', 'area', 'base', 'col', 'embed', 'param', 'source', 'track', 'wbr']
-  const openingTags = code.match(/<([a-zA-Z][a-zA-Z0-9]*)[^>]*(?<!\/)\s*>/g) || []
-  const closingTags = code.match(/<\/([a-zA-Z][a-zA-Z0-9]*)\s*>/g) || []
+  // Skip JSX tag validation - it's too unreliable with complex code
+  // Let Babel handle actual JSX syntax errors in the preview
   
-  // Extract tag names
-  const openNames = openingTags
-    .map(t => t.match(/<([a-zA-Z][a-zA-Z0-9]*)/)?.[1]?.toLowerCase())
-    .filter((t): t is string => !!t && !selfClosingTags.includes(t))
+  // Check for export default (but be lenient - code might be a component that gets wrapped)
+  const hasExport = code.includes('export default') || 
+                    code.includes('export function') ||
+                    code.includes('function ') ||
+                    code.includes('const ') ||
+                    code.includes('class ')
   
-  const closeNames = closingTags
-    .map(t => t.match(/<\/([a-zA-Z][a-zA-Z0-9]*)/)?.[1]?.toLowerCase())
-    .filter((t): t is string => !!t)
-  
-  // Simple check: warn if vastly different counts (not perfect but catches obvious errors)
-  if (Math.abs(openNames.length - closeNames.length) > 3) {
-    return { valid: false, error: 'Possibly unclosed JSX tags detected' }
-  }
-  
-  // Check for export default function
-  if (!code.includes('export default function') && !code.includes('export default')) {
-    return { valid: false, error: 'Missing export default function' }
+  if (!hasExport) {
+    return { valid: false, error: 'No component or function found' }
   }
   
   return { valid: true }
