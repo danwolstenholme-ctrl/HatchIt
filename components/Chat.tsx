@@ -268,7 +268,7 @@ export default function Chat({ onGenerate, isGenerating, onStopGeneration, curre
             onClick={() => setMode('build')}
             className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
               mode === 'build' 
-                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md' 
+                ? 'bg-zinc-700 text-white shadow-md' 
                 : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
             }`}
           >
@@ -288,7 +288,7 @@ export default function Chat({ onGenerate, isGenerating, onStopGeneration, curre
 
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center px-4">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center mb-3">
+            <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center mb-3">
               <span className="text-xl">{mode === 'chat' ? '💬' : '⚡'}</span>
             </div>
             <p className="text-zinc-300 text-sm font-medium mb-1">{mode === 'chat' ? 'Ask me anything' : 'Describe → Generate → Ship'}</p>
@@ -340,7 +340,7 @@ export default function Chat({ onGenerate, isGenerating, onStopGeneration, curre
                 key={i}
                 className={`text-sm px-3 py-2 rounded-2xl max-w-[85%] animate-in fade-in slide-in-from-bottom-2 duration-300 ${
                   msg.role === 'user' 
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white ml-auto' 
+                    ? 'bg-zinc-700 text-white ml-auto' 
                     : msg.isThinking
                       ? 'bg-zinc-800/80 text-zinc-500 italic'
                       : mode === 'chat'
@@ -470,7 +470,7 @@ export default function Chat({ onGenerate, isGenerating, onStopGeneration, curre
                 className={`flex-1 px-4 py-2 rounded-xl text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
                   mode === 'chat'
                     ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white'
-                    : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white'
+                    : 'bg-zinc-700 hover:bg-zinc-600 text-white'
                 }`}
               >
                 {mode === 'chat' ? 'Send' : messages.length === 0 ? 'Generate' : 'Update'}

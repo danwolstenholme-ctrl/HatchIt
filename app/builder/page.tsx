@@ -1547,9 +1547,9 @@ export default function Home() {
   }
 
   const HatchedBadge = () => (
-    <div className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-full">
+    <div className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/30 rounded-full">
       <span className="text-xs">🐣</span>
-      <span className="text-xs font-medium bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Hatched</span>
+      <span className="text-xs font-medium bg-gradient-to-r from-amber-400 to-yellow-400 bg-clip-text text-transparent">Hatched</span>
     </div>
   )
 
@@ -2942,23 +2942,27 @@ export default function Home() {
             {/* Mobile Menu Button */}
             <motion.button
               onClick={() => setShowMobileMenu(!showMobileMenu)}
-              className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500/20 via-yellow-500/20 to-orange-500/20 border border-amber-500/30 transition-all overflow-hidden flex-shrink-0 group"
+              className={`relative flex items-center justify-center w-8 h-8 rounded-lg border transition-all overflow-hidden flex-shrink-0 group ${isCurrentProjectPaid ? 'bg-gradient-to-br from-amber-500/20 via-yellow-500/20 to-orange-500/20 border-amber-500/30' : 'bg-zinc-800 border-zinc-700'}`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               title="Menu"
             >
-              {/* Pulse glow */}
-              <motion.div
-                className="absolute inset-0 rounded-lg bg-amber-400/20"
-                animate={{ opacity: [0.2, 0.4, 0.2] }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-              />
-              {/* Outer glow */}
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-500/20 via-yellow-400/20 to-orange-500/20 rounded-lg blur-sm opacity-60" />
+              {/* Pulse glow - only for paid */}
+              {isCurrentProjectPaid && (
+                <motion.div
+                  className="absolute inset-0 rounded-lg bg-amber-400/20"
+                  animate={{ opacity: [0.2, 0.4, 0.2] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                />
+              )}
+              {/* Outer glow - only for paid */}
+              {isCurrentProjectPaid && (
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-500/20 via-yellow-400/20 to-orange-500/20 rounded-lg blur-sm opacity-60" />
+              )}
               {/* Emoji */}
               <motion.span 
                 className="relative text-base z-10"
-                animate={{ y: [0, -1, 0] }}
+                animate={isCurrentProjectPaid ? { y: [0, -1, 0] } : {}}
                 transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
               >
                 🐣
@@ -3059,29 +3063,35 @@ export default function Home() {
                 <div className="relative desktop-menu-container">
                   <motion.button
                     onClick={() => setShowDesktopMenu(!showDesktopMenu)}
-                    className="relative flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-amber-500/20 via-yellow-500/20 to-orange-500/20 border border-amber-500/30 transition-all overflow-hidden group"
+                    className={`relative flex items-center justify-center w-9 h-9 rounded-lg border transition-all overflow-hidden group ${isCurrentProjectPaid ? 'bg-gradient-to-br from-amber-500/20 via-yellow-500/20 to-orange-500/20 border-amber-500/30' : 'bg-zinc-800 border-zinc-700'}`}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     title="Menu"
                   >
-                    {/* Animated glow ring */}
-                    <motion.div
-                      className="absolute inset-0 rounded-lg bg-gradient-to-r from-amber-400/0 via-amber-400/30 to-amber-400/0"
-                      animate={{ x: ['-100%', '100%'] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                    />
-                    {/* Pulse glow */}
-                    <motion.div
-                      className="absolute inset-0 rounded-lg bg-amber-400/20"
-                      animate={{ opacity: [0.2, 0.4, 0.2] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                    />
-                    {/* Outer glow */}
-                    <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/20 via-yellow-400/20 to-orange-500/20 rounded-xl blur-md opacity-60 group-hover:opacity-100 transition-opacity" />
+                    {/* Animated glow ring - only for paid */}
+                    {isCurrentProjectPaid && (
+                      <motion.div
+                        className="absolute inset-0 rounded-lg bg-gradient-to-r from-amber-400/0 via-amber-400/30 to-amber-400/0"
+                        animate={{ x: ['-100%', '100%'] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                      />
+                    )}
+                    {/* Pulse glow - only for paid */}
+                    {isCurrentProjectPaid && (
+                      <motion.div
+                        className="absolute inset-0 rounded-lg bg-amber-400/20"
+                        animate={{ opacity: [0.2, 0.4, 0.2] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                      />
+                    )}
+                    {/* Outer glow - only for paid */}
+                    {isCurrentProjectPaid && (
+                      <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/20 via-yellow-400/20 to-orange-500/20 rounded-xl blur-md opacity-60 group-hover:opacity-100 transition-opacity" />
+                    )}
                     {/* Emoji */}
                     <motion.span 
                       className="relative text-lg z-10"
-                      animate={{ y: [0, -1, 0] }}
+                      animate={isCurrentProjectPaid ? { y: [0, -1, 0] } : {}}
                       transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
                     >
                       🐣
