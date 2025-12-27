@@ -253,6 +253,8 @@ export default function Home() {
   const [inspectorMode, setInspectorMode] = useState(false)
   const [selectedElement, setSelectedElement] = useState<{ tagName: string; className: string; textContent: string; styles: Record<string, string> } | null>(null)
   const [externalPrompt, setExternalPrompt] = useState<string | null>(null)
+  const [generationProgress, setGenerationProgress] = useState<string>('') // Real-time status
+  const [complexityWarning, setComplexityWarning] = useState<{ warning: string; suggestions: string[]; prompt: string } | null>(null)
   const previewContainerRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const domainInputRef = useRef<HTMLInputElement>(null)
@@ -961,7 +963,8 @@ export default function Home() {
     setExternalPrompt('Simplify this page and fix any errors. Keep the same design but use cleaner, simpler code that renders properly.')
   }
 
-  const handleGenerate = async (prompt: string, history: Message[], currentCode: string): Promise<string | null> => {
+  // Generate with option to skip complexity warning (when user proceeds anyway)
+  const handleGenerateWithOptions = async (prompt: string, history: Message[], currentCode: string, skipComplexityWarning = false): Promise<string | null> => {
     const requestId = ++generationRequestIdRef.current
     const targetProjectId = currentProjectId
     const targetPageId = currentPage?.id
@@ -970,9 +973,10 @@ export default function Home() {
     abortControllerRef.current = new AbortController()
     
     setIsGenerating(true)
+    setGenerationProgress('Analyzing request...')
     try {
       // Prepare page context for multi-page projects
-      const payload: Record<string, unknown> = { prompt, history, currentCode }
+      const payload: Record<string, unknown> = { prompt, history, currentCode, skipComplexityWarning }
       if (currentProject && isMultiPageProject(currentProject)) {
         payload.currentPage = {
           id: currentPage?.id,
@@ -995,6 +999,7 @@ export default function Home() {
         }))
       }
       
+      setGenerationProgress('Generating code...')
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1002,6 +1007,20 @@ export default function Home() {
         signal: abortControllerRef.current.signal,
       })
       const data = await response.json()
+      
+      // Handle complexity warning
+      if (data.complexityWarning) {
+        setIsGenerating(false)
+        setGenerationProgress('')
+        setComplexityWarning({
+          warning: data.warning,
+          suggestions: data.suggestions || [],
+          prompt
+        })
+        return null
+      }
+      
+      setGenerationProgress('Processing response...')
       
       // Handle multi-page operations (creating new pages, updating multiple pages)
       if (data.pageOperations && Array.isArray(data.pageOperations) && data.pageOperations.length > 0) {
@@ -1106,8 +1125,25 @@ export default function Home() {
       return null
     } finally {
       setIsGenerating(false)
+      setGenerationProgress('')
       abortControllerRef.current = null
     }
+  }
+
+  // Wrapper for Chat component - always goes through complexity check first
+  const handleGenerate = async (prompt: string, history: Message[], currentCode: string): Promise<string | null> => {
+    return handleGenerateWithOptions(prompt, history, currentCode, false)
+  }
+
+  // Called when user proceeds despite complexity warning
+  const handleProceedWithComplexPrompt = async () => {
+    if (!complexityWarning) return
+    const prompt = complexityWarning.prompt
+    setComplexityWarning(null)
+    // Get current build messages from localStorage
+    const savedBuild = localStorage.getItem(`chat-build-${currentProjectId}`)
+    const history = savedBuild ? JSON.parse(savedBuild) : []
+    return handleGenerateWithOptions(prompt, history, code, true)
   }
 
   const handleStopGeneration = () => {
@@ -1115,6 +1151,7 @@ export default function Home() {
       abortControllerRef.current.abort()
       abortControllerRef.current = null
       setIsGenerating(false)
+      setGenerationProgress('')
     }
   }
 
@@ -1750,7 +1787,7 @@ export default function Home() {
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
-      <div className="flex-1 overflow-auto">{type === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} isPaid={isCurrentProjectPaid} assets={currentProject?.assets} setShowUpgradeModal={setShowUpgradeModal} onViewCode={() => { onClose(); setActiveTab('code') }} onRegenerate={handleRegenerateFromError} onQuickFix={handleQuickFix} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} pagePath={currentPage?.path} />}</div>
+      <div className="flex-1 overflow-auto">{type === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} loadingProgress={generationProgress} isPaid={isCurrentProjectPaid} assets={currentProject?.assets} setShowUpgradeModal={setShowUpgradeModal} onViewCode={() => { onClose(); setActiveTab('code') }} onRegenerate={handleRegenerateFromError} onQuickFix={handleQuickFix} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} pagePath={currentPage?.path} />}</div>
     </div>
   )
 
@@ -2468,6 +2505,52 @@ export default function Home() {
         {showPagesPanel && <PagesPanel />}
         {showAddPageModal && <AddPageModal />}
         {isDeploying && <DeployingOverlay />}
+        
+        {/* Complexity Warning Modal */}
+        {complexityWarning && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+            <div className="bg-zinc-900 rounded-xl p-6 md:p-8 w-full max-w-lg border border-zinc-800">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-bold text-white">Complex Request Detected</h2>
+              </div>
+              
+              <p className="text-zinc-300 mb-4">{complexityWarning.warning}</p>
+              
+              <div className="bg-zinc-800/50 rounded-lg p-4 mb-6">
+                <p className="text-sm font-medium text-zinc-200 mb-2">💡 For best results:</p>
+                <ul className="text-sm text-zinc-400 space-y-1">
+                  {complexityWarning.suggestions.map((suggestion, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="text-blue-400 mt-0.5">•</span>
+                      {suggestion}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => setComplexityWarning(null)}
+                  className="flex-1 px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  Edit Prompt
+                </button>
+                <button
+                  onClick={handleProceedWithComplexPrompt}
+                  className="flex-1 px-4 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-medium transition-colors"
+                >
+                  Generate Anyway
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {showShipModal && !isDeploying && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-zinc-900 rounded-xl p-6 md:p-8 w-full max-w-md border border-zinc-800">
@@ -2611,7 +2694,7 @@ export default function Home() {
           </div>
         )}
         <div className="flex-1 overflow-hidden">
-          <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} isPaid={isCurrentProjectPaid} onOpenAssets={() => setShowAssetsModal(true)} projectId={currentProjectId || ''} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} externalPrompt={externalPrompt} onExternalPromptHandled={() => setExternalPrompt(null)} key={currentProjectId} />
+          <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} isPaid={isCurrentProjectPaid} onOpenAssets={() => setShowAssetsModal(true)} projectId={currentProjectId || ''} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} externalPrompt={externalPrompt} onExternalPromptHandled={() => setExternalPrompt(null)} generationProgress={generationProgress} key={currentProjectId} />
         </div>
         {code && (
           <div className="px-4 py-3 border-t border-zinc-800 bg-zinc-900 flex gap-2" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
@@ -2753,7 +2836,7 @@ export default function Home() {
               </div>
             )}
             <div className="flex-1 overflow-hidden">
-              <Chat onGenerate={handleGenerate} isGenerating={isGenerating} onStopGeneration={handleStopGeneration} currentCode={code} isPaid={isCurrentProjectPaid} onOpenAssets={() => setShowAssetsModal(true)} projectId={currentProjectId || ''} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} externalPrompt={externalPrompt} onExternalPromptHandled={() => setExternalPrompt(null)} key={currentProjectId} />
+              <Chat onGenerate={handleGenerate} isGenerating={isGenerating} onStopGeneration={handleStopGeneration} currentCode={code} isPaid={isCurrentProjectPaid} onOpenAssets={() => setShowAssetsModal(true)} projectId={currentProjectId || ''} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} externalPrompt={externalPrompt} onExternalPromptHandled={() => setExternalPrompt(null)} generationProgress={generationProgress} key={currentProjectId} />
             </div>
           </div>
         </Panel>
@@ -2802,7 +2885,7 @@ export default function Home() {
               </div>
             </div>
             <div ref={previewContainerRef} className="flex-1 overflow-auto min-h-0 relative">
-              {activeTab === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} isPaid={isCurrentProjectPaid} assets={currentProject?.assets} setShowUpgradeModal={setShowUpgradeModal} inspectorMode={inspectorMode} onElementSelect={setSelectedElement} onViewCode={handleViewCode} onRegenerate={handleRegenerateFromError} onQuickFix={handleQuickFix} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} pagePath={currentPage?.path} />}
+              {activeTab === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} loadingProgress={generationProgress} isPaid={isCurrentProjectPaid} assets={currentProject?.assets} setShowUpgradeModal={setShowUpgradeModal} inspectorMode={inspectorMode} onElementSelect={setSelectedElement} onViewCode={handleViewCode} onRegenerate={handleRegenerateFromError} onQuickFix={handleQuickFix} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} pagePath={currentPage?.path} />}
               
               {/* Element Inspector Popover */}
               {inspectorMode && selectedElement && (

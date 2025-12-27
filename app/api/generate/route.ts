@@ -81,6 +81,75 @@ function checkAndRecordGeneration(userId: string, isPaid: boolean): { allowed: b
   return { allowed: true, remaining: FREE_DAILY_LIMIT - userGen.count }
 }
 
+// Prompt complexity analysis - returns warning if prompt is too complex
+function analyzePromptComplexity(prompt: string): { isComplex: boolean; warning?: string; suggestions?: string[] } {
+  const wordCount = prompt.split(/\s+/).length
+  const sentenceCount = prompt.split(/[.!?]+/).filter(s => s.trim()).length
+  
+  // Count distinct feature requests
+  const featureIndicators = [
+    /hero\s*(section)?/i,
+    /feature[s]?\s*(section|grid)?/i,
+    /pricing\s*(section|page|table)?/i,
+    /contact\s*(form|section|page)?/i,
+    /nav(igation)?|header/i,
+    /footer/i,
+    /testimonial[s]?/i,
+    /about\s*(us|section)?/i,
+    /team\s*(section)?/i,
+    /blog|article/i,
+    /gallery/i,
+    /faq/i,
+    /cta|call.to.action/i,
+    /sign\s*up|login|auth/i,
+    /dashboard/i,
+    /sidebar/i,
+    /modal|popup/i,
+    /animation[s]?/i,
+    /carousel|slider/i,
+    /accordion/i,
+    /tabs/i,
+    /stats|statistics/i,
+    /timeline/i
+  ]
+  
+  const featureCount = featureIndicators.filter(regex => regex.test(prompt)).length
+  
+  // Check for complexity indicators
+  const isLongPrompt = wordCount > 80
+  const hasManyFeatures = featureCount >= 4
+  const hasManyRequirements = sentenceCount >= 5
+  
+  // Detect specific complexity patterns
+  const hasDetailedStyling = /theme|color[s]?|palette|accent|pastel|gradient|aesthetic/i.test(prompt)
+  const hasMultipleSections = featureCount >= 3
+  const hasSpecificContent = /\b(SPF|euro|€|\$|price|option[s]?|value[s]?|tier[s]?)\b/i.test(prompt)
+  
+  const complexityScore = (
+    (isLongPrompt ? 2 : 0) +
+    (hasManyFeatures ? 2 : 0) +
+    (hasManyRequirements ? 1 : 0) +
+    (hasDetailedStyling ? 1 : 0) +
+    (hasSpecificContent ? 1 : 0)
+  )
+  
+  if (complexityScore >= 4 || (wordCount > 100 && featureCount >= 3)) {
+    const suggestions = [
+      'Start with just the hero section and navigation',
+      'Add one section at a time (e.g., "Add a features section")',
+      'Specify styling details after the basic structure is working'
+    ]
+    
+    return {
+      isComplex: true,
+      warning: `This is a detailed request with ${featureCount} distinct sections. For best results, complex sites should be built iteratively.`,
+      suggestions
+    }
+  }
+  
+  return { isComplex: false }
+}
+
 // Simple syntax check
 function checkSyntax(code: string): { valid: boolean; error?: string } {
   try {
@@ -318,7 +387,43 @@ Only create a NEW page (using the ---PAGES--- format with action: "create") when
 - "I need a contact page"
 - "make me a new page called..."
 
-When in doubt: MODIFY the current code, don't replace it with something unrelated.`
+When in doubt: MODIFY the current code, don't replace it with something unrelated.
+
+## HANDLING COMPLEX REQUESTS
+
+If a user request is VERY detailed with many sections/features (e.g., hero + features + pricing + testimonials + contact + specific styling all in one prompt):
+1. PRIORITIZE creating a working, renderable component over including every detail
+2. Focus on the CORE structure first: navigation, hero, and 2-3 key sections
+3. Use placeholder content where specific details weren't provided
+4. In your ---MESSAGE---, acknowledge what you built and suggest: "Want me to add more sections? Just ask for them one at a time!"
+5. NEVER generate incomplete or cut-off code - it's better to deliver less than to deliver broken code
+
+Key principle: A simpler working site is ALWAYS better than a complex broken one.
+
+## LOGOS & IMAGES
+
+IMPORTANT: You CANNOT generate actual image logos or graphics. HatchIt creates CODE, not images.
+
+When a user asks for a logo:
+1. Create a TEXT-BASED logo using styled typography (this is common for real brands!)
+2. Use creative CSS: gradients, font weights, letter spacing, etc.
+3. Optionally incorporate a relevant Lucide icon next to the text
+4. In your ---MESSAGE---, mention: "I created a text-based logo since HatchIt generates code, not images. For a custom graphic logo, you can upload one via the Assets button!"
+
+Example text logo:
+<div className="flex items-center gap-2">
+  <Zap className="w-8 h-8 text-yellow-500" />
+  <span className="text-2xl font-black tracking-tight">
+    <span className="text-white">Volt</span>
+    <span className="text-yellow-500">Energy</span>
+  </span>
+</div>
+
+If the user has uploaded a logo via assets, use it with:
+<img src="USER_ASSET_URL" alt="Logo" className="h-10" />
+
+For other images they don't have, use Unsplash:
+<img src="https://images.unsplash.com/photo-XXXXX?w=800" alt="description" />`
 
 export async function POST(request: NextRequest) {
   // Authenticate user
@@ -354,7 +459,7 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const { prompt, history, currentCode, currentPage, allPages, assets } = await request.json()
+  const { prompt, history, currentCode, currentPage, allPages, assets, skipComplexityWarning } = await request.json()
 
   // Input validation
   if (!prompt || typeof prompt !== 'string') {
@@ -363,6 +468,18 @@ export async function POST(request: NextRequest) {
 
   if (prompt.length > 10000) {
     return NextResponse.json({ error: 'Prompt too long (max 10,000 characters)' }, { status: 400 })
+  }
+
+  // Check prompt complexity and warn user (unless they've acknowledged)
+  if (!skipComplexityWarning) {
+    const complexity = analyzePromptComplexity(prompt)
+    if (complexity.isComplex) {
+      return NextResponse.json({ 
+        complexityWarning: true,
+        warning: complexity.warning,
+        suggestions: complexity.suggestions
+      })
+    }
   }
 
   const messages: Message[] = []

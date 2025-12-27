@@ -19,6 +19,7 @@ interface LivePreviewProps {
   pages?: Page[]
   currentPageId?: string
   isLoading?: boolean
+  loadingProgress?: string  // Real-time generation status
   isPaid?: boolean
   assets?: Asset[]
   setShowUpgradeModal?: (show: boolean) => void
@@ -43,7 +44,7 @@ interface ElementInfo {
   }
 }
 
-export default function LivePreview({ code, pages, currentPageId, isLoading = false, isPaid = false, assets = [], setShowUpgradeModal, inspectorMode = false, onElementSelect, onViewCode, onRegenerate, onQuickFix }: LivePreviewProps) {
+export default function LivePreview({ code, pages, currentPageId, isLoading = false, loadingProgress, isPaid = false, assets = [], setShowUpgradeModal, inspectorMode = false, onElementSelect, onViewCode, onRegenerate, onQuickFix }: LivePreviewProps) {
   const [iframeLoaded, setIframeLoaded] = useState(false)
   const [iframeKey, setIframeKey] = useState(0)
   const [isDownloading, setIsDownloading] = useState(false)
@@ -1208,8 +1209,12 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
           {showSpinner && (
             <div className="absolute inset-0 bg-zinc-900 flex items-center justify-center z-10">
               <div className="flex flex-col items-center gap-3">
-                <div className="w-8 h-8 border-2 border-zinc-700 border-t-purple-500 rounded-full animate-spin"></div>
-                <span className="text-zinc-500 text-sm">{isLoading ? 'Generating...' : 'Rendering...'}</span>
+                <div className="relative w-12 h-12">
+                  <div className="absolute inset-0 border-2 border-zinc-700 rounded-full"></div>
+                  <div className="absolute inset-0 border-2 border-transparent border-t-blue-500 border-r-purple-500 rounded-full animate-spin"></div>
+                  <div className="absolute inset-2 border-2 border-transparent border-t-purple-500 border-r-pink-500 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+                </div>
+                <span className="text-zinc-400 text-sm font-medium">{isLoading ? (loadingProgress || 'Generating...') : 'Rendering...'}</span>
               </div>
             </div>
           )}
@@ -1228,8 +1233,12 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
         <div className="h-full flex items-center justify-center">
           {isLoading ? (
             <div className="flex flex-col items-center gap-3">
-              <div className="w-8 h-8 border-2 border-zinc-700 border-t-purple-500 rounded-full animate-spin"></div>
-              <span className="text-zinc-500 text-sm">Generating...</span>
+              <div className="relative w-12 h-12">
+                <div className="absolute inset-0 border-2 border-zinc-700 rounded-full"></div>
+                <div className="absolute inset-0 border-2 border-transparent border-t-blue-500 border-r-purple-500 rounded-full animate-spin"></div>
+                <div className="absolute inset-2 border-2 border-transparent border-t-purple-500 border-r-pink-500 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+              </div>
+              <span className="text-zinc-400 text-sm font-medium">{loadingProgress || 'Generating...'}</span>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-6 text-center max-w-md px-8">

@@ -37,6 +37,7 @@ interface ChatProps {
   projectName?: string
   externalPrompt?: string | null
   onExternalPromptHandled?: () => void
+  generationProgress?: string // Real-time status from generation
 }
 
 const thinkingMessages = [
@@ -69,7 +70,7 @@ function getRandomResponse() {
   return responses[Math.floor(Math.random() * responses.length)]
 }
 
-export default function Chat({ onGenerate, isGenerating, onStopGeneration, currentCode, isPaid = false, onOpenAssets, projectId = '', projectSlug = '', projectName = '', externalPrompt, onExternalPromptHandled }: ChatProps) {
+export default function Chat({ onGenerate, isGenerating, onStopGeneration, currentCode, isPaid = false, onOpenAssets, projectId = '', projectSlug = '', projectName = '', externalPrompt, onExternalPromptHandled, generationProgress }: ChatProps) {
   const [input, setInput] = useState('')
   const [buildMessages, setBuildMessages] = useState<Message[]>([])
   const [chatMessages, setChatMessages] = useState<Message[]>([])
@@ -337,13 +338,22 @@ export default function Chat({ onGenerate, isGenerating, onStopGeneration, curre
                   msg.role === 'user' 
                     ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white ml-auto' 
                     : msg.isThinking
-                      ? 'bg-zinc-800/80 text-zinc-500 italic animate-pulse'
+                      ? 'bg-zinc-800/80 text-zinc-500 italic'
                       : mode === 'chat'
                       ? 'bg-emerald-900/40 border border-emerald-700/30 text-zinc-300'
                       : 'bg-zinc-800/80 text-zinc-300'
                 }`}
               >
-                {msg.role === 'assistant' && !msg.isThinking ? renderMarkdown(msg.content) : msg.content}
+                {msg.role === 'assistant' && msg.isThinking ? (
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-1">
+                      <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                      <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                      <span className="w-1.5 h-1.5 bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                    </div>
+                    <span>{generationProgress || msg.content}</span>
+                  </div>
+                ) : msg.role === 'assistant' ? renderMarkdown(msg.content) : msg.content}
               </div>
             ))}
             {messages.length > 0 && !isGenerating && (
