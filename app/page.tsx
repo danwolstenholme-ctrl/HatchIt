@@ -257,10 +257,10 @@ export default function Home() {
                 gradient: "from-green-500 to-emerald-500"
               },
               {
-                icon: "🚀",
+                icon: "�",
                 title: "One-Click Deploy",
                 description: "Go live instantly. Custom domains. SSL included. No server setup.",
-                gradient: "from-blue-500 to-cyan-500"
+                gradient: "from-amber-500 to-orange-500"
               }
             ].map((feature, index) => (
               <AnimatedSection key={index} delay={index * 0.1}>
@@ -393,6 +393,7 @@ export default function Home() {
                     "Deploy to live URL",
                     "Custom domain",
                     "Buy domains in-app",
+                    "Brand customization",
                     "Download clean code",
                     "Version history",
                     "Unlimited updates",

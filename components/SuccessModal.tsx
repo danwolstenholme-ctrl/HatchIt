@@ -30,9 +30,10 @@ export default function SuccessModal({ isOpen, onClose }: SuccessModalProps) {
           <p className="text-sm text-zinc-300 mb-3">You now have access to:</p>
           <div className="space-y-2">
             {[
-              '🚀 Deploy to live URL',
+              '� Deploy to live URL',
               '🌐 Custom domains',
               '💻 Full code access',
+              '🎨 Brand customization',
               '📦 Download projects',
               '⚡ Unlimited generations',
               '🔄 Unlimited updates'
