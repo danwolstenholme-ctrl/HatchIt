@@ -585,10 +585,10 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
         '</head><body>' +
         '<div id="root"><div class="loading">Loading preview...</div></div>' +
         '<script>console.log("[Preview] Starting script loading...");</script>' +
-        '<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin onload="console.log(\'[Preview] React loaded\')" onerror="console.error(\'[Preview] React FAILED to load\')"></script>' +
-        '<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin onload="console.log(\'[Preview] ReactDOM loaded\')" onerror="console.error(\'[Preview] ReactDOM FAILED to load\')"></script>' +
+        '<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin onload="console.log(\'[Preview] React loaded\'); window.React = React;" onerror="console.error(\'[Preview] React FAILED to load\')"></script>' +
+        '<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin onload="console.log(\'[Preview] ReactDOM loaded\'); window.ReactDOM = ReactDOM;" onerror="console.error(\'[Preview] ReactDOM FAILED to load\')"></script>' +
         '<script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js" crossorigin onload="console.log(\'[Preview] Framer Motion loaded, Motion:\', typeof window.Motion)" onerror="console.error(\'[Preview] Framer Motion FAILED to load\')"></script>' +
-        '<script src="https://unpkg.com/lucide-react@0.460.0/dist/umd/lucide-react.min.js" crossorigin onload="console.log(\'[Preview] Lucide loaded\')" onerror="console.error(\'[Preview] Lucide FAILED to load\')"></script>' +
+        '<script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.min.js" crossorigin onload="console.log(\'[Preview] Lucide loaded\', Object.keys(window.lucideReact || {}).length)" onerror="console.error(\'[Preview] Lucide FAILED to load\')"></script>' +
         '<script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin onload="console.log(\'[Preview] Babel loaded\')" onerror="console.error(\'[Preview] Babel FAILED to load\')"></script>' +
         '<script>' +
         'console.log("[Preview] Setting up globals...");\n' +
@@ -720,10 +720,10 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
       '<style>* { margin: 0; padding: 0; box-sizing: border-box; } html, body, #root { min-height: 100%; width: 100%; } body { background: #18181b; } .error { color: #ef4444; padding: 2rem; font-family: monospace; white-space: pre-wrap; background: #18181b; line-height: 1.6; } .error h2 { color: #fecaca; margin-bottom: 1rem; font-size: 1rem; font-weight: bold; } .loading { color: #71717a; padding: 2rem; text-align: center; font-family: system-ui; }</style>' +
       '</head><body>' +
       '<div id="root"><div class="loading">Loading preview...</div></div>' +
-      '<script src="https://unpkg.com/react@18/umd/react.development.js"></script>' +
-      '<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>' +
-      '<script src="https://cdn.jsdelivr.net/npm/framer-motion/dist/framer-motion.js"></script>' +
-      '<script src="https://unpkg.com/lucide-react@0.460.0/dist/umd/lucide-react.min.js"></script>' +
+      '<script src="https://unpkg.com/react@18/umd/react.development.js" onload="window.React = React;"></script>' +
+      '<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" onload="window.ReactDOM = ReactDOM;"></script>' +
+      '<script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js"></script>' +
+      '<script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.min.js"></script>' +
       '<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>' +
       '<script>' +
       '// Expose motion and lucide icons as globals\n' +
