@@ -101,16 +101,25 @@ export default function UpgradeModal({ isOpen, onClose, reason, projectSlug = ''
           {description}
         </p>
 
-        <div className="bg-gradient-to-br from-zinc-800/50 to-zinc-900 border border-purple-500/30 rounded-xl p-6 mb-6 ring-1 ring-purple-500/20">
+        <div className="bg-gradient-to-br from-zinc-800/50 to-zinc-900 border border-purple-500/30 rounded-xl p-6 mb-6 ring-1 ring-purple-500/20 relative overflow-hidden">
+          {/* Early Bird Banner */}
+          <div className="absolute -top-1 -right-12 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold py-1 px-12 rotate-45 shadow-lg">
+            V1 EARLY BIRD
+          </div>
+          
           <div className="flex items-center justify-center gap-2 mb-2">
             <span className="text-2xl">🐣</span>
             <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Hatched</span>
           </div>
-          <div className="flex items-baseline justify-center gap-1 mb-2">
-            <span className="text-4xl font-bold text-white">$49</span>
-            <span className="text-zinc-400">/month</span>
+          
+          {/* Price with discount */}
+          <div className="flex items-baseline justify-center gap-2 mb-1">
+            <span className="text-lg text-zinc-500 line-through">$49</span>
+            <span className="text-4xl font-bold text-white">$24</span>
+            <span className="text-zinc-400">/first month</span>
           </div>
-          <p className="text-zinc-500 text-sm text-center mb-4">per live site</p>
+          <p className="text-amber-400 text-xs text-center font-medium mb-1">🎉 50% off your first month!</p>
+          <p className="text-zinc-500 text-sm text-center mb-4">then $49/month per live site</p>
           
           <div className="space-y-2">
             {[
