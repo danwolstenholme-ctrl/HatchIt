@@ -336,6 +336,13 @@ export default function RootLayout({
         const componentName = matches.length > 0 ? matches[matches.length - 1][1] : `Page${idx}`
 
         const cleanedCode = page.code
+          // Remove import statements for motion, lucide, and react
+          .replace(/import\s*\{[^}]*\}\s*from\s*['"](?:motion\/react|framer-motion|motion)['"]\s*;?/g, '')
+          .replace(/import\s*\{[^}]*\}\s*from\s*['"]lucide-react['"]\s*;?/g, '')
+          .replace(/import\s*\{[^}]*\}\s*from\s*['"]react['"]\s*;?/g, '')
+          .replace(/import\s+\w+\s*from\s*['"][^'"]+['"]\s*;?/g, '')
+          .replace(/import\s*['"][^'"]+['"]\s*;?/g, '')
+          // Remove TypeScript types
           .replace(/interface\s+\w+\s*\{[\s\S]*?\}/g, '')
           .replace(/type\s+\w+\s*=[^;]+;/g, '')
           .replace(/\s+as\s+[A-Za-z][A-Za-z0-9\[\]<>|&\s,'_]*/g, '')
@@ -355,10 +362,13 @@ export default function RootLayout({
           .replace(/React\.useCallback/g, 'useCallback')
           .replace(/React\.useRef/g, 'useRef')
 
+        // Add Lucide icons destructuring at the start of each page
+        const lucideDestructure = 'const { ArrowRight, ArrowLeft, ArrowUp, ArrowDown, Check, CheckCircle, CheckCircle2, Circle, X, Menu, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Plus, Minus, Search, Settings, User, Users, Mail, Phone, MapPin, Calendar, Clock, Star, Heart, Home, Globe, Layers, Lock, Award, BookOpen, Zap, Shield, Target, TrendingUp, BarChart, PieChart, Activity, Eye, EyeOff, Edit, Trash, Copy, Download, Upload, Share, Link, ExternalLink, Send, MessageCircle, Bell, AlertCircle, Info, HelpCircle, Loader, RefreshCw, RotateCcw, Save, FileText, Folder, Image, Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Mic, Video, Camera, Wifi, Battery, Sun, Moon, Cloud, Droplet, Wind, Thermometer, MapIcon, Navigation, Compass, Flag, Bookmark, Tag, Hash, AtSign, Filter, Grid, List, LayoutGrid, Maximize, Minimize, Move, Crop, ZoomIn, ZoomOut, MoreHorizontal, MoreVertical, Briefcase, Building, Cpu, Database, Server, Code, Terminal, GitBranch, Github, Linkedin, Twitter, Facebook, Instagram, Youtube } = LucideIcons || {};'
+
         return {
           path: page.path,
           componentName,
-          code: `${cleanedCode}\nreturn typeof ${componentName} === "function" ? ${componentName} : (typeof Component === "function" ? Component : null);`
+          code: `${lucideDestructure}\n${cleanedCode}\nreturn typeof ${componentName} === "function" ? ${componentName} : (typeof Component === "function" ? Component : null);`
         }
       })
 
@@ -371,8 +381,8 @@ export default function RootLayout({
         if (!target) return null;
         if (pageCache.has(target.path)) return pageCache.get(target.path);
         try {
-          const factory = new Function('React', 'useState', 'useEffect', 'useMemo', 'useCallback', 'useRef', target.code);
-          const Component = factory(React, useState, useEffect, useMemo, useCallback, useRef);
+          const factory = new Function('React', 'useState', 'useEffect', 'useMemo', 'useCallback', 'useRef', 'motion', 'AnimatePresence', 'useAnimation', 'useInView', 'useScroll', 'useTransform', 'useSpring', 'useMotionValue', 'LucideIcons', target.code);
+          const Component = factory(React, useState, useEffect, useMemo, useCallback, useRef, motion, AnimatePresence, useAnimation, useInView, useScroll, useTransform, useSpring, useMotionValue, LucideIcons);
           if (Component) pageCache.set(target.path, Component);
           return Component;
         } catch (err) {
@@ -400,12 +410,27 @@ export default function RootLayout({
       const html = '<!DOCTYPE html>' +
         '<html><head>' +
         '<script src="https://cdn.tailwindcss.com"></script>' +
+        '<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet">' +
         '<style>* { margin: 0; padding: 0; box-sizing: border-box; } html, body, #root { min-height: 100%; width: 100%; } body { background: #18181b; } .error { color: #ef4444; padding: 2rem; font-family: monospace; white-space: pre-wrap; background: #18181b; line-height: 1.6; } .error h2 { color: #fecaca; margin-bottom: 1rem; font-size: 1rem; font-weight: bold; } .loading { color: #71717a; padding: 2rem; text-align: center; font-family: system-ui; }</style>' +
         '</head><body>' +
         '<div id="root"><div class="loading">Loading preview...</div></div>' +
         '<script src="https://unpkg.com/react@18/umd/react.development.js"></script>' +
         '<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>' +
+        '<script src="https://unpkg.com/framer-motion@11/dist/framer-motion.js"></script>' +
+        '<script src="https://unpkg.com/lucide-react@0.460.0/dist/umd/lucide-react.min.js"></script>' +
         '<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>' +
+        '<script>' +
+        '// Expose motion and lucide icons as globals\n' +
+        'window.motion = window.Motion?.motion || { div: "div", button: "button", a: "a", span: "span", p: "p", h1: "h1", h2: "h2", h3: "h3", section: "section", main: "main", nav: "nav", ul: "ul", li: "li", img: "img", input: "input", form: "form", label: "label", textarea: "textarea" };\n' +
+        'window.AnimatePresence = window.Motion?.AnimatePresence || function(props) { return props.children; };\n' +
+        'window.useAnimation = window.Motion?.useAnimation || function() { return {}; };\n' +
+        'window.useInView = window.Motion?.useInView || function() { return true; };\n' +
+        'window.useScroll = window.Motion?.useScroll || function() { return { scrollY: 0, scrollYProgress: 0 }; };\n' +
+        'window.useTransform = window.Motion?.useTransform || function(v) { return v; };\n' +
+        'window.useSpring = window.Motion?.useSpring || function(v) { return v; };\n' +
+        'window.useMotionValue = window.Motion?.useMotionValue || function(v) { return { get: function() { return v; }, set: function() {} }; };\n' +
+        'window.LucideIcons = window.lucideReact || {};\n' +
+        '</script>' +
         '<script>document.addEventListener("click", function(e) { var link = e.target.closest("a"); if (!link) return; var href = link.getAttribute("href"); if (!href) return; if (href.startsWith("http://") || href.startsWith("https://")) { e.preventDefault(); window.open(href, "_blank", "noopener,noreferrer"); return; } if (href.startsWith("/") && !href.startsWith("//")) { e.preventDefault(); window.location.hash = href; return; } if (href.startsWith("#") && !href.startsWith("#/")) { e.preventDefault(); var target = document.querySelector(href); if (target) target.scrollIntoView({ behavior: "smooth" }); else window.location.hash = "/" + href.slice(1); } if (href.startsWith("#/")) { e.preventDefault(); window.location.hash = href.slice(1); } });</script>' +
         '<script>' +
         'window.onerror = function(msg, url, line, col, error) {' +
@@ -419,6 +444,16 @@ export default function RootLayout({
         '</script>' +
         '<script type="text/babel" data-presets="react,typescript">' +
         hooksDestructure + '\n' +
+        'const motion = window.motion;\n' +
+        'const AnimatePresence = window.AnimatePresence;\n' +
+        'const useAnimation = window.useAnimation;\n' +
+        'const useInView = window.useInView;\n' +
+        'const useScroll = window.useScroll;\n' +
+        'const useTransform = window.useTransform;\n' +
+        'const useSpring = window.useSpring;\n' +
+        'const useMotionValue = window.useMotionValue;\n' +
+        'const LucideIcons = window.LucideIcons || {};\n' +
+        'const { ArrowRight, ArrowLeft, ArrowUp, ArrowDown, Check, CheckCircle, CheckCircle2, Circle, X, Menu, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Plus, Minus, Search, Settings, User, Users, Mail, Phone, MapPin, Calendar, Clock, Star, Heart, Home, Globe, Layers, Lock, Award, BookOpen, Zap, Shield, Target, TrendingUp, BarChart, PieChart, Activity, Eye, EyeOff, Edit, Trash, Copy, Download, Upload, Share, Link, ExternalLink, Send, MessageCircle, Bell, AlertCircle, Info, HelpCircle, Loader, RefreshCw, RotateCcw, Save, FileText, Folder, Image, Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Mic, Video, Camera, Wifi, Battery, Sun, Moon, Cloud, Droplet, Wind, Thermometer, MapIcon, Navigation, Compass, Flag, Bookmark, Tag, Hash, AtSign, Filter, Grid, List, LayoutGrid, Maximize, Minimize, Move, Crop, ZoomIn, ZoomOut, MoreHorizontal, MoreVertical, Briefcase, Building, Cpu, Database, Server, Code, Terminal, GitBranch, Github, Linkedin, Twitter, Facebook, Instagram, Youtube } = LucideIcons;\n' +
         'try {\n' +
         routerCode + '\n' +
         '  const root = ReactDOM.createRoot(document.getElementById("root"));\n' +
@@ -463,6 +498,13 @@ export default function RootLayout({
     const componentName = matches.length > 0 ? matches[matches.length - 1][1] : 'Component'
 
     const cleanedCode = code
+      // Remove import statements for motion, lucide, and react
+      .replace(/import\s*\{[^}]*\}\s*from\s*['"](?:motion\/react|framer-motion|motion)['"]\s*;?/g, '')
+      .replace(/import\s*\{[^}]*\}\s*from\s*['"]lucide-react['"]\s*;?/g, '')
+      .replace(/import\s*\{[^}]*\}\s*from\s*['"]react['"]\s*;?/g, '')
+      .replace(/import\s+\w+\s*from\s*['"][^'"]+['"]\s*;?/g, '')
+      .replace(/import\s*['"][^'"]+['"]\s*;?/g, '')
+      // Remove TypeScript types
       .replace(/interface\s+\w+\s*\{[\s\S]*?\}/g, '')
       .replace(/type\s+\w+\s*=[^;]+;/g, '')
       .replace(/\s+as\s+[A-Za-z][A-Za-z0-9\[\]<>|&\s,'_]*/g, '')
@@ -485,12 +527,27 @@ export default function RootLayout({
     const html = '<!DOCTYPE html>' +
       '<html><head>' +
       '<script src="https://cdn.tailwindcss.com"></script>' +
+      '<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet">' +
       '<style>* { margin: 0; padding: 0; box-sizing: border-box; } html, body, #root { min-height: 100%; width: 100%; } body { background: #18181b; } .error { color: #ef4444; padding: 2rem; font-family: monospace; white-space: pre-wrap; background: #18181b; line-height: 1.6; } .error h2 { color: #fecaca; margin-bottom: 1rem; font-size: 1rem; font-weight: bold; } .loading { color: #71717a; padding: 2rem; text-align: center; font-family: system-ui; }</style>' +
       '</head><body>' +
       '<div id="root"><div class="loading">Loading preview...</div></div>' +
       '<script src="https://unpkg.com/react@18/umd/react.development.js"></script>' +
       '<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>' +
+      '<script src="https://unpkg.com/framer-motion@11/dist/framer-motion.js"></script>' +
+      '<script src="https://unpkg.com/lucide-react@0.460.0/dist/umd/lucide-react.min.js"></script>' +
       '<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>' +
+      '<script>' +
+      '// Expose motion and lucide icons as globals\n' +
+      'window.motion = window.Motion?.motion || { div: "div", button: "button", a: "a", span: "span", p: "p", h1: "h1", h2: "h2", h3: "h3", section: "section", main: "main", nav: "nav", ul: "ul", li: "li", img: "img", input: "input", form: "form", label: "label", textarea: "textarea" };\n' +
+      'window.AnimatePresence = window.Motion?.AnimatePresence || function(props) { return props.children; };\n' +
+      'window.useAnimation = window.Motion?.useAnimation || function() { return {}; };\n' +
+      'window.useInView = window.Motion?.useInView || function() { return true; };\n' +
+      'window.useScroll = window.Motion?.useScroll || function() { return { scrollY: 0, scrollYProgress: 0 }; };\n' +
+      'window.useTransform = window.Motion?.useTransform || function(v) { return v; };\n' +
+      'window.useSpring = window.Motion?.useSpring || function(v) { return v; };\n' +
+      'window.useMotionValue = window.Motion?.useMotionValue || function(v) { return { get: function() { return v; }, set: function() {} }; };\n' +
+      'window.LucideIcons = window.lucideReact || {};\n' +
+      '</script>' +
       '<script>document.addEventListener("click", function(e) { var link = e.target.closest("a"); if (link) { e.preventDefault(); var href = link.getAttribute("href"); if (href && href.startsWith("#")) { var target = document.querySelector(href); if (target) target.scrollIntoView({ behavior: "smooth" }); } } });</script>' +
       '<script>' +
       'window.onerror = function(msg, url, line, col, error) {' +
@@ -511,6 +568,16 @@ export default function RootLayout({
       '</script>' +
       '<script type="text/babel" data-presets="react,typescript">' +
       hooksDestructure + '\n' +
+      'const motion = window.motion;\n' +
+      'const AnimatePresence = window.AnimatePresence;\n' +
+      'const useAnimation = window.useAnimation;\n' +
+      'const useInView = window.useInView;\n' +
+      'const useScroll = window.useScroll;\n' +
+      'const useTransform = window.useTransform;\n' +
+      'const useSpring = window.useSpring;\n' +
+      'const useMotionValue = window.useMotionValue;\n' +
+      'const LucideIcons = window.LucideIcons || {};\n' +
+      'const { ArrowRight, ArrowLeft, ArrowUp, ArrowDown, Check, CheckCircle, CheckCircle2, Circle, X, Menu, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Plus, Minus, Search, Settings, User, Users, Mail, Phone, MapPin, Calendar, Clock, Star, Heart, Home, Globe, Layers, Lock, Award, BookOpen, Zap, Shield, Target, TrendingUp, BarChart, PieChart, Activity, Eye, EyeOff, Edit, Trash, Copy, Download, Upload, Share, Link, ExternalLink, Send, MessageCircle, Bell, AlertCircle, Info, HelpCircle, Loader, RefreshCw, RotateCcw, Save, FileText, Folder, Image, Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Mic, Video, Camera, Wifi, Battery, Sun, Moon, Cloud, Droplet, Wind, Thermometer, MapIcon, Navigation, Compass, Flag, Bookmark, Tag, Hash, AtSign, Filter, Grid, List, LayoutGrid, Maximize, Minimize, Move, Crop, ZoomIn, ZoomOut, MoreHorizontal, MoreVertical, Briefcase, Building, Cpu, Database, Server, Code, Terminal, GitBranch, Github, Linkedin, Twitter, Facebook, Instagram, Youtube } = LucideIcons;\n' +
       'try {\n' +
       cleanedCode + '\n' +
       '  const root = ReactDOM.createRoot(document.getElementById("root"));\n' +
