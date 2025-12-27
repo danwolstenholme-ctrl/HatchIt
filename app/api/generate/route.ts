@@ -652,7 +652,7 @@ export async function POST(request: NextRequest) {
       const suggestionsMatch = fullResponse.match(/---SUGGESTIONS---\s*([\s\S]*?)(?:---CODE---|---PAGES---|$)/)
       if (suggestionsMatch) {
         const suggestionsText = suggestionsMatch[1].trim()
-        suggestions = suggestionsText.split('|').map(s => s.trim()).filter(s => s.length > 0 && s.length < 50)
+        suggestions = suggestionsText.split('|').map((s: string) => s.trim()).filter((s: string) => s.length > 0 && s.length < 50)
       }
       
       // Check for multi-page format first
