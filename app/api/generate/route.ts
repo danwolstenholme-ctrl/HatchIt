@@ -555,7 +555,7 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const { prompt, history, currentCode, currentPage, allPages, assets, skipComplexityWarning } = await request.json()
+  const { prompt, history, currentCode, currentPage, allPages, assets, skipComplexityWarning, brand } = await request.json()
 
   // Input validation
   if (!prompt || typeof prompt !== 'string') {
@@ -596,6 +596,21 @@ export async function POST(request: NextRequest) {
     messages.push({
       role: 'user',
       content: `AVAILABLE ASSETS: The user has uploaded the following assets that you can use in the code. Each asset is a base64 data URL that can be used directly in img src or CSS:\n${assetList}\n\nWhen the user asks to use an image/logo/asset, prefer using these uploaded assets over placeholder URLs.`
+    })
+  }
+  
+  // Add brand context if user has set brand colors/font
+  if (brand && (brand.colors?.length > 0 || brand.font)) {
+    const brandContext = []
+    if (brand.colors?.length > 0) {
+      brandContext.push(`Brand colors: ${brand.colors.join(', ')} - use these colors for primary elements, buttons, gradients, and accents`)
+    }
+    if (brand.font && brand.font !== 'System Default') {
+      brandContext.push(`Brand font: ${brand.font} - use font-['${brand.font}'] for headings and important text`)
+    }
+    messages.push({
+      role: 'user',
+      content: `BRAND GUIDELINES: ${brandContext.join('. ')}. Maintain consistency with these brand colors and font throughout the design.`
     })
   }
   

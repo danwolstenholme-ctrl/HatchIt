@@ -57,6 +57,12 @@ interface Project {
   code?: string
   codeHistory?: string[]
   assets?: Asset[]
+  brand?: Brand // Auto-detected and user-customizable brand
+}
+
+interface Brand {
+  colors: string[] // Hex colors detected/set (primary, secondary, accent)
+  font: string // Font family name
 }
 
 interface Asset {
@@ -146,6 +152,71 @@ const migrateProject = (project: Project): Project => {
   }
   
   return { ...project, versions: project.versions || [], currentVersionIndex: project.currentVersionIndex ?? -1 }
+}
+
+// Extract brand (colors + font) from generated code
+const extractBrandFromCode = (code: string): Brand => {
+  // Extract hex colors (prioritize bg- and text- colors)
+  const hexMatches = code.match(/#[0-9A-Fa-f]{6}\b/g) || []
+  const bgColorMatches = code.match(/bg-\[(#[0-9A-Fa-f]{6})\]/g) || []
+  const textColorMatches = code.match(/text-\[(#[0-9A-Fa-f]{6})\]/g) || []
+  
+  // Also look for common Tailwind color classes and map to hex
+  const tailwindToHex: Record<string, string> = {
+    'blue-600': '#2563eb', 'blue-500': '#3b82f6', 'blue-700': '#1d4ed8',
+    'purple-600': '#9333ea', 'purple-500': '#a855f7', 'purple-700': '#7c3aed',
+    'green-600': '#16a34a', 'green-500': '#22c55e', 'emerald-600': '#059669',
+    'red-600': '#dc2626', 'red-500': '#ef4444', 'orange-500': '#f97316',
+    'pink-600': '#db2777', 'pink-500': '#ec4899', 'indigo-600': '#4f46e5',
+    'cyan-500': '#06b6d4', 'teal-500': '#14b8a6', 'amber-500': '#f59e0b',
+    'zinc-950': '#09090b', 'zinc-900': '#18181b', 'zinc-800': '#27272a',
+  }
+  
+  const tailwindColorMatches = code.match(/(?:bg|text|from|to|border)-(?:blue|purple|green|red|orange|pink|indigo|cyan|teal|amber|emerald)-(?:500|600|700)/g) || []
+  const tailwindHexColors = tailwindColorMatches.map(c => {
+    const colorPart = c.replace(/^(?:bg|text|from|to|border)-/, '')
+    return tailwindToHex[colorPart]
+  }).filter(Boolean)
+  
+  // Combine all hex colors and get unique ones
+  const allHexColors = [...hexMatches, ...bgColorMatches.map(m => m.match(/#[0-9A-Fa-f]{6}/)?.[0] || ''), ...textColorMatches.map(m => m.match(/#[0-9A-Fa-f]{6}/)?.[0] || ''), ...tailwindHexColors]
+  const uniqueColors = [...new Set(allHexColors.filter(c => c && c !== '#000000' && c !== '#ffffff' && c !== '#FFFFFF'))]
+  
+  // Take top 3 most distinctive colors (skip grays)
+  const nonGrayColors = uniqueColors.filter(c => {
+    const r = parseInt(c.slice(1, 3), 16)
+    const g = parseInt(c.slice(3, 5), 16)
+    const b = parseInt(c.slice(5, 7), 16)
+    const isGray = Math.abs(r - g) < 20 && Math.abs(g - b) < 20 && Math.abs(r - b) < 20
+    return !isGray
+  })
+  const brandColors = nonGrayColors.slice(0, 3)
+  
+  // Extract font family
+  const fontMatch = code.match(/font-(?:sans|serif|mono)|font-\[['"]?([^'"\]]+)['"]?\]/i)
+  let font = 'System Default'
+  if (fontMatch) {
+    if (fontMatch[1]) {
+      font = fontMatch[1]
+    } else if (fontMatch[0] === 'font-sans') {
+      font = 'Sans Serif'
+    } else if (fontMatch[0] === 'font-serif') {
+      font = 'Serif'
+    } else if (fontMatch[0] === 'font-mono') {
+      font = 'Monospace'
+    }
+  }
+  
+  // Check for Google Fonts in code
+  const googleFontMatch = code.match(/(?:Inter|Poppins|Roboto|Open Sans|Lato|Montserrat|Playfair Display|Raleway|Nunito|Outfit)/i)
+  if (googleFontMatch) {
+    font = googleFontMatch[0]
+  }
+  
+  return {
+    colors: brandColors.length > 0 ? brandColors : ['#3b82f6', '#9333ea'], // Default blue/purple
+    font
+  }
 }
 
 // Helper to check if project uses new multi-page structure
@@ -257,6 +328,7 @@ export default function Home() {
   const [externalPrompt, setExternalPrompt] = useState<string | null>(null)
   const [generationProgress, setGenerationProgress] = useState<string>('') // Real-time status
   const [complexityWarning, setComplexityWarning] = useState<{ warning: string; suggestions: string[]; prompt: string } | null>(null)
+  const [showBrandPanel, setShowBrandPanel] = useState(false)
   const previewContainerRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const domainInputRef = useRef<HTMLInputElement>(null)
@@ -1001,6 +1073,11 @@ export default function Home() {
         }))
       }
       
+      // Pass brand colors/font to AI for consistency
+      if (currentProject?.brand) {
+        payload.brand = currentProject.brand
+      }
+      
       // Store previous code for revert functionality
       setPreviousCode(currentCode || null)
       
@@ -1115,10 +1192,22 @@ export default function Home() {
               : page
           )
           updateCurrentProject({ pages: updatedPages })
+          
+          // Extract and save brand from generated code (only if not already set)
+          if (!currentProject.brand) {
+            const extractedBrand = extractBrandFromCode(data.code)
+            updateCurrentProject({ brand: extractedBrand })
+          }
         } else {
           // Legacy single-page project
           const newVersions = currentVersionIndex >= 0 ? [...versions.slice(0, currentVersionIndex + 1), newVersion] : [newVersion]
           updateCurrentProject({ versions: newVersions, currentVersionIndex: newVersions.length - 1 })
+          
+          // Extract and save brand from generated code (only if not already set)
+          if (!currentProject?.brand) {
+            const extractedBrand = extractBrandFromCode(data.code)
+            updateCurrentProject({ brand: extractedBrand })
+          }
         }
         
         if (isMobile) setMobileModal('preview')
@@ -1170,6 +1259,58 @@ export default function Home() {
       setPreviousCode(null)
       setSuggestions([])
     }
+  }
+
+  // Apply brand color change to current code
+  const applyBrandColorChange = (oldColor: string, newColor: string) => {
+    if (!code || !currentProject) return
+    
+    // Replace the color in the current code
+    const updatedCode = code.replaceAll(oldColor, newColor)
+    
+    if (updatedCode === code) {
+      showErrorToast('Color not found in current code')
+      return
+    }
+    
+    // Create a new version with the updated code
+    const newVersion: Version = { 
+      id: generateId(), 
+      code: updatedCode, 
+      timestamp: new Date().toISOString(), 
+      prompt: `Changed color ${oldColor} to ${newColor}` 
+    }
+    
+    // Update the brand colors
+    const newBrandColors = (currentProject.brand?.colors || []).map(c => 
+      c.toLowerCase() === oldColor.toLowerCase() ? newColor : c
+    )
+    
+    if (currentPage && isMultiPageProject(currentProject)) {
+      const updatedPages = currentProject.pages!.map(page =>
+        page.id === currentPage.id
+          ? {
+              ...page,
+              versions: [...page.versions.slice(0, page.currentVersionIndex + 1), newVersion],
+              currentVersionIndex: page.currentVersionIndex + 1
+            }
+          : page
+      )
+      updateCurrentProject({ pages: updatedPages, brand: { ...currentProject.brand!, colors: newBrandColors } })
+    } else {
+      const newVersions = currentVersionIndex >= 0 ? [...versions.slice(0, currentVersionIndex + 1), newVersion] : [newVersion]
+      updateCurrentProject({ versions: newVersions, currentVersionIndex: newVersions.length - 1, brand: { ...currentProject.brand!, colors: newBrandColors } })
+    }
+    
+    showSuccessToast('Color updated!')
+  }
+
+  // Apply brand font change - prompts AI to regenerate with new font
+  const applyBrandFontChange = (newFont: string) => {
+    if (!currentProject) return
+    updateCurrentProject({ brand: { ...currentProject.brand!, font: newFont } })
+    setExternalPrompt(`Change all fonts to ${newFont}`)
+    showSuccessToast(`Font set to ${newFont}. Click Generate to apply.`)
   }
 
   // Called when user proceeds despite complexity warning
@@ -2543,6 +2684,98 @@ export default function Home() {
         {showAddPageModal && <AddPageModal />}
         {isDeploying && <DeployingOverlay />}
         
+        {/* Brand Panel Modal */}
+        {showBrandPanel && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={() => setShowBrandPanel(false)}>
+            <div className="bg-zinc-900 rounded-xl w-full max-w-sm border border-zinc-800 overflow-hidden" onClick={e => e.stopPropagation()}>
+              <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
+                <h3 className="text-white font-semibold flex items-center gap-2">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="13.5" cy="6.5" r="2.5"/>
+                    <circle cx="19" cy="17" r="2.5"/>
+                    <circle cx="6" cy="12" r="2.5"/>
+                    <path d="M12 2a10 10 0 1 0 10 10"/>
+                  </svg>
+                  Brand
+                </h3>
+                <button onClick={() => setShowBrandPanel(false)} className="text-zinc-500 hover:text-white transition-colors">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+              </div>
+              <div className="p-4 space-y-5">
+                {/* Colors */}
+                <div>
+                  <label className="text-xs text-zinc-500 uppercase tracking-wide font-medium mb-2 block">Colors</label>
+                  {currentProject?.brand?.colors && currentProject.brand.colors.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {currentProject.brand.colors.map((color, i) => (
+                        <div key={i} className="relative group">
+                          <input
+                            type="color"
+                            value={color}
+                            onChange={(e) => applyBrandColorChange(color, e.target.value)}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          />
+                          <div 
+                            className="w-12 h-12 rounded-lg border-2 border-zinc-700 group-hover:border-zinc-500 transition-colors shadow-lg cursor-pointer"
+                            style={{ backgroundColor: color }}
+                            title={color}
+                          />
+                          <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] text-zinc-500 font-mono">{color}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-zinc-600">Generate something to detect colors</p>
+                  )}
+                  <p className="text-[10px] text-zinc-600 mt-6">Click a color to change it globally</p>
+                </div>
+                
+                {/* Font */}
+                <div>
+                  <label className="text-xs text-zinc-500 uppercase tracking-wide font-medium mb-2 block">Font</label>
+                  <select
+                    value={currentProject?.brand?.font || 'System Default'}
+                    onChange={(e) => applyBrandFontChange(e.target.value)}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-zinc-600"
+                  >
+                    <option value="System Default">System Default</option>
+                    <option value="Inter">Inter</option>
+                    <option value="Poppins">Poppins</option>
+                    <option value="Roboto">Roboto</option>
+                    <option value="Open Sans">Open Sans</option>
+                    <option value="Lato">Lato</option>
+                    <option value="Montserrat">Montserrat</option>
+                    <option value="Playfair Display">Playfair Display</option>
+                    <option value="Raleway">Raleway</option>
+                    <option value="Nunito">Nunito</option>
+                    <option value="Outfit">Outfit</option>
+                    <option value="Space Grotesk">Space Grotesk</option>
+                  </select>
+                  <p className="text-[10px] text-zinc-600 mt-2">Changing font will prompt a regeneration</p>
+                </div>
+                
+                {/* Re-detect Button */}
+                {code && (
+                  <button
+                    onClick={() => {
+                      const newBrand = extractBrandFromCode(code)
+                      updateCurrentProject({ brand: newBrand })
+                      showSuccessToast('Brand colors re-detected!')
+                    }}
+                    className="w-full py-2 px-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm rounded-lg transition-colors flex items-center justify-center gap-2"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/>
+                    </svg>
+                    Re-detect from code
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* Complexity Warning Modal */}
         {complexityWarning && (
           <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
@@ -2658,6 +2891,10 @@ export default function Home() {
               <button onClick={() => { setShowAssetsModal(true); setShowMobileMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                 Assets
+              </button>
+              <button onClick={() => { setShowBrandPanel(true); setShowMobileMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="19" cy="17" r="2.5"/><circle cx="6" cy="12" r="2.5"/><path d="M12 2a10 10 0 1 0 10 10"/></svg>
+                Brand
               </button>
               <button onClick={() => { isCurrentProjectPaid ? setShowHistoryModal(true) : (setUpgradeReason('deploy'), setShowUpgradeModal(true)); setShowMobileMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -2819,6 +3056,10 @@ export default function Home() {
                         <button onClick={() => { setShowAssetsModal(true); setShowDesktopMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                           Assets
+                        </button>
+                        <button onClick={() => { setShowBrandPanel(true); setShowDesktopMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="19" cy="17" r="2.5"/><circle cx="6" cy="12" r="2.5"/><path d="M12 2a10 10 0 1 0 10 10"/></svg>
+                          Brand
                         </button>
                         <button onClick={() => { isCurrentProjectPaid ? (setShowHistoryModal(true), setShowDesktopMenu(false)) : (setUpgradeReason('deploy'), setShowUpgradeModal(true), setShowDesktopMenu(false)) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
