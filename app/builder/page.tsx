@@ -10,6 +10,7 @@ import LivePreview from '@/components/LivePreview'
 import UpgradeModal from '@/components/upgradeModal'    
 import SuccessModal from '@/components/SuccessModal'
 import { isPaidUser } from '@/app/lib/generation-limit'
+import { showSuccessToast, showErrorToast } from '@/app/lib/toast'
 
 // Type for site subscriptions in user metadata
 interface SiteSubscription {
@@ -602,19 +603,7 @@ export default function Home() {
       setProjects(prev => [newProject, ...prev])
       setCurrentProjectId(newProject.id)
 
-      // Show success toast
-      const toast = document.createElement('div')
-      toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[9999] bg-green-600 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-2 animate-fade-in'
-      toast.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="17 8 12 3 7 8"/>
-          <line x1="12" y1="3" x2="12" y2="15"/>
-        </svg>
-        <span>Code uploaded successfully!</span>
-      `
-      document.body.appendChild(toast)
-      setTimeout(() => toast.remove(), 3000)
+      showSuccessToast('Code uploaded successfully!')
     }
 
     reader.readAsText(file)
@@ -794,18 +783,7 @@ export default function Home() {
           })
           
           setShowGithubModal(false)
-          
-          // Show success toast
-          const toast = document.createElement('div')
-          toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[9999] bg-green-600 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-2 animate-fade-in'
-          toast.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
-            </svg>
-            <span>Imported ${newPages.length} pages from ${repo}!</span>
-          `
-          document.body.appendChild(toast)
-          setTimeout(() => toast.remove(), 3000)
+          showSuccessToast(`Imported ${newPages.length} pages from ${repo}!`)
         }
       } else {
         // Import single file
@@ -839,32 +817,12 @@ export default function Home() {
         setCurrentProjectId(newProject.id)
         setShowGithubModal(false)
 
-        const toast = document.createElement('div')
-        toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[9999] bg-green-600 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-2 animate-fade-in'
-        toast.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
-          </svg>
-          <span>Imported from GitHub!</span>
-        `
-        document.body.appendChild(toast)
-        setTimeout(() => toast.remove(), 3000)
+        showSuccessToast('Imported from GitHub!')
       }
     } catch (error) {
       console.error('GitHub import error:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to import from GitHub'
-      const toast = document.createElement('div')
-      toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[9999] bg-red-600 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-2 animate-fade-in max-w-md'
-      toast.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="15" y1="9" x2="9" y2="15"/>
-          <line x1="9" y1="9" x2="15" y2="15"/>
-        </svg>
-        <span class="text-sm">${errorMessage}</span>
-      `
-      document.body.appendChild(toast)
-      setTimeout(() => toast.remove(), 5000)
+      showErrorToast(errorMessage)
     }
   }
 
@@ -887,21 +845,7 @@ export default function Home() {
     setProjects(prev => [newProject, ...prev])
     setCurrentProjectId(newProject.id)
     
-    // Show success toast
-    const toast = document.createElement('div')
-    toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[9999] bg-green-600 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-2 animate-fade-in'
-    toast.innerHTML = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <polyline points="20 6 9 17 4 12"/>
-      </svg>
-      <span>Project pulled successfully!</span>
-    `
-    document.body.appendChild(toast)
-    setTimeout(() => {
-      toast.style.opacity = '0'
-      toast.style.transition = 'opacity 0.3s'
-      setTimeout(() => document.body.removeChild(toast), 300)
-    }, 3000)
+    showSuccessToast('Project pulled successfully!')
   }
 
   const handleGenerate = async (prompt: string, history: Message[], currentCode: string) => {
@@ -971,19 +915,7 @@ export default function Home() {
       }
     } catch (error) {
       console.error('Generation failed:', error)
-      // Show error toast
-      const toast = document.createElement('div')
-      toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[9999] bg-red-600 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-2 animate-fade-in'
-      toast.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="15" y1="9" x2="9" y2="15"/>
-          <line x1="9" y1="9" x2="15" y2="15"/>
-        </svg>
-        <span>Generation failed. Please try again.</span>
-      `
-      document.body.appendChild(toast)
-      setTimeout(() => toast.remove(), 4000)
+      showErrorToast('Generation failed. Please try again.')
     } finally {
       setIsGenerating(false)
     }
@@ -1068,23 +1000,11 @@ export default function Home() {
         setDeployedUrl(data.url)
         updateCurrentProject({ deployedSlug: customName || slugName?.toLowerCase().replace(/[^a-z0-9-]/g, '-') })
       } else {
-        alert('Deploy failed: ' + (data.error || 'Unknown error'))
+        showErrorToast('Deploy failed: ' + (data.error || 'Unknown error'))
       }
     } catch (error) {
       console.error('Deploy failed:', error)
-      // Show error toast instead of alert
-      const toast = document.createElement('div')
-      toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[9999] bg-red-600 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-2 animate-fade-in'
-      toast.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="15" y1="9" x2="9" y2="15"/>
-          <line x1="9" y1="9" x2="15" y2="15"/>
-        </svg>
-        <span>Deploy failed. Please try again.</span>
-      `
-      document.body.appendChild(toast)
-      setTimeout(() => toast.remove(), 4000)
+      showErrorToast('Deploy failed. Please try again.')
     } finally {
       setIsDeploying(false)
     }
