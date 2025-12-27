@@ -1661,15 +1661,15 @@ export default function Home() {
 
   const PagesPanel = () => (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowPagesPanel(false)}>
-      <div className="bg-zinc-900 rounded-xl p-6 w-full max-w-md border border-zinc-800" onClick={e => e.stopPropagation()}>
+      <div className="bg-zinc-900 rounded-xl p-6 w-full max-w-md max-h-[80vh] flex flex-col border border-zinc-800" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-white">Pages</h2>
+          <h2 className="text-lg font-semibold text-white">Pages ({currentProject?.pages?.length || 0})</h2>
           <button onClick={() => setShowPagesPanel(false)} className="text-zinc-400 hover:text-white">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
         </div>
         
-        <div className="space-y-2 mb-4">
+        <div className="space-y-2 mb-4 overflow-y-auto flex-1 min-h-0">
           {currentProject?.pages?.map(page => (
             <div key={page.id} className={`flex items-center justify-between p-3 rounded-lg transition-colors ${page.id === currentPage?.id ? 'bg-blue-600/20 border border-blue-500/30' : 'bg-zinc-800 hover:bg-zinc-700'}`}>
               <button onClick={() => switchPage(page.id)} className="flex-1 text-left">
