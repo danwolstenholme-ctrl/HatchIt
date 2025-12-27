@@ -704,19 +704,50 @@ export async function POST(request: NextRequest) {
 
       // If multi-page operations, return them
       if (pageOperations && pageOperations.length > 0) {
-        // Check each page operation for truncation
+        // Check each page operation for truncation and auto-fix if needed
+        let hasFixedOperations = false
         for (const op of pageOperations) {
           if (op.code) {
             const truncationCheck = detectJSXTruncation(op.code);
             if (truncationCheck.truncated) {
-              return NextResponse.json({ 
-                error: `Response was cut off - ${truncationCheck.reason}. Please try again with a simpler request.`
-              }, { status: 400 })
+              console.log('Multi-page truncation detected, attempting auto-fix')
+              
+              // Try to complete this specific page's code
+              const fixResponse = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'x-api-key': process.env.ANTHROPIC_API_KEY || '',
+                  'anthropic-version': '2023-06-01'
+                },
+                body: JSON.stringify({
+                  model: 'claude-sonnet-4-20250514',
+                  max_tokens: 8000,
+                  messages: [{
+                    role: 'user',
+                    content: `Complete this truncated React component. Return ONLY the fixed code, no markdown:\n\n${op.code}`
+                  }]
+                })
+              })
+
+              const fixData = await fixResponse.json()
+              if (fixData.content && fixData.content[0]) {
+                let fixedCode = fixData.content[0].text
+                const fixMatch = fixedCode.match(/```(?:jsx?|tsx?|javascript|typescript)?\n?([\s\S]*?)```/)
+                if (fixMatch) fixedCode = fixMatch[1].trim()
+                fixedCode = cleanGeneratedCode(fixedCode)
+                
+                if (!detectJSXTruncation(fixedCode).truncated) {
+                  op.code = fixedCode
+                  hasFixedOperations = true
+                }
+              }
             }
           }
         }
+        
         return NextResponse.json({ 
-          message, 
+          message: hasFixedOperations ? message + ' (auto-completed)' : message, 
           pageOperations,
           // Also include first update operation as 'code' for backwards compatibility
           code: pageOperations.find(op => op.action === 'update')?.code || pageOperations[0].code
@@ -726,8 +757,106 @@ export async function POST(request: NextRequest) {
       // Check for JSX truncation BEFORE syntax check
       const truncationCheck = detectJSXTruncation(code);
       if (truncationCheck.truncated) {
+        console.log('Truncation detected:', truncationCheck.reason, '- attempting auto-completion')
+        
+        // Auto-complete the truncated code
+        const completionResponse = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': process.env.ANTHROPIC_API_KEY || '',
+            'anthropic-version': '2023-06-01'
+          },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 16000,
+            messages: [{
+              role: 'user',
+              content: `This React component was cut off and is incomplete. Complete it properly.
+
+INCOMPLETE CODE:
+${code}
+
+RULES:
+1. Return ONLY the complete, working component - no explanations
+2. Keep the same design and functionality
+3. Make sure all JSX tags are properly closed
+4. Make sure all braces, parentheses, and brackets are balanced
+5. Keep it COMPACT - under 200 lines total
+6. Use map() for repetitive elements, max 3-4 items
+7. No markdown code blocks, just the raw code
+
+Return the COMPLETE fixed component:`
+            }]
+          })
+        })
+
+        const completionData = await completionResponse.json()
+        if (completionData.content && completionData.content[0]) {
+          let completedCode = completionData.content[0].text
+          
+          // Clean markdown if present
+          const completionMatch = completedCode.match(/```(?:jsx?|tsx?|javascript|typescript)?\n?([\s\S]*?)```/)
+          if (completionMatch) {
+            completedCode = completionMatch[1].trim()
+          }
+          
+          completedCode = cleanGeneratedCode(completedCode)
+          
+          // Verify the completed code is valid
+          const recheckTruncation = detectJSXTruncation(completedCode)
+          const recheckSyntax = checkSyntax(completedCode)
+          
+          if (!recheckTruncation.truncated && recheckSyntax.valid) {
+            console.log('Auto-completion successful')
+            return NextResponse.json({ 
+              code: completedCode, 
+              message: message || 'Component generated ✓'
+            })
+          }
+          
+          // If completion still has issues, try a full regeneration with strict limits
+          console.log('Auto-completion still had issues, trying compact regeneration')
+          const regenResponse = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-api-key': process.env.ANTHROPIC_API_KEY || '',
+              'anthropic-version': '2023-06-01'
+            },
+            body: JSON.stringify({
+              model: 'claude-sonnet-4-20250514',
+              max_tokens: 8000,
+              system: `You generate VERY COMPACT React components. Max 150 lines. Use map() for lists. 3 items max for any repeated content. Tailwind CSS only. No imports. Return ONLY code, no markdown.`,
+              messages: messages
+            })
+          })
+
+          const regenData = await regenResponse.json()
+          if (regenData.content && regenData.content[0]) {
+            let regenCode = regenData.content[0].text
+            
+            const regenMatch = regenCode.match(/```(?:jsx?|tsx?|javascript|typescript)?\n?([\s\S]*?)```/)
+            if (regenMatch) {
+              regenCode = regenMatch[1].trim()
+            }
+            
+            regenCode = cleanGeneratedCode(regenCode)
+            
+            const finalCheck = detectJSXTruncation(regenCode)
+            if (!finalCheck.truncated) {
+              console.log('Compact regeneration successful')
+              return NextResponse.json({ 
+                code: regenCode, 
+                message: message || 'Component generated ✓'
+              })
+            }
+          }
+        }
+        
+        // Only return error if all auto-recovery attempts fail
         return NextResponse.json({ 
-          error: `Response was cut off - ${truncationCheck.reason}. Please try again with a simpler request.`
+          error: `Unable to generate complete code. Please try a simpler request.`
         }, { status: 400 })
       }
 
