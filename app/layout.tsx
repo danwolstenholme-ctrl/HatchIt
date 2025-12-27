@@ -15,9 +15,9 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://hatchit.dev'),
-  title: 'HatchIt.dev - AI Website Builder',
-  description: 'Build production-ready React websites with AI. Describe what you want, get real code, deploy in one click.',
-  keywords: ['AI website builder', 'React', 'Tailwind CSS', 'no-code', 'code generator', 'web development'],
+  title: 'HatchIt.dev — Describe. Build. Ship.',
+  description: 'Turn your idea into a live website in 60 seconds. Just describe what you want — HatchIt builds it, you ship it.',
+  keywords: ['AI website builder', 'React', 'Tailwind CSS', 'no-code', 'code generator', 'web development', 'deploy website', 'build website fast'],
   authors: [{ name: 'HatchIt.dev' }],
   creator: 'HatchIt.dev',
   manifest: '/manifest.json',
@@ -39,21 +39,21 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://hatchit.dev',
     siteName: 'HatchIt.dev',
-    title: 'HatchIt.dev - AI Website Builder',
-    description: 'Build production-ready React websites with AI. Describe what you want, get real code, deploy in one click.',
+    title: 'HatchIt.dev — Describe. Build. Ship.',
+    description: 'Turn your idea into a live website in 60 seconds. Just describe what you want — HatchIt builds it, you ship it.',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'HatchIt.dev - AI Website Builder',
+        alt: 'HatchIt.dev — Describe. Build. Ship.',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'HatchIt.dev - AI Website Builder',
-    description: 'Build production-ready React websites with AI. Describe what you want, get real code, deploy in one click.',
+    title: 'HatchIt.dev — Describe. Build. Ship.',
+    description: 'Turn your idea into a live website in 60 seconds. Just describe what you want — HatchIt builds it, you ship it.',
     images: ['/og-image.png'],
   },
   robots: {
