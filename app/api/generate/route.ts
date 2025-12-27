@@ -98,6 +98,40 @@ You MUST respond in this exact format:
 ---CODE---
 [The full component code]
 
+### MULTI-PAGE OPERATIONS
+
+When the user asks you to CREATE A NEW PAGE (e.g. "create a contact page", "add an about page"), respond with:
+
+---MESSAGE---
+[Description of what you created]
+---PAGES---
+[
+  {"action": "create", "name": "Contact", "path": "/contact", "code": "function Component() { ... }"},
+  {"action": "update", "id": "CURRENT_PAGE_ID", "code": "function Component() { ... with link to new page ... }"}
+]
+
+Rules for multi-page operations:
+- Use "action": "create" for new pages (requires name, path, and code)
+- Use "action": "update" to modify an existing page (requires id and code) - use id "CURRENT_PAGE_ID" to refer to the page being edited
+- Path should be lowercase with hyphens (e.g. "/about-us", "/contact", "/services")
+- When creating a page and adding a link, update the current page's navigation to include the new page
+- For navigation links to other pages in the same site, use hash-based routing: href="#/contact" (NOT href="/contact")
+
+Example - User asks "create a contact page and add it to the nav":
+---MESSAGE---
+Created a Contact page with a form and added it to your navigation! 📬
+---PAGES---
+[
+  {"action": "create", "name": "Contact", "path": "/contact", "code": "function Component() { return ( <div className=\\"min-h-screen bg-zinc-950 text-white p-8\\">  <h1>Contact Us</h1> <form>...</form> </div> ); }"},
+  {"action": "update", "id": "CURRENT_PAGE_ID", "code": "function Component() { return ( <div>...<a href=\\"#/contact\\">Contact</a>...</div> ); }"}
+]
+
+For SINGLE PAGE changes (no new pages needed), use the simple format:
+---MESSAGE---
+[Description]
+---CODE---
+[Code]
+
 Example response:
 ---MESSAGE---
 Created a modern pricing page with three tiers, monthly/annual toggle, and the Pro plan highlighted as most popular. Added hover animations on the cards! ✨
@@ -351,28 +385,80 @@ export async function POST(request: NextRequest) {
       let fullResponse = data.content[0].text
       let message = ''
       let code = ''
+      let pageOperations: Array<{action: string; id?: string; name?: string; path?: string; code: string}> | null = null
       
-      // Parse the structured response format
-      const messageMatch = fullResponse.match(/---MESSAGE---\s*([\s\S]*?)\s*---CODE---/)
-      const codeMatch = fullResponse.match(/---CODE---\s*([\s\S]*)/)
+      // Check for multi-page format first
+      const pagesMatch = fullResponse.match(/---MESSAGE---\s*([\s\S]*?)\s*---PAGES---\s*([\s\S]*)/)
       
-      if (messageMatch && codeMatch) {
-        message = messageMatch[1].trim()
-        code = codeMatch[1].trim()
-      } else {
-        // Fallback: treat entire response as code (backwards compatibility)
-        code = fullResponse
-        message = 'Component generated ✓'
+      if (pagesMatch) {
+        // Multi-page operation
+        message = pagesMatch[1].trim()
+        const pagesJson = pagesMatch[2].trim()
+        
+        try {
+          // Parse the JSON array of page operations
+          pageOperations = JSON.parse(pagesJson)
+          
+          // Clean and validate each operation
+          if (Array.isArray(pageOperations)) {
+            pageOperations = pageOperations.map(op => {
+              let opCode = op.code || ''
+              
+              // Clean markdown if present
+              const markdownMatch = opCode.match(/```(?:jsx?|tsx?|javascript|typescript)?\n?([\s\S]*?)```/)
+              if (markdownMatch) {
+                opCode = markdownMatch[1].trim()
+              }
+              
+              // Apply cleanup
+              opCode = cleanGeneratedCode(opCode)
+              
+              return {
+                ...op,
+                code: opCode
+              }
+            })
+          }
+        } catch (parseError) {
+          console.error('Failed to parse multi-page response:', parseError)
+          // Fall back to treating as single page
+          pageOperations = null
+        }
       }
       
-      // Clean markdown if present in code
-      const markdownMatch = code.match(/```(?:jsx?|tsx?|javascript|typescript)?\n?([\s\S]*?)```/)
-      if (markdownMatch) {
-        code = markdownMatch[1].trim()
+      if (!pageOperations) {
+        // Parse the single-page structured response format
+        const messageMatch = fullResponse.match(/---MESSAGE---\s*([\s\S]*?)\s*---CODE---/)
+        const codeMatch = fullResponse.match(/---CODE---\s*([\s\S]*)/)
+        
+        if (messageMatch && codeMatch) {
+          message = messageMatch[1].trim()
+          code = codeMatch[1].trim()
+        } else {
+          // Fallback: treat entire response as code (backwards compatibility)
+          code = fullResponse
+          message = 'Component generated ✓'
+        }
+        
+        // Clean markdown if present in code
+        const markdownMatch = code.match(/```(?:jsx?|tsx?|javascript|typescript)?\n?([\s\S]*?)```/)
+        if (markdownMatch) {
+          code = markdownMatch[1].trim()
+        }
+
+        // Apply aggressive cleanup
+        code = cleanGeneratedCode(code)
       }
 
-      // Apply aggressive cleanup
-      code = cleanGeneratedCode(code)
+      // If multi-page operations, return them
+      if (pageOperations && pageOperations.length > 0) {
+        return NextResponse.json({ 
+          message, 
+          pageOperations,
+          // Also include first update operation as 'code' for backwards compatibility
+          code: pageOperations.find(op => op.action === 'update')?.code || pageOperations[0].code
+        })
+      }
 
       // Check syntax and auto-fix if needed
       const syntaxCheck = checkSyntax(code)

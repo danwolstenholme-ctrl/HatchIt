@@ -963,6 +963,67 @@ export default function Home() {
         body: JSON.stringify(payload),
       })
       const data = await response.json()
+      
+      // Handle multi-page operations (creating new pages, updating multiple pages)
+      if (data.pageOperations && Array.isArray(data.pageOperations) && data.pageOperations.length > 0) {
+        if (generationRequestIdRef.current !== requestId || currentProjectId !== targetProjectId) return null
+        
+        // Ensure project is multi-page
+        const migratedProject = currentProject ? migrateToMultiPage(currentProject) : null
+        if (!migratedProject) return null
+        
+        let updatedPages = [...(migratedProject.pages || [])]
+        let newPageId: string | null = null
+        
+        for (const op of data.pageOperations) {
+          const newVersion: Version = { 
+            id: generateId(), 
+            code: op.code, 
+            timestamp: new Date().toISOString(), 
+            prompt 
+          }
+          
+          if (op.action === 'create' && op.name && op.path) {
+            // Create a new page
+            const createdPage: Page = {
+              id: generateId(),
+              name: op.name,
+              path: op.path,
+              versions: [newVersion],
+              currentVersionIndex: 0
+            }
+            updatedPages.push(createdPage)
+            newPageId = createdPage.id
+          } else if (op.action === 'update') {
+            // Update existing page
+            const pageIdToUpdate = op.id === 'CURRENT_PAGE_ID' ? targetPageId : op.id
+            updatedPages = updatedPages.map(page =>
+              page.id === pageIdToUpdate
+                ? {
+                    ...page,
+                    versions: page.currentVersionIndex >= 0 
+                      ? [...page.versions.slice(0, page.currentVersionIndex + 1), newVersion]
+                      : [newVersion],
+                    currentVersionIndex: page.currentVersionIndex >= 0 
+                      ? page.currentVersionIndex + 1
+                      : 0
+                  }
+                : page
+            )
+          }
+        }
+        
+        updateCurrentProject({ 
+          pages: updatedPages,
+          // Optionally switch to the new page
+          // currentPageId: newPageId || migratedProject.currentPageId
+        })
+        
+        if (isMobile) setMobileModal('preview')
+        return data.message || 'Pages updated!'
+      }
+      
+      // Handle single page update (backwards compatible)
       if (data.code) {
         if (generationRequestIdRef.current !== requestId || currentProjectId !== targetProjectId) return null
         const newVersion: Version = { id: generateId(), code: data.code, timestamp: new Date().toISOString(), prompt }
