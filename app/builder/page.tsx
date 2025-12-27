@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useUser } from '@clerk/nextjs'
 import { useSearchParams } from 'next/navigation'
 import { Group, Panel, Separator } from 'react-resizable-panels'
+import { track } from '@vercel/analytics'
 import Chat from '@/components/Chat'
 import CodePreview from '@/components/CodePreview'
 import LivePreview from '@/components/LivePreview'
@@ -528,6 +529,7 @@ export default function Home() {
     setCurrentProjectId(newProject.id)
     setShowProjectDropdown(false)
     setDeployedUrl(null)
+    track('Project Created', { isPaid: hasAnyPaidSubscription })
   }
 
   const switchProject = (id: string) => {
@@ -1417,6 +1419,7 @@ export default function Home() {
         }
         setDeployedUrl(data.url)
         updateCurrentProject({ deployedSlug: customName || slugName?.toLowerCase().replace(/[^a-z0-9-]/g, '-') })
+        track('Deployment Successful', { isUpdate: !!currentProject?.deployedSlug })
       } else {
         showErrorToast('Deploy failed: ' + (data.error || 'Unknown error'))
       }

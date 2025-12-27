@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { track } from '@vercel/analytics'
 
 interface UpgradeModalProps {
   isOpen: boolean
@@ -13,6 +14,13 @@ interface UpgradeModalProps {
 
 export default function UpgradeModal({ isOpen, onClose, reason, projectSlug = '', projectName = 'this project', generationsRemaining }: UpgradeModalProps) {
   const [isLoading, setIsLoading] = useState(false)
+
+  // Track when modal is shown
+  useEffect(() => {
+    if (isOpen) {
+      track('Upgrade Modal Shown', { reason })
+    }
+  }, [isOpen, reason])
 
   if (!isOpen) return null
 
@@ -53,6 +61,7 @@ export default function UpgradeModal({ isOpen, onClose, reason, projectSlug = ''
 
   const handleUpgrade = async () => {
     setIsLoading(true)
+    track('Upgrade Started', { reason, projectSlug })
     try {
       const response = await fetch('/api/checkout', {
         method: 'POST',

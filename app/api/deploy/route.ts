@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { clerkClient } from '@clerk/nextjs/server'
+import { track } from '@vercel/analytics/server'
 
 // Type for site subscription
 interface SiteSubscription {
@@ -354,6 +355,9 @@ export default function Home() {
 
     // Return the clean URL
     const url = `https://${slug}.hatchitsites.dev`
+    
+    // Track deployment
+    await track('Site Deployed', { slug, isMultiPage: !!(pages && pages.length > 0) })
     
     return NextResponse.json({
       success: true,
