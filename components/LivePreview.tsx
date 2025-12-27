@@ -382,35 +382,6 @@ const Footer = () => null;
       const pageCache = new Map();
       let lastError = null;
 
-      // Fallback component that renders raw JSX as static HTML
-      const FallbackRender = ({ code }) => {
-        // Extract JSX from the code and render as innerHTML
-        const extractJSX = (code) => {
-          // Find the return statement with JSX
-          const returnMatch = code.match(/return\\s*\\(([\\s\\S]*?)\\);?\\s*(?:}|$)/);
-          if (returnMatch) return returnMatch[1];
-          const returnMatch2 = code.match(/return\\s*(<[\\s\\S]*?>)/);
-          if (returnMatch2) return returnMatch2[1];
-          return null;
-        };
-        
-        const jsx = extractJSX(code);
-        if (!jsx) return null;
-        
-        // Convert JSX to HTML (basic conversion)
-        const html = jsx
-          .replace(/className=/g, 'class=')
-          .replace(/\\{[^}]*\\}/g, '') // Remove JS expressions
-          .replace(/onClick=[^\\s>]*/g, '')
-          .replace(/onChange=[^\\s>]*/g, '')
-          .replace(/onSubmit=[^\\s>]*/g, '');
-        
-        return React.createElement('div', { 
-          dangerouslySetInnerHTML: { __html: html },
-          style: { minHeight: '100vh' }
-        });
-      };
-
       const loadPage = (path) => {
         const target = pages.find(p => p.path === path) || pages[0];
         if (!target) return null;
@@ -423,19 +394,12 @@ const Footer = () => null;
         } catch (err) {
           console.error('Preview render error', err);
           lastError = err;
-          // Try fallback render
-          try {
-            const FallbackComponent = () => FallbackRender({ code: target.code });
-            return FallbackComponent;
-          } catch (e) {
-            return null;
-          }
+          return null;
         }
       };
 
       const Router = () => {
         const [currentPath, setCurrentPath] = useState(window.location.hash.slice(1) || '${currentPage.path}');
-        const [renderError, setRenderError] = useState(null);
 
         useEffect(() => {
           const handleHashChange = () => setCurrentPath(window.location.hash.slice(1) || '${currentPage.path}');
@@ -450,32 +414,15 @@ const Footer = () => null;
             return React.createElement(Component);
           } catch (err) {
             console.error('Component render error:', err);
-            setRenderError(err);
+            lastError = err;
           }
         }
 
-        // Final fallback - show a nice "preview unavailable" message
-        return React.createElement('div', { 
-          style: { 
-            padding: '3rem', 
-            textAlign: 'center', 
-            background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-            minHeight: '100vh',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontFamily: 'system-ui, sans-serif'
-          } 
-        },
-          React.createElement('div', { style: { fontSize: '4rem', marginBottom: '1rem' } }, '🎨'),
-          React.createElement('h2', { style: { color: '#fff', marginBottom: '0.5rem', fontSize: '1.5rem', fontWeight: '600' } }, 'Preview Loading...'),
-          React.createElement('p', { style: { color: '#a1a1aa', maxWidth: '300px', lineHeight: '1.6' } }, 
-            'Your code is ready! Click the Code tab to view and edit.'
-          ),
-          lastError && React.createElement('p', { 
-            style: { color: '#71717a', fontSize: '0.7rem', marginTop: '1rem', maxWidth: '400px', wordBreak: 'break-word' } 
-          }, 'Debug: ' + (lastError.message || ''))
+        // Nice fallback instead of error
+        return React.createElement('div', { className: 'fallback-container' },
+          React.createElement('div', { className: 'fallback-icon' }, '🎨'),
+          React.createElement('h2', { className: 'fallback-title' }, 'Preview Loading...'),
+          React.createElement('p', { className: 'fallback-text' }, 'Your code is ready! Click the Code tab to view and edit.')
         );
       };
       `
