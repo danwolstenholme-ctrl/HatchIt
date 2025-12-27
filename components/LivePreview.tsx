@@ -362,13 +362,18 @@ export default function RootLayout({
           .replace(/React\.useCallback/g, 'useCallback')
           .replace(/React\.useRef/g, 'useRef')
 
-        // Add Lucide icons destructuring at the start of each page
-        const lucideDestructure = 'const { ArrowRight, ArrowLeft, ArrowUp, ArrowDown, Check, CheckCircle, CheckCircle2, Circle, X, Menu, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Plus, Minus, Search, Settings, User, Users, Mail, Phone, MapPin, Calendar, Clock, Star, Heart, Home, Globe, Layers, Lock, Award, BookOpen, Zap, Shield, Target, TrendingUp, BarChart, PieChart, Activity, Eye, EyeOff, Edit, Trash, Copy, Download, Upload, Share, Link, ExternalLink, Send, MessageCircle, Bell, AlertCircle, Info, HelpCircle, Loader, RefreshCw, RotateCcw, Save, FileText, Folder, Image, Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Mic, Video, Camera, Wifi, Battery, Sun, Moon, Cloud, Droplet, Wind, Thermometer, MapIcon, Navigation, Compass, Flag, Bookmark, Tag, Hash, AtSign, Filter, Grid, List, LayoutGrid, Maximize, Minimize, Move, Crop, ZoomIn, ZoomOut, MoreHorizontal, MoreVertical, Briefcase, Building, Cpu, Database, Server, Code, Terminal, GitBranch, Github, Linkedin, Twitter, Facebook, Instagram, Youtube } = LucideIcons || {};'
+        // Add globals at the start of each page (Lucide icons, theme, router shim, component stubs)
+        const pageGlobals = `
+const { ArrowRight, ArrowLeft, ArrowUp, ArrowDown, Check, CheckCircle, CheckCircle2, Circle, X, Menu, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Plus, Minus, Search, Settings, User, Users, Mail, Phone, MapPin, Calendar, Clock, Star, Heart, Home, Globe, Layers, Lock, Award, BookOpen, Zap, Shield, Target, TrendingUp, BarChart, PieChart, Activity, Eye, EyeOff, Edit, Trash, Copy, Download, Upload, Share, Link, ExternalLink, Send, MessageCircle, Bell, AlertCircle, Info, HelpCircle, Loader, RefreshCw, RotateCcw, Save, FileText, Folder, Image, Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Mic, Video, Camera, Wifi, Battery, Sun, Moon, Cloud, Droplet, Wind, Thermometer, MapIcon, Navigation as NavIcon, Compass, Flag, Bookmark, Tag, Hash, AtSign, Filter, Grid, List, LayoutGrid, Maximize, Minimize, Move, Crop, ZoomIn, ZoomOut, MoreHorizontal, MoreVertical, Briefcase, Building, Cpu, Database, Server, Code, Terminal, GitBranch, Github, Linkedin, Twitter, Facebook, Instagram, Youtube } = LucideIcons || {};
+// Navigation component stub
+const Navigation = () => null;
+const Footer = () => null;
+`;
 
         return {
           path: page.path,
           componentName,
-          code: `${lucideDestructure}\n${cleanedCode}\nreturn typeof ${componentName} === "function" ? ${componentName} : (typeof Component === "function" ? Component : null);`
+          code: `${pageGlobals}\n${cleanedCode}\nreturn typeof ${componentName} === "function" ? ${componentName} : (typeof Component === "function" ? Component : null);`
         }
       })
 
@@ -381,8 +386,8 @@ export default function RootLayout({
         if (!target) return null;
         if (pageCache.has(target.path)) return pageCache.get(target.path);
         try {
-          const factory = new Function('React', 'useState', 'useEffect', 'useMemo', 'useCallback', 'useRef', 'motion', 'AnimatePresence', 'useAnimation', 'useInView', 'useScroll', 'useTransform', 'useSpring', 'useMotionValue', 'LucideIcons', target.code);
-          const Component = factory(React, useState, useEffect, useMemo, useCallback, useRef, motion, AnimatePresence, useAnimation, useInView, useScroll, useTransform, useSpring, useMotionValue, LucideIcons);
+          const factory = new Function('React', 'useState', 'useEffect', 'useMemo', 'useCallback', 'useRef', 'motion', 'AnimatePresence', 'useAnimation', 'useInView', 'useScroll', 'useTransform', 'useSpring', 'useMotionValue', 'LucideIcons', 'colors', 'spacing', 'typography', 'effects', 'springs', 'easings', 'durations', 'fadeInUp', 'fadeInLeft', 'fadeIn', 'scaleIn', 'useRouter', 'GlassCard', 'SectionHeader', target.code);
+          const Component = factory(React, useState, useEffect, useMemo, useCallback, useRef, motion, AnimatePresence, useAnimation, useInView, useScroll, useTransform, useSpring, useMotionValue, LucideIcons, colors, spacing, typography, effects, springs, easings, durations, fadeInUp, fadeInLeft, fadeIn, scaleIn, useRouter, GlassCard, SectionHeader);
           if (Component) pageCache.set(target.path, Component);
           return Component;
         } catch (err) {
@@ -407,11 +412,72 @@ export default function RootLayout({
       };
       `
 
+      // Wolsten Studios theme config (inlined for import compatibility)
+      const themeConfig = `
+// Design tokens from Wolsten Studios config/theme.ts
+const colors = {
+  cyan: { primary: '#00A5C7', bright: '#00D4FF', light: 'rgba(0, 165, 199, 0.08)' },
+  background: { light: '#FAFAFC', white: '#FFFFFF', dark: '#0A0A0A', darker: '#0F0F0F' },
+  text: { primary: '#0E0E0E', secondary: '#606260', tertiary: '#949797', light: '#C0C8D0', lighter: '#D8DCE0', white: '#FAFAFC' },
+  border: { light: '#EBEBEF', cyan: 'rgba(0, 212, 255, 0.2)', default: '#DADADA' },
+};
+const spacing = { section: { py: 'py-16 md:py-24', px: 'px-8' } };
+const typography = {
+  eyebrow: { fontSize: '0.813rem', letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 500 },
+  hero: { fontSize: 'clamp(3rem, 7vw, 5.5rem)', lineHeight: '1.1', letterSpacing: '-0.03em', fontWeight: 300 },
+  h2: { fontSize: 'clamp(2rem, 4vw, 2.75rem)', fontWeight: 300, lineHeight: '1.2' },
+  h3: { fontSize: '1.25rem', fontWeight: 400 },
+  body: { fontSize: '1rem', lineHeight: '1.7' },
+  bodyLarge: { fontSize: 'clamp(1.25rem, 2.5vw, 1.75rem)', lineHeight: '1.5' },
+};
+const effects = {
+  glass: { backgroundColor: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(0, 212, 255, 0.2)', backdropFilter: 'blur(10px)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05)' },
+  glassLight: { backgroundColor: 'rgba(255, 255, 255, 0.05)', border: '1px solid #00A5C7', backdropFilter: 'blur(10px)', boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.1)' },
+  cardBorder: { backgroundColor: '#FFFFFF', border: '1px solid #EBEBEF' },
+};
+
+// Animation config from Wolsten Studios config/animations.ts
+const easings = { smooth: [0.21, 0.47, 0.32, 0.98], bounce: [0.34, 1.56, 0.64, 1], easeOut: 'easeOut', easeInOut: 'easeInOut' };
+const durations = { fast: 0.2, normal: 0.4, medium: 0.6, slow: 0.8 };
+const springs = {
+  snappy: { type: 'spring', stiffness: 400, damping: 17 },
+  bouncy: { type: 'spring', stiffness: 300, damping: 20 },
+  smooth: { type: 'spring', stiffness: 100, damping: 15 },
+  gentle: { type: 'spring', stiffness: 90, damping: 15 },
+};
+const fadeInUp = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 } };
+const fadeInLeft = { initial: { opacity: 0, x: -20 }, animate: { opacity: 1, x: 0 } };
+const fadeIn = { initial: { opacity: 0 }, animate: { opacity: 1 } };
+const scaleIn = { initial: { opacity: 0, scale: 0.95 }, animate: { opacity: 1, scale: 1 } };
+
+// useRouter hook for hash-based navigation in preview
+const useRouter = () => {
+  const [currentPath, setCurrentPath] = React.useState(window.location.hash.slice(1) || '/');
+  React.useEffect(() => {
+    const handleHashChange = () => setCurrentPath(window.location.hash.slice(1) || '/');
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+  const navigate = (path) => { window.location.hash = path; };
+  return { currentPath, navigate };
+};
+
+// Navigation component stub (renders nothing in preview - pages work standalone)
+const Navigation = () => null;
+const Footer = () => null;
+const GlassCard = ({ children, className }) => React.createElement('div', { className, style: effects.glass }, children);
+const SectionHeader = ({ eyebrow, title, description }) => React.createElement('div', { className: 'text-center mb-12' }, 
+  eyebrow && React.createElement('p', { style: { ...typography.eyebrow, color: colors.cyan.primary } }, eyebrow),
+  React.createElement('h2', { style: { ...typography.h2, color: colors.text.primary } }, title),
+  description && React.createElement('p', { style: { ...typography.body, color: colors.text.secondary } }, description)
+);
+`;
+
       const html = '<!DOCTYPE html>' +
         '<html><head>' +
         '<script src="https://cdn.tailwindcss.com"></script>' +
         '<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet">' +
-        '<style>* { margin: 0; padding: 0; box-sizing: border-box; } html, body, #root { min-height: 100%; width: 100%; } body { background: #18181b; } .error { color: #ef4444; padding: 2rem; font-family: monospace; white-space: pre-wrap; background: #18181b; line-height: 1.6; } .error h2 { color: #fecaca; margin-bottom: 1rem; font-size: 1rem; font-weight: bold; } .loading { color: #71717a; padding: 2rem; text-align: center; font-family: system-ui; }</style>' +
+        '<style>* { margin: 0; padding: 0; box-sizing: border-box; } html, body, #root { min-height: 100%; width: 100%; } body { background: #FAFAFC; font-family: "Raleway", system-ui, sans-serif; } .error { color: #ef4444; padding: 2rem; font-family: monospace; white-space: pre-wrap; background: #18181b; line-height: 1.6; } .error h2 { color: #fecaca; margin-bottom: 1rem; font-size: 1rem; font-weight: bold; } .loading { color: #71717a; padding: 2rem; text-align: center; font-family: system-ui; }</style>' +
         '</head><body>' +
         '<div id="root"><div class="loading">Loading preview...</div></div>' +
         '<script src="https://unpkg.com/react@18/umd/react.development.js"></script>' +
@@ -444,6 +510,7 @@ export default function RootLayout({
         '</script>' +
         '<script type="text/babel" data-presets="react,typescript">' +
         hooksDestructure + '\n' +
+        themeConfig + '\n' +
         'const motion = window.motion;\n' +
         'const AnimatePresence = window.AnimatePresence;\n' +
         'const useAnimation = window.useAnimation;\n' +
@@ -453,7 +520,7 @@ export default function RootLayout({
         'const useSpring = window.useSpring;\n' +
         'const useMotionValue = window.useMotionValue;\n' +
         'const LucideIcons = window.LucideIcons || {};\n' +
-        'const { ArrowRight, ArrowLeft, ArrowUp, ArrowDown, Check, CheckCircle, CheckCircle2, Circle, X, Menu, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Plus, Minus, Search, Settings, User, Users, Mail, Phone, MapPin, Calendar, Clock, Star, Heart, Home, Globe, Layers, Lock, Award, BookOpen, Zap, Shield, Target, TrendingUp, BarChart, PieChart, Activity, Eye, EyeOff, Edit, Trash, Copy, Download, Upload, Share, Link, ExternalLink, Send, MessageCircle, Bell, AlertCircle, Info, HelpCircle, Loader, RefreshCw, RotateCcw, Save, FileText, Folder, Image, Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Mic, Video, Camera, Wifi, Battery, Sun, Moon, Cloud, Droplet, Wind, Thermometer, MapIcon, Navigation, Compass, Flag, Bookmark, Tag, Hash, AtSign, Filter, Grid, List, LayoutGrid, Maximize, Minimize, Move, Crop, ZoomIn, ZoomOut, MoreHorizontal, MoreVertical, Briefcase, Building, Cpu, Database, Server, Code, Terminal, GitBranch, Github, Linkedin, Twitter, Facebook, Instagram, Youtube } = LucideIcons;\n' +
+        'const { ArrowRight, ArrowLeft, ArrowUp, ArrowDown, Check, CheckCircle, CheckCircle2, Circle, X, Menu, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Plus, Minus, Search, Settings, User, Users, Mail, Phone, MapPin, Calendar, Clock, Star, Heart, Home, Globe, Layers, Lock, Award, BookOpen, Zap, Shield, Target, TrendingUp, BarChart, PieChart, Activity, Eye, EyeOff, Edit, Trash, Copy, Download, Upload, Share, Link, ExternalLink, Send, MessageCircle, Bell, AlertCircle, Info, HelpCircle, Loader, RefreshCw, RotateCcw, Save, FileText, Folder, Image, Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Mic, Video, Camera, Wifi, Battery, Sun, Moon, Cloud, Droplet, Wind, Thermometer, MapIcon, Navigation as NavIcon, Compass, Flag, Bookmark, Tag, Hash, AtSign, Filter, Grid, List, LayoutGrid, Maximize, Minimize, Move, Crop, ZoomIn, ZoomOut, MoreHorizontal, MoreVertical, Briefcase, Building, Cpu, Database, Server, Code, Terminal, GitBranch, Github, Linkedin, Twitter, Facebook, Instagram, Youtube } = LucideIcons;\n' +
         'try {\n' +
         routerCode + '\n' +
         '  const root = ReactDOM.createRoot(document.getElementById("root"));\n' +
@@ -568,6 +635,59 @@ export default function RootLayout({
       '</script>' +
       '<script type="text/babel" data-presets="react,typescript">' +
       hooksDestructure + '\n' +
+      // Single-page theme config (same as multi-page)
+      `// Design tokens from Wolsten Studios config/theme.ts
+const colors = {
+  cyan: { primary: '#00A5C7', bright: '#00D4FF', light: 'rgba(0, 165, 199, 0.08)' },
+  background: { light: '#FAFAFC', white: '#FFFFFF', dark: '#0A0A0A', darker: '#0F0F0F' },
+  text: { primary: '#0E0E0E', secondary: '#606260', tertiary: '#949797', light: '#C0C8D0', lighter: '#D8DCE0', white: '#FAFAFC' },
+  border: { light: '#EBEBEF', cyan: 'rgba(0, 212, 255, 0.2)', default: '#DADADA' },
+};
+const spacing = { section: { py: 'py-16 md:py-24', px: 'px-8' } };
+const typography = {
+  eyebrow: { fontSize: '0.813rem', letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 500 },
+  hero: { fontSize: 'clamp(3rem, 7vw, 5.5rem)', lineHeight: '1.1', letterSpacing: '-0.03em', fontWeight: 300 },
+  h2: { fontSize: 'clamp(2rem, 4vw, 2.75rem)', fontWeight: 300, lineHeight: '1.2' },
+  h3: { fontSize: '1.25rem', fontWeight: 400 },
+  body: { fontSize: '1rem', lineHeight: '1.7' },
+  bodyLarge: { fontSize: 'clamp(1.25rem, 2.5vw, 1.75rem)', lineHeight: '1.5' },
+};
+const effects = {
+  glass: { backgroundColor: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(0, 212, 255, 0.2)', backdropFilter: 'blur(10px)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05)' },
+  glassLight: { backgroundColor: 'rgba(255, 255, 255, 0.05)', border: '1px solid #00A5C7', backdropFilter: 'blur(10px)', boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.1)' },
+  cardBorder: { backgroundColor: '#FFFFFF', border: '1px solid #EBEBEF' },
+};
+const easings = { smooth: [0.21, 0.47, 0.32, 0.98], bounce: [0.34, 1.56, 0.64, 1], easeOut: 'easeOut', easeInOut: 'easeInOut' };
+const durations = { fast: 0.2, normal: 0.4, medium: 0.6, slow: 0.8 };
+const springs = {
+  snappy: { type: 'spring', stiffness: 400, damping: 17 },
+  bouncy: { type: 'spring', stiffness: 300, damping: 20 },
+  smooth: { type: 'spring', stiffness: 100, damping: 15 },
+  gentle: { type: 'spring', stiffness: 90, damping: 15 },
+};
+const fadeInUp = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 } };
+const fadeInLeft = { initial: { opacity: 0, x: -20 }, animate: { opacity: 1, x: 0 } };
+const fadeIn = { initial: { opacity: 0 }, animate: { opacity: 1 } };
+const scaleIn = { initial: { opacity: 0, scale: 0.95 }, animate: { opacity: 1, scale: 1 } };
+const useRouter = () => {
+  const [currentPath, setCurrentPath] = React.useState(window.location.hash.slice(1) || '/');
+  React.useEffect(() => {
+    const handleHashChange = () => setCurrentPath(window.location.hash.slice(1) || '/');
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+  const navigate = (path) => { window.location.hash = path; };
+  return { currentPath, navigate };
+};
+const Navigation = () => null;
+const Footer = () => null;
+const GlassCard = ({ children, className }) => React.createElement('div', { className, style: effects.glass }, children);
+const SectionHeader = ({ eyebrow, title, description }) => React.createElement('div', { className: 'text-center mb-12' }, 
+  eyebrow && React.createElement('p', { style: { ...typography.eyebrow, color: colors.cyan.primary } }, eyebrow),
+  React.createElement('h2', { style: { ...typography.h2, color: colors.text.primary } }, title),
+  description && React.createElement('p', { style: { ...typography.body, color: colors.text.secondary } }, description)
+);
+` +
       'const motion = window.motion;\n' +
       'const AnimatePresence = window.AnimatePresence;\n' +
       'const useAnimation = window.useAnimation;\n' +
@@ -577,7 +697,7 @@ export default function RootLayout({
       'const useSpring = window.useSpring;\n' +
       'const useMotionValue = window.useMotionValue;\n' +
       'const LucideIcons = window.LucideIcons || {};\n' +
-      'const { ArrowRight, ArrowLeft, ArrowUp, ArrowDown, Check, CheckCircle, CheckCircle2, Circle, X, Menu, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Plus, Minus, Search, Settings, User, Users, Mail, Phone, MapPin, Calendar, Clock, Star, Heart, Home, Globe, Layers, Lock, Award, BookOpen, Zap, Shield, Target, TrendingUp, BarChart, PieChart, Activity, Eye, EyeOff, Edit, Trash, Copy, Download, Upload, Share, Link, ExternalLink, Send, MessageCircle, Bell, AlertCircle, Info, HelpCircle, Loader, RefreshCw, RotateCcw, Save, FileText, Folder, Image, Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Mic, Video, Camera, Wifi, Battery, Sun, Moon, Cloud, Droplet, Wind, Thermometer, MapIcon, Navigation, Compass, Flag, Bookmark, Tag, Hash, AtSign, Filter, Grid, List, LayoutGrid, Maximize, Minimize, Move, Crop, ZoomIn, ZoomOut, MoreHorizontal, MoreVertical, Briefcase, Building, Cpu, Database, Server, Code, Terminal, GitBranch, Github, Linkedin, Twitter, Facebook, Instagram, Youtube } = LucideIcons;\n' +
+      'const { ArrowRight, ArrowLeft, ArrowUp, ArrowDown, Check, CheckCircle, CheckCircle2, Circle, X, Menu, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Plus, Minus, Search, Settings, User, Users, Mail, Phone, MapPin, Calendar, Clock, Star, Heart, Home, Globe, Layers, Lock, Award, BookOpen, Zap, Shield, Target, TrendingUp, BarChart, PieChart, Activity, Eye, EyeOff, Edit, Trash, Copy, Download, Upload, Share, Link, ExternalLink, Send, MessageCircle, Bell, AlertCircle, Info, HelpCircle, Loader, RefreshCw, RotateCcw, Save, FileText, Folder, Image, Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Mic, Video, Camera, Wifi, Battery, Sun, Moon, Cloud, Droplet, Wind, Thermometer, MapIcon, Navigation as NavIcon, Compass, Flag, Bookmark, Tag, Hash, AtSign, Filter, Grid, List, LayoutGrid, Maximize, Minimize, Move, Crop, ZoomIn, ZoomOut, MoreHorizontal, MoreVertical, Briefcase, Building, Cpu, Database, Server, Code, Terminal, GitBranch, Github, Linkedin, Twitter, Facebook, Instagram, Youtube } = LucideIcons;\n' +
       'try {\n' +
       cleanedCode + '\n' +
       '  const root = ReactDOM.createRoot(document.getElementById("root"));\n' +
