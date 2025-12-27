@@ -521,6 +521,7 @@ export default function Home() {
               <Link href="/builder" className="hover:text-white transition-colors">Builder</Link>
               <a href="#features" className="hover:text-white transition-colors">Features</a>
               <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
+              <Link href="/faq" className="hover:text-white transition-colors">FAQ</Link>
               <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
               <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
             </div>
