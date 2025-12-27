@@ -373,85 +373,86 @@ const Footer = () => null;
         return {
           path: page.path,
           componentName,
-          code: `${pageGlobals}\n${cleanedCode}\n
-// Try to return the component
-try {
-  if (typeof ${componentName} === "function") return ${componentName};
-  if (typeof Component === "function") return Component;
-  if (typeof App === "function") return App;
-  if (typeof Page === "function") return Page;
-  if (typeof Home === "function") return Home;
-  if (typeof Main === "function") return Main;
-  // If no named component found, wrap the JSX in a component
-  return function GeneratedComponent() {
-    return (
-      ${cleanedCode.includes('return') ? '' : '<div className="p-8">'}
-      ${cleanedCode.includes('return') ? `(${componentName} || Component || (() => null))()` : 'null'}
-      ${cleanedCode.includes('return') ? '' : '</div>'}
-    );
-  };
-} catch(e) {
-  console.error("Component resolution error:", e);
-  return null;
-}
-`
+          // Don't include JSX in code string - it won't work with new Function()
+          // Instead, just store metadata
         }
       })
 
+      // Build components directly in the Babel script (so JSX gets transpiled)
+      const pageComponents = pages.map((page, idx) => {
+        const regex = /(?:function|const|let|var)\s+([A-Z][a-zA-Z0-9]*)(?:\s*[=:(]|\s*:)/g
+        const matches = [...page.code.matchAll(regex)]
+        const componentName = matches.length > 0 ? matches[matches.length - 1][1] : `Page${idx}`
+
+        const cleanedCode = page.code
+          // Remove import statements for motion, lucide, and react
+          .replace(/import\s*\{[^}]*\}\s*from\s*['"](?:motion\/react|framer-motion|motion)['"]\s*;?/g, '')
+          .replace(/import\s*\{[^}]*\}\s*from\s*['"]lucide-react['"]\s*;?/g, '')
+          .replace(/import\s*\{[^}]*\}\s*from\s*['"]react['"]\s*;?/g, '')
+          .replace(/import\s+\w+\s*from\s*['"][^'"]+['"]\s*;?/g, '')
+          .replace(/import\s*['"][^'"]+['"]\s*;?/g, '')
+          // Remove TypeScript types
+          .replace(/interface\s+\w+\s*\{[\s\S]*?\}/g, '')
+          .replace(/type\s+\w+\s*=[^;]+;/g, '')
+          .replace(/\s+as\s+[A-Za-z][A-Za-z0-9\[\]<>|&\s,'_]*/g, '')
+          .replace(/(useState|useRef|useMemo|useCallback|useEffect)<[^>]+>/g, '$1')
+          .replace(/:\s*(React\.)?FC(<[^>]*>)?/g, '')
+          .replace(/:\s*[A-Z][A-Za-z0-9\[\]<>|&\s,']*(?=\s*=\s*[\[{(])/g, '')
+          .replace(/(\(\s*\w+):\s*(?:keyof\s+|typeof\s+|readonly\s+)?[A-Z][^,)]*(?=[,)])/g, '$1')
+          .replace(/,(\s*\w+):\s*(?:keyof\s+|typeof\s+|readonly\s+)?[A-Z][^,)]*(?=[,)])/g, ',$1')
+          .replace(/(\(\s*\w+):\s*(?:string|number|boolean|any|void|never|unknown)(?:\[\])?(?=[,)])/g, '$1')
+          .replace(/,(\s*\w+):\s*(?:string|number|boolean|any|void|never|unknown)(?:\[\])?(?=[,)])/g, ',$1')
+          .replace(/\):\s*[A-Za-z][A-Za-z0-9\[\]<>|&\s,']*(?=\s*[{=])/g, ')')
+          .replace(/export\s+default\s+/g, '')
+          .replace(/export\s+/g, '')
+          .replace(/React\.useState/g, 'useState')
+          .replace(/React\.useEffect/g, 'useEffect')
+          .replace(/React\.useMemo/g, 'useMemo')
+          .replace(/React\.useCallback/g, 'useCallback')
+          .replace(/React\.useRef/g, 'useRef')
+          // Remove 'use client' directive
+          .replace(/'use client'\s*;?/g, '')
+          .replace(/"use client"\s*;?/g, '')
+
+        return {
+          path: page.path,
+          componentName,
+          cleanedCode
+        }
+      })
+
+      // Generate the page component definitions (will be transpiled by Babel)
+      const pageDefinitions = pageComponents.map((page, idx) => `
+// Page: ${page.path}
+const PageComponent${idx} = (() => {
+  try {
+    ${page.cleanedCode}
+    // Return the component
+    if (typeof ${page.componentName} === "function") return ${page.componentName};
+    if (typeof Component === "function") return Component;
+    if (typeof App === "function") return App;
+    if (typeof Page === "function") return Page;
+    if (typeof Home === "function") return Home;
+    if (typeof Main === "function") return Main;
+    return () => <div className="p-8 text-center text-gray-500">No component found</div>;
+  } catch (e) {
+    console.error("Error in page ${page.path}:", e);
+    return () => <div className="p-8 text-red-500">Error: {e.message}</div>;
+  }
+})();
+`).join('\n')
+
+      // Generate the page registry
+      const pageRegistry = pageComponents.map((page, idx) => 
+        `  "${page.path}": PageComponent${idx}`
+      ).join(',\n')
+
       const routerCode = `
-      const pages = ${JSON.stringify(serializedPages)};
-      const pageCache = new Map();
-      let lastError = null;
-
-      console.log('[Preview] Starting render...');
-      console.log('[Preview] Pages loaded:', pages.length);
-      if (pages[0]) {
-        console.log('[Preview] First page path:', pages[0].path);
-        console.log('[Preview] First page component name:', pages[0].componentName);
-        console.log('[Preview] Code length:', pages[0].code?.length || 0);
-      }
-
-      const loadPage = (path) => {
-        const target = pages.find(p => p.path === path) || pages[0];
-        if (!target) {
-          console.error('[Preview] No target page found for path:', path);
-          return null;
-        }
-        console.log('[Preview] Loading page:', target.path);
-        if (pageCache.has(target.path)) {
-          console.log('[Preview] Using cached component');
-          return pageCache.get(target.path);
-        }
-        try {
-          console.log('[Preview] Creating function from code...');
-          
-          // Log available globals
-          console.log('[Preview] React available:', typeof React !== 'undefined');
-          console.log('[Preview] motion available:', typeof motion !== 'undefined', motion);
-          console.log('[Preview] LucideIcons available:', typeof LucideIcons !== 'undefined', Object.keys(LucideIcons || {}).length, 'icons');
-          
-          const factory = new Function('React', 'useState', 'useEffect', 'useMemo', 'useCallback', 'useRef', 'motion', 'AnimatePresence', 'useAnimation', 'useInView', 'useScroll', 'useTransform', 'useSpring', 'useMotionValue', 'LucideIcons', 'colors', 'spacing', 'typography', 'effects', 'springs', 'easings', 'durations', 'fadeInUp', 'fadeInLeft', 'fadeIn', 'scaleIn', 'useRouter', 'GlassCard', 'SectionHeader', target.code);
-          console.log('[Preview] Factory created successfully');
-          
-          const Component = factory(React, useState, useEffect, useMemo, useCallback, useRef, motion, AnimatePresence, useAnimation, useInView, useScroll, useTransform, useSpring, useMotionValue, LucideIcons, colors, spacing, typography, effects, springs, easings, durations, fadeInUp, fadeInLeft, fadeIn, scaleIn, useRouter, GlassCard, SectionHeader);
-          console.log('[Preview] Component result type:', typeof Component);
-          console.log('[Preview] Component:', Component?.name || Component);
-          
-          if (Component) {
-            pageCache.set(target.path, Component);
-            return Component;
-          } else {
-            console.error('[Preview] Factory returned null/undefined');
-            return null;
-          }
-        } catch (err) {
-          console.error('[Preview] ERROR creating component:', err.message);
-          console.error('[Preview] Full error:', err);
-          console.error('[Preview] Code snippet:', target.code?.substring(0, 500));
-          lastError = err;
-          return null;
-        }
+      const pageRegistry = {
+${pageRegistry}
       };
+
+      console.log('[Preview] Pages registered:', Object.keys(pageRegistry));
 
       const Router = () => {
         const [currentPath, setCurrentPath] = useState(window.location.hash.slice(1) || '${currentPage.path}');
@@ -463,24 +464,38 @@ try {
         }, []);
 
         console.log('[Preview] Router rendering, path:', currentPath);
-        const Component = loadPage(currentPath) || loadPage('${currentPage.path}');
         
-        if (Component) {
+        // Find the component for this path
+        const PageComponent = pageRegistry[currentPath] || pageRegistry['${currentPage.path}'] || pageRegistry['/'];
+        
+        if (PageComponent) {
           try {
-            console.log('[Preview] Attempting to render component...');
-            const element = React.createElement(Component);
-            console.log('[Preview] Element created successfully');
-            return element;
+            console.log('[Preview] Rendering component for:', currentPath);
+            return <PageComponent />;
           } catch (err) {
-            console.error('[Preview] Component render error:', err.message);
-            lastError = err;
+            console.error('[Preview] Render error:', err);
+            return (
+              <div style={{ 
+                background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', 
+                minHeight: '100vh', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                padding: '2rem', 
+                textAlign: 'center',
+                fontFamily: 'system-ui, sans-serif'
+              }}>
+                <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>⚠️</div>
+                <h2 style={{ color: '#fff', fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.5rem' }}>Render Error</h2>
+                <p style={{ color: '#f87171', maxWidth: '400px', fontFamily: 'monospace', fontSize: '0.875rem', background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '0.5rem' }}>{err.message}</p>
+              </div>
+            );
           }
         }
 
-        // Show the actual error so we can debug
-        console.log('[Preview] Showing fallback, lastError:', lastError?.message);
-        return React.createElement('div', { 
-          style: { 
+        return (
+          <div style={{ 
             background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', 
             minHeight: '100vh', 
             display: 'flex', 
@@ -490,12 +505,11 @@ try {
             padding: '2rem', 
             textAlign: 'center',
             fontFamily: 'system-ui, sans-serif'
-          } 
-        },
-          React.createElement('div', { style: { fontSize: '4rem', marginBottom: '1rem' } }, '⚠️'),
-          React.createElement('h2', { style: { color: '#fff', fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.5rem' } }, 'Preview Error'),
-          React.createElement('p', { style: { color: '#f87171', maxWidth: '400px', lineHeight: 1.6, fontFamily: 'monospace', fontSize: '0.875rem', background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '0.5rem', wordBreak: 'break-word' } }, lastError?.message || 'Component could not be rendered'),
-          React.createElement('p', { style: { color: '#a1a1aa', marginTop: '1rem', fontSize: '0.875rem' } }, 'Check browser console for details')
+          }}>
+            <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🎨</div>
+            <h2 style={{ color: '#fff', fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.5rem' }}>Preview Loading...</h2>
+            <p style={{ color: '#a1a1aa', maxWidth: '300px' }}>Your code is ready! Click the Code tab to view and edit.</p>
+          </div>
         );
       };
       `
@@ -625,12 +639,13 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
         'const LucideIcons = window.LucideIcons || {};\n' +
         'const { ArrowRight, ArrowLeft, ArrowUp, ArrowDown, Check, CheckCircle, CheckCircle2, Circle, X, Menu, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Plus, Minus, Search, Settings, User, Users, Mail, Phone, MapPin, Calendar, Clock, Star, Heart, Home, Globe, Layers, Lock, Award, BookOpen, Zap, Shield, Target, TrendingUp, BarChart, PieChart, Activity, Eye, EyeOff, Edit, Trash, Copy, Download, Upload, Share, Link, ExternalLink, Send, MessageCircle, Bell, AlertCircle, Info, HelpCircle, Loader, RefreshCw, RotateCcw, Save, FileText, Folder, Image, Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Mic, Video, Camera, Wifi, Battery, Sun, Moon, Cloud, Droplet, Wind, Thermometer, MapIcon, Navigation: NavIcon, Compass, Flag, Bookmark, Tag, Hash, AtSign, Filter, Grid, List, LayoutGrid, Maximize, Minimize, Move, Crop, ZoomIn, ZoomOut, MoreHorizontal, MoreVertical, Briefcase, Building, Cpu, Database, Server, Code, Terminal, GitBranch, Github, Linkedin, Twitter, Facebook, Instagram, Youtube } = LucideIcons;\n' +
         'try {\n' +
+        pageDefinitions + '\n' +
         routerCode + '\n' +
         '  const root = ReactDOM.createRoot(document.getElementById("root"));\n' +
-        '  root.render(React.createElement(Router));\n' +
+        '  root.render(<Router />);\n' +
         '} catch (err) {\n' +
         '  console.error("Render catch:", err);\n' +
-        '  document.getElementById("root").innerHTML = "<div class=\'fallback-container\'><div class=\'fallback-icon\'>🎨</div><h2 class=\'fallback-title\'>Preview Loading...</h2><p class=\'fallback-text\'>Your code is ready! Click the Code tab to view and edit.</p></div>";\n' +
+        '  document.getElementById("root").innerHTML = "<div class=\'fallback-container\'><div class=\'fallback-icon\'>⚠️</div><h2 class=\'fallback-title\'>Preview Error</h2><p class=\'fallback-text\'>" + err.message + "</p></div>";\n' +
         '}\n' +
         '</script>' +
         '<script>setTimeout(function() { if (document.querySelector(".loading")) { document.getElementById("root").innerHTML = "<div class=\'fallback-container\'><div class=\'fallback-icon\'>🎨</div><h2 class=\'fallback-title\'>Preview Loading...</h2><p class=\'fallback-text\'>Your code is ready! Click the Code tab to view and edit.</p></div>"; } }, 8000);</script>' +
