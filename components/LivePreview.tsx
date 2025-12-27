@@ -380,6 +380,7 @@ const Footer = () => null;
       const routerCode = `
       const pages = ${JSON.stringify(serializedPages)};
       const pageCache = new Map();
+      let lastError = null;
 
       const loadPage = (path) => {
         const target = pages.find(p => p.path === path) || pages[0];
@@ -392,6 +393,7 @@ const Footer = () => null;
           return Component;
         } catch (err) {
           console.error('Preview render error', err);
+          lastError = err;
           return null;
         }
       };
@@ -407,6 +409,15 @@ const Footer = () => null;
 
         const Component = loadPage(currentPath) || loadPage('${currentPage.path}');
         if (Component) return React.createElement(Component);
+
+        // Show error details instead of just 404
+        if (lastError) {
+          return React.createElement('div', { style: { padding: '2rem', color: '#f87171', fontFamily: 'monospace', background: '#18181b', minHeight: '100vh' } },
+            React.createElement('h2', { style: { color: '#fecaca', marginBottom: '1rem' } }, '⚠️ Preview Error'),
+            React.createElement('p', { style: { color: '#f87171', marginBottom: '0.5rem' } }, lastError.message || 'Unknown error'),
+            React.createElement('p', { style: { color: '#71717a', fontSize: '0.75rem', wordBreak: 'break-all' } }, lastError.stack || '')
+          );
+        }
 
         return React.createElement('div', { style: { padding: '2rem', color: '#a1a1aa', textAlign: 'center' } }, '404 - Page not found');
       };
