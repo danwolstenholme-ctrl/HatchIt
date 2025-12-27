@@ -254,6 +254,7 @@ export default function Home() {
   const dropdownRef = useRef<HTMLDivElement>(null)
   const domainInputRef = useRef<HTMLInputElement>(null)
   const generationRequestIdRef = useRef(0)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   // Get subscriptions from user metadata
   const subscriptions = useMemo(() => {
@@ -931,6 +932,10 @@ export default function Home() {
     const requestId = ++generationRequestIdRef.current
     const targetProjectId = currentProjectId
     const targetPageId = currentPage?.id
+    
+    // Create new AbortController for this request
+    abortControllerRef.current = new AbortController()
+    
     setIsGenerating(true)
     try {
       // Prepare page context for multi-page projects
@@ -961,6 +966,7 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
+        signal: abortControllerRef.current.signal,
       })
       const data = await response.json()
       
@@ -1058,10 +1064,24 @@ export default function Home() {
       }
       return null
     } catch (error) {
+      // Don't show error toast if user cancelled
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.log('Generation cancelled by user')
+        return null
+      }
       console.error('Generation failed:', error)
       showErrorToast('Generation failed. Please try again.')
       return null
     } finally {
+      setIsGenerating(false)
+      abortControllerRef.current = null
+    }
+  }
+
+  const handleStopGeneration = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      abortControllerRef.current = null
       setIsGenerating(false)
     }
   }
@@ -2629,7 +2649,7 @@ export default function Home() {
               </div>
             )}
             <div className="flex-1 overflow-hidden">
-              <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} isPaid={isCurrentProjectPaid} onOpenAssets={() => setShowAssetsModal(true)} projectId={currentProjectId || ''} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} key={currentProjectId} />
+              <Chat onGenerate={handleGenerate} isGenerating={isGenerating} onStopGeneration={handleStopGeneration} currentCode={code} isPaid={isCurrentProjectPaid} onOpenAssets={() => setShowAssetsModal(true)} projectId={currentProjectId || ''} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} key={currentProjectId} />
             </div>
           </div>
         </Panel>

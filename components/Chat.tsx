@@ -28,6 +28,7 @@ interface Message {
 interface ChatProps {
   onGenerate: (prompt: string, history: Message[], currentCode: string) => Promise<string | null>
   isGenerating: boolean
+  onStopGeneration?: () => void
   currentCode: string
   isPaid?: boolean
   onOpenAssets?: () => void
@@ -66,7 +67,7 @@ function getRandomResponse() {
   return responses[Math.floor(Math.random() * responses.length)]
 }
 
-export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = false, onOpenAssets, projectId = '', projectSlug = '', projectName = '' }: ChatProps) {
+export default function Chat({ onGenerate, isGenerating, onStopGeneration, currentCode, isPaid = false, onOpenAssets, projectId = '', projectSlug = '', projectName = '' }: ChatProps) {
   const [input, setInput] = useState('')
   const [buildMessages, setBuildMessages] = useState<Message[]>([])
   const [chatMessages, setChatMessages] = useState<Message[]>([])
@@ -382,17 +383,28 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
                 Assets
               </button>
             )}
-            <button
-              type="submit"
-              disabled={isGenerating || isChatLoading || !input.trim()}
-              className={`flex-1 px-4 py-2 rounded-xl text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
-                mode === 'chat'
-                  ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white'
-                  : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white'
-              }`}
-            >
-              {isChatLoading ? 'Responding...' : isGenerating ? 'Generating...' : mode === 'chat' ? 'Send' : messages.length === 0 ? 'Generate' : 'Update'}
-            </button>
+            {(isGenerating || isChatLoading) && onStopGeneration ? (
+              <button
+                type="button"
+                onClick={onStopGeneration}
+                className="flex-1 px-4 py-2 rounded-xl text-sm font-medium transition-all bg-red-600 hover:bg-red-500 text-white flex items-center justify-center gap-2"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+                Stop
+              </button>
+            ) : (
+              <button
+                type="submit"
+                disabled={isGenerating || isChatLoading || !input.trim()}
+                className={`flex-1 px-4 py-2 rounded-xl text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+                  mode === 'chat'
+                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white'
+                    : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white'
+                }`}
+              >
+                {mode === 'chat' ? 'Send' : messages.length === 0 ? 'Generate' : 'Update'}
+              </button>
+            )}
           </div>
         </form>
       </div>
