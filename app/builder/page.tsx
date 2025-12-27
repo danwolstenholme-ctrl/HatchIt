@@ -342,11 +342,16 @@ export default function Home() {
   }, [user?.publicMetadata?.subscriptions])
 
   // Get the project slug for the current project (what it would be when deployed)
+  // Includes user suffix for uniqueness across all users
   const currentProjectSlug = useMemo(() => {
-    if (!currentProject) return ''
-    return currentProject.deployedSlug || 
-      currentProject.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
-  }, [currentProject])
+    if (!currentProject || !user?.id) return ''
+    // If already deployed, use the existing slug
+    if (currentProject.deployedSlug) return currentProject.deployedSlug
+    // Generate new slug with user suffix
+    const userSuffix = user.id.slice(-6).toLowerCase()
+    const baseSlug = currentProject.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'site'
+    return `${baseSlug}-${userSuffix}`
+  }, [currentProject, user?.id])
 
   // Check if CURRENT PROJECT has an active subscription
   const isCurrentProjectPaid = useMemo(() => {

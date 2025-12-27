@@ -58,10 +58,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid project name' }, { status: 400 })
     }
 
-    const slug = sanitizedName
+    // Create user-scoped slug to prevent collisions between users
+    // Use last 6 chars of userId for uniqueness while keeping URLs readable
+    const userSuffix = userId.slice(-6).toLowerCase()
+    const baseSlug = sanitizedName
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '') || `site-${Date.now()}`
+      .replace(/(^-|-$)/g, '') || 'site'
+    const slug = `${baseSlug}-${userSuffix}`
 
     // Verify this specific project has an active subscription
     const client = await clerkClient()
