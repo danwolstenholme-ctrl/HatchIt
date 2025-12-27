@@ -2368,6 +2368,14 @@ export default function Home() {
         )}
         <div className="px-3 py-2.5 border-b border-zinc-800 flex items-center justify-between bg-zinc-900">
           <div className="flex items-center gap-2 min-w-0">
+            <Link href="/" className="flex items-center text-zinc-400 hover:text-white transition-colors flex-shrink-0" title="Back to home">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </Link>
+            <div className="w-px h-4 bg-zinc-700" />
             <ProjectSelector mobile />
             <PagesButton />
           </div>
@@ -2466,6 +2474,14 @@ export default function Home() {
           <div className="h-full flex flex-col bg-zinc-900">
             <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
               <div className="flex items-center gap-3">
+                <Link href="/" className="flex items-center gap-1.5 text-zinc-400 hover:text-white transition-colors" title="Back to home">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </Link>
+                <div className="w-px h-5 bg-zinc-700" />
                 <ProjectSelector />
                 <PagesButton />
               </div>
