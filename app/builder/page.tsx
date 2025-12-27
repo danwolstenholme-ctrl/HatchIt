@@ -1972,10 +1972,11 @@ export default function Home() {
 
   const ProjectSelector = ({ mobile = false }: { mobile?: boolean }) => (
     <div className="relative z-[9999]">
-      <button onClick={() => setShowProjectDropdown(!showProjectDropdown)} className={`flex items-center gap-2 hover:bg-zinc-800 rounded-lg transition-colors ${mobile ? 'px-2 py-1.5' : 'px-3 py-1.5'}`}>
-        <span className={`font-medium text-white truncate ${mobile ? 'max-w-[140px] text-sm' : 'max-w-[180px]'}`}>{currentProject?.name || 'Select Project'}</span>
-        {!mobile && isDeployed && <span className="text-[10px] px-1.5 py-0.5 bg-green-500/20 text-green-400 rounded">LIVE</span>}
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`text-zinc-500 flex-shrink-0 transition-transform ${showProjectDropdown ? 'rotate-180' : ''}`}><polyline points="6 9 12 15 18 9"/></svg>
+      <button onClick={() => setShowProjectDropdown(!showProjectDropdown)} className={`flex items-center gap-2 bg-zinc-800/60 hover:bg-zinc-800 border border-zinc-700/50 rounded-lg transition-colors ${mobile ? 'px-2.5 py-1.5' : 'px-3 py-2'}`}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-500 flex-shrink-0"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <span className={`font-medium text-white truncate ${mobile ? 'max-w-[100px] text-sm' : 'max-w-[140px]'}`}>{currentProject?.name || 'Select Project'}</span>
+        {!mobile && isDeployed && <span className="text-[10px] px-1.5 py-0.5 bg-green-500/20 text-green-400 rounded font-medium">LIVE</span>}
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`text-zinc-500 flex-shrink-0 transition-transform ${showProjectDropdown ? 'rotate-180' : ''}`}><polyline points="6 9 12 15 18 9"/></svg>
       </button>
       {showProjectDropdown && <ProjectDropdown />}
     </div>
@@ -1984,12 +1985,12 @@ export default function Home() {
   const PagesButton = ({ mobile = false }: { mobile?: boolean }) => (
     <button 
       onClick={() => setShowPagesPanel(!showPagesPanel)} 
-      className="flex items-center gap-1.5 px-2 py-1 hover:bg-zinc-800 rounded-lg transition-colors"
+      className={`flex items-center gap-2 bg-zinc-800/60 hover:bg-zinc-800 border border-zinc-700/50 rounded-lg transition-colors ${mobile ? 'px-2.5 py-1.5' : 'px-3 py-2'}`}
       title="Manage Pages"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-500"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-      <span className="text-sm text-zinc-400">{currentPage?.name || 'Home'}</span>
-      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-600"><polyline points="6 9 12 15 18 9"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-500 flex-shrink-0"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span className={`text-white ${mobile ? 'text-sm' : ''}`}>{currentPage?.name || 'Home'}</span>
+      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-500"><polyline points="6 9 12 15 18 9"/></svg>
     </button>
   )
 
@@ -2921,39 +2922,18 @@ export default function Home() {
         )}
         <div className="px-3 py-2.5 border-b border-zinc-800 flex items-center justify-between bg-zinc-900">
           <div className="flex items-center gap-2 min-w-0">
-            {/* Mobile Mascot Menu Button */}
+            {/* Mobile Menu Button */}
             <motion.button
               onClick={() => setShowMobileMenu(!showMobileMenu)}
-              className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 via-yellow-400 to-orange-400 shadow-md shadow-amber-500/20 flex-shrink-0"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              className="flex items-center justify-center w-8 h-8 rounded-lg bg-zinc-800/60 hover:bg-zinc-800 border border-zinc-700/50 transition-all flex-shrink-0"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               title="Menu"
             >
-              <motion.div
-                animate={{ y: [0, -1, 0] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <ellipse cx="12" cy="14" rx="8" ry="7" fill="#FFF7E0" />
-                  <circle cx="12" cy="7" r="5" fill="#FFF7E0" />
-                  <path d="M14 7.5L17 8L14 8.5" fill="#FF9500" stroke="#FF9500" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
-                  <circle cx="11" cy="6.5" r="1" fill="#1a1a1a" />
-                  <circle cx="11.3" cy="6.2" r="0.3" fill="white" />
-                  <ellipse cx="9" cy="8" rx="1" ry="0.5" fill="#FFB5B5" opacity="0.6" />
-                  <ellipse cx="7" cy="14" rx="2.5" ry="3" fill="#FFE4B5" />
-                  <path d="M10 20L9 22M10 20L10 22M10 20L11 22" stroke="#FF9500" strokeWidth="1" strokeLinecap="round" />
-                  <path d="M14 20L13 22M14 20L14 22M14 20L15 22" stroke="#FF9500" strokeWidth="1" strokeLinecap="round" />
-                  <path d="M12 2C12 2 11 3 12 4C13 3 12 2 12 2" fill="#FF9500" />
-                </svg>
-              </motion.div>
+              <span className="text-base">🐣</span>
             </motion.button>
-            <div className="w-px h-4 bg-zinc-700" />
             <ProjectSelector mobile />
-            <PagesButton />
-          </div>
-          <div className="flex items-center gap-1 flex-shrink-0">
-            {canUndo && <button onClick={handleUndo} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" title="Undo"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg></button>}
-            {canRedo && <button onClick={handleRedo} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" title="Redo"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"/></svg></button>}
+            <PagesButton mobile />
           </div>
         </div>
         {projectsToPull.length > 0 && (
@@ -3042,54 +3022,17 @@ export default function Home() {
         <Panel id="chat" defaultSize={28} minSize={20}>
           <div className="h-full flex flex-col bg-zinc-900">
             <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                {/* Animated HatchIt Mascot Menu */}
+              <div className="flex items-center gap-2">
+                {/* HatchIt Menu */}
                 <div className="relative desktop-menu-container">
                   <motion.button
                     onClick={() => setShowDesktopMenu(!showDesktopMenu)}
-                    className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 via-yellow-400 to-orange-400 shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 transition-shadow"
-                    whileHover={{ scale: 1.05, rotate: [0, -3, 3, -3, 0] }}
-                    whileTap={{ scale: 0.95 }}
-                    animate={showDesktopMenu ? { rotate: 0 } : {}}
-                    title="HatchIt Menu"
+                    className="flex items-center justify-center w-9 h-9 rounded-lg bg-zinc-800/60 hover:bg-zinc-800 border border-zinc-700/50 transition-all"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    title="Menu"
                   >
-                    {/* Chick/Bird mascot */}
-                    <motion.div
-                      className="relative"
-                      animate={{ y: [0, -2, 0] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                    >
-                      {/* Body */}
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        {/* Main body - chick shape */}
-                        <ellipse cx="12" cy="14" rx="8" ry="7" fill="#FFF7E0" />
-                        {/* Head */}
-                        <circle cx="12" cy="7" r="5" fill="#FFF7E0" />
-                        {/* Beak */}
-                        <path d="M14 7.5L17 8L14 8.5" fill="#FF9500" stroke="#FF9500" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
-                        {/* Eye */}
-                        <circle cx="11" cy="6.5" r="1" fill="#1a1a1a" />
-                        {/* Eye shine */}
-                        <circle cx="11.3" cy="6.2" r="0.3" fill="white" />
-                        {/* Blush */}
-                        <ellipse cx="9" cy="8" rx="1" ry="0.5" fill="#FFB5B5" opacity="0.6" />
-                        {/* Wing */}
-                        <ellipse cx="7" cy="14" rx="2.5" ry="3" fill="#FFE4B5" />
-                        {/* Feet */}
-                        <path d="M10 20L9 22M10 20L10 22M10 20L11 22" stroke="#FF9500" strokeWidth="1" strokeLinecap="round" />
-                        <path d="M14 20L13 22M14 20L14 22M14 20L15 22" stroke="#FF9500" strokeWidth="1" strokeLinecap="round" />
-                        {/* Hair tuft */}
-                        <path d="M12 2C12 2 11 3 12 4C13 3 12 2 12 2" fill="#FF9500" />
-                        <path d="M10 2.5C10 2.5 9 3.5 10 4.5" stroke="#FF9500" strokeWidth="0.8" strokeLinecap="round" />
-                        <path d="M14 2.5C14 2.5 15 3.5 14 4.5" stroke="#FF9500" strokeWidth="0.8" strokeLinecap="round" />
-                      </svg>
-                    </motion.div>
-                    {/* Glow effect */}
-                    <motion.div
-                      className="absolute inset-0 rounded-xl bg-gradient-to-br from-amber-300 to-orange-400 opacity-0"
-                      animate={{ opacity: [0, 0.3, 0] }}
-                      transition={{ duration: 3, repeat: Infinity }}
-                    />
+                    <span className="text-lg">🐣</span>
                   </motion.button>
                   <AnimatePresence>
                     {showDesktopMenu && (
@@ -3138,12 +3081,9 @@ export default function Home() {
                     )}
                   </AnimatePresence>
                 </div>
-                <div className="w-px h-5 bg-zinc-700" />
                 <ProjectSelector />
                 <PagesButton />
               </div>
-              <div className="flex items-center gap-1">
-                </div>
               </div>
             {projectsToPull.length > 0 && (
               <div className="p-4 border-b border-zinc-800">
