@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/react";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
+import CrispChat from "@/components/CrispChat";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -72,6 +73,7 @@ export default function RootLayout({
         <body>
           <ServiceWorkerRegistration />
           {children}
+          <CrispChat />
           <Analytics />
         </body>
       </html>

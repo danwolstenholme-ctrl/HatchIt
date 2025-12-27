@@ -23,3 +23,14 @@ input, textarea, select {
     height: 100dvh;
   }
 }
+
+/* Crisp chat positioning - move up in builder on mobile to avoid overlapping bottom nav */
+.crisp-builder-mode .crisp-client .crisp-1brjxns {
+  bottom: 80px !important;
+}
+
+@media (max-width: 768px) {
+  .crisp-builder-mode .crisp-client .crisp-1brjxns {
+    bottom: 100px !important;
+  }
+}
