@@ -537,6 +537,20 @@ export default function Home() {
     setProjects(prev => prev.map(p => p.id === currentProject.id ? updatedProject : p))
   }
 
+  const deleteAllPagesExceptFirst = () => {
+    if (!currentProject || !currentProject.pages || currentProject.pages.length <= 1) return
+    
+    const firstPage = currentProject.pages[0]
+    const updatedProject = {
+      ...currentProject,
+      pages: [firstPage],
+      currentPageId: firstPage.id,
+      updatedAt: new Date().toISOString()
+    }
+    
+    setProjects(prev => prev.map(p => p.id === currentProject.id ? updatedProject : p))
+  }
+
   const switchPage = (pageId: string) => {
     if (!currentProject) return
     
@@ -1675,13 +1689,28 @@ export default function Home() {
           ))}
         </div>
         
-        <button 
-          onClick={() => { setShowPagesPanel(false); setShowAddPageModal(true) }} 
-          className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Add Page
-        </button>
+        <div className="flex gap-2">
+          <button 
+            onClick={() => { setShowPagesPanel(false); setShowAddPageModal(true) }} 
+            className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Page
+          </button>
+          {currentProject?.pages && currentProject.pages.length > 1 && (
+            <button 
+              onClick={() => {
+                if (confirm(`Delete all pages except the first one (${currentProject.pages![0].name})? This cannot be undone.`)) {
+                  deleteAllPagesExceptFirst()
+                }
+              }} 
+              className="py-2.5 px-4 bg-red-600/20 hover:bg-red-600/40 text-red-400 hover:text-red-300 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 border border-red-600/30"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              Delete All
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )
