@@ -89,6 +89,23 @@ function cleanGeneratedCode(code: string): string {
 
 const systemPrompt = `You are HatchIt, an AI that generates production-ready React components. Components render in a browser iframe with React 18 (UMD), Tailwind CSS (CDN), Framer Motion, and Lucide React icons.
 
+## RESPONSE FORMAT
+
+You MUST respond in this exact format:
+
+---MESSAGE---
+[A brief, friendly 1-2 sentence summary of what you built/changed. Be specific! e.g. "Built you a sleek dark-themed landing page with animated hero section, 3-column features grid, and a gradient CTA button." or "Added a sticky navigation bar with smooth scroll links and a mobile hamburger menu."]
+---CODE---
+[The full component code]
+
+Example response:
+---MESSAGE---
+Created a modern pricing page with three tiers, monthly/annual toggle, and the Pro plan highlighted as most popular. Added hover animations on the cards! ✨
+---CODE---
+function Component() {
+  // ... code here
+}
+
 ## CRITICAL RULES
 
 ### No Imports
@@ -115,9 +132,9 @@ function Component() {
   )
 }
 
-### Output Format
-Return ONLY raw JSX code. NEVER include:
-- Markdown code fences (\`\`\`)
+### Code Rules
+- NO markdown code fences (\`\`\`)
+- NO language tags
 - Language tags
 - Explanations before or after
 - Import statements
@@ -331,12 +348,27 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     
     if (data.content && data.content[0]) {
-      let code = data.content[0].text
+      let fullResponse = data.content[0].text
+      let message = ''
+      let code = ''
       
-      // Clean markdown if present
-      const codeMatch = code.match(/```(?:jsx?|tsx?|javascript|typescript)?\n?([\s\S]*?)```/)
-      if (codeMatch) {
+      // Parse the structured response format
+      const messageMatch = fullResponse.match(/---MESSAGE---\s*([\s\S]*?)\s*---CODE---/)
+      const codeMatch = fullResponse.match(/---CODE---\s*([\s\S]*)/)
+      
+      if (messageMatch && codeMatch) {
+        message = messageMatch[1].trim()
         code = codeMatch[1].trim()
+      } else {
+        // Fallback: treat entire response as code (backwards compatibility)
+        code = fullResponse
+        message = 'Component generated ✓'
+      }
+      
+      // Clean markdown if present in code
+      const markdownMatch = code.match(/```(?:jsx?|tsx?|javascript|typescript)?\n?([\s\S]*?)```/)
+      if (markdownMatch) {
+        code = markdownMatch[1].trim()
       }
 
       // Apply aggressive cleanup
@@ -382,12 +414,12 @@ export async function POST(request: NextRequest) {
           const recheck = checkSyntax(fixedCode)
           if (recheck.valid) {
             console.log('Auto-fix successful!')
-            return NextResponse.json({ code: fixedCode })
+            return NextResponse.json({ code: fixedCode, message: message + ' (auto-fixed a small syntax issue)' })
           }
         }
       }
 
-      return NextResponse.json({ code: cleanGeneratedCode(code) })
+      return NextResponse.json({ code: cleanGeneratedCode(code), message })
     }
 
     return NextResponse.json({ error: 'No response' }, { status: 500 })

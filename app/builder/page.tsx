@@ -927,7 +927,7 @@ export default function Home() {
     showSuccessToast('Project pulled successfully!')
   }
 
-  const handleGenerate = async (prompt: string, history: Message[], currentCode: string) => {
+  const handleGenerate = async (prompt: string, history: Message[], currentCode: string): Promise<string | null> => {
     const requestId = ++generationRequestIdRef.current
     const targetProjectId = currentProjectId
     const targetPageId = currentPage?.id
@@ -964,7 +964,7 @@ export default function Home() {
       })
       const data = await response.json()
       if (data.code) {
-        if (generationRequestIdRef.current !== requestId || currentProjectId !== targetProjectId) return
+        if (generationRequestIdRef.current !== requestId || currentProjectId !== targetProjectId) return null
         const newVersion: Version = { id: generateId(), code: data.code, timestamp: new Date().toISOString(), prompt }
         
         // Handle multi-page vs single-page projects
@@ -991,10 +991,15 @@ export default function Home() {
         }
         
         if (isMobile) setMobileModal('preview')
+        
+        // Return the AI's message explaining what it built
+        return data.message || null
       }
+      return null
     } catch (error) {
       console.error('Generation failed:', error)
       showErrorToast('Generation failed. Please try again.')
+      return null
     } finally {
       setIsGenerating(false)
     }

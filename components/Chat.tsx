@@ -11,7 +11,7 @@ interface Message {
 }
 
 interface ChatProps {
-  onGenerate: (prompt: string, history: Message[], currentCode: string) => Promise<void>
+  onGenerate: (prompt: string, history: Message[], currentCode: string) => Promise<string | null>
   isGenerating: boolean
   currentCode: string
   isPaid?: boolean
@@ -158,7 +158,7 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
       const thinkingMessage: Message = { role: 'assistant', content: getRandomThinking(), isThinking: true }
       setMessages(prev => [...prev, thinkingMessage])
 
-      await onGenerate(userMessage, messages, currentCode)
+      const aiMessage = await onGenerate(userMessage, messages, currentCode)
 
       // Record the generation for free users
       if (!isPaid) {
@@ -168,7 +168,9 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
 
       setMessages(prev => {
         const withoutThinking = prev.filter(m => !m.isThinking)
-        return [...withoutThinking, { role: 'assistant', content: getRandomResponse(), code: currentCode }]
+        // Use the AI's actual message, or fallback to a generic response
+        const responseContent = aiMessage || getRandomResponse()
+        return [...withoutThinking, { role: 'assistant', content: responseContent, code: currentCode }]
       })
     }
   }
