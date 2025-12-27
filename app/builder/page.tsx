@@ -680,8 +680,8 @@ export default function Home() {
            item.path.endsWith('.jsx') || item.path.endsWith('.tsx'))
         )
         
-        if (relevantFiles.length > 80) {
-          throw new Error('Repository has too many importable files. Limit to 80 for import.')
+        if (relevantFiles.length > 200) {
+          throw new Error('Repository has too many importable files. Limit to 200 for import.')
         }
 
         const totalBytes = relevantFiles.reduce((sum: number, item: any) => sum + (item.size || 0), 0)
