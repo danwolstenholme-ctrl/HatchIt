@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useRef, useMemo } from 'react'
 import Link from 'next/link'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useUser } from '@clerk/nextjs'
 import { useSearchParams } from 'next/navigation'
 import { Group, Panel, Separator } from 'react-resizable-panels'
@@ -2876,7 +2877,17 @@ export default function Home() {
         {/* Mobile menu overlay */}
         {showMobileMenu && (
           <div className="fixed inset-0 z-[60]" onClick={() => setShowMobileMenu(false)}>
-            <div className="absolute right-4 top-14 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-2 min-w-[180px]" onClick={e => e.stopPropagation()}>
+            <motion.div
+              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              className="absolute right-4 top-14 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-2 min-w-[180px]" onClick={e => e.stopPropagation()}
+            >
+              <Link href="/" className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                Home
+              </Link>
+              <div className="border-t border-zinc-800 my-1" />
               <button onClick={() => { setShowGithubModal(true); setShowMobileMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
@@ -2905,18 +2916,37 @@ export default function Home() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
                 Help & FAQ
               </button>
-            </div>
+            </motion.div>
           </div>
         )}
         <div className="px-3 py-2.5 border-b border-zinc-800 flex items-center justify-between bg-zinc-900">
           <div className="flex items-center gap-2 min-w-0">
-            <Link href="/" className="flex items-center text-zinc-400 hover:text-white transition-colors flex-shrink-0" title="Back to home">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </Link>
+            {/* Mobile Mascot Menu Button */}
+            <motion.button
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+              className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 via-yellow-400 to-orange-400 shadow-md shadow-amber-500/20 flex-shrink-0"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              title="Menu"
+            >
+              <motion.div
+                animate={{ y: [0, -1, 0] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <ellipse cx="12" cy="14" rx="8" ry="7" fill="#FFF7E0" />
+                  <circle cx="12" cy="7" r="5" fill="#FFF7E0" />
+                  <path d="M14 7.5L17 8L14 8.5" fill="#FF9500" stroke="#FF9500" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+                  <circle cx="11" cy="6.5" r="1" fill="#1a1a1a" />
+                  <circle cx="11.3" cy="6.2" r="0.3" fill="white" />
+                  <ellipse cx="9" cy="8" rx="1" ry="0.5" fill="#FFB5B5" opacity="0.6" />
+                  <ellipse cx="7" cy="14" rx="2.5" ry="3" fill="#FFE4B5" />
+                  <path d="M10 20L9 22M10 20L10 22M10 20L11 22" stroke="#FF9500" strokeWidth="1" strokeLinecap="round" />
+                  <path d="M14 20L13 22M14 20L14 22M14 20L15 22" stroke="#FF9500" strokeWidth="1" strokeLinecap="round" />
+                  <path d="M12 2C12 2 11 3 12 4C13 3 12 2 12 2" fill="#FF9500" />
+                </svg>
+              </motion.div>
+            </motion.button>
             <div className="w-px h-4 bg-zinc-700" />
             <ProjectSelector mobile />
             <PagesButton />
@@ -2924,9 +2954,6 @@ export default function Home() {
           <div className="flex items-center gap-1 flex-shrink-0">
             {canUndo && <button onClick={handleUndo} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" title="Undo"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg></button>}
             {canRedo && <button onClick={handleRedo} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" title="Redo"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"/></svg></button>}
-            <button onClick={() => setShowMobileMenu(!showMobileMenu)} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" title="Menu">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-            </button>
           </div>
         </div>
         {projectsToPull.length > 0 && (
@@ -3016,32 +3043,69 @@ export default function Home() {
           <div className="h-full flex flex-col bg-zinc-900">
             <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Link href="/" className="flex items-center gap-1.5 text-zinc-400 hover:text-white transition-colors" title="Back to home">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </Link>
-                <div className="w-px h-5 bg-zinc-700" />
-                <ProjectSelector />
-                <PagesButton />
-              </div>
-              <div className="flex items-center gap-1">
+                {/* Animated HatchIt Mascot Menu */}
                 <div className="relative desktop-menu-container">
-                    <button 
-                      onClick={() => setShowDesktopMenu(!showDesktopMenu)} 
-                      className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" 
-                      title="Options"
+                  <motion.button
+                    onClick={() => setShowDesktopMenu(!showDesktopMenu)}
+                    className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 via-yellow-400 to-orange-400 shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 transition-shadow"
+                    whileHover={{ scale: 1.05, rotate: [0, -3, 3, -3, 0] }}
+                    whileTap={{ scale: 0.95 }}
+                    animate={showDesktopMenu ? { rotate: 0 } : {}}
+                    title="HatchIt Menu"
+                  >
+                    {/* Chick/Bird mascot */}
+                    <motion.div
+                      className="relative"
+                      animate={{ y: [0, -2, 0] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="1"/>
-                        <circle cx="12" cy="5" r="1"/>
-                        <circle cx="12" cy="19" r="1"/>
+                      {/* Body */}
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        {/* Main body - chick shape */}
+                        <ellipse cx="12" cy="14" rx="8" ry="7" fill="#FFF7E0" />
+                        {/* Head */}
+                        <circle cx="12" cy="7" r="5" fill="#FFF7E0" />
+                        {/* Beak */}
+                        <path d="M14 7.5L17 8L14 8.5" fill="#FF9500" stroke="#FF9500" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+                        {/* Eye */}
+                        <circle cx="11" cy="6.5" r="1" fill="#1a1a1a" />
+                        {/* Eye shine */}
+                        <circle cx="11.3" cy="6.2" r="0.3" fill="white" />
+                        {/* Blush */}
+                        <ellipse cx="9" cy="8" rx="1" ry="0.5" fill="#FFB5B5" opacity="0.6" />
+                        {/* Wing */}
+                        <ellipse cx="7" cy="14" rx="2.5" ry="3" fill="#FFE4B5" />
+                        {/* Feet */}
+                        <path d="M10 20L9 22M10 20L10 22M10 20L11 22" stroke="#FF9500" strokeWidth="1" strokeLinecap="round" />
+                        <path d="M14 20L13 22M14 20L14 22M14 20L15 22" stroke="#FF9500" strokeWidth="1" strokeLinecap="round" />
+                        {/* Hair tuft */}
+                        <path d="M12 2C12 2 11 3 12 4C13 3 12 2 12 2" fill="#FF9500" />
+                        <path d="M10 2.5C10 2.5 9 3.5 10 4.5" stroke="#FF9500" strokeWidth="0.8" strokeLinecap="round" />
+                        <path d="M14 2.5C14 2.5 15 3.5 14 4.5" stroke="#FF9500" strokeWidth="0.8" strokeLinecap="round" />
                       </svg>
-                    </button>
+                    </motion.div>
+                    {/* Glow effect */}
+                    <motion.div
+                      className="absolute inset-0 rounded-xl bg-gradient-to-br from-amber-300 to-orange-400 opacity-0"
+                      animate={{ opacity: [0, 0.3, 0] }}
+                      transition={{ duration: 3, repeat: Infinity }}
+                    />
+                  </motion.button>
+                  <AnimatePresence>
                     {showDesktopMenu && (
-                      <div className="absolute right-0 top-full mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-2 min-w-[200px] z-50" onClick={e => e.stopPropagation()}>
+                      <motion.div
+                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute left-0 top-full mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-2 min-w-[200px] z-50"
+                        onClick={e => e.stopPropagation()}
+                      >
+                        <Link href="/" className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                          Home
+                        </Link>
+                        <div className="border-t border-zinc-800 my-1" />
                         <button onClick={() => { setShowGithubModal(true); setShowDesktopMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
@@ -3070,9 +3134,15 @@ export default function Home() {
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
                           Help & FAQ
                         </button>
-                      </div>
+                      </motion.div>
                     )}
-                  </div>
+                  </AnimatePresence>
+                </div>
+                <div className="w-px h-5 bg-zinc-700" />
+                <ProjectSelector />
+                <PagesButton />
+              </div>
+              <div className="flex items-center gap-1">
                 </div>
               </div>
             {projectsToPull.length > 0 && (
