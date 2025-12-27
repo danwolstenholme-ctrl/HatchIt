@@ -236,6 +236,8 @@ export default function Home() {
   const [newPagePath, setNewPagePath] = useState('')
   const [mobileModal, setMobileModal] = useState<'preview' | 'code' | null>(null)
   const [copied, setCopied] = useState(false)
+  const [suggestions, setSuggestions] = useState<string[]>([])
+  const [previousCode, setPreviousCode] = useState<string | null>(null)
   const { user, isLoaded } = useUser()
   const searchParams = useSearchParams()
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
@@ -999,6 +1001,9 @@ export default function Home() {
         }))
       }
       
+      // Store previous code for revert functionality
+      setPreviousCode(currentCode || null)
+      
       setGenerationProgress('Generating code...')
       const response = await fetch('/api/generate', {
         method: 'POST',
@@ -1018,6 +1023,13 @@ export default function Home() {
           prompt
         })
         return null
+      }
+      
+      // Capture suggestions from response
+      if (data.suggestions && Array.isArray(data.suggestions)) {
+        setSuggestions(data.suggestions)
+      } else {
+        setSuggestions([])
       }
       
       setGenerationProgress('Processing response...')
@@ -1133,6 +1145,31 @@ export default function Home() {
   // Wrapper for Chat component - always goes through complexity check first
   const handleGenerate = async (prompt: string, history: Message[], currentCode: string): Promise<string | null> => {
     return handleGenerateWithOptions(prompt, history, currentCode, false)
+  }
+
+  // Revert to previous code (one-step undo)
+  const handleRevert = () => {
+    if (!previousCode || !currentProject) return
+    
+    // Restore the previous code by going back one version
+    if (currentPage && isMultiPageProject(currentProject)) {
+      if (currentPage.currentVersionIndex > 0) {
+        const updatedPages = currentProject.pages!.map(page =>
+          page.id === currentPage.id
+            ? { ...page, currentVersionIndex: page.currentVersionIndex - 1 }
+            : page
+        )
+        updateCurrentProject({ pages: updatedPages })
+        showSuccessToast('Reverted to previous version')
+        setPreviousCode(null)
+        setSuggestions([])
+      }
+    } else if (currentVersionIndex > 0) {
+      updateCurrentProject({ currentVersionIndex: currentVersionIndex - 1 })
+      showSuccessToast('Reverted to previous version')
+      setPreviousCode(null)
+      setSuggestions([])
+    }
   }
 
   // Called when user proceeds despite complexity warning
@@ -2694,7 +2731,7 @@ export default function Home() {
           </div>
         )}
         <div className="flex-1 overflow-hidden">
-          <Chat onGenerate={handleGenerate} isGenerating={isGenerating} onStopGeneration={handleStopGeneration} currentCode={code} isPaid={isCurrentProjectPaid} onOpenAssets={() => setShowAssetsModal(true)} projectId={currentProjectId || ''} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} externalPrompt={externalPrompt} onExternalPromptHandled={() => setExternalPrompt(null)} generationProgress={generationProgress} key={currentProjectId} />
+          <Chat onGenerate={handleGenerate} isGenerating={isGenerating} onStopGeneration={handleStopGeneration} currentCode={code} isPaid={isCurrentProjectPaid} onOpenAssets={() => setShowAssetsModal(true)} projectId={currentProjectId || ''} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} externalPrompt={externalPrompt} onExternalPromptHandled={() => setExternalPrompt(null)} generationProgress={generationProgress} suggestions={suggestions} onSuggestionClick={(s) => setExternalPrompt(s)} canRevert={!!previousCode && currentVersionIndex > 0} onRevert={handleRevert} key={currentProjectId} />
         </div>
         {code && (
           <div className="px-4 py-3 border-t border-zinc-800 bg-zinc-900 flex gap-2" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
@@ -2836,7 +2873,7 @@ export default function Home() {
               </div>
             )}
             <div className="flex-1 overflow-hidden">
-              <Chat onGenerate={handleGenerate} isGenerating={isGenerating} onStopGeneration={handleStopGeneration} currentCode={code} isPaid={isCurrentProjectPaid} onOpenAssets={() => setShowAssetsModal(true)} projectId={currentProjectId || ''} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} externalPrompt={externalPrompt} onExternalPromptHandled={() => setExternalPrompt(null)} generationProgress={generationProgress} key={currentProjectId} />
+              <Chat onGenerate={handleGenerate} isGenerating={isGenerating} onStopGeneration={handleStopGeneration} currentCode={code} isPaid={isCurrentProjectPaid} onOpenAssets={() => setShowAssetsModal(true)} projectId={currentProjectId || ''} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} externalPrompt={externalPrompt} onExternalPromptHandled={() => setExternalPrompt(null)} generationProgress={generationProgress} suggestions={suggestions} onSuggestionClick={(s) => setExternalPrompt(s)} canRevert={!!previousCode && currentVersionIndex > 0} onRevert={handleRevert} key={currentProjectId} />
             </div>
           </div>
         </Panel>

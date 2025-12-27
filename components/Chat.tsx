@@ -38,6 +38,10 @@ interface ChatProps {
   externalPrompt?: string | null
   onExternalPromptHandled?: () => void
   generationProgress?: string // Real-time status from generation
+  suggestions?: string[] // AI-suggested next steps
+  onSuggestionClick?: (suggestion: string) => void
+  canRevert?: boolean // Whether revert is available
+  onRevert?: () => void // Callback to revert to previous version
 }
 
 const thinkingMessages = [
@@ -70,7 +74,7 @@ function getRandomResponse() {
   return responses[Math.floor(Math.random() * responses.length)]
 }
 
-export default function Chat({ onGenerate, isGenerating, onStopGeneration, currentCode, isPaid = false, onOpenAssets, projectId = '', projectSlug = '', projectName = '', externalPrompt, onExternalPromptHandled, generationProgress }: ChatProps) {
+export default function Chat({ onGenerate, isGenerating, onStopGeneration, currentCode, isPaid = false, onOpenAssets, projectId = '', projectSlug = '', projectName = '', externalPrompt, onExternalPromptHandled, generationProgress, suggestions = [], onSuggestionClick, canRevert = false, onRevert }: ChatProps) {
   const [input, setInput] = useState('')
   const [buildMessages, setBuildMessages] = useState<Message[]>([])
   const [chatMessages, setChatMessages] = useState<Message[]>([])
@@ -356,6 +360,42 @@ export default function Chat({ onGenerate, isGenerating, onStopGeneration, curre
                 ) : msg.role === 'assistant' ? renderMarkdown(msg.content) : msg.content}
               </div>
             ))}
+
+            {/* Next Steps Suggestions */}
+            {messages.length > 0 && !isGenerating && mode === 'build' && suggestions.length > 0 && (
+              <div className="w-full space-y-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <p className="text-xs text-zinc-500 font-medium">What&apos;s next?</p>
+                <div className="flex flex-wrap gap-2">
+                  {suggestions.map((suggestion, i) => (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        if (onSuggestionClick) {
+                          onSuggestionClick(suggestion)
+                        } else {
+                          setInput(suggestion)
+                        }
+                      }}
+                      className="px-3 py-1.5 text-xs bg-zinc-800/60 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-full transition-colors border border-zinc-700/50 hover:border-zinc-600"
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Revert Button */}
+            {messages.length > 0 && !isGenerating && canRevert && onRevert && (
+              <button
+                onClick={onRevert}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-zinc-500 hover:text-amber-400 transition-colors mx-auto"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                Undo last change
+              </button>
+            )}
+
             {messages.length > 0 && !isGenerating && (
               <button
                 onClick={clearChat}

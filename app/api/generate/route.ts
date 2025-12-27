@@ -256,6 +256,8 @@ You MUST respond in this exact format:
 
 ---MESSAGE---
 [A brief, friendly 1-2 sentence summary of what you built/changed. Be specific! e.g. "Built you a sleek dark-themed landing page with animated hero section, 3-column features grid, and a gradient CTA button." or "Added a sticky navigation bar with smooth scroll links and a mobile hamburger menu."]
+---SUGGESTIONS---
+[3 short suggestions for what the user could build/add next, separated by |. Keep each under 8 words. e.g. "Add a contact form|Create an about page|Add pricing section"]
 ---CODE---
 [The full component code]
 
@@ -265,6 +267,8 @@ When the user asks you to CREATE A NEW PAGE (e.g. "create a contact page", "add 
 
 ---MESSAGE---
 [Description of what you created]
+---SUGGESTIONS---
+[3 suggestions separated by |]
 ---PAGES---
 [
   {"action": "create", "name": "Contact", "path": "/contact", "code": "function Component() { ... }"},
@@ -290,12 +294,16 @@ Created a Contact page with a form and added it to your navigation! 📬
 For SINGLE PAGE changes (no new pages needed), use the simple format:
 ---MESSAGE---
 [Description]
+---SUGGESTIONS---
+[3 suggestions separated by |]
 ---CODE---
 [Code]
 
 Example response:
 ---MESSAGE---
 Created a modern pricing page with three tiers, monthly/annual toggle, and the Pro plan highlighted as most popular. Added hover animations on the cards! ✨
+---SUGGESTIONS---
+Add a FAQ section|Create a testimonials slider|Add annual discount badge
 ---CODE---
 function Component() {
   // ... code here
@@ -637,15 +645,25 @@ export async function POST(request: NextRequest) {
       let fullResponse = data.content[0].text
       let message = ''
       let code = ''
+      let suggestions: string[] = []
       let pageOperations: Array<{action: string; id?: string; name?: string; path?: string; code: string}> | null = null
       
-      // Check for multi-page format first
-      const pagesMatch = fullResponse.match(/---MESSAGE---\s*([\s\S]*?)\s*---PAGES---\s*([\s\S]*)/)
+      // Extract suggestions from response (works for both single and multi-page)
+      const suggestionsMatch = fullResponse.match(/---SUGGESTIONS---\s*([\s\S]*?)(?:---CODE---|---PAGES---|$)/)
+      if (suggestionsMatch) {
+        const suggestionsText = suggestionsMatch[1].trim()
+        suggestions = suggestionsText.split('|').map(s => s.trim()).filter(s => s.length > 0 && s.length < 50)
+      }
       
-      if (pagesMatch) {
-        // Multi-page operation
-        message = pagesMatch[1].trim()
-        const pagesJson = pagesMatch[2].trim()
+      // Check for multi-page format first
+      const pagesMatch = fullResponse.match(/---PAGES---\s*([\s\S]*)/)
+      const hasPages = pagesMatch !== null
+      
+      if (hasPages) {
+        // Multi-page operation - extract message
+        const msgMatch = fullResponse.match(/---MESSAGE---\s*([\s\S]*?)\s*(?:---SUGGESTIONS---|---PAGES---)/)
+        message = msgMatch ? msgMatch[1].trim() : ''
+        const pagesJson = pagesMatch[1].trim()
         
         try {
           // Parse the JSON array of page operations
@@ -680,7 +698,7 @@ export async function POST(request: NextRequest) {
       
       if (!pageOperations) {
         // Parse the single-page structured response format
-        const messageMatch = fullResponse.match(/---MESSAGE---\s*([\s\S]*?)\s*---CODE---/)
+        const messageMatch = fullResponse.match(/---MESSAGE---\s*([\s\S]*?)\s*(?:---SUGGESTIONS---|---CODE---)/)
         const codeMatch = fullResponse.match(/---CODE---\s*([\s\S]*)/)
         
         if (messageMatch && codeMatch) {
@@ -749,6 +767,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ 
           message: hasFixedOperations ? message + ' (auto-completed)' : message, 
           pageOperations,
+          suggestions,
           // Also include first update operation as 'code' for backwards compatibility
           code: pageOperations.find(op => op.action === 'update')?.code || pageOperations[0].code
         })
@@ -811,7 +830,8 @@ Return the COMPLETE fixed component:`
             console.log('Auto-completion successful')
             return NextResponse.json({ 
               code: completedCode, 
-              message: message || 'Component generated ✓'
+              message: message || 'Component generated ✓',
+              suggestions
             })
           }
           
@@ -848,7 +868,8 @@ Return the COMPLETE fixed component:`
               console.log('Compact regeneration successful')
               return NextResponse.json({ 
                 code: regenCode, 
-                message: message || 'Component generated ✓'
+                message: message || 'Component generated ✓',
+                suggestions
               })
             }
           }
@@ -898,12 +919,12 @@ Return the COMPLETE fixed component:`
           
           const recheck = checkSyntax(fixedCode)
           if (recheck.valid) {
-            return NextResponse.json({ code: fixedCode, message: message + ' (auto-fixed a small syntax issue)' })
+            return NextResponse.json({ code: fixedCode, message: message + ' (auto-fixed a small syntax issue)', suggestions })
           }
         }
       }
 
-      return NextResponse.json({ code: cleanGeneratedCode(code), message })
+      return NextResponse.json({ code: cleanGeneratedCode(code), message, suggestions })
     }
 
     return NextResponse.json({ error: 'No response' }, { status: 500 })
