@@ -1451,43 +1451,43 @@ export default function Home() {
   )
 
   const ProjectDropdown = () => (
-    <div ref={dropdownRef} className="absolute top-full left-0 mt-2 w-72 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-[9999] overflow-hidden">
-      <button 
-        onClick={createProject} 
-        className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-zinc-800 transition-colors border-b border-zinc-800 ${!hasAnyPaidSubscription && projects.length >= 1 ? 'opacity-50' : ''}`}
-      >
-        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${!hasAnyPaidSubscription && projects.length >= 1 ? 'bg-zinc-700' : 'bg-gradient-to-r from-blue-600 to-purple-600'}`}>
-          {!hasAnyPaidSubscription && projects.length >= 1 ? (
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-400">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-            </svg>
-          ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
-          )}
-        </div>
-        <div className="flex-1 text-left">
-          <span className="text-sm font-medium text-white">New Project</span>
-          {!hasAnyPaidSubscription && projects.length >= 1 && (
-            <span className="block text-xs text-purple-400">Hatch to unlock</span>
-          )}
-        </div>
-      </button>
-      <div className="max-h-64 overflow-y-auto">
+    <div ref={dropdownRef} className="absolute top-full left-0 mt-2 w-64 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-[9999] overflow-hidden">
+      {/* Project list */}
+      <div className="max-h-72 overflow-y-auto py-1">
         {projects.map(project => (
-          <button key={project.id} onClick={() => switchProject(project.id)} className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-zinc-800 transition-colors ${project.id === currentProjectId ? 'bg-zinc-800' : ''}`}>
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium ${project.id === currentProjectId ? 'bg-blue-600 text-white' : 'bg-zinc-700 text-zinc-400'}`}>{project.name.charAt(0).toUpperCase()}</div>
+          <button 
+            key={project.id} 
+            onClick={() => switchProject(project.id)} 
+            className={`w-full px-3 py-2.5 flex items-center gap-2 hover:bg-zinc-800 transition-colors ${project.id === currentProjectId ? 'bg-zinc-800/80' : ''}`}
+          >
             <div className="flex-1 text-left min-w-0">
-              <div className="text-sm font-medium text-white truncate flex items-center gap-2">
+              <div className="text-sm text-white truncate flex items-center gap-2">
+                {project.id === currentProjectId && <span className="text-blue-400">•</span>}
                 {project.name}
                 {subscriptions.some(s => s.projectSlug === project.deployedSlug && s.status === 'active') && <span className="text-[10px]">🐣</span>}
                 {project.deployedSlug && <span className="text-[10px] px-1.5 py-0.5 bg-green-500/20 text-green-400 rounded">LIVE</span>}
               </div>
-              <div className="text-xs text-zinc-500">{project.versions?.length || 0} versions</div>
+              <div className="text-xs text-zinc-500 ml-3">{project.versions?.length || 0} versions</div>
             </div>
           </button>
         ))}
       </div>
+      
+      {/* New project button */}
+      <div className="border-t border-zinc-800 p-2">
+        <button 
+          onClick={createProject} 
+          className={`w-full px-3 py-2 flex items-center gap-2 rounded-lg transition-colors ${!hasAnyPaidSubscription && projects.length >= 1 ? 'opacity-50 hover:bg-zinc-800/50' : 'hover:bg-zinc-800'}`}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-400"><path d="M12 5v14M5 12h14"/></svg>
+          <span className="text-sm text-zinc-300">New Project</span>
+          {!hasAnyPaidSubscription && projects.length >= 1 && (
+            <span className="ml-auto text-[10px] text-purple-400">🐣</span>
+          )}
+        </button>
+      </div>
+
+      {/* Project actions */}
       {currentProject && (
         <div className="border-t border-zinc-800 p-2 flex flex-wrap gap-1">
           <button onClick={() => { setRenameValue(currentProject.name); setShowRenameModal(true); setShowProjectDropdown(false) }} className="flex-1 px-3 py-2 text-xs text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">Rename</button>
@@ -1498,9 +1498,11 @@ export default function Home() {
           )}
         </div>
       )}
+      
+      {/* Delete all - only show if multiple projects */}
       {projects.length > 1 && (
         <div className="border-t border-zinc-800 p-2">
-          <button onClick={() => { setShowDeleteAllModal(true); setShowProjectDropdown(false) }} className="w-full px-3 py-2 text-xs text-red-400 hover:text-red-300 hover:bg-zinc-800 rounded-lg transition-colors">Delete All Projects</button>
+          <button onClick={() => { setShowDeleteAllModal(true); setShowProjectDropdown(false) }} className="w-full px-3 py-2 text-xs text-zinc-500 hover:text-red-400 hover:bg-zinc-800 rounded-lg transition-colors">Delete All Projects</button>
         </div>
       )}
     </div>
