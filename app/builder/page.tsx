@@ -404,10 +404,7 @@ export default function Home() {
         const defaultProject = createNewProject('My First Project')
         setProjects([defaultProject])
         setCurrentProjectId(defaultProject.id)
-        // Show onboarding for new users
-        if (!localStorage.getItem('hatchit-onboarding-seen')) {
-          setShowOnboarding(true)
-        }
+        // Don't show onboarding immediately - wait until first generation
       }
     } catch (storageError) {
       // localStorage may be unavailable in private browsing
@@ -1219,6 +1216,14 @@ export default function Home() {
         }
         
         if (isMobile) setMobileModal('preview')
+        
+        // Show onboarding tips after first successful generation (not before)
+        if (!localStorage.getItem('hatchit-onboarding-seen')) {
+          // Small delay to let user see their creation first
+          setTimeout(() => {
+            setShowOnboarding(true)
+          }, 1500)
+        }
         
         // Return the AI's message explaining what it built
         return data.message || null
@@ -2544,69 +2549,52 @@ export default function Home() {
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[10000] p-4 overflow-y-auto">
       <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 md:p-8 w-full max-w-lg shadow-2xl my-8">
         <div className="text-center mb-6">
-          <div className="text-5xl mb-4">🐣</div>
-          <h2 className="text-2xl font-bold text-white mb-2">Welcome to HatchIt.dev!</h2>
-          <p className="text-zinc-400">AI-powered website builder that outputs real code.</p>
+          <div className="text-5xl mb-4">🎉</div>
+          <h2 className="text-2xl font-bold text-white mb-2">Nice! Your site is ready</h2>
+          <p className="text-zinc-400">Here are a few tips to get the most out of HatchIt.</p>
         </div>
         
-        {/* How it works */}
-        <div className="bg-zinc-800/50 rounded-xl p-4 mb-6">
-          <h3 className="text-sm font-semibold text-zinc-300 mb-3 flex items-center gap-2">
-            <span className="text-lg">⚡</span> How it works
-          </h3>
-          <div className="flex items-center gap-2 text-sm text-zinc-400 flex-wrap">
-            <span className="bg-zinc-700 px-2 py-1 rounded">Describe</span>
-            <span className="text-zinc-600">→</span>
-            <span className="bg-zinc-700 px-2 py-1 rounded">AI builds</span>
-            <span className="text-zinc-600">→</span>
-            <span className="bg-zinc-700 px-2 py-1 rounded">See it live</span>
-            <span className="text-zinc-600">→</span>
-            <span className="bg-zinc-700 px-2 py-1 rounded">Iterate</span>
-            <span className="text-zinc-600">→</span>
-            <span className="bg-gradient-to-r from-blue-500 to-purple-500 px-2 py-1 rounded text-white">Deploy</span>
+        {/* Quick tips - simplified */}
+        <div className="bg-zinc-800/50 rounded-xl p-4 mb-6 space-y-3">
+          <div className="flex items-start gap-3">
+            <span className="text-xl shrink-0">🔄</span>
+            <div>
+              <p className="text-sm text-white font-medium">Iterate to improve</p>
+              <p className="text-xs text-zinc-400">Say "make the header bigger" or "add a contact form"</p>
+            </div>
           </div>
-        </div>
-        
-        {/* Tips */}
-        <div className="mb-6">
-          <h3 className="text-sm font-semibold text-zinc-300 mb-3 flex items-center gap-2">
-            <span className="text-lg">💡</span> Tips for best results
-          </h3>
-          <div className="space-y-2 text-sm">
-            <div className="flex items-start gap-2 text-zinc-400">
-              <span className="text-green-400 mt-0.5">✓</span>
-              <span><strong className="text-zinc-300">Start simple, then iterate:</strong> "Build a landing page for a coffee shop" → "Add a menu section" → "Make it darker"</span>
+          <div className="flex items-start gap-3">
+            <span className="text-xl shrink-0">💬</span>
+            <div>
+              <p className="text-sm text-white font-medium">Use Ask AI for help</p>
+              <p className="text-xs text-zinc-400">Switch tabs to ask questions about your code</p>
             </div>
-            <div className="flex items-start gap-2 text-zinc-400">
-              <span className="text-green-400 mt-0.5">✓</span>
-              <span><strong className="text-zinc-300">Short prompts work better</strong> than long detailed ones</span>
-            </div>
-            <div className="flex items-start gap-2 text-zinc-400">
-              <span className="text-green-400 mt-0.5">✓</span>
-              <span><strong className="text-zinc-300">Use the chat assistant</strong> (💬 tab) if you need help</span>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="text-xl shrink-0">🚀</span>
+            <div>
+              <p className="text-sm text-white font-medium">Deploy when ready</p>
+              <p className="text-xs text-zinc-400">Get a live URL you can share with anyone</p>
             </div>
           </div>
         </div>
         
-        {/* Great for / Not for */}
+        {/* What works best */}
         <div className="grid grid-cols-2 gap-3 mb-6">
           <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-3">
-            <h4 className="text-xs font-semibold text-green-400 mb-2">Great for</h4>
+            <h4 className="text-xs font-semibold text-green-400 mb-2">Works great</h4>
             <ul className="text-xs text-zinc-400 space-y-1">
               <li>• Landing pages</li>
               <li>• Business sites</li>
               <li>• Portfolios</li>
-              <li>• Contact forms</li>
-              <li>• Multi-page sites</li>
             </ul>
           </div>
           <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-3">
-            <h4 className="text-xs font-semibold text-orange-400 mb-2">Not designed for</h4>
+            <h4 className="text-xs font-semibold text-orange-400 mb-2">Not supported</h4>
             <ul className="text-xs text-zinc-400 space-y-1">
               <li>• Database apps</li>
               <li>• Auth systems</li>
-              <li>• Real e-commerce</li>
-              <li>• Complex backends</li>
+              <li>• E-commerce</li>
             </ul>
           </div>
         </div>
@@ -2618,7 +2606,7 @@ export default function Home() {
           }}
           className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-xl transition-all"
         >
-          Got it, let's build! �
+          Got it! →
         </button>
         
         <p className="text-xs text-zinc-500 text-center mt-4">
@@ -2671,10 +2659,10 @@ export default function Home() {
     return (
       <div className="h-dvh bg-zinc-950 flex flex-col overflow-hidden relative">
         {!isLoadingProjects && !isDeployed && (
-          <div className="absolute top-0 left-0 right-0 bg-amber-500/20 border-b border-amber-400/30 text-amber-100 text-xs px-3 py-2 z-50">
+          <div className="absolute top-0 left-0 right-0 bg-blue-500/20 border-b border-blue-400/30 text-blue-100 text-xs px-3 py-2 z-50">
             <div className="flex items-center gap-2">
-              <span role="img" aria-label="warning">⚠️</span>
-              <span className="font-medium">Deploy to save your code - or you'll lose it!</span>
+              <span role="img" aria-label="rocket">🚀</span>
+              <span className="font-medium">Your work saves locally. Deploy to access anywhere!</span>
             </div>
           </div>
         )}
@@ -3030,10 +3018,10 @@ export default function Home() {
   return (
     <div className="h-dvh bg-zinc-950 p-3 overflow-hidden relative">
       {!isLoadingProjects && !isDeployed && (
-        <div className="absolute top-3 left-3 right-3 bg-amber-500/20 border-b border-amber-400/30 text-amber-100 text-xs px-4 py-2 rounded-t-2xl z-50">
+        <div className="absolute top-3 left-3 right-3 bg-blue-500/20 border-b border-blue-400/30 text-blue-100 text-xs px-4 py-2 rounded-t-2xl z-50">
           <div className="flex items-center gap-2">
-            <span role="img" aria-label="warning">⚠️</span>
-            <span className="font-medium">Deploy to save your code - or you'll lose it!</span>
+            <span role="img" aria-label="rocket">🚀</span>
+            <span className="font-medium">Your work saves locally. Deploy to access anywhere!</span>
           </div>
         </div>
       )}

@@ -83,12 +83,12 @@ export default function Home() {
                 <button className="text-zinc-400 hover:text-white transition-colors text-sm cursor-pointer hidden sm:block">Sign In</button>
               </SignInButton>
               <Link href="/builder" className="px-5 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-semibold text-sm transition-all">
-                Open App
+                Start Building
               </Link>
             </SignedOut>
             <SignedIn>
               <Link href="/builder" className="px-5 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-semibold text-sm transition-all">
-                Open App
+                Start Building
               </Link>
               <UserButton afterSignOutUrl="/" />
             </SignedIn>
@@ -160,7 +160,7 @@ export default function Home() {
             transition={{ duration: 0.6, delay: 0.5 }}
           >
             <Link href="/builder" className="group px-10 py-5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-2xl shadow-purple-500/20">
-              Start Free
+              Start Building — Free
             </Link>
           </motion.div>
 
@@ -172,16 +172,60 @@ export default function Home() {
           >
             <div className="flex items-center gap-2">
               <span className="text-green-400">●</span>
-              <span>Live Now</span>
+              <span>No coding required</span>
             </div>
             <div className="flex items-center gap-2">
-              <span>🔧</span>
-              <span>Auto-fixes</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-zinc-600">
               <span>⚡</span>
-              <span>Claude</span>
+              <span>Powered by Claude</span>
             </div>
+            <div className="flex items-center gap-1.5">
+              <span>🔧</span>
+              <span>Auto-fixes errors</span>
+            </div>
+          </motion.div>
+
+          {/* Product Preview */}
+          <motion.div 
+            className="mt-16 max-w-5xl mx-auto"
+            variants={fadeInUp}
+            transition={{ duration: 0.8, delay: 0.7 }}
+          >
+            <div className="relative rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl shadow-purple-500/10">
+              {/* Browser chrome */}
+              <div className="bg-zinc-900 px-4 py-3 border-b border-zinc-800 flex items-center gap-2">
+                <div className="flex gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-zinc-700"></div>
+                  <div className="w-3 h-3 rounded-full bg-zinc-700"></div>
+                  <div className="w-3 h-3 rounded-full bg-zinc-700"></div>
+                </div>
+                <div className="flex-1 mx-4">
+                  <div className="bg-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-500 max-w-xs mx-auto">
+                    hatchit.dev/builder
+                  </div>
+                </div>
+              </div>
+              {/* Screenshot/GIF placeholder - replace src with actual product image */}
+              <div className="bg-zinc-950 aspect-video flex items-center justify-center">
+                <img 
+                  src="/hero-preview.gif" 
+                  alt="HatchIt builder in action - describe, build, ship"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    // Fallback if image doesn't exist
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    target.parentElement!.innerHTML = `
+                      <div class="flex flex-col items-center justify-center h-full text-zinc-600 p-8">
+                        <div class="text-6xl mb-4">🐣</div>
+                        <p class="text-lg">See it in action →</p>
+                        <a href="/builder" class="mt-4 px-6 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm text-zinc-300 transition-colors">Try the builder</a>
+                      </div>
+                    `;
+                  }}
+                />
+              </div>
+            </div>
+            <p className="text-center text-zinc-600 text-sm mt-4">Type a prompt → Watch it build → Ship in one click</p>
           </motion.div>
         </motion.div>
       </section>
@@ -293,15 +337,16 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <AnimatedSection className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-zinc-200 to-zinc-400 bg-clip-text text-transparent">
-              Three steps to launch
+              From idea to live site in 60 seconds
             </h2>
+            <p className="text-zinc-500 text-lg">No kidding. We timed it.</p>
           </AnimatedSection>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 max-w-5xl mx-auto">
             {[
-              { step: "01", title: "Describe", desc: "Tell us what you want to build. A landing page, a dashboard, a portfolio — anything.", color: "from-blue-500 to-cyan-500" },
-              { step: "02", title: "Iterate", desc: "Refine with conversation. 'Make the header sticky.' 'Add a contact form.' We build it.", color: "from-purple-500 to-pink-500" },
-              { step: "03", title: "Ship", desc: "One click to go live. Or download the code and host anywhere.", color: "from-orange-500 to-red-500" }
+              { step: "01", title: "Describe", desc: "\"Build a landing page for my coffee shop with a menu and contact form.\"", example: "~10 seconds to type", color: "from-blue-500 to-cyan-500" },
+              { step: "02", title: "Watch it build", desc: "AI generates production React + Tailwind. See it render in real-time.", example: "~30 seconds", color: "from-purple-500 to-pink-500" },
+              { step: "03", title: "Ship it", desc: "Click deploy. Get a live URL. Share with the world.", example: "~20 seconds", color: "from-orange-500 to-red-500" }
             ].map((item, index) => (
               <AnimatedSection key={index} delay={index * 0.15} className="text-center">
                 <div className="relative mb-8">
@@ -316,8 +361,9 @@ export default function Home() {
                     <div className="hidden lg:block absolute top-12 left-full w-full h-0.5 bg-gradient-to-r from-zinc-700 to-transparent"></div>
                   )}
                 </div>
-                <h4 className="text-2xl font-bold text-zinc-200 mb-4">{item.title}</h4>
-                <p className="text-zinc-400 leading-relaxed max-w-xs mx-auto">{item.desc}</p>
+                <h4 className="text-2xl font-bold text-zinc-200 mb-2">{item.title}</h4>
+                <p className="text-zinc-400 leading-relaxed max-w-xs mx-auto mb-2">{item.desc}</p>
+                <p className="text-zinc-600 text-sm">{item.example}</p>
               </AnimatedSection>
             ))}
           </div>

@@ -266,23 +266,25 @@ export default function Chat({ onGenerate, isGenerating, onStopGeneration, curre
         <div className="flex items-center gap-1 p-1.5 bg-zinc-900/95 backdrop-blur-sm rounded-xl sticky top-0 z-10 mb-2 border border-zinc-800/50 shadow-lg">
           <button
             onClick={() => setMode('build')}
+            title="Generate or edit your site's code"
             className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
               mode === 'build' 
                 ? 'bg-zinc-700 text-white shadow-md' 
                 : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
             }`}
           >
-            ⚡ Build
+            ⚡ Generate
           </button>
           <button
             onClick={() => setMode('chat')}
+            title="Ask questions about your code"
             className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
               mode === 'chat' 
                 ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-md' 
                 : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
             }`}
           >
-            💬 Chat
+            💬 Ask AI
           </button>
         </div>
 
@@ -291,26 +293,34 @@ export default function Chat({ onGenerate, isGenerating, onStopGeneration, curre
             <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center mb-3">
               <span className="text-xl">{mode === 'chat' ? '💬' : '⚡'}</span>
             </div>
-            <p className="text-zinc-300 text-sm font-medium mb-1">{mode === 'chat' ? 'Ask me anything' : 'Describe → Generate → Ship'}</p>
-            <p className="text-zinc-600 text-xs max-w-[200px] mb-4">{mode === 'chat' ? 'Get help with your code or brainstorm ideas.' : 'Describe any UI. We generate real React code.'}</p>
+            <p className="text-zinc-300 text-sm font-medium mb-1">{mode === 'chat' ? 'Ask me anything' : 'What would you like to build?'}</p>
+            <p className="text-zinc-600 text-xs max-w-[220px] mb-4">{mode === 'chat' ? 'Get help with your code or brainstorm ideas.' : 'Describe your idea — we\'ll generate real React code in seconds.'}</p>
             
             {mode === 'build' && (
               <div className="w-full space-y-2">
-                <p className="text-xs text-zinc-500 font-medium mb-2">Try these:</p>
+                <p className="text-xs text-zinc-500 font-medium mb-2">Click to try:</p>
                 {[
-                  'A landing page for my business',
-                  'A coming soon page with email signup',
-                  'A pricing page with three tiers'
-                ].map((prompt, i) => (
+                  { prompt: 'A modern landing page for a SaaS product with hero, features, and pricing', label: '🚀 SaaS Landing Page' },
+                  { prompt: 'A portfolio site with dark theme, project gallery, and contact form', label: '🎨 Portfolio Site' },
+                  { prompt: 'A restaurant website with menu, hours, location map, and reservations', label: '🍽️ Restaurant Site' }
+                ].map((item, i) => (
                   <button
                     key={i}
-                    onClick={() => setInput(prompt)}
-                    className="w-full text-left px-3 py-2 text-xs bg-zinc-800/50 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-lg transition-colors border border-zinc-700/30 hover:border-zinc-700"
+                    onClick={() => {
+                      setInput(item.prompt)
+                      // Auto-submit after setting input
+                      setTimeout(() => {
+                        const form = document.querySelector('form[data-chat-form]') as HTMLFormElement
+                        if (form) form.requestSubmit()
+                      }, 100)
+                    }}
+                    className="w-full text-left px-3 py-2.5 text-xs bg-zinc-800/50 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-lg transition-all border border-zinc-700/30 hover:border-zinc-600 group"
                   >
-                    {prompt}
+                    <span className="font-medium">{item.label}</span>
+                    <span className="block text-zinc-500 group-hover:text-zinc-400 mt-0.5 text-[11px]">{item.prompt.slice(0, 50)}...</span>
                   </button>
                 ))}
-                <p className="text-[10px] text-zinc-600 text-center mt-3">💡 Already have code? Use the upload button above</p>
+                <p className="text-[10px] text-zinc-600 text-center mt-3">💡 Or describe your own idea above</p>
               </div>
             )}
 
