@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import HatchModal from './HatchModal'
 
 interface CodePreviewProps {
@@ -8,6 +8,8 @@ interface CodePreviewProps {
   isPaid?: boolean
   onCodeChange?: (newCode: string) => void
   pagePath?: string // e.g. '/' or '/contact'
+  streamingCode?: string // Live streaming code during generation
+  isStreaming?: boolean // Whether we're currently streaming
 }
 
 // Basic syntax validation for JSX/TSX code
@@ -78,16 +80,26 @@ function validateSyntax(code: string): { valid: boolean; error?: string } {
   return { valid: true }
 }
 
-export default function CodePreview({ code, isPaid = false, onCodeChange, pagePath = '/' }: CodePreviewProps) {
+export default function CodePreview({ code, isPaid = false, onCodeChange, pagePath = '/', streamingCode = '', isStreaming = false }: CodePreviewProps) {
   const [copied, setCopied] = useState(false)
   const [showHatchModal, setShowHatchModal] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editedCode, setEditedCode] = useState(code)
   const [syntaxError, setSyntaxError] = useState<string | null>(null)
+  const streamingRef = useRef<HTMLPreElement>(null)
 
-  const lines = code.split('\n')
-  const visibleLines = isPaid ? lines : lines.slice(0, 15)
-  const hiddenCount = isPaid ? 0 : Math.max(0, lines.length - 15)
+  // Auto-scroll streaming code to bottom
+  useEffect(() => {
+    if (isStreaming && streamingRef.current) {
+      streamingRef.current.scrollTop = streamingRef.current.scrollHeight
+    }
+  }, [streamingCode, isStreaming])
+
+  // Determine which code to display
+  const displayCode = isStreaming && streamingCode ? streamingCode : code
+  const lines = displayCode.split('\n')
+  const visibleLines = isPaid || isStreaming ? lines : lines.slice(0, 15)
+  const hiddenCount = isPaid || isStreaming ? 0 : Math.max(0, lines.length - 15)
 
   const handleCopy = async () => {
     if (!isPaid) {
@@ -134,18 +146,32 @@ export default function CodePreview({ code, isPaid = false, onCodeChange, pagePa
   }, [syntaxError])
 
   return (
-    <div className="h-full bg-zinc-950 flex flex-col">
+    <div className={`h-full bg-zinc-950 flex flex-col relative ${isStreaming ? 'ring-2 ring-purple-500/50' : ''}`}>
+      {/* Streaming glow effect */}
+      {isStreaming && (
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 via-blue-500/5 to-purple-500/5 animate-pulse" />
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent animate-pulse" />
+        </div>
+      )}
+      
       <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-900/50">
         <div className="flex items-center gap-2 text-xs font-mono text-zinc-400">
           <span className="text-zinc-600">📁</span>
           <span>app{pagePath === '/' ? '/' : pagePath + '/'}</span>
           <span className="text-purple-400 font-semibold">page.tsx</span>
-          {!isPaid && (
+          {isStreaming && (
+            <span className="ml-2 px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded text-xs font-medium flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse" />
+              Generating...
+            </span>
+          )}
+          {!isPaid && !isStreaming && (
             <span className="ml-2 px-2 py-0.5 bg-amber-500/20 text-amber-400 rounded text-xs font-medium">(Preview)</span>
           )}
         </div>
         <div className="flex items-center gap-2">
-          {onCodeChange && (
+          {onCodeChange && !isStreaming && (
             <button
               onClick={handleEditToggle}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-colors ${
@@ -192,7 +218,7 @@ export default function CodePreview({ code, isPaid = false, onCodeChange, pagePa
       </div>
 
       <div className="flex-1 overflow-auto relative bg-zinc-950">
-        {syntaxError && (
+        {syntaxError && !isStreaming && (
           <div className="absolute top-2 left-2 right-2 z-10 px-3 py-2 bg-red-900/90 border border-red-700 rounded-lg text-red-200 text-xs font-mono flex items-center gap-2">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="10"/>
@@ -202,7 +228,7 @@ export default function CodePreview({ code, isPaid = false, onCodeChange, pagePa
             {syntaxError}
           </div>
         )}
-        {isEditing ? (
+        {isEditing && !isStreaming ? (
           <textarea
             value={editedCode}
             onChange={(e) => handleCodeEdit(e.target.value)}
@@ -213,16 +239,24 @@ export default function CodePreview({ code, isPaid = false, onCodeChange, pagePa
           />
         ) : (
           <>
-            <pre className="p-4 text-sm font-mono leading-relaxed">
+            <pre ref={streamingRef} className={`p-4 text-sm font-mono leading-relaxed ${isStreaming ? 'h-full overflow-auto' : ''}`}>
               <code>
                 {visibleLines.map((line, i) => (
                   <div key={i} className="flex hover:bg-zinc-900/30 transition-colors">
                     <span className="w-10 text-zinc-700 text-right pr-4 select-none flex-shrink-0 text-xs">
                       {String(i + 1).padStart(3, ' ')}
                     </span>
-                    <span className="text-zinc-300">{line || '\u00A0'}</span>
+                    <span className={`${isStreaming ? 'text-purple-300' : 'text-zinc-300'}`}>{line || '\u00A0'}</span>
                   </div>
                 ))}
+                {isStreaming && (
+                  <div className="flex">
+                    <span className="w-10 text-zinc-700 text-right pr-4 select-none flex-shrink-0 text-xs">
+                      {String(lines.length + 1).padStart(3, ' ')}
+                    </span>
+                    <span className="text-purple-400 animate-pulse">▌</span>
+                  </div>
+                )}
               </code>
             </pre>
 

@@ -360,6 +360,7 @@ export default function Home() {
   const [selectedElement, setSelectedElement] = useState<{ tagName: string; className: string; textContent: string; styles: Record<string, string> } | null>(null)
   const [externalPrompt, setExternalPrompt] = useState<string | null>(null)
   const [generationProgress, setGenerationProgress] = useState<string>('') // Real-time status
+  const [streamingCode, setStreamingCode] = useState<string>('') // Live streaming code
   const [complexityWarning, setComplexityWarning] = useState<{ warning: string; suggestions: string[]; prompt: string } | null>(null)
   const [showBrandPanel, setShowBrandPanel] = useState(false)
   const [chatResetKey, setChatResetKey] = useState(0) // Increments to trigger Chat reset
@@ -925,7 +926,9 @@ export default function Home() {
     abortControllerRef.current = new AbortController()
     
     setIsGenerating(true)
+    setStreamingCode('') // Reset streaming code
     setGenerationProgress('Analyzing request...')
+    
     try {
       // Prepare page context for multi-page projects
       const payload: Record<string, unknown> = { prompt, history, currentCode, skipComplexityWarning }
@@ -960,6 +963,48 @@ export default function Home() {
       setPreviousCode(currentCode || null)
       
       setGenerationProgress('Generating code...')
+      
+      // Start streaming request in parallel for live code display
+      const streamingPayload = { prompt, history, currentCode, brand: currentProject?.brand }
+      const streamPromise = fetch('/api/generate-stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(streamingPayload),
+        signal: abortControllerRef.current.signal,
+      }).then(async (streamResponse) => {
+        if (!streamResponse.ok) return
+        const reader = streamResponse.body?.getReader()
+        if (!reader) return
+        
+        const decoder = new TextDecoder()
+        let accumulated = ''
+        
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          
+          const chunk = decoder.decode(value, { stream: true })
+          const lines = chunk.split('\n')
+          
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6))
+                if (data.text) {
+                  accumulated += data.text
+                  setStreamingCode(accumulated)
+                }
+              } catch {
+                // Skip invalid JSON
+              }
+            }
+          }
+        }
+      }).catch(() => {
+        // Streaming failed silently - main request will still work
+      })
+      
+      // Main robust request (non-streaming, with full parsing)
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -967,6 +1012,10 @@ export default function Home() {
         signal: abortControllerRef.current.signal,
       })
       const data = await response.json()
+      
+      // Wait for streaming to finish (but don't block on errors)
+      await streamPromise.catch(() => {})
+      setStreamingCode('') // Clear streaming code once we have final result
       
       // Handle API errors (including truncation failures)
       if (data.error) {
@@ -1895,7 +1944,7 @@ export default function Home() {
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
-      <div className="flex-1 overflow-auto">{type === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} loadingProgress={generationProgress} isPaid={isCurrentProjectPaid} assets={currentProject?.assets} setShowHatchModal={setShowHatchModal} onViewCode={() => { onClose(); setActiveTab('code') }} onRegenerate={handleRegenerateFromError} onQuickFix={handleQuickFix} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} pagePath={currentPage?.path} />}</div>
+      <div className="flex-1 overflow-auto">{type === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} loadingProgress={generationProgress} isPaid={isCurrentProjectPaid} assets={currentProject?.assets} setShowHatchModal={setShowHatchModal} onViewCode={() => { onClose(); setActiveTab('code') }} onRegenerate={handleRegenerateFromError} onQuickFix={handleQuickFix} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} pagePath={currentPage?.path} streamingCode={streamingCode} isStreaming={isGenerating && streamingCode.length > 0} />}</div>
     </div>
   )
 
@@ -3193,7 +3242,12 @@ export default function Home() {
                   {activeTab === 'preview' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500"></div>}
                 </button>
                 <button onClick={() => setActiveTab('code')} className={`px-4 py-3 text-sm font-medium transition-all relative ${activeTab === 'code' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>
-                  Code
+                  <span className="flex items-center gap-2">
+                    Code
+                    {isGenerating && streamingCode.length > 0 && activeTab !== 'code' && (
+                      <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse" />
+                    )}
+                  </span>
                   {activeTab === 'code' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500"></div>}
                 </button>
               </div>
@@ -3211,7 +3265,7 @@ export default function Home() {
               </div>
             </div>
             <div ref={previewContainerRef} className="flex-1 overflow-auto min-h-0 relative">
-              {activeTab === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} loadingProgress={generationProgress} isPaid={isCurrentProjectPaid} assets={currentProject?.assets} setShowHatchModal={setShowHatchModal} inspectorMode={inspectorMode} onElementSelect={setSelectedElement} onViewCode={handleViewCode} onRegenerate={handleRegenerateFromError} onQuickFix={handleQuickFix} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} pagePath={currentPage?.path} />}
+              {activeTab === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} loadingProgress={generationProgress} isPaid={isCurrentProjectPaid} assets={currentProject?.assets} setShowHatchModal={setShowHatchModal} inspectorMode={inspectorMode} onElementSelect={setSelectedElement} onViewCode={handleViewCode} onRegenerate={handleRegenerateFromError} onQuickFix={handleQuickFix} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} pagePath={currentPage?.path} streamingCode={streamingCode} isStreaming={isGenerating && streamingCode.length > 0} />}
               
               {/* Element Inspector Popover */}
               {inspectorMode && selectedElement && (
