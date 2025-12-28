@@ -1,13 +1,15 @@
 'use client'
 
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useState } from 'react'
 
 interface RoadmapItem {
   title: string
   description: string
   status: 'done' | 'in-progress' | 'planned'
   date?: string
+  technicalDetails?: string
 }
 
 interface RoadmapSection {
@@ -19,22 +21,97 @@ interface RoadmapSection {
 const roadmap: RoadmapSection[] = [
   {
     title: 'Recently Shipped',
-    timeline: 'December 2024',
+    timeline: 'December 2025',
     items: [
-      { title: 'Cross-Device Sync', description: 'Access your deployed projects from any device', status: 'done', date: 'Dec 27' },
-      { title: 'Start Again Feature', description: 'Clear code and start fresh without deleting projects', status: 'done', date: 'Dec 28' },
-      { title: 'Truncation Protection', description: 'Prevent saving broken/cut-off code', status: 'done', date: 'Dec 28' },
-      { title: 'Import HTML', description: 'Upload existing HTML files to edit', status: 'done', date: 'Dec 28' },
-      { title: 'Brand Panel', description: 'Save and apply brand colors & fonts (PRO)', status: 'done', date: 'Dec 20' },
-      { title: 'AI Suggestions', description: '"What\'s next?" prompts after generation', status: 'done', date: 'Dec 18' },
-      { title: 'Revert Button', description: 'One-click undo to previous version', status: 'done', date: 'Dec 18' },
+      { 
+        title: 'Live Code Streaming', 
+        description: 'Watch your code being generated in real-time', 
+        status: 'done', 
+        date: 'Dec 28',
+        technicalDetails: `Created a new /api/generate-stream endpoint using Anthropic's streaming API with Server-Sent Events (SSE). The streaming request runs in parallel with our robust non-streaming endpoint — streaming is purely visual while the actual code parsing uses the original endpoint for stability.
+
+Visual effects include: purple glow border around the Code tab, "Generating..." badge with pulsing indicator, code text in purple tint during streaming, animated cursor (▌) at the end that follows new lines, and auto-scroll to keep the latest code visible. A pulsing dot appears on the Code tab when streaming if you're viewing the Preview tab.
+
+Technical stack: Anthropic claude-sonnet-4-20250514 with stream: true, TextEncoder for chunked responses, accumulated state management with setStreamingCode(), and useRef for auto-scroll behavior.`
+      },
+      { 
+        title: 'Hatch Project Rebrand', 
+        description: 'Renamed "Upgrade" to "Hatch Project" with improved messaging', 
+        status: 'done', 
+        date: 'Dec 28',
+        technicalDetails: `Renamed the upgradeModal.tsx component to HatchModal.tsx and updated all imports across the codebase. Changed the messaging to better reflect the product metaphor — your project "hatches" when it's ready to go live.
+
+Updated pricing display: $24 one-time setup + $19/month subscription clearly explained. Added tier comparison between Free (preview mode, unlimited generations) and Hatched (full code access, custom domain, hosting).`
+      },
+      { 
+        title: 'Cross-Device Sync', 
+        description: 'Access your deployed projects from any device', 
+        status: 'done', 
+        date: 'Dec 27',
+        technicalDetails: `Projects are stored in Clerk user metadata for persistence. When a project is "hatched" (paid), we store the project ID and Stripe subscription in Clerk, which syncs across all devices where the user is logged in.
+
+LocalStorage still handles the primary project data for speed, but deployed projects are fetched from Clerk metadata on page load, ensuring paid features persist across devices.`
+      },
+      { 
+        title: 'Start Again Feature', 
+        description: 'Clear code and start fresh without deleting projects', 
+        status: 'done', 
+        date: 'Dec 28',
+        technicalDetails: `Added a "Start Again" button in the project menu that resets the code to the default starter template while preserving project name, ID, and payment status. Chat history is also cleared.
+
+Uses a confirmation modal to prevent accidental resets. The previousCode state is also cleared so revert doesn't bring back old code.`
+      },
+      { 
+        title: 'Truncation Protection', 
+        description: 'Prevent saving broken/cut-off code', 
+        status: 'done', 
+        date: 'Dec 28',
+        technicalDetails: `Added validation in the API response handling to detect truncated code. Checks for: unbalanced braces/brackets, missing export default, incomplete JSX tags, and responses that end mid-statement.
+
+If truncation is detected, we show an error message and keep the previous working code rather than saving broken code that would crash the preview.`
+      },
+      { 
+        title: 'Import HTML', 
+        description: 'Upload existing HTML files to convert and edit', 
+        status: 'done', 
+        date: 'Dec 28',
+        technicalDetails: `File upload accepts .html files, reads content with FileReader API, then sends to the AI with a specialized prompt to convert to React/Tailwind.
+
+The AI preserves the structure and styling while converting to our JSX format. Handles inline styles, external CSS references, and common HTML patterns.`
+      },
+      { 
+        title: 'Brand Panel', 
+        description: 'Save and apply brand colors & fonts (PRO)', 
+        status: 'done', 
+        date: 'Dec 20',
+        technicalDetails: `Brand settings stored in project object: { brand: { primaryColor, secondaryColor, accentColor, font } }. Color pickers use native HTML input[type="color"] with hex value storage.
+
+Brand context is passed to the AI in every generation request, with instructions to use the brand colors for primary CTAs, headings, and accent elements. Font is applied via Tailwind's font-family utilities.`
+      },
+      { 
+        title: 'AI Suggestions', 
+        description: '"What\'s next?" prompts after generation', 
+        status: 'done', 
+        date: 'Dec 18',
+        technicalDetails: `The AI returns suggestions in a SUGGESTIONS: block after generating code. We parse this with regex and display as clickable chips below the chat.
+
+Suggestions are context-aware based on current code — if you just built a landing page, it might suggest "Add a pricing section" or "Create a contact form". Clicking a suggestion auto-fills and sends it as a prompt.`
+      },
+      { 
+        title: 'Revert Button', 
+        description: 'One-click undo to previous version', 
+        status: 'done', 
+        date: 'Dec 18',
+        technicalDetails: `Before each generation, we store the current code in previousCode state. The Revert button (↶) appears after generation and swaps currentCode with previousCode.
+
+Only stores one level of history to keep it simple. The button disappears after reverting or starting a new generation.`
+      },
     ]
   },
   {
-    title: 'January 2025',
+    title: 'January 2026',
     timeline: 'Jan 1 - Jan 31',
     items: [
-      { title: 'Cloud Storage', description: 'All projects & chat stored in cloud — sync everywhere', status: 'in-progress' },
       { title: 'Template Gallery', description: 'Start from pre-built templates (Landing, Portfolio, etc.)', status: 'planned' },
       { title: 'One-Click Components', description: 'Quick-add navbar, footer, contact form, pricing table', status: 'planned' },
       { title: 'Generation Timeline', description: 'Visual history of all prompts and versions', status: 'planned' },
@@ -42,7 +119,7 @@ const roadmap: RoadmapSection[] = [
     ]
   },
   {
-    title: 'Q1 2025',
+    title: 'Q1 2026',
     timeline: 'Feb - Mar',
     items: [
       { title: 'Form Backend', description: 'Built-in form submissions with email notifications', status: 'planned' },
@@ -54,7 +131,7 @@ const roadmap: RoadmapSection[] = [
   },
   {
     title: 'Future',
-    timeline: 'Q2 2025+',
+    timeline: 'Q2 2026+',
     items: [
       { title: 'Voice-to-Website', description: 'Speak your description, generate on command', status: 'planned' },
       { title: 'Component Marketplace', description: 'Browse and add community-built components', status: 'planned' },
@@ -69,6 +146,72 @@ const statusConfig = {
   'done': { label: 'Shipped', bg: 'bg-green-500/10', text: 'text-green-400', border: 'border-green-500/20', dot: 'bg-green-500' },
   'in-progress': { label: 'In Progress', bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20', dot: 'bg-blue-500 animate-pulse' },
   'planned': { label: 'Planned', bg: 'bg-zinc-500/10', text: 'text-zinc-400', border: 'border-zinc-500/20', dot: 'bg-zinc-500' }
+}
+
+function RoadmapCard({ item, sectionIndex, itemIndex }: { item: RoadmapItem; sectionIndex: number; itemIndex: number }) {
+  const [expanded, setExpanded] = useState(false)
+  const config = statusConfig[item.status]
+  const hasDetails = !!item.technicalDetails
+
+  return (
+    <motion.div
+      className={`relative p-4 rounded-xl border ${config.bg} ${config.border} ${hasDetails ? 'cursor-pointer' : ''}`}
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.3, delay: sectionIndex * 0.1 + itemIndex * 0.05 }}
+      onClick={() => hasDetails && setExpanded(!expanded)}
+    >
+      {/* Timeline dot */}
+      <div className={`absolute -left-[41px] top-5 w-3 h-3 rounded-full ${config.dot} ring-4 ring-zinc-950`}></div>
+      
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="font-semibold text-white">{item.title}</h3>
+            {item.date && (
+              <span className="text-xs text-zinc-600">{item.date}</span>
+            )}
+            {hasDetails && (
+              <motion.span 
+                className="text-zinc-500 text-xs"
+                animate={{ rotate: expanded ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                ▼
+              </motion.span>
+            )}
+          </div>
+          <p className="text-zinc-400 text-sm">{item.description}</p>
+        </div>
+        <span className={`flex-shrink-0 px-2 py-1 rounded-md text-xs font-medium ${config.bg} ${config.text} border ${config.border}`}>
+          {config.label}
+        </span>
+      </div>
+
+      {/* Expandable Technical Details */}
+      <AnimatePresence>
+        {expanded && item.technicalDetails && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="overflow-hidden"
+          >
+            <div className="mt-4 pt-4 border-t border-zinc-800">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs font-semibold text-purple-400 uppercase tracking-wider">Technical Details</span>
+                <div className="flex-1 h-px bg-zinc-800"></div>
+              </div>
+              <div className="text-sm text-zinc-300 leading-relaxed whitespace-pre-line font-mono bg-zinc-900/50 rounded-lg p-3 text-xs">
+                {item.technicalDetails}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  )
 }
 
 export default function RoadmapPage() {
@@ -154,36 +297,14 @@ export default function RoadmapPage() {
 
                 {/* Items */}
                 <div className="ml-6 pl-10 border-l-2 border-zinc-800 space-y-4">
-                  {section.items.map((item, itemIndex) => {
-                    const config = statusConfig[item.status]
-                    return (
-                      <motion.div
-                        key={item.title}
-                        className={`relative p-4 rounded-xl border ${config.bg} ${config.border}`}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3, delay: sectionIndex * 0.1 + itemIndex * 0.05 }}
-                      >
-                        {/* Timeline dot */}
-                        <div className={`absolute -left-[41px] top-5 w-3 h-3 rounded-full ${config.dot} ring-4 ring-zinc-950`}></div>
-                        
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h3 className="font-semibold text-white">{item.title}</h3>
-                              {item.date && (
-                                <span className="text-xs text-zinc-600">{item.date}</span>
-                              )}
-                            </div>
-                            <p className="text-zinc-400 text-sm">{item.description}</p>
-                          </div>
-                          <span className={`flex-shrink-0 px-2 py-1 rounded-md text-xs font-medium ${config.bg} ${config.text} border ${config.border}`}>
-                            {config.label}
-                          </span>
-                        </div>
-                      </motion.div>
-                    )
-                  })}
+                  {section.items.map((item, itemIndex) => (
+                    <RoadmapCard 
+                      key={item.title} 
+                      item={item} 
+                      sectionIndex={sectionIndex} 
+                      itemIndex={itemIndex} 
+                    />
+                  ))}
                 </div>
               </motion.div>
             ))}
