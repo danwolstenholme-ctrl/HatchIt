@@ -315,42 +315,15 @@ function Chat({ onGenerate, isGenerating, onStopGeneration, currentCode, isPaid 
         </div>
 
         {isBlankCanvas ? (
-          <div className="h-full flex flex-col items-center justify-center text-center px-4">
-            <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center mb-3">
-              <span className="text-xl">{mode === 'chat' ? '💬' : '⚡'}</span>
-            </div>
-            <p className="text-zinc-300 text-sm font-medium mb-1">{mode === 'chat' ? 'Ask me anything' : 'What would you like to build?'}</p>
-            <p className="text-zinc-600 text-xs max-w-[220px] mb-4">{mode === 'chat' ? 'Get advice without changing your code.' : 'Describe your idea — we\'ll build real React code in seconds.'}</p>
-            
+          <div className="flex flex-col px-3 py-4">
             {mode === 'build' && (
-              <div className="w-full space-y-2">
-                <p className="text-xs text-zinc-500 font-medium mb-2">Click to try:</p>
-                {[
-                  { prompt: 'A modern landing page for a SaaS product with hero, features, and pricing', label: '🚀 SaaS Landing Page' },
-                  { prompt: 'A portfolio site with dark theme, project gallery, and contact form', label: '🎨 Portfolio Site' },
-                  { prompt: 'A restaurant website with menu, hours, location map, and reservations', label: '🍽️ Restaurant Site' }
-                ].map((item, i) => (
-                  <button
-                    key={i}
-                    onClick={() => {
-                      setInput(item.prompt)
-                      // Auto-submit after setting input
-                      setTimeout(() => {
-                        const form = document.querySelector('form[data-chat-form]') as HTMLFormElement
-                        if (form) form.requestSubmit()
-                      }, 100)
-                    }}
-                    className="w-full text-left px-3 py-2.5 text-xs bg-zinc-800/50 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-lg transition-all border border-zinc-700/30 hover:border-zinc-600 group"
-                  >
-                    <span className="font-medium">{item.label}</span>
-                    <span className="block text-zinc-500 group-hover:text-zinc-400 mt-0.5 text-[11px]">{item.prompt.slice(0, 50)}...</span>
-                  </button>
-                ))}
-                <p className="text-[10px] text-zinc-600 text-center mt-3">💡 Or describe your own idea above</p>
-                
-                {/* Quick Add Components - also available on blank canvas */}
-                <div className="mt-4 pt-4 border-t border-zinc-800/50">
-                  <p className="text-xs text-zinc-500 font-medium mb-2">Or quick add:</p>
+              <>
+                {/* Compact Quick Add - Primary action at top */}
+                <div className="mb-4">
+                  <div className="flex items-center gap-2 mb-2.5">
+                    <span className="text-base">⚡</span>
+                    <p className="text-xs text-zinc-400 font-medium">Quick add a component</p>
+                  </div>
                   <div className="flex flex-wrap gap-1.5">
                     {componentPresets.map((preset, i) => (
                       <button
@@ -362,32 +335,71 @@ function Chat({ onGenerate, isGenerating, onStopGeneration, currentCode, isPaid 
                             if (form) form.requestSubmit()
                           }, 100)
                         }}
-                        className="px-2.5 py-1 text-[11px] bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 hover:text-purple-200 rounded-md transition-colors border border-purple-500/20 hover:border-purple-500/40"
+                        className="px-2.5 py-1.5 text-[11px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-lg transition-all border border-zinc-700/50 hover:border-zinc-600"
                       >
                         {preset.label}
                       </button>
                     ))}
                   </div>
                 </div>
-              </div>
+                
+                {/* Divider */}
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex-1 h-px bg-zinc-800"></div>
+                  <span className="text-[10px] text-zinc-600 uppercase tracking-wider">or generate a full site</span>
+                  <div className="flex-1 h-px bg-zinc-800"></div>
+                </div>
+                
+                {/* Full Site Templates - Compact cards */}
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { prompt: 'A modern SaaS landing page with hero section, features grid, pricing table, testimonials, and call-to-action', label: 'SaaS Landing', icon: '🚀' },
+                    { prompt: 'A dark theme portfolio site with project gallery, about section, skills, and contact form', label: 'Portfolio', icon: '🎨' },
+                  ].map((item, i) => (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        setInput(item.prompt)
+                        setTimeout(() => {
+                          const form = document.querySelector('form[data-chat-form]') as HTMLFormElement
+                          if (form) form.requestSubmit()
+                        }, 100)
+                      }}
+                      className="flex flex-col items-center justify-center p-3 bg-gradient-to-br from-zinc-800/80 to-zinc-900 hover:from-zinc-700/80 hover:to-zinc-800 text-zinc-300 hover:text-white rounded-xl transition-all border border-zinc-700/50 hover:border-zinc-600 group"
+                    >
+                      <span className="text-2xl mb-1 group-hover:scale-110 transition-transform">{item.icon}</span>
+                      <span className="text-xs font-medium">{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+                
+                {/* Hint */}
+                <p className="text-[10px] text-zinc-600 text-center mt-4">💡 Or describe your own idea below</p>
+              </>
             )}
 
             {mode === 'chat' && (
-              <div className="w-full space-y-2">
-                <p className="text-xs text-zinc-500 font-medium mb-2">Try asking:</p>
-                {[
-                  'What does this component do?',
-                  'How can I improve the design?',
-                  'What features should I add?'
-                ].map((prompt, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setInput(prompt)}
-                    className="w-full text-left px-3 py-2 text-xs bg-emerald-900/30 hover:bg-emerald-900/50 text-zinc-300 hover:text-white rounded-lg transition-colors border border-emerald-700/30 hover:border-emerald-700/50"
-                  >
-                    {prompt}
-                  </button>
-                ))}
+              <div className="text-center">
+                <div className="w-10 h-10 rounded-xl bg-emerald-900/30 border border-emerald-700/30 flex items-center justify-center mb-3 mx-auto">
+                  <span className="text-xl">💬</span>
+                </div>
+                <p className="text-zinc-300 text-sm font-medium mb-1">Ask me anything</p>
+                <p className="text-zinc-600 text-xs max-w-[220px] mx-auto mb-4">Get advice without changing your code.</p>
+                <div className="space-y-1.5">
+                  {[
+                    'What does this component do?',
+                    'How can I improve the design?',
+                    'What features should I add?'
+                  ].map((prompt, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setInput(prompt)}
+                      className="w-full text-left px-3 py-2 text-xs bg-emerald-900/30 hover:bg-emerald-900/50 text-zinc-300 hover:text-white rounded-lg transition-colors border border-emerald-700/30 hover:border-emerald-700/50"
+                    >
+                      {prompt}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
