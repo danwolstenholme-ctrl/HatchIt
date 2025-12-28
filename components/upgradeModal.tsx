@@ -113,7 +113,7 @@ export default function UpgradeModal({ isOpen, onClose, reason, projectSlug = ''
         <div className="bg-gradient-to-br from-zinc-800/50 to-zinc-900 border border-purple-500/30 rounded-xl p-6 mb-6 ring-1 ring-purple-500/20 relative overflow-hidden">
           {/* Early Bird Banner */}
           <div className="absolute top-3 -right-8 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold py-1 px-10 rotate-45 shadow-lg">
-            50% OFF
+            EARLY BIRD
           </div>
           
           <div className="flex items-center justify-center gap-2 mb-2">
@@ -121,15 +121,14 @@ export default function UpgradeModal({ isOpen, onClose, reason, projectSlug = ''
             <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Go Hatched</span>
           </div>
           
-          {/* Price with discount */}
+          {/* Price */}
           <div className="flex items-baseline justify-center gap-2 mb-1">
-            <span className="text-lg text-zinc-500 line-through">$49</span>
             <span className="text-4xl font-bold text-white">$24</span>
-            <span className="text-zinc-400">/first month</span>
+            <span className="text-zinc-400">to launch</span>
           </div>
-          <p className="text-amber-400 text-xs text-center font-medium mb-1">🎉 Early bird — 50% off!</p>
+          <p className="text-amber-400 text-xs text-center font-medium mb-1">🎉 Early bird pricing!</p>
           <p className="text-zinc-400 text-sm text-center">then <span className="text-white font-medium">$19/month</span> to stay live</p>
-          <p className="text-zinc-600 text-xs text-center mb-4">or $190/year (2 months free)</p>
+          <p className="text-zinc-600 text-xs text-center mb-4">Cancel anytime</p>
           
           <div className="space-y-2">
             {[

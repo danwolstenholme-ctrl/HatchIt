@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
           quantity: 1,
         },
         {
-          // $30 one-time setup fee (early bird)
+          // $5 one-time setup fee (early bird)
           price: process.env.STRIPE_SETUP_FEE_ID!,
           quantity: 1,
         },

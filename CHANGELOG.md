@@ -12,6 +12,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.7] - 2024-12-28
+### Changed
+- Updated pricing copy: "$24 to launch, then $19/mo"
+- Removed misleading "50% off" references
+- Removed annual pricing mention (not currently offered)
+- Simplified pricing message across homepage, modals, FAQ
+
+---
+
 ## [1.1.6] - 2024-12-28
 ### Changed
 - Renamed "Generate" to "Build" for consistency

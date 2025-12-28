@@ -424,7 +424,7 @@ export default function Home() {
                 transition={{ duration: 0.2 }}
               >
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-yellow-500 text-black text-xs font-bold px-3 py-1 rounded-full">
-                  50% OFF EARLY BIRD
+                  EARLY BIRD PRICING
                 </div>
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/20 via-yellow-500/20 to-orange-500/20 border border-amber-500/30 flex items-center justify-center relative overflow-hidden">
@@ -437,12 +437,11 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="mb-2">
-                  <span className="text-lg text-zinc-500 line-through">$49</span>
-                  <span className="text-4xl font-black text-white ml-2">$24</span>
-                  <span className="text-lg text-zinc-500 font-normal"> first month</span>
+                  <span className="text-4xl font-black text-white">$24</span>
+                  <span className="text-lg text-zinc-500 font-normal"> to launch</span>
                 </div>
                 <p className="text-zinc-400 text-sm mb-1">then <span className="text-white font-semibold">$19/month</span> to stay live</p>
-                <p className="text-zinc-600 text-xs mb-6">or $190/year (2 months free)</p>
+                <p className="text-zinc-600 text-xs mb-6">Cancel anytime</p>
                 <ul className="space-y-3 mb-8">
                   {[
                     "Deploy to live URL",
