@@ -1,78 +1,148 @@
+import type { Metadata } from 'next'
+import Link from 'next/link'
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy | HatchIt.dev',
+  description: 'HatchIt.dev privacy policy - how we collect, use, and protect your data.',
+}
+
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-zinc-950 text-white py-16 px-4">
+    <div className="min-h-screen bg-zinc-950 text-white py-12 sm:py-16 px-4">
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-4xl font-bold mb-8">Privacy Policy</h1>
-        <p className="text-zinc-400 mb-8">Last updated: December 26, 2025</p>
+        <Link href="/" className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition mb-8 text-sm">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to Home
+        </Link>
+        
+        <h1 className="text-3xl sm:text-4xl font-bold mb-4">Privacy Policy</h1>
+        <p className="text-zinc-400 mb-8">Last updated: December 29, 2025</p>
         
         <div className="space-y-8 text-zinc-300">
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">1. Information We Collect</h2>
-            <ul className="list-disc list-inside space-y-2">
-              <li>Account info: email address, name (via Clerk authentication)</li>
-              <li>Payment info: processed by Stripe (we don't store card details)</li>
-              <li>Usage data: projects created, generations used</li>
+            <p className="mb-3">We collect information to provide and improve HatchIt.dev:</p>
+            <ul className="list-disc list-inside space-y-2 ml-2">
+              <li><strong>Account Information:</strong> Email address and name via Clerk authentication</li>
+              <li><strong>Payment Information:</strong> Processed securely by Stripe (we never store card details)</li>
+              <li><strong>Usage Data:</strong> Projects created, generations used, feature interactions</li>
+              <li><strong>Generated Content:</strong> Your prompts and AI-generated code (stored temporarily for session)</li>
+              <li><strong>Device Information:</strong> Browser type, device type for optimization</li>
             </ul>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">2. How We Use Your Information</h2>
-            <ul className="list-disc list-inside space-y-2">
-              <li>To provide and improve the service</li>
-              <li>To process payments</li>
-              <li>To communicate about your account</li>
-              <li>To prevent abuse</li>
+            <ul className="list-disc list-inside space-y-2 ml-2">
+              <li>To provide AI code generation services</li>
+              <li>To process payments and manage subscriptions</li>
+              <li>To deploy and host your generated websites</li>
+              <li>To communicate about your account and service updates</li>
+              <li>To prevent abuse and ensure service security</li>
+              <li>To improve our AI models and user experience</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">3. Third-Party Services</h2>
-            <ul className="list-disc list-inside space-y-2">
-              <li><strong>Clerk</strong> - Authentication</li>
-              <li><strong>Stripe</strong> - Payment processing</li>
-              <li><strong>Vercel</strong> - Hosting and deployment</li>
-              <li><strong>Anthropic</strong> - AI code generation</li>
+            <h2 className="text-xl font-semibold text-white mb-3">3. AI and Your Data</h2>
+            <p className="mb-3">HatchIt uses Anthropic&apos;s Claude AI for code generation:</p>
+            <ul className="list-disc list-inside space-y-2 ml-2">
+              <li>Your prompts are sent to Anthropic&apos;s API for processing</li>
+              <li>Generated code is returned to you and may be stored in your project</li>
+              <li>We do not use your prompts or generated code to train our own AI models</li>
+              <li>Anthropic&apos;s data handling is governed by their privacy policy</li>
             </ul>
-            <p className="mt-2">Each has their own privacy policy governing their handling of your data.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">4. Data Retention</h2>
-            <ul className="list-disc list-inside space-y-2">
+            <h2 className="text-xl font-semibold text-white mb-3">4. Third-Party Services</h2>
+            <p className="mb-3">We use trusted third-party services:</p>
+            <ul className="list-disc list-inside space-y-2 ml-2">
+              <li><strong>Clerk</strong> - Authentication and user management</li>
+              <li><strong>Stripe</strong> - Secure payment processing</li>
+              <li><strong>Vercel</strong> - Hosting, deployment, and analytics</li>
+              <li><strong>Anthropic</strong> - AI code generation (Claude)</li>
+              <li><strong>Crisp</strong> - Customer support chat</li>
+            </ul>
+            <p className="mt-3 text-sm text-zinc-400">Each service has their own privacy policy governing their handling of your data.</p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-white mb-3">5. Data Storage and Security</h2>
+            <ul className="list-disc list-inside space-y-2 ml-2">
+              <li>All data transmitted over HTTPS encryption</li>
+              <li>Project data stored securely in your browser (localStorage) and our cloud</li>
+              <li>Deployed sites hosted on Vercel&apos;s secure global CDN</li>
+              <li>We implement industry-standard security measures</li>
+              <li>Regular security audits and monitoring</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-white mb-3">6. Data Retention</h2>
+            <ul className="list-disc list-inside space-y-2 ml-2">
               <li>Account data retained while your account is active</li>
-              <li>After cancellation, data deleted after 30 days</li>
+              <li>Deployed sites remain live while subscription is active</li>
+              <li>After subscription cancellation, sites are removed within 24 hours</li>
+              <li>Account data deleted 30 days after account closure</li>
               <li>You can request immediate deletion by contacting us</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">5. Cookies</h2>
-            <p>We use essential cookies for authentication and functionality only.</p>
+            <h2 className="text-xl font-semibold text-white mb-3">7. Cookies</h2>
+            <p>We use essential cookies for:</p>
+            <ul className="list-disc list-inside space-y-2 ml-2 mt-2">
+              <li>Authentication and session management</li>
+              <li>Remembering your preferences</li>
+              <li>Basic analytics (page views, feature usage)</li>
+            </ul>
+            <p className="mt-3 text-sm text-zinc-400">We do not use third-party advertising cookies.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">6. Your Rights</h2>
-            <ul className="list-disc list-inside space-y-2">
-              <li>Access, correct, or delete your personal data</li>
-              <li>Request a copy of your data</li>
+            <h2 className="text-xl font-semibold text-white mb-3">8. Your Rights</h2>
+            <p className="mb-3">You have the right to:</p>
+            <ul className="list-disc list-inside space-y-2 ml-2">
+              <li>Access your personal data</li>
+              <li>Correct inaccurate data</li>
+              <li>Delete your account and data</li>
+              <li>Export your generated code</li>
               <li>Opt out of marketing communications</li>
+              <li>Lodge a complaint with a data protection authority</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">7. Security</h2>
-            <p>We use industry-standard security measures. All data transmitted over HTTPS.</p>
+            <h2 className="text-xl font-semibold text-white mb-3">9. International Users</h2>
+            <p>HatchIt.dev operates globally. Your data may be processed in the United States and other countries where our service providers operate. By using HatchIt, you consent to this transfer.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">8. Changes</h2>
-            <p>We may update this policy. Check back periodically.</p>
+            <h2 className="text-xl font-semibold text-white mb-3">10. Children&apos;s Privacy</h2>
+            <p>HatchIt is not intended for children under 13. We do not knowingly collect data from children under 13.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">Contact</h2>
-            <p>Questions? Email <a href="mailto:support@hatchit.dev" className="text-blue-400 hover:underline">support@hatchit.dev</a></p>
+            <h2 className="text-xl font-semibold text-white mb-3">11. Changes to This Policy</h2>
+            <p>We may update this policy periodically. We&apos;ll notify you of significant changes via email or in-app notification.</p>
           </section>
+
+          <section className="pt-4 border-t border-zinc-800">
+            <h2 className="text-xl font-semibold text-white mb-3">Contact Us</h2>
+            <p>Questions about this privacy policy?</p>
+            <p className="mt-2">
+              Email: <a href="mailto:support@hatchit.dev" className="text-purple-400 hover:underline">support@hatchit.dev</a>
+            </p>
+          </section>
+        </div>
+
+        <div className="mt-12 pt-8 border-t border-zinc-800 flex flex-col sm:flex-row gap-4 sm:gap-8 text-sm text-zinc-500">
+          <Link href="/terms" className="hover:text-white transition">Terms of Service</Link>
+          <Link href="/faq" className="hover:text-white transition">FAQ</Link>
+          <Link href="/" className="hover:text-white transition">Back to HatchIt</Link>
         </div>
       </div>
     </div>
