@@ -1,5 +1,6 @@
 import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
+import ErrorBoundary from '@/components/ErrorBoundary'
 
 export default async function BuilderLayout({
   children,
@@ -12,5 +13,5 @@ export default async function BuilderLayout({
     redirect('/sign-in')
   }
   
-  return <>{children}</>
+  return <ErrorBoundary>{children}</ErrorBoundary>
 }
