@@ -11,10 +11,10 @@ export default function FeaturesPage() {
       id: 'ai-generation',
       icon: '🧠',
       title: 'AI-Powered Generation',
-      subtitle: 'Claude Sonnet 4 Intelligence',
+      subtitle: 'Claude Opus 4.5 Intelligence',
       description: 'Describe your vision in plain English and watch as our AI creates production-ready React code in seconds. No templates, no limitations—just pure, custom code tailored to your exact requirements.',
       details: [
-        'Powered by Anthropic\'s Claude Sonnet 4 - the most capable AI model',
+        'Powered by Anthropic\'s Claude Opus 4.5 - the most capable AI model',
         'Understands context, design principles, and modern best practices',
         'Generates clean, semantic, accessible code',
         'Learns from your feedback to improve results',

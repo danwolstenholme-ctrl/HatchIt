@@ -32,7 +32,7 @@ const roadmap: RoadmapSection[] = [
 
 Visual effects include: purple glow border around the Code tab, "Generating..." badge with pulsing indicator, code text in purple tint during streaming, animated cursor (▌) at the end that follows new lines, and auto-scroll to keep the latest code visible. A pulsing dot appears on the Code tab when streaming if you're viewing the Preview tab.
 
-Technical stack: Anthropic claude-sonnet-4-20250514 with stream: true, TextEncoder for chunked responses, accumulated state management with setStreamingCode(), and useRef for auto-scroll behavior.`
+Technical stack: Anthropic claude-opus-4-5-20250514 with stream: true, TextEncoder for chunked responses, accumulated state management with setStreamingCode(), and useRef for auto-scroll behavior.`
       },
       { 
         title: 'Hatch Project Rebrand', 

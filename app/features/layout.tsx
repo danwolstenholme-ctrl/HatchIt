@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Features - HatchIt | AI Website Builder with Live Code Streaming',
-  description: 'Discover all HatchIt features: AI-powered generation with Claude Sonnet 4, live code streaming, one-click components, multi-page support, brand customization, version history, one-click deploy, and more. The most advanced AI website builder.',
+  description: 'Discover all HatchIt features: AI-powered generation with Claude Opus 4.5, live code streaming, one-click components, multi-page support, brand customization, version history, one-click deploy, and more. The most advanced AI website builder.',
   keywords: [
     'AI website builder',
     'AI web development',

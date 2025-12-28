@@ -370,7 +370,7 @@ export default function Home() {
           {/* Feature cards */}
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { icon: '🧠', title: 'AI That Gets It', description: 'Powered by Claude Sonnet 4. Understands design, code patterns, and your intent. Not just another GPT wrapper.', gradient: 'from-purple-500 to-indigo-600' },
+              { icon: '🧠', title: 'AI That Gets It', description: 'Powered by Claude Opus 4.5. Understands design, code patterns, and your intent. Not just another GPT wrapper.', gradient: 'from-purple-500 to-indigo-600' },
               { icon: '⚡', title: 'Live Code Streaming', description: 'Watch your site being written in real-time. See the code appear as the AI thinks. Pure magic.', gradient: 'from-amber-500 to-orange-600', badge: 'Hatched' },
               { icon: '🚀', title: 'Ship in One Click', description: 'Deploy to our global CDN instantly. Get a live URL in seconds. Connect your own domain.', gradient: 'from-emerald-500 to-teal-600' },
             ].map((feature, i) => (

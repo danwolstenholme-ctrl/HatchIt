@@ -307,7 +307,7 @@ export default function AboutPage() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { name: 'Claude Sonnet 4', desc: 'AI Generation', icon: '🧠' },
+              { name: 'Claude Opus 4.5', desc: 'AI Generation', icon: '🧠' },
               { name: 'React 19', desc: 'UI Framework', icon: '⚛️' },
               { name: 'Next.js 15', desc: 'App Framework', icon: '▲' },
               { name: 'Tailwind CSS', desc: 'Styling', icon: '🎨' },

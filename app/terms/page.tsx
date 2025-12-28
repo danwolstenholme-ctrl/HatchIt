@@ -14,7 +14,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">2. Subscription & Billing</h2>
             <ul className="list-disc list-inside space-y-2">
-              <li>"Go Hatched" subscription costs €49/month</li>
+              <li>"Go Hatched" costs $24 to launch (early bird pricing) plus $19/month</li>
               <li>Payment is processed securely via Stripe</li>
               <li>Subscription renews automatically each month</li>
             </ul>

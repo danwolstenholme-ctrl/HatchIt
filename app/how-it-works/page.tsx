@@ -20,7 +20,7 @@ export default function HowItWorksPage() {
     {
       number: '02',
       title: 'Watch It Generate',
-      description: 'Our AI (powered by Claude Sonnet 4) analyzes your request and writes production-ready React code. With live streaming, you can watch your site come to life in real-time.',
+      description: 'Our AI (powered by Claude Opus 4.5) analyzes your request and writes production-ready React code. With live streaming, you can watch your site come to life in real-time.',
       tips: [
         'Code appears as it\'s being written',
         'Preview updates alongside the code',
