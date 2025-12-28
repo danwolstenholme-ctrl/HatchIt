@@ -459,8 +459,16 @@ export default function Home() {
 
   useEffect(() => {
     if (searchParams.get('success') === 'true') {
+      // Force reload to get fresh user data from Clerk (webhook may have updated metadata)
+      const projectSlug = searchParams.get('project')
       setShowSuccessModal(true)
       window.history.replaceState({}, '', '/builder')
+      
+      // Reload the page after a short delay to ensure Clerk metadata is synced
+      // This is needed because the webhook updates Clerk, but client has stale data
+      setTimeout(() => {
+        window.location.reload()
+      }, 2000)
     }
     // Handle domain purchase success
     if (searchParams.get('domain_success') === 'true') {
@@ -3084,6 +3092,9 @@ export default function Home() {
             <button onClick={() => setMobileModal('preview')} className="flex-1 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
               Preview
+            </button>
+            <button onClick={() => setMobileModal('code')} className="py-3 px-4 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
             </button>
             <ShipButton mobile />
           </div>

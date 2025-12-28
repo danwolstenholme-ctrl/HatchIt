@@ -12,6 +12,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.8] - 2024-12-28
+### Fixed
+- Payment success now forces page reload to sync Clerk subscription metadata
+- Fixes issue where paid subscription reverted to free after checkout
+
+### Added
+- Code view button on mobile (next to Preview button)
+
+---
+
 ## [1.1.7] - 2024-12-28
 ### Changed
 - Updated pricing copy: "$24 to launch, then $19/mo"
