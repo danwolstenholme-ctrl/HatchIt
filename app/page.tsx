@@ -272,7 +272,7 @@ export default function Home() {
       <section id="features" className="relative px-8 py-32">
         <div className="max-w-7xl mx-auto">
           <AnimatedSection className="text-center mb-20">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-zinc-200 to-zinc-400 bg-clip-text text-transparent">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 pb-1 bg-gradient-to-r from-zinc-200 to-zinc-400 bg-clip-text text-transparent">
               Everything you need to ship
             </h2>
             <p className="text-xl text-zinc-400 max-w-3xl mx-auto">
@@ -285,7 +285,7 @@ export default function Home() {
               {
                 icon: "⚡",
                 title: "AI Generation",
-                description: "Describe in plain English, get production React + Tailwind in seconds.",
+                description: "Describe what you want, get production React + Tailwind in seconds.",
                 gradient: "from-yellow-500 to-orange-500"
               },
               {
@@ -374,7 +374,7 @@ export default function Home() {
       <section id="pricing" className="relative px-8 py-24">
         <div className="max-w-5xl mx-auto">
           <AnimatedSection className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-zinc-200 to-zinc-400 bg-clip-text text-transparent">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 pb-1 bg-gradient-to-r from-zinc-200 to-zinc-400 bg-clip-text text-transparent">
               Simple pricing
             </h2>
             <p className="text-xl text-zinc-400">
@@ -488,7 +488,7 @@ export default function Home() {
 
           <div className="mt-12 text-center">
             <p className="text-zinc-500 text-sm">
-              Have 10+ projects? <a href="mailto:dan@wolstenstudios.com" className="text-amber-400 hover:text-amber-300">Contact us</a> for agency pricing.
+              Have 10+ projects? <a href="mailto:support@hatchit.dev" className="text-amber-400 hover:text-amber-300">Contact us</a> for agency pricing.
             </p>
           </div>
         </div>
@@ -555,7 +555,7 @@ export default function Home() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span>✓</span>
-                    <span>Build unlimited for free</span>
+                    <span>10 free builds per day</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-amber-400">🐣</span>
