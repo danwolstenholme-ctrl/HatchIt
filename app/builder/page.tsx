@@ -323,7 +323,6 @@ export default function Home() {
   const [showDesktopMenu, setShowDesktopMenu] = useState(false)
   const [showNewProjectModal, setShowNewProjectModal] = useState(false)
   const [showWelcomeBackModal, setShowWelcomeBackModal] = useState(false)
-  const [newProjectName, setNewProjectName] = useState('')
   const [domainSearch, setDomainSearch] = useState('')
   const [domainSearchResult, setDomainSearchResult] = useState<{ domain: string; available: boolean; price?: number } | null>(null)
   const [isSearchingDomain, setIsSearchingDomain] = useState(false)
@@ -338,6 +337,7 @@ export default function Home() {
   const previewContainerRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const domainInputRef = useRef<HTMLInputElement>(null)
+  const projectNameInputRef = useRef<HTMLInputElement>(null)
   const generationRequestIdRef = useRef(0)
   const abortControllerRef = useRef<AbortController | null>(null)
 
@@ -567,19 +567,19 @@ export default function Home() {
     }
     
     // Show naming modal instead of auto-creating
-    setNewProjectName('')
     setShowNewProjectModal(true)
     setShowProjectDropdown(false)
   }
 
   const confirmCreateProject = () => {
-    if (!newProjectName.trim()) return
+    const name = projectNameInputRef.current?.value?.trim()
+    if (!name) return
     
-    const newProject = createNewProject(newProjectName.trim())
+    const newProject = createNewProject(name)
     setProjects(prev => [newProject, ...prev])
     setCurrentProjectId(newProject.id)
     setShowNewProjectModal(false)
-    setNewProjectName('')
+    if (projectNameInputRef.current) projectNameInputRef.current.value = ''
     setDeployedUrl(null)
     track('Project Created', { isPaid: hasAnyPaidSubscription })
   }
@@ -2801,9 +2801,8 @@ export default function Home() {
         <p className="text-sm text-zinc-400 mb-4">Give your project a memorable name. You can change it later.</p>
         
         <input
+          ref={projectNameInputRef}
           type="text"
-          value={newProjectName}
-          onChange={(e) => setNewProjectName(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && confirmCreateProject()}
           placeholder="e.g. My Portfolio, Business Site..."
           className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder:text-zinc-500 focus:outline-none focus:border-blue-500 mb-4"
@@ -2819,8 +2818,7 @@ export default function Home() {
           </button>
           <button
             onClick={confirmCreateProject}
-            disabled={!newProjectName.trim()}
-            className="flex-1 px-4 py-2.5 text-sm bg-blue-600 hover:bg-blue-500 disabled:bg-zinc-700 disabled:text-zinc-500 text-white rounded-xl transition-colors font-medium"
+            className="flex-1 px-4 py-2.5 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-colors font-medium"
           >
             Create Project
           </button>
