@@ -473,8 +473,10 @@ export default function Home() {
                     "Custom domain",
                     "Buy domains in-app",
                     "Download clean code",
+                    "Brand colors & fonts",
                     "Unlimited edits & updates",
                     "Version history",
+                    "Live code streaming",
                     "SSL included",
                     "Cancel anytime — export & self-host"
                   ].map((feature, i) => (
