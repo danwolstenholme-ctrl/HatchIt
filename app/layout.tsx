@@ -16,7 +16,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL('https://hatchit.dev'),
   title: 'HatchIt.dev — Describe. Build. Ship.',
-  description: 'Turn your idea into a live website in 60 seconds. Just describe what you want — HatchIt builds it, you ship it.',
+  description: 'Turn your idea into a live website in 60 seconds. Just describe what you want — HatchIt.dev builds it, you ship it.',
   keywords: ['AI website builder', 'React', 'Tailwind CSS', 'no-code', 'code generator', 'web development', 'deploy website', 'build website fast'],
   authors: [{ name: 'HatchIt.dev' }],
   creator: 'HatchIt.dev',
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     url: 'https://hatchit.dev',
     siteName: 'HatchIt.dev',
     title: 'HatchIt.dev — Describe. Build. Ship.',
-    description: 'Turn your idea into a live website in 60 seconds. Just describe what you want — HatchIt builds it, you ship it.',
+    description: 'Turn your idea into a live website in 60 seconds. Just describe what you want — HatchIt.dev builds it, you ship it.',
     images: [
       {
         url: '/og-image.png',
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'HatchIt.dev — Describe. Build. Ship.',
-    description: 'Turn your idea into a live website in 60 seconds. Just describe what you want — HatchIt builds it, you ship it.',
+    description: 'Turn your idea into a live website in 60 seconds. Just describe what you want — HatchIt.dev builds it, you ship it.',
     images: ['/og-image.png'],
   },
   robots: {

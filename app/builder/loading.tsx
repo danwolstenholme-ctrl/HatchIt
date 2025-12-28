@@ -13,6 +13,7 @@ export default function BuilderLoading() {
             <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
               It
             </span>
+            <span className="text-zinc-600">.dev</span>
           </div>
           {/* Pulse ring */}
           <div className="absolute inset-0 -z-10 animate-ping opacity-20">

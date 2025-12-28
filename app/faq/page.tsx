@@ -209,6 +209,7 @@ export default function FAQPage() {
           <Link href="/" className="text-2xl font-black">
             <span className="bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent">Hatch</span>
             <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">It</span>
+            <span className="text-zinc-600">.dev</span>
           </Link>
           <Link href="/builder" className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-semibold text-sm transition-all">
             Open Builder

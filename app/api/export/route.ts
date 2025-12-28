@@ -161,8 +161,8 @@ html, body {
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "My Hatchit Project",
-  description: "Built with Hatchit",
+  title: "My HatchIt.dev Project",
+  description: "Built with HatchIt.dev",
 };
 
 export default function RootLayout({
@@ -177,9 +177,9 @@ export default function RootLayout({
   );
 }`,
 
-    'README.md': `# My Hatchit Project
+    'README.md': `# My HatchIt.dev Project
 
-Built with [Hatchit](https://hatchit.dev)
+Built with [HatchIt.dev](https://hatchit.dev)
 
 ## Getting Started
 

@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
 - Professional - helpful without being over-the-top
 - Concise - respect their time
 
-## HOW HATCHIT WORKS
+## HOW HATCHIT.DEV WORKS
 
 ### The Two Modes
 1. **Build Mode** (lightning bolt tab) - Code generation

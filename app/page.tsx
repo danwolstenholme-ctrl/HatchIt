@@ -74,6 +74,7 @@ export default function Home() {
           <h1 className="text-2xl font-black">
             <span className="bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent">Hatch</span>
             <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">It</span>
+            <span className="text-zinc-600">.dev</span>
           </h1>
           <div className="flex items-center gap-6">
             <a href="#features" className="text-zinc-400 hover:text-white transition-colors hidden sm:block">Features</a>
@@ -569,6 +570,7 @@ export default function Home() {
               <h1 className="text-2xl font-black">
                 <span className="bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent">Hatch</span>
                 <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">It</span>
+                <span className="text-zinc-600">.dev</span>
               </h1>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-zinc-500 text-sm">
