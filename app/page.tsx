@@ -571,10 +571,11 @@ export default function Home() {
                 <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">It</span>
               </h1>
             </div>
-            <div className="flex items-center gap-8 text-zinc-500 text-sm">
+            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-zinc-500 text-sm">
               <Link href="/builder" className="hover:text-white transition-colors">Builder</Link>
               <a href="#features" className="hover:text-white transition-colors">Features</a>
               <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
+              <Link href="/roadmap" className="hover:text-white transition-colors">Roadmap</Link>
               <Link href="/faq" className="hover:text-white transition-colors">FAQ</Link>
               <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
               <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
