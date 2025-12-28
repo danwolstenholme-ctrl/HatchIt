@@ -113,12 +113,12 @@ export default function UpgradeModal({ isOpen, onClose, reason, projectSlug = ''
         <div className="bg-gradient-to-br from-zinc-800/50 to-zinc-900 border border-purple-500/30 rounded-xl p-6 mb-6 ring-1 ring-purple-500/20 relative overflow-hidden">
           {/* Early Bird Banner */}
           <div className="absolute top-3 -right-8 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold py-1 px-10 rotate-45 shadow-lg">
-            EARLY BIRD
+            50% OFF
           </div>
           
           <div className="flex items-center justify-center gap-2 mb-2">
             <span className="text-2xl">🐣</span>
-            <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Hatched</span>
+            <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Go Hatched</span>
           </div>
           
           {/* Price with discount */}
@@ -127,19 +127,20 @@ export default function UpgradeModal({ isOpen, onClose, reason, projectSlug = ''
             <span className="text-4xl font-bold text-white">$24</span>
             <span className="text-zinc-400">/first month</span>
           </div>
-          <p className="text-amber-400 text-xs text-center font-medium mb-1">🎉 50% off your first month!</p>
-          <p className="text-zinc-500 text-sm text-center mb-4">then $49/month per live site</p>
+          <p className="text-amber-400 text-xs text-center font-medium mb-1">🎉 Early bird — 50% off!</p>
+          <p className="text-zinc-400 text-sm text-center">then <span className="text-white font-medium">$19/month</span> to stay live</p>
+          <p className="text-zinc-600 text-xs text-center mb-4">or $190/year (2 months free)</p>
           
           <div className="space-y-2">
             {[
               'Deploy to live URL',
               'Custom domain',
               'Buy domains in-app',
-              'Full code access',
-              'Download project',
+              'Download clean code',
+              'Unlimited edits & updates',
               'Version history',
-              'Unlimited generations',
-              'Unlimited updates'
+              'SSL included',
+              'Cancel anytime'
             ].map((feature, i) => (
               <div key={i} className="flex items-center gap-2 text-sm text-zinc-300">
                 <span className="text-purple-400">✓</span>
@@ -163,7 +164,7 @@ export default function UpgradeModal({ isOpen, onClose, reason, projectSlug = ''
         </button>
 
         <p className="text-zinc-600 text-xs text-center mt-4">
-          Cancel anytime. Your code is always yours.
+          Cancel anytime — export your code and self-host.
         </p>
 
         <div className="flex items-center justify-center gap-4 text-zinc-500 text-xs mt-6 pt-4 border-t border-zinc-800">

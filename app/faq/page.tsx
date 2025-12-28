@@ -74,7 +74,7 @@ const faqs = [
     questions: [
       {
         q: 'How much does HatchIt.dev cost?',
-        a: 'HatchIt.dev is free to use for building and previewing. The "Go Hatched" subscription costs $49/month per live site and unlocks deployment, full code access, downloads, version history, and unlimited generations. V1 Early Bird users get 50% off their first month ($24).',
+        a: 'HatchIt.dev is free to use for building and previewing. "Go Hatched" costs $24 for your first month (50% early bird discount), then $19/month to keep your site live. This includes deployment, full code access, downloads, version history, and unlimited edits. Annual plans are $190/year (2 months free).',
       },
       {
         q: 'Is there a free plan?',
@@ -82,7 +82,7 @@ const faqs = [
       },
       {
         q: 'What does "per live site" mean?',
-        a: 'Each $49/month subscription covers one deployed website. If you want to deploy multiple sites, each one requires its own subscription. This keeps pricing simple and predictable.',
+        a: 'Each subscription covers one deployed website. If you want to deploy multiple sites, each one requires its own subscription ($24 first month, then $19/month). This keeps pricing simple and predictable.',
       },
       {
         q: 'Can I cancel anytime?',
@@ -115,7 +115,7 @@ const faqs = [
       },
       {
         q: 'Is hosting included in the subscription?',
-        a: 'Yes! Hosting is included in your $49/month subscription. Your site is hosted on fast, reliable infrastructure with SSL certificates included. No additional hosting fees.',
+        a: 'Yes! Hosting is included in your $19/month subscription. Your site is hosted on fast, reliable infrastructure with SSL certificates included. No additional hosting fees.',
       },
       {
         q: 'How fast are HatchIt.dev sites?',

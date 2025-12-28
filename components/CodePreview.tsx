@@ -258,7 +258,7 @@ export default function CodePreview({ code, isPaid = false, onCodeChange, pagePa
                       onClick={() => setShowUpgradeModal(true)}
                       className="w-full py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white text-sm rounded-lg font-medium transition-all"
                     >
-                      Unlock Code — $49/mo
+                      Unlock Code — $24
                     </button>
                   </div>
                 </div>
