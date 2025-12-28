@@ -25,6 +25,17 @@ interface Message {
   isThinking?: boolean
 }
 
+interface PageInfo {
+  id: string
+  name: string
+  path: string
+}
+
+interface BrandInfo {
+  colors?: string[]
+  font?: string
+}
+
 interface ChatProps {
   onGenerate: (prompt: string, history: Message[], currentCode: string) => Promise<string | null>
   isGenerating: boolean
@@ -35,6 +46,8 @@ interface ChatProps {
   projectId?: string
   projectSlug?: string
   projectName?: string
+  pages?: PageInfo[] // All pages in the project
+  brand?: BrandInfo // Brand colors and font
   externalPrompt?: string | null
   onExternalPromptHandled?: () => void
   generationProgress?: string // Real-time status from generation
@@ -87,7 +100,7 @@ function getRandomResponse() {
   return responses[Math.floor(Math.random() * responses.length)]
 }
 
-function Chat({ onGenerate, isGenerating, onStopGeneration, currentCode, isPaid = false, onOpenAssets, projectId = '', projectSlug = '', projectName = '', externalPrompt, onExternalPromptHandled, generationProgress, suggestions = [], onSuggestionClick, canRevert = false, onRevert, resetKey = 0 }: ChatProps) {
+function Chat({ onGenerate, isGenerating, onStopGeneration, currentCode, isPaid = false, onOpenAssets, projectId = '', projectSlug = '', projectName = '', pages = [], brand, externalPrompt, onExternalPromptHandled, generationProgress, suggestions = [], onSuggestionClick, canRevert = false, onRevert, resetKey = 0 }: ChatProps) {
   const [input, setInput] = useState('')
   const [buildMessages, setBuildMessages] = useState<Message[]>([])
   const [chatMessages, setChatMessages] = useState<Message[]>([])
@@ -179,7 +192,7 @@ function Chat({ onGenerate, isGenerating, onStopGeneration, currentCode, isPaid 
     setMessages(prev => [...prev, newUserMessage])
 
     if (mode === 'chat') {
-      // Chat mode - use assistant API
+      // Chat mode - use assistant API (Opus 4.5)
       setIsChatLoading(true)
       try {
         const response = await fetch('/api/assistant', {
@@ -187,7 +200,11 @@ function Chat({ onGenerate, isGenerating, onStopGeneration, currentCode, isPaid 
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             message: userMessage, 
-            currentCode 
+            currentCode,
+            projectName,
+            pages: pages.map(p => ({ name: p.name, path: p.path })),
+            brand,
+            chatHistory: chatMessages.slice(-6) // Last 6 messages for context
           })
         })
         

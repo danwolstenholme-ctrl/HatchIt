@@ -3072,7 +3072,7 @@ export default function Home() {
           </div>
         )}
         <div className="flex-1 overflow-hidden">
-          <Chat onGenerate={handleGenerate} isGenerating={isGenerating} onStopGeneration={handleStopGeneration} currentCode={code} isPaid={isCurrentProjectPaid} onOpenAssets={() => setShowAssetsModal(true)} projectId={currentProjectId || ''} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} externalPrompt={externalPrompt} onExternalPromptHandled={() => setExternalPrompt(null)} generationProgress={generationProgress} suggestions={suggestions} onSuggestionClick={(s) => setExternalPrompt(s)} canRevert={!!previousCode && currentVersionIndex > 0} onRevert={handleRevert} resetKey={chatResetKey} key={currentProjectId} />
+          <Chat onGenerate={handleGenerate} isGenerating={isGenerating} onStopGeneration={handleStopGeneration} currentCode={code} isPaid={isCurrentProjectPaid} onOpenAssets={() => setShowAssetsModal(true)} projectId={currentProjectId || ''} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} pages={currentProject?.pages || []} brand={currentProject?.brand} externalPrompt={externalPrompt} onExternalPromptHandled={() => setExternalPrompt(null)} generationProgress={generationProgress} suggestions={suggestions} onSuggestionClick={(s) => setExternalPrompt(s)} canRevert={!!previousCode && currentVersionIndex > 0} onRevert={handleRevert} resetKey={chatResetKey} key={currentProjectId} />
         </div>
         {code && (
           <div className="px-4 py-3 border-t border-zinc-800 bg-zinc-900 flex gap-2" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
@@ -3273,7 +3273,7 @@ export default function Home() {
               </div>
             )}
             <div className="flex-1 overflow-hidden">
-              <Chat onGenerate={handleGenerate} isGenerating={isGenerating} onStopGeneration={handleStopGeneration} currentCode={code} isPaid={isCurrentProjectPaid} onOpenAssets={() => setShowAssetsModal(true)} projectId={currentProjectId || ''} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} externalPrompt={externalPrompt} onExternalPromptHandled={() => setExternalPrompt(null)} generationProgress={generationProgress} suggestions={suggestions} onSuggestionClick={(s) => setExternalPrompt(s)} canRevert={!!previousCode && currentVersionIndex > 0} onRevert={handleRevert} resetKey={chatResetKey} key={currentProjectId} />
+              <Chat onGenerate={handleGenerate} isGenerating={isGenerating} onStopGeneration={handleStopGeneration} currentCode={code} isPaid={isCurrentProjectPaid} onOpenAssets={() => setShowAssetsModal(true)} projectId={currentProjectId || ''} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} pages={currentProject?.pages || []} brand={currentProject?.brand} externalPrompt={externalPrompt} onExternalPromptHandled={() => setExternalPrompt(null)} generationProgress={generationProgress} suggestions={suggestions} onSuggestionClick={(s) => setExternalPrompt(s)} canRevert={!!previousCode && currentVersionIndex > 0} onRevert={handleRevert} resetKey={chatResetKey} key={currentProjectId} />
             </div>
           </div>
         </Panel>
