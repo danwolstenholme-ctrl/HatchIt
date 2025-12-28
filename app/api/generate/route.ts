@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { clerkClient } from '@clerk/nextjs/server'
 
-// Vercel Pro: extend timeout to 60s for Opus 4.5
-export const maxDuration = 60
+// Vercel Pro: extend timeout to 300s (5 min) for AI generation
+export const maxDuration = 300
 
 interface Message {
   role: 'user' | 'assistant'
