@@ -147,6 +147,14 @@ const faqs = [
         a: 'Absolutely. Download your project and deploy it to any hosting provider that supports Next.js - Vercel, Netlify, AWS, or your own server. The code is standard React/Next.js.',
       },
       {
+        q: 'Where is my code stored before I deploy?',
+        a: 'Your projects and version history are stored locally in your browser (localStorage). This means your work is private and instant, but it also means you should deploy to save your work permanently.',
+      },
+      {
+        q: 'How does version history work?',
+        a: 'Every time you generate or update your site, a new version is saved automatically in your browser. You can undo changes with the "Undo last change" button. When you deploy, your latest code is pushed to Vercel\'s hosting infrastructure.',
+      },
+      {
         q: 'What happens to my code if I cancel?',
         a: 'Your deployed site goes offline at the end of your billing period. You have 30 days to download your code or request it via email. After 30 days, project data is permanently deleted. Any code you\'ve already downloaded is yours forever.',
       },
