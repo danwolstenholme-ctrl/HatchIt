@@ -67,14 +67,14 @@ function AnimatedCounter({ value, suffix = '' }: { value: number; suffix?: strin
   return <span ref={ref}>{count}{suffix}</span>
 }
 
-// Floating chicks background
+// Floating chicks background - hidden on mobile for performance
 function FloatingChicks() {
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(6)].map((_, i) => (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none hidden md:block">
+      {[...Array(4)].map((_, i) => (
         <motion.div
           key={i}
-          className="absolute text-2xl sm:text-3xl opacity-20"
+          className="absolute text-3xl opacity-20"
           initial={{ 
             x: `${Math.random() * 100}%`, 
             y: `${Math.random() * 100}%`,
@@ -83,13 +83,12 @@ function FloatingChicks() {
           animate={{ 
             y: [`${Math.random() * 100}%`, `${Math.random() * 100}%`],
             x: [`${Math.random() * 100}%`, `${Math.random() * 100}%`],
-            rotate: [0, 10, -10, 0]
           }}
           transition={{ 
-            duration: 20 + Math.random() * 10, 
+            duration: 25 + Math.random() * 10, 
             repeat: Infinity,
             repeatType: 'reverse',
-            ease: 'easeInOut'
+            ease: 'linear'
           }}
         >
           🐣
@@ -141,29 +140,18 @@ export default function Home() {
     <div className="min-h-screen bg-zinc-950 text-white relative">
       <FloatingChicks />
       
-      {/* Gradient orbs */}
+      {/* Gradient orbs - reduced blur on mobile for performance */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-[100px]" />
-        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-blue-500/20 rounded-full blur-[100px]" />
-        <div className="absolute -bottom-40 left-1/3 w-80 h-80 bg-pink-500/15 rounded-full blur-[100px]" />
+        <div className="absolute -top-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl md:blur-[100px]" />
+        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl md:blur-[100px] hidden sm:block" />
+        <div className="absolute -bottom-40 left-1/3 w-80 h-80 bg-pink-500/15 rounded-full blur-3xl md:blur-[100px] hidden sm:block" />
       </div>
 
       {/* Navigation */}
-      <motion.nav 
-        className="relative z-50 px-6 py-5"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
+      <nav className="relative z-50 px-6 py-5">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2 group">
-            <motion.span 
-              className="text-2xl"
-              animate={{ rotate: [0, -10, 10, 0] }}
-              transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-            >
-              🐣
-            </motion.span>
+            <span className="text-2xl">🐣</span>
             <span className="text-xl font-bold">HatchIt</span>
           </Link>
           
@@ -188,7 +176,7 @@ export default function Home() {
             </Link>
           </div>
         </div>
-      </motion.nav>
+      </nav>
 
       {/* HERO - The main event */}
       <section className="relative px-4 sm:px-6 pt-6 pb-16 md:pt-16 md:pb-32">
@@ -345,11 +333,11 @@ export default function Home() {
           <div className="relative">
             <div className="absolute -left-4 top-0 text-6xl text-purple-500/20">"</div>
             <blockquote className="text-xl sm:text-2xl md:text-3xl text-center font-medium text-zinc-200 leading-relaxed pl-8">
-              Unlike other AI builders, HatchIt focuses on <span className="text-purple-400">code ownership and maintainability</span>. You get real React components you can actually work with.
+              I built this entire product in 3 days with Claude Opus 4.5. <span className="text-purple-400">The AI writes the code, I make the decisions.</span> This is the future of building.
             </blockquote>
             <div className="mt-6 text-center">
-              <div className="text-zinc-400 font-medium">Grant</div>
-              <div className="text-sm text-zinc-600">Senior Developer</div>
+              <div className="text-zinc-400 font-medium">Dan</div>
+              <div className="text-sm text-zinc-600">Founder, HatchIt.dev</div>
             </div>
           </div>
         </div>
