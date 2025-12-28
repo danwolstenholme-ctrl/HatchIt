@@ -1231,12 +1231,13 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
       {(code || (pages && pages.length > 0)) ? (
         <div className="relative h-full">
           {showSpinner && (
-            <div className="absolute inset-0 bg-zinc-900 flex items-center justify-center z-10">
-              <div className="flex flex-col items-center gap-3">
-                <div className="relative w-12 h-12">
+            <div className="absolute inset-0 bg-gradient-to-b from-zinc-900 to-zinc-950 flex items-center justify-center z-10">
+              <div className="flex flex-col items-center gap-4">
+                <div className="relative w-14 h-14">
                   <div className="absolute inset-0 border-2 border-zinc-700 rounded-full"></div>
-                  <div className="absolute inset-0 border-2 border-transparent border-t-blue-500 border-r-purple-500 rounded-full animate-spin"></div>
+                  <div className="absolute inset-0 border-2 border-transparent border-t-blue-500 border-r-purple-500 rounded-full animate-spin shadow-lg shadow-purple-500/20"></div>
                   <div className="absolute inset-2 border-2 border-transparent border-t-purple-500 border-r-pink-500 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+                  <div className="absolute inset-0 rounded-full animate-pulse bg-purple-500/10"></div>
                 </div>
                 <span className="text-zinc-400 text-sm font-medium">{isLoading ? (loadingProgress || 'Generating...') : 'Rendering...'}</span>
               </div>
@@ -1256,11 +1257,12 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
       ) : (
         <div className="h-full flex items-center justify-center">
           {isLoading ? (
-            <div className="flex flex-col items-center gap-3">
-              <div className="relative w-12 h-12">
+            <div className="flex flex-col items-center gap-4">
+              <div className="relative w-14 h-14">
                 <div className="absolute inset-0 border-2 border-zinc-700 rounded-full"></div>
-                <div className="absolute inset-0 border-2 border-transparent border-t-blue-500 border-r-purple-500 rounded-full animate-spin"></div>
+                <div className="absolute inset-0 border-2 border-transparent border-t-blue-500 border-r-purple-500 rounded-full animate-spin shadow-lg shadow-purple-500/20"></div>
                 <div className="absolute inset-2 border-2 border-transparent border-t-purple-500 border-r-pink-500 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+                <div className="absolute inset-0 rounded-full animate-pulse bg-purple-500/10"></div>
               </div>
               <span className="text-zinc-400 text-sm font-medium">{loadingProgress || 'Generating...'}</span>
             </div>
@@ -1268,14 +1270,14 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
             <div className="flex flex-col items-center gap-6 text-center max-w-md px-8">
               {/* Preview illustration */}
               <div className="relative">
-                <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-zinc-800 to-zinc-850 border border-zinc-700/50 flex items-center justify-center">
+                <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-zinc-800 to-zinc-900 border border-zinc-700/50 flex items-center justify-center shadow-xl shadow-black/30">
                   <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-zinc-600">
                     <rect x="3" y="3" width="18" height="18" rx="2" />
                     <path d="M3 9h18" />
                     <path d="M9 21V9" />
                   </svg>
                 </div>
-                <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
+                <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
                     <path d="M12 5v14M5 12h14" />
                   </svg>
@@ -1283,8 +1285,8 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
               </div>
               
               <div>
-                <h3 className="text-zinc-400 font-medium mb-2">Your preview will appear here</h3>
-                <p className="text-zinc-600 text-sm leading-relaxed">
+                <h3 className="text-zinc-300 font-medium mb-2">Your preview will appear here</h3>
+                <p className="text-zinc-500 text-sm leading-relaxed">
                   Describe what you want to build in the chat and watch it come to life.
                 </p>
               </div>
@@ -1294,7 +1296,7 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
                 {['Landing page', 'Dashboard', 'Form', 'Card'].map((example) => (
                   <span 
                     key={example}
-                    className="px-3 py-1.5 bg-zinc-800/50 border border-zinc-700/50 rounded-full text-xs text-zinc-500"
+                    className="px-3 py-1.5 bg-zinc-800/50 border border-zinc-700/50 rounded-full text-xs text-zinc-500 hover:text-zinc-400 hover:border-zinc-600 transition-colors"
                   >
                     {example}
                   </span>

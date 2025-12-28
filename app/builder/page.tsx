@@ -2355,7 +2355,7 @@ export default function Home() {
     <button 
       onClick={handleShipClick} 
       disabled={!code || isDeploying} 
-      className={`${mobile ? 'flex-1 py-3 rounded-xl font-semibold' : 'px-4 py-1.5 rounded-lg text-sm font-medium'} ${isDeployed ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500'} disabled:bg-zinc-700 disabled:cursor-not-allowed text-white transition-all flex items-center justify-center gap-2`}
+      className={`${mobile ? 'flex-1 py-3 rounded-xl font-semibold' : 'px-4 py-2 rounded-lg text-sm font-medium'} ${isDeployed ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 hover:shadow-lg hover:shadow-purple-500/25' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 hover:shadow-lg hover:shadow-emerald-500/25'} disabled:bg-zinc-700 disabled:cursor-not-allowed disabled:shadow-none text-white transition-all duration-200 flex items-center justify-center gap-2 active:scale-95`}
     >
       {isDeploying ? (
         <div className="flex items-center gap-2">
@@ -2375,7 +2375,7 @@ export default function Home() {
     <button 
       onClick={handleDomainClick}
       disabled={!isDeployed}
-      className={`${mobile ? 'py-3 px-4 rounded-xl font-semibold' : 'px-2.5 py-1.5 rounded-lg text-xs font-medium'} border border-zinc-700 hover:border-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed text-zinc-300 hover:text-white transition-all flex items-center justify-center gap-1.5`}
+      className={`${mobile ? 'py-3 px-4 rounded-xl font-semibold' : 'px-3 py-2 rounded-lg text-xs font-medium'} border border-zinc-700 hover:border-zinc-500 disabled:opacity-50 disabled:cursor-not-allowed text-zinc-300 hover:text-white bg-zinc-800/50 hover:bg-zinc-700/50 transition-all duration-200 flex items-center justify-center gap-1.5 active:scale-95`}
       title={isDeployed ? 'Manage domain' : 'Deploy first to connect a domain'}
     >
       <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
@@ -3092,7 +3092,7 @@ export default function Home() {
   }
 
   return (
-    <div className="h-dvh bg-zinc-950 p-3 overflow-hidden relative">
+    <div className="h-dvh bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 p-3 overflow-hidden relative">
       {!isLoadingProjects && !isDeployed && (
         <div className="absolute top-3 left-3 right-3 bg-blue-500/20 border-b border-blue-400/30 text-blue-100 text-xs px-4 py-2 rounded-t-2xl z-50">
           <div className="flex items-center gap-2">
@@ -3122,9 +3122,9 @@ export default function Home() {
       {showNewProjectModal && <NewProjectModal />}
       {showWelcomeBackModal && <WelcomeBackModal />}
       <div className={`h-full ${!isLoadingProjects && !isDeployed ? 'pt-10' : ''}`}>
-      <Group orientation="horizontal" className="h-full rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl">
+      <Group orientation="horizontal" className="h-full rounded-2xl overflow-hidden border border-zinc-800/80 shadow-2xl shadow-black/50 ring-1 ring-white/5">
         <Panel id="chat" defaultSize={28} minSize={20}>
-          <div className="h-full flex flex-col bg-zinc-900">
+          <div className="h-full flex flex-col bg-gradient-to-b from-zinc-900 to-zinc-900/95">
             <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 {/* HatchIt Menu */}
@@ -3277,25 +3277,23 @@ export default function Home() {
             </div>
           </div>
         </Panel>
-        <Separator className="w-2 bg-zinc-800 hover:bg-zinc-700 transition-colors cursor-col-resize flex items-center justify-center group">
-          <div className="w-1 h-8 bg-zinc-600 group-hover:bg-purple-500 rounded-full transition-colors" />
+        <Separator className="w-2 bg-zinc-800/50 hover:bg-zinc-700/50 transition-all duration-200 cursor-col-resize flex items-center justify-center group">
+          <div className="w-1 h-12 bg-zinc-600 group-hover:bg-gradient-to-b group-hover:from-blue-500 group-hover:to-purple-500 rounded-full transition-all duration-200 group-hover:h-16 group-hover:shadow-lg group-hover:shadow-purple-500/20" />
         </Separator>
         <Panel id="right" defaultSize={72} minSize={40}>
-          <div className="h-full flex flex-col bg-zinc-900">
-            <div className="flex items-center justify-between border-b border-zinc-800 px-6 py-2">
-              <div className="flex">
-                <button onClick={() => setActiveTab('preview')} className={`px-4 py-3 text-sm font-medium transition-all relative ${activeTab === 'preview' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>
+          <div className="h-full flex flex-col bg-gradient-to-b from-zinc-900 to-zinc-900/95">
+            <div className="flex items-center justify-between border-b border-zinc-800/80 px-6 py-2 bg-zinc-900/50 backdrop-blur-sm">
+              <div className="flex bg-zinc-800/50 rounded-lg p-1">
+                <button onClick={() => setActiveTab('preview')} className={`px-4 py-2 text-sm font-medium transition-all duration-200 rounded-md ${activeTab === 'preview' ? 'text-white bg-gradient-to-r from-blue-600/90 to-purple-600/90 shadow-lg shadow-purple-500/20' : 'text-zinc-400 hover:text-white hover:bg-zinc-700/50'}`}>
                   Preview
-                  {activeTab === 'preview' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500"></div>}
                 </button>
-                <button onClick={() => setActiveTab('code')} className={`px-4 py-3 text-sm font-medium transition-all relative ${activeTab === 'code' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>
+                <button onClick={() => setActiveTab('code')} className={`px-4 py-2 text-sm font-medium transition-all duration-200 rounded-md ${activeTab === 'code' ? 'text-white bg-gradient-to-r from-blue-600/90 to-purple-600/90 shadow-lg shadow-purple-500/20' : 'text-zinc-400 hover:text-white hover:bg-zinc-700/50'}`}>
                   <span className="flex items-center gap-2">
                     Code
                     {isGenerating && streamingCode.length > 0 && activeTab !== 'code' && (
-                      <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse" />
+                      <span className="w-2 h-2 bg-purple-400 rounded-full animate-pulse shadow-lg shadow-purple-400/50" />
                     )}
                   </span>
-                  {activeTab === 'code' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500"></div>}
                 </button>
               </div>
               <div className="flex items-center gap-3">

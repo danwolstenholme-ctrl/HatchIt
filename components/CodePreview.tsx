@@ -146,7 +146,7 @@ function CodePreview({ code, isPaid = false, onCodeChange, pagePath = '/', strea
   }, [syntaxError])
 
   return (
-    <div className={`h-full bg-zinc-950 flex flex-col relative ${isStreaming ? 'ring-2 ring-purple-500/50' : ''}`}>
+    <div className={`h-full bg-gradient-to-b from-zinc-950 to-zinc-900 flex flex-col relative ${isStreaming ? 'ring-2 ring-purple-500/50 ring-inset' : ''}`}>
       {/* Streaming glow effect */}
       {isStreaming && (
         <div className="absolute inset-0 pointer-events-none">
@@ -155,7 +155,7 @@ function CodePreview({ code, isPaid = false, onCodeChange, pagePath = '/', strea
         </div>
       )}
       
-      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-900/50">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800/80 bg-zinc-900/80 backdrop-blur-sm">
         <div className="flex items-center gap-2 text-xs font-mono text-zinc-400">
           <span className="text-zinc-600">📁</span>
           <span>app{pagePath === '/' ? '/' : pagePath + '/'}</span>
@@ -174,11 +174,11 @@ function CodePreview({ code, isPaid = false, onCodeChange, pagePath = '/', strea
           {onCodeChange && !isStreaming && (
             <button
               onClick={handleEditToggle}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-all duration-200 ${
                 isEditing 
-                  ? 'bg-green-600 hover:bg-green-500 text-white' 
-                  : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white'
-              }`}
+                  ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-lg shadow-green-500/20' 
+                  : 'bg-zinc-800/80 hover:bg-zinc-700 text-zinc-400 hover:text-white border border-zinc-700/50 hover:border-zinc-600'
+              } active:scale-95`}
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 {isEditing ? (
@@ -195,7 +195,7 @@ function CodePreview({ code, isPaid = false, onCodeChange, pagePath = '/', strea
           )}
           <button
             onClick={handleCopy}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded-lg transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-zinc-800/80 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded-lg transition-all duration-200 border border-zinc-700/50 hover:border-zinc-600 active:scale-95"
           >
           {copied ? (
             <>
@@ -242,8 +242,8 @@ function CodePreview({ code, isPaid = false, onCodeChange, pagePath = '/', strea
             <pre ref={streamingRef} className={`p-4 text-sm font-mono leading-relaxed ${isStreaming ? 'h-full overflow-auto' : ''}`}>
               <code>
                 {visibleLines.map((line, i) => (
-                  <div key={i} className="flex hover:bg-zinc-900/30 transition-colors">
-                    <span className="w-10 text-zinc-700 text-right pr-4 select-none flex-shrink-0 text-xs">
+                  <div key={i} className="flex group hover:bg-zinc-800/40 transition-colors duration-150">
+                    <span className="w-10 text-zinc-700 group-hover:text-zinc-500 text-right pr-4 select-none flex-shrink-0 text-xs transition-colors">
                       {String(i + 1).padStart(3, ' ')}
                     </span>
                     <span className={`${isStreaming ? 'text-purple-300' : 'text-zinc-300'}`}>{line || '\u00A0'}</span>
