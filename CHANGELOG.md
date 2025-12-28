@@ -12,6 +12,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.0] - 2024-12-28
+### Added
+- **Required project naming**: New projects must be named (no more random names)
+- **Welcome Back modal**: Shows on new device when you have cloud projects, auto-pulls paid projects
+- **Sync from Cloud button**: Always accessible in menu to pull deployed projects
+
+### Changed
+- Cross-device experience: Paid (Go Hatched) projects now sync automatically on new devices
+- Menu now shows badge when cloud projects available to pull
+
+---
+
 ## [1.1.8] - 2024-12-28
 ### Fixed
 - Payment success now forces page reload to sync Clerk subscription metadata

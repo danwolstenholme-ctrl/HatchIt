@@ -321,6 +321,9 @@ export default function Home() {
   const [showGithubModal, setShowGithubModal] = useState(false)
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [showDesktopMenu, setShowDesktopMenu] = useState(false)
+  const [showNewProjectModal, setShowNewProjectModal] = useState(false)
+  const [showWelcomeBackModal, setShowWelcomeBackModal] = useState(false)
+  const [newProjectName, setNewProjectName] = useState('')
   const [domainSearch, setDomainSearch] = useState('')
   const [domainSearchResult, setDomainSearchResult] = useState<{ domain: string; available: boolean; price?: number } | null>(null)
   const [isSearchingDomain, setIsSearchingDomain] = useState(false)
@@ -416,6 +419,39 @@ export default function Home() {
     }
     setIsLoadingProjects(false)
   }, [])
+
+  // Check if we should show Welcome Back modal (new device with cloud projects)
+  useEffect(() => {
+    if (isLoadingProjects || !isLoaded) return
+    
+    // Check if localStorage was empty/fresh AND user has deployed projects in cloud
+    const hasLocalProjects = projects.some(p => p.deployedSlug || (p.versions && p.versions.length > 0) || p.pages?.some(page => page.versions?.length > 0))
+    const hasCloudProjects = deployedProjects.length > 0
+    const hasSeenWelcome = localStorage.getItem('hatchit-seen-welcome')
+    
+    if (!hasLocalProjects && hasCloudProjects && !hasSeenWelcome) {
+      setShowWelcomeBackModal(true)
+    }
+  }, [isLoadingProjects, isLoaded, projects, deployedProjects])
+
+  // Pull all Go Hatched (paid) projects from cloud
+  const pullAllPaidProjects = () => {
+    const paidProjects = deployedProjects.filter(dp => 
+      subscriptions.some(s => s.projectSlug === dp.slug && s.status === 'active')
+    )
+    
+    paidProjects.forEach(project => {
+      pullProject(project)
+    })
+    
+    localStorage.setItem('hatchit-seen-welcome', 'true')
+    setShowWelcomeBackModal(false)
+  }
+
+  const skipWelcomeBack = () => {
+    localStorage.setItem('hatchit-seen-welcome', 'true')
+    setShowWelcomeBackModal(false)
+  }
 
   useEffect(() => {
     if (projects.length > 0) localStorage.setItem('hatchit-projects', JSON.stringify(projects))
@@ -530,10 +566,20 @@ export default function Home() {
       return
     }
     
-    const newProject = createNewProject()
+    // Show naming modal instead of auto-creating
+    setNewProjectName('')
+    setShowNewProjectModal(true)
+    setShowProjectDropdown(false)
+  }
+
+  const confirmCreateProject = () => {
+    if (!newProjectName.trim()) return
+    
+    const newProject = createNewProject(newProjectName.trim())
     setProjects(prev => [newProject, ...prev])
     setCurrentProjectId(newProject.id)
-    setShowProjectDropdown(false)
+    setShowNewProjectModal(false)
+    setNewProjectName('')
     setDeployedUrl(null)
     track('Project Created', { isPaid: hasAnyPaidSubscription })
   }
@@ -2741,6 +2787,120 @@ export default function Home() {
     </div>
   )
 
+  // New Project Naming Modal
+  const NewProjectModal = () => (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[10000] p-4">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-white">Name your project</h2>
+          <button onClick={() => setShowNewProjectModal(false)} className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        
+        <p className="text-sm text-zinc-400 mb-4">Give your project a memorable name. You can change it later.</p>
+        
+        <input
+          type="text"
+          value={newProjectName}
+          onChange={(e) => setNewProjectName(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && confirmCreateProject()}
+          placeholder="e.g. My Portfolio, Business Site..."
+          className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder:text-zinc-500 focus:outline-none focus:border-blue-500 mb-4"
+          autoFocus
+        />
+        
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowNewProjectModal(false)}
+            className="flex-1 px-4 py-2.5 text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-xl transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={confirmCreateProject}
+            disabled={!newProjectName.trim()}
+            className="flex-1 px-4 py-2.5 text-sm bg-blue-600 hover:bg-blue-500 disabled:bg-zinc-700 disabled:text-zinc-500 text-white rounded-xl transition-colors font-medium"
+          >
+            Create Project
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+
+  // Welcome Back Modal (cross-device sync)
+  const WelcomeBackModal = () => {
+    const paidProjects = deployedProjects.filter(dp => 
+      subscriptions.some(s => s.projectSlug === dp.slug && s.status === 'active')
+    )
+    const freeProjects = deployedProjects.filter(dp => 
+      !subscriptions.some(s => s.projectSlug === dp.slug && s.status === 'active')
+    )
+    
+    return (
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[10000] p-4">
+        <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+          <div className="text-center mb-6">
+            <div className="text-4xl mb-3">👋</div>
+            <h2 className="text-xl font-bold text-white mb-2">Welcome back!</h2>
+            <p className="text-sm text-zinc-400">We found your projects in the cloud</p>
+          </div>
+          
+          {paidProjects.length > 0 && (
+            <div className="mb-4">
+              <h3 className="text-xs font-semibold text-amber-400 uppercase tracking-wide mb-2 flex items-center gap-2">
+                <span>🐣</span> Go Hatched Projects
+              </h3>
+              <div className="space-y-2">
+                {paidProjects.map((project) => (
+                  <div key={project.slug} className="flex items-center justify-between bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
+                    <div>
+                      <div className="text-sm font-medium text-white">{project.name}</div>
+                      <div className="text-xs text-zinc-500">{project.slug}.hatchitsites.dev</div>
+                    </div>
+                    <span className="text-green-400 text-xs">✓ Will sync</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {freeProjects.length > 0 && (
+            <div className="mb-4">
+              <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">Other Projects</h3>
+              <div className="space-y-2">
+                {freeProjects.map((project) => (
+                  <div key={project.slug} className="flex items-center justify-between bg-zinc-800/50 rounded-lg p-3">
+                    <div>
+                      <div className="text-sm font-medium text-white">{project.name}</div>
+                      <div className="text-xs text-zinc-500">{project.slug}.hatchitsites.dev</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          <div className="flex gap-3 mt-6">
+            <button
+              onClick={skipWelcomeBack}
+              className="flex-1 px-4 py-3 text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-xl transition-colors"
+            >
+              Start Fresh
+            </button>
+            <button
+              onClick={pullAllPaidProjects}
+              className="flex-1 px-4 py-3 text-sm bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black rounded-xl transition-colors font-semibold"
+            >
+              {paidProjects.length > 0 ? `Pull ${paidProjects.length} Project${paidProjects.length > 1 ? 's' : ''}` : 'Continue'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (isMobile) {
     return (
       <div className="h-dvh bg-zinc-950 flex flex-col overflow-hidden relative">
@@ -2767,6 +2927,8 @@ export default function Home() {
         {showOnboarding && <OnboardingModal />}
         {showPagesPanel && <PagesPanel />}
         {showAddPageModal && <AddPageModal />}
+        {showNewProjectModal && <NewProjectModal />}
+        {showWelcomeBackModal && <WelcomeBackModal />}
         {isDeploying && <DeployingOverlay />}
         
         {/* Brand Panel Modal */}
@@ -2999,6 +3161,16 @@ export default function Home() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
                 Help & FAQ
               </button>
+              {deployedProjects.length > 0 && (
+                <>
+                  <div className="border-t border-zinc-800 my-1" />
+                  <button onClick={() => { setShowWelcomeBackModal(true); setShowMobileMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Sync from Cloud
+                    {projectsToPull.length > 0 && <span className="ml-auto text-xs bg-blue-500 text-white px-1.5 py-0.5 rounded-full">{projectsToPull.length}</span>}
+                  </button>
+                </>
+              )}
               <div className="border-t border-zinc-800 my-1" />
               <div className="flex items-center justify-center gap-2 px-4 py-2">
                 <a href="https://x.com/HatchitD28255" target="_blank" rel="noopener noreferrer" className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors" title="Follow on X">
@@ -3132,6 +3304,8 @@ export default function Home() {
       {showOnboarding && <OnboardingModal />}
       {showPagesPanel && <PagesPanel />}
       {showAddPageModal && <AddPageModal />}
+      {showNewProjectModal && <NewProjectModal />}
+      {showWelcomeBackModal && <WelcomeBackModal />}
       <div className={`h-full ${!isLoadingProjects && !isDeployed ? 'pt-10' : ''}`}>
       <Group orientation="horizontal" className="h-full rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl">
         <Panel id="chat" defaultSize={28} minSize={20}>
@@ -3218,6 +3392,16 @@ export default function Home() {
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
                           Help & FAQ
                         </button>
+                        {deployedProjects.length > 0 && (
+                          <>
+                            <div className="border-t border-zinc-800 my-1" />
+                            <button onClick={() => { setShowWelcomeBackModal(true); setShowDesktopMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                              Sync from Cloud
+                              {projectsToPull.length > 0 && <span className="ml-auto text-xs bg-blue-500 text-white px-1.5 py-0.5 rounded-full">{projectsToPull.length}</span>}
+                            </button>
+                          </>
+                        )}
                         <div className="border-t border-zinc-800 my-1" />
                         <div className="flex items-center justify-center gap-2 px-4 py-2">
                           <a href="https://x.com/HatchitD28255" target="_blank" rel="noopener noreferrer" className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors" title="Follow on X">
