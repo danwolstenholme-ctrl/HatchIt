@@ -204,25 +204,13 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-              {/* Screenshot/GIF placeholder - replace src with actual product image */}
-              <div className="bg-zinc-950 aspect-video flex items-center justify-center">
-                <img 
-                  src="/hero-preview.gif" 
-                  alt="HatchIt builder in action - describe, build, ship"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    // Fallback if image doesn't exist
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                    target.parentElement!.innerHTML = `
-                      <div class="flex flex-col items-center justify-center h-full text-zinc-600 p-8">
-                        <div class="text-6xl mb-4">🐣</div>
-                        <p class="text-lg">See it in action →</p>
-                        <a href="/builder" class="mt-4 px-6 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm text-zinc-300 transition-colors">Try the builder</a>
-                      </div>
-                    `;
-                  }}
-                />
+              {/* Interactive CTA */}
+              <div className="bg-zinc-950 aspect-video flex flex-col items-center justify-center p-8">
+                <div className="text-6xl mb-4">🐣</div>
+                <p className="text-xl text-zinc-400 mb-6">See it in action</p>
+                <Link href="/builder" className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-xl text-white font-semibold transition-all">
+                  Try the Builder →
+                </Link>
               </div>
             </div>
             <p className="text-center text-zinc-600 text-sm mt-4">Type a prompt → Watch it build → Ship in one click</p>
