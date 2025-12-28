@@ -20,6 +20,13 @@ const typeIcons: Record<ToastType, string> = {
   info: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`
 }
 
+// Escape HTML to prevent XSS
+function escapeHtml(text: string): string {
+  const div = document.createElement('div')
+  div.textContent = text
+  return div.innerHTML
+}
+
 export function showToast(message: string, options: ToastOptions = {}) {
   const { type = 'success', duration = 4000 } = options
   
@@ -27,7 +34,7 @@ export function showToast(message: string, options: ToastOptions = {}) {
   toast.className = `fixed top-4 left-1/2 -translate-x-1/2 z-[9999] ${typeStyles[type]} text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-2 animate-fade-in max-w-md`
   toast.innerHTML = `
     ${typeIcons[type]}
-    <span>${message}</span>
+    <span>${escapeHtml(message)}</span>
   `
   
   document.body.appendChild(toast)
