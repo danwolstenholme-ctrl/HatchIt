@@ -320,7 +320,7 @@ export default function RoadmapPage() {
             <h2 className="text-2xl font-bold mb-2">Have a feature request?</h2>
             <p className="text-zinc-400 mb-6">We&apos;d love to hear what you want to build next.</p>
             <a 
-              href="https://x.com/HatchitD28255" 
+              href="https://x.com/HatchItD" 
               target="_blank" 
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 rounded-xl font-semibold transition-colors"
