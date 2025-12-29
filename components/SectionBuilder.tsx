@@ -128,6 +128,7 @@ export default function SectionBuilder({
   )
   const [generatedCode, setGeneratedCode] = useState(dbSection.code || '')
   const [streamingCode, setStreamingCode] = useState('') // For real-time display
+  const [reasoning, setReasoning] = useState('') // AI's design reasoning
   const [refined, setRefined] = useState(dbSection.refined)
   const [refinementChanges, setRefinementChanges] = useState<string[]>(
     dbSection.refinement_changes || []
@@ -342,6 +343,7 @@ export default function SectionBuilder({
     setError(null)
     setStage('generating')
     setStreamingCode('')
+    setReasoning('') // Clear previous reasoning
 
     // Demo mode - simulate generation with mock code
     if (demoMode) {
@@ -396,7 +398,12 @@ export default function SectionBuilder({
         throw new Error('Generation failed')
       }
 
-      const { code: sonnetCode } = await generateResponse.json()
+      const { code: sonnetCode, reasoning: aiReasoning } = await generateResponse.json()
+      
+      // Store the AI's reasoning for display
+      if (aiReasoning) {
+        setReasoning(aiReasoning)
+      }
       
       // Reveal code progressively for visual effect - slower, more dramatic
       const chunkSize = 15 // Smaller chunks = smoother scroll
@@ -741,6 +748,21 @@ export default function SectionBuilder({
                     wasRefined={refined}
                     changes={refinementChanges}
                   />
+
+                  {/* AI Reasoning Display */}
+                  {reasoning && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-start gap-3 px-4 py-3 bg-purple-500/10 border border-purple-500/20 rounded-xl"
+                    >
+                      <span className="text-lg mt-0.5">💭</span>
+                      <div className="flex-1">
+                        <p className="text-sm text-purple-300/90 font-medium mb-1">Design Reasoning</p>
+                        <p className="text-sm text-zinc-400 leading-relaxed">{reasoning}</p>
+                      </div>
+                    </motion.div>
+                  )}
 
                   {/* Contact Form Instructions */}
                   {isContactSection && <ContactFormInstructions />}

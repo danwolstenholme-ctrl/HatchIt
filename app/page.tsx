@@ -162,6 +162,48 @@ function FloatingChicks() {
   )
 }
 
+// AI Thinking Caption - shows rotating "reasoning" messages
+function AIThinkingCaption() {
+  const thoughts = [
+    { icon: '💭', text: 'Analyzing your prompt for intent and tone...' },
+    { icon: '🎨', text: 'Choosing gradient direction to guide eye flow toward CTA' },
+    { icon: '📐', text: 'Using 6xl headline — bold enough to anchor, not overwhelm' },
+    { icon: '🎯', text: 'Purple CTA on dark = high contrast, draws immediate focus' },
+    { icon: '✨', text: 'Adding subtle hover state to reinforce interactivity' },
+    { icon: '📱', text: 'Responsive padding: tight on mobile, breathing room on desktop' },
+  ]
+  
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [isVisible, setIsVisible] = useState(true)
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsVisible(false)
+      setTimeout(() => {
+        setCurrentIndex(prev => (prev + 1) % thoughts.length)
+        setIsVisible(true)
+      }, 300)
+    }, 4000)
+    return () => clearInterval(interval)
+  }, [thoughts.length])
+  
+  const current = thoughts[currentIndex]
+  
+  return (
+    <div className="flex items-center justify-center gap-2 mt-6">
+      <motion.div
+        className="flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : -5 }}
+        transition={{ duration: 0.3 }}
+      >
+        <span className="text-sm">{current.icon}</span>
+        <span className="text-sm text-purple-300/90">{current.text}</span>
+      </motion.div>
+    </div>
+  )
+}
+
 // Section wrapper - optimized animations for all devices
 function Section({ children, className = '', id = '' }: { children: React.ReactNode; className?: string; id?: string }) {
   const ref = useRef(null)
@@ -498,8 +540,8 @@ export default function Home() {
               </div>
             </div>
             
-            {/* Caption */}
-            <p className="text-center text-sm text-zinc-500 mt-6">↑ This is real. Type a prompt, watch your site get written line by line.</p>
+            {/* AI Thinking Caption */}
+            <AIThinkingCaption />
           </motion.div>
         </div>
       </section>

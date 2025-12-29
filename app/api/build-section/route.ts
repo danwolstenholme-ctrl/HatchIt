@@ -151,9 +151,20 @@ ${brandConfig ? `- Use the brand colors specified above as primary styling
 
 ${previousContext}
 
-## FINAL REMINDER
-Return ONLY the function component. No markdown, no explanation, no code blocks.
-Just: function ${componentName}() { return (...) }
+## OUTPUT FORMAT
+
+Return your response as JSON with both code and reasoning:
+
+{
+  "code": "function ${componentName}() { return ( <section>...</section> ) }",
+  "reasoning": "Brief 1-2 sentence explanation of key design decisions - what you chose and WHY"
+}
+
+Example reasoning:
+- "Used a split layout with testimonial on left to build trust before the CTA. Chose 'Start Free Trial' over 'Sign Up' for lower commitment feel."
+- "Added gradient accent behind headline to draw eye flow. Three feature cards because odd numbers feel more dynamic than even."
+
+The reasoning should make you sound thoughtful and opinionated, not generic. Explain your CHOICES.
 
 Now build the ${sectionName} section.`
 }
@@ -209,12 +220,31 @@ export async function POST(request: NextRequest) {
       system: systemPrompt,
     })
 
-    // Extract the generated code
-    let generatedCode = response.content
+    // Extract the generated response
+    let responseText = response.content
       .filter(block => block.type === 'text')
       .map(block => block.type === 'text' ? block.text : '')
       .join('')
       .trim()
+
+    // Try to parse as JSON (new format with reasoning)
+    let generatedCode = ''
+    let reasoning = ''
+    
+    try {
+      // Clean up any markdown code blocks around JSON
+      const jsonText = responseText
+        .replace(/^```(?:json)?\n?/gm, '')
+        .replace(/\n?```$/gm, '')
+        .trim()
+      
+      const parsed = JSON.parse(jsonText)
+      generatedCode = parsed.code || ''
+      reasoning = parsed.reasoning || ''
+    } catch {
+      // Fallback: treat entire response as code (backwards compatibility)
+      generatedCode = responseText
+    }
 
     // Clean up any markdown code blocks if Sonnet added them
     generatedCode = generatedCode
@@ -235,6 +265,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       code: generatedCode,
+      reasoning,
       sectionId,
       model: 'sonnet-4.5',
     })
