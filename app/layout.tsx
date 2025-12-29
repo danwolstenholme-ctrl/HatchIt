@@ -15,16 +15,16 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://hatchit.dev'),
-  title: 'HatchIt.dev — Describe. Build. Ship.',
-  description: 'Turn your idea into a live website in 60 seconds. Just describe what you want — HatchIt.dev builds it, you ship it.',
-  keywords: ['AI website builder', 'React', 'Tailwind CSS', 'no-code', 'code generator', 'web development', 'deploy website', 'build website fast'],
-  authors: [{ name: 'HatchIt.dev' }],
-  creator: 'HatchIt.dev',
+  title: 'HatchIt — AI Website Builder That Writes Real Code',
+  description: 'Describe your website in plain English. Watch AI write real React + Tailwind code in real-time. Deploy in one click. No drag-and-drop, just code you actually own.',
+  keywords: ['AI website builder', 'React', 'Tailwind CSS', 'code generator', 'web development', 'deploy website', 'build website fast', 'Claude AI', 'live code streaming'],
+  authors: [{ name: 'HatchIt' }],
+  creator: 'HatchIt',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'HatchIt.dev',
+    title: 'HatchIt',
   },
   icons: {
     icon: [
@@ -38,22 +38,24 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://hatchit.dev',
-    siteName: 'HatchIt.dev',
-    title: 'HatchIt.dev — Describe. Build. Ship.',
-    description: 'Turn your idea into a live website in 60 seconds. Just describe what you want — HatchIt.dev builds it, you ship it.',
+    siteName: 'HatchIt',
+    title: 'HatchIt — Describe it. Watch it build. Ship it.',
+    description: 'The AI website builder that writes real React code. Not drag-and-drop. Real code you own. Built with Claude Opus 4.5.',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'HatchIt.dev — Describe. Build. Ship.',
+        alt: 'HatchIt — AI Website Builder That Writes Real Code',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'HatchIt.dev — Describe. Build. Ship.',
-    description: 'Turn your idea into a live website in 60 seconds. Just describe what you want — HatchIt.dev builds it, you ship it.',
+    site: '@HatchItD',
+    creator: '@HatchItD',
+    title: 'HatchIt — Describe it. Watch it build. Ship it. 🐣',
+    description: 'The AI website builder that writes real React code. Not drag-and-drop garbage. Real code you own.',
     images: ['/og-image.png'],
   },
   robots: {
