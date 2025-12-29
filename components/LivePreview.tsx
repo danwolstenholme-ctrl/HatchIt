@@ -713,24 +713,51 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
 
       const html = '<!DOCTYPE html>' +
         '<html><head>' +
-        '<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet">' +
-        '<style>* { margin: 0; padding: 0; box-sizing: border-box; } html, body, #root { min-height: 100%; width: 100%; } body { background: #18181b; font-family: "Raleway", system-ui, sans-serif; } .fallback-container { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center; font-family: system-ui, sans-serif; } .fallback-icon { font-size: 4rem; margin-bottom: 1rem; } .fallback-title { color: #fff; font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; } .fallback-text { color: #a1a1aa; max-width: 300px; line-height: 1.6; } .loading { color: #71717a; padding: 2rem; text-align: center; font-family: system-ui; background: #18181b; min-height: 100vh; display: flex; align-items: center; justify-content: center; }</style>' +
+        '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">' +
+        '<style>' +
+        '* { margin: 0; padding: 0; box-sizing: border-box; }' +
+        'html, body, #root { min-height: 100%; width: 100%; }' +
+        'body { background: #09090b; font-family: "Inter", system-ui, sans-serif; }' +
+        '.preview-loading { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(180deg, #09090b 0%, #18181b 100%); }' +
+        '.preview-loading-spinner { width: 32px; height: 32px; border: 2px solid #27272a; border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.8s linear infinite; }' +
+        '@keyframes spin { to { transform: rotate(360deg); } }' +
+        '.preview-loading-text { margin-top: 16px; color: #71717a; font-size: 13px; letter-spacing: 0.01em; }' +
+        '.preview-fallback { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(180deg, #09090b 0%, #18181b 100%); padding: 32px; text-align: center; }' +
+        '.preview-fallback-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2); border-radius: 100px; margin-bottom: 24px; }' +
+        '.preview-fallback-badge-dot { width: 6px; height: 6px; background: #3b82f6; border-radius: 50%; animation: pulse 2s ease-in-out infinite; }' +
+        '@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }' +
+        '.preview-fallback-badge-text { color: #3b82f6; font-size: 11px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; }' +
+        '.preview-fallback-title { color: #fafafa; font-size: 20px; font-weight: 600; margin-bottom: 8px; letter-spacing: -0.01em; }' +
+        '.preview-fallback-desc { color: #71717a; font-size: 14px; line-height: 1.6; max-width: 320px; margin-bottom: 24px; }' +
+        '.preview-fallback-hint { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: #18181b; border: 1px solid #27272a; border-radius: 8px; }' +
+        '.preview-fallback-hint-icon { color: #3b82f6; }' +
+        '.preview-fallback-hint-text { color: #a1a1aa; font-size: 12px; }' +
+        '</style>' +
         '</head><body>' +
-        '<div id="root"><div class="loading">Loading preview...</div></div>' +
-        // Load React first and expose globally IMMEDIATELY (lucide needs this during init)
-        '<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>' +
-        '<script>window.React = React; window.react = React;</script>' +
-        '<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>' +
-        '<script>window.ReactDOM = ReactDOM;</script>' +
-        // Load Tailwind and configure IMMEDIATELY
-        '<script src="https://cdn.tailwindcss.com"></script>' +
-        '<script>if(typeof tailwind!=="undefined"){tailwind.config={theme:{extend:{}},darkMode:"class"};}</script>' +
-        // Now load framer-motion and lucide (they can find React on window)
-        '<script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js"></script>' +
-        '<script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js"></script>' +
-        '<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>' +
+        '<div id="root"><div class="preview-loading"><div class="preview-loading-spinner"></div><div class="preview-loading-text">Rendering preview...</div></div></div>' +
         '<script>' +
-        '// Expose motion and lucide icons as globals with robust fallbacks\n' +
+        'window.DEPS_LOADED = { react: false, reactdom: false, tailwind: false, motion: false, lucide: false, babel: false };' +
+        'window.DEPS_TIMEOUT = null;' +
+        'window.showFallback = function(reason) {' +
+        '  document.getElementById("root").innerHTML = \'<div class="preview-fallback">\' +' +
+        '    \'<div class="preview-fallback-badge"><div class="preview-fallback-badge-dot"></div><span class="preview-fallback-badge-text">Preview Mode</span></div>\' +' +
+        '    \'<h2 class="preview-fallback-title">Complex Preview</h2>\' +' +
+        '    \'<p class="preview-fallback-desc">This design uses advanced features. Export or deploy to see the full experience.</p>\' +' +
+        '    \'<div class="preview-fallback-hint"><svg class="preview-fallback-hint-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg><span class="preview-fallback-hint-text">Your code is ready—ship it to see it live</span></div>\' +' +
+        '  \'</div>\';' +
+        '};' +
+        '</script>' +
+        // Load React
+        '<script src="https://unpkg.com/react@18/umd/react.production.min.js" onload="window.React=React;window.react=React;window.DEPS_LOADED.react=true;" onerror="showFallback()"></script>' +
+        '<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" onload="window.ReactDOM=ReactDOM;window.DEPS_LOADED.reactdom=true;" onerror="showFallback()"></script>' +
+        // Load Tailwind
+        '<script src="https://cdn.tailwindcss.com" onload="window.DEPS_LOADED.tailwind=true;if(typeof tailwind!==\'undefined\'){tailwind.config={theme:{extend:{}},darkMode:\'class\'};}" onerror="showFallback()"></script>' +
+        // Load Framer Motion and Lucide
+        '<script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js" onload="window.DEPS_LOADED.motion=true;" onerror="window.DEPS_LOADED.motion=true;"></script>' +
+        '<script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js" onload="window.DEPS_LOADED.lucide=true;" onerror="window.DEPS_LOADED.lucide=true;"></script>' +
+        '<script src="https://unpkg.com/@babel/standalone/babel.min.js" onload="window.DEPS_LOADED.babel=true;" onerror="showFallback()"></script>' +
+        '<script>' +
+        '// Setup globals with fallbacks\n' +
         'window.motion = window.Motion?.motion || { div: "div", button: "button", a: "a", span: "span", p: "p", h1: "h1", h2: "h2", h3: "h3", section: "section", main: "main", nav: "nav", ul: "ul", li: "li", img: "img", input: "input", form: "form", label: "label", textarea: "textarea", header: "header", footer: "footer", article: "article", aside: "aside" };\n' +
         'window.AnimatePresence = window.Motion?.AnimatePresence || function(props) { return props.children; };\n' +
         'window.useAnimation = window.Motion?.useAnimation || function() { return { start: function(){}, stop: function(){} }; };\n' +
@@ -740,10 +767,8 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
         'window.useSpring = window.Motion?.useSpring || function(v) { return typeof v === "number" ? v : 0; };\n' +
         'window.useMotionValue = window.Motion?.useMotionValue || function(v) { return { get: function() { return v; }, set: function() {}, onChange: function(){} }; };\n' +
         'window.LucideIcons = window.lucideReact || {};\n' +
-        '// Create stub icons if lucide failed to load\n' +
         'if (!window.LucideIcons || Object.keys(window.LucideIcons).length === 0) {\n' +
-        '  var iconStub = function() { return null; };\n' +
-        '  window.LucideIcons = new Proxy({}, { get: function() { return iconStub; } });\n' +
+        '  window.LucideIcons = new Proxy({}, { get: function() { return function() { return null; }; } });\n' +
         '}\n' +
         '</script>' +
         // Inspector script - handles element selection when inspector mode is enabled
@@ -948,22 +973,49 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
 
     const html = '<!DOCTYPE html>' +
       '<html><head>' +
-      '<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet">' +
-      '<style>* { margin: 0; padding: 0; box-sizing: border-box; } html, body, #root { min-height: 100%; width: 100%; } body { background: #18181b; } .error { color: #ef4444; padding: 2rem; font-family: monospace; white-space: pre-wrap; background: #18181b; line-height: 1.6; } .error h2 { color: #fecaca; margin-bottom: 1rem; font-size: 1rem; font-weight: bold; } .loading { color: #71717a; padding: 2rem; text-align: center; font-family: system-ui; background: #18181b; }</style>' +
+      '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">' +
+      '<style>' +
+      '* { margin: 0; padding: 0; box-sizing: border-box; }' +
+      'html, body, #root { min-height: 100%; width: 100%; }' +
+      'body { background: #09090b; font-family: "Inter", system-ui, sans-serif; }' +
+      '.preview-loading { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(180deg, #09090b 0%, #18181b 100%); }' +
+      '.preview-loading-spinner { width: 32px; height: 32px; border: 2px solid #27272a; border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.8s linear infinite; }' +
+      '@keyframes spin { to { transform: rotate(360deg); } }' +
+      '.preview-loading-text { margin-top: 16px; color: #71717a; font-size: 13px; letter-spacing: 0.01em; }' +
+      '.preview-fallback { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(180deg, #09090b 0%, #18181b 100%); padding: 32px; text-align: center; }' +
+      '.preview-fallback-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2); border-radius: 100px; margin-bottom: 24px; }' +
+      '.preview-fallback-badge-dot { width: 6px; height: 6px; background: #3b82f6; border-radius: 50%; animation: pulse 2s ease-in-out infinite; }' +
+      '@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }' +
+      '.preview-fallback-badge-text { color: #3b82f6; font-size: 11px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; }' +
+      '.preview-fallback-title { color: #fafafa; font-size: 20px; font-weight: 600; margin-bottom: 8px; letter-spacing: -0.01em; }' +
+      '.preview-fallback-desc { color: #71717a; font-size: 14px; line-height: 1.6; max-width: 320px; margin-bottom: 24px; }' +
+      '.preview-fallback-hint { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: #18181b; border: 1px solid #27272a; border-radius: 8px; }' +
+      '.preview-fallback-hint-icon { color: #3b82f6; }' +
+      '.preview-fallback-hint-text { color: #a1a1aa; font-size: 12px; }' +
+      '.error { color: #ef4444; padding: 2rem; font-family: monospace; white-space: pre-wrap; background: #18181b; line-height: 1.6; }' +
+      '.error h2 { color: #fecaca; margin-bottom: 1rem; font-size: 1rem; font-weight: bold; }' +
+      '</style>' +
       '</head><body>' +
-      '<div id="root"><div class="loading">Loading preview...</div></div>' +
-      // Load React first and expose globally IMMEDIATELY (lucide needs this during init)
-      '<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>' +
-      '<script>window.React = React; window.react = React;</script>' +
-      '<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>' +
-      '<script>window.ReactDOM = ReactDOM;</script>' +
-      // Load Tailwind and configure IMMEDIATELY
-      '<script src="https://cdn.tailwindcss.com"></script>' +
-      '<script>if(typeof tailwind!=="undefined"){tailwind.config={theme:{extend:{}},darkMode:"class"};}</script>' +
-      // Now load framer-motion and lucide (they can find React on window)
-      '<script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js"></script>' +
-      '<script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js"></script>' +
-      '<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>' +
+      '<div id="root"><div class="preview-loading"><div class="preview-loading-spinner"></div><div class="preview-loading-text">Rendering preview...</div></div></div>' +
+      '<script>' +
+      'window.showFallback = function() {' +
+      '  document.getElementById("root").innerHTML = \'<div class="preview-fallback">\' +' +
+      '    \'<div class="preview-fallback-badge"><div class="preview-fallback-badge-dot"></div><span class="preview-fallback-badge-text">Preview Mode</span></div>\' +' +
+      '    \'<h2 class="preview-fallback-title">Complex Preview</h2>\' +' +
+      '    \'<p class="preview-fallback-desc">This design uses advanced features. Export or deploy to see the full experience.</p>\' +' +
+      '    \'<div class="preview-fallback-hint"><svg class="preview-fallback-hint-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg><span class="preview-fallback-hint-text">Your code is ready—ship it to see it live</span></div>\' +' +
+      '  \'</div>\';' +
+      '};' +
+      '</script>' +
+      // Load React
+      '<script src="https://unpkg.com/react@18/umd/react.production.min.js" onload="window.React=React;window.react=React;" onerror="showFallback()"></script>' +
+      '<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" onload="window.ReactDOM=ReactDOM;" onerror="showFallback()"></script>' +
+      // Load Tailwind
+      '<script src="https://cdn.tailwindcss.com" onload="if(typeof tailwind!==\'undefined\'){tailwind.config={theme:{extend:{}},darkMode:\'class\'};}" onerror="showFallback()"></script>' +
+      // Load Framer Motion and Lucide (non-critical - fallbacks work)
+      '<script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js" onerror="true"></script>' +
+      '<script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js" onerror="true"></script>' +
+      '<script src="https://unpkg.com/@babel/standalone/babel.min.js" onerror="showFallback()"></script>' +
       '<script>' +
       '// Expose motion and lucide icons as globals\n' +
       'window.motion = window.Motion?.motion || { div: "div", button: "button", a: "a", span: "span", p: "p", h1: "h1", h2: "h2", h3: "h3", section: "section", main: "main", nav: "nav", ul: "ul", li: "li", img: "img", input: "input", form: "form", label: "label", textarea: "textarea" };\n' +
@@ -975,10 +1027,8 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
       'window.useSpring = window.Motion?.useSpring || function(v) { return v; };\n' +
       'window.useMotionValue = window.Motion?.useMotionValue || function(v) { return { get: function() { return v; }, set: function() {} }; };\n' +
       'window.LucideIcons = window.lucideReact || {};\n' +
-      '// Create stub icons if lucide failed to load\n' +
       'if (!window.LucideIcons || Object.keys(window.LucideIcons).length === 0) {\n' +
-      '  var iconStub = function() { return null; };\n' +
-      '  window.LucideIcons = new Proxy({}, { get: function() { return iconStub; } });\n' +
+      '  window.LucideIcons = new Proxy({}, { get: function() { return function() { return null; }; } });\n' +
       '}\n' +
       '</script>' +
       // Inspector script - handles element selection when inspector mode is enabled
