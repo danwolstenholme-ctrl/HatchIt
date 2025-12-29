@@ -628,7 +628,35 @@ function LegacyBuilder() {
       }
       window.history.replaceState({}, '', '/builder')
     }
-  }, [searchParams])
+    // Handle upgrade from pricing page
+    const upgradeTier = searchParams.get('upgrade')
+    if (upgradeTier === 'pro' || upgradeTier === 'agency') {
+      // Clear the URL param immediately
+      window.history.replaceState({}, '', '/builder')
+      
+      // If not logged in, they'll be redirected by middleware
+      if (user) {
+        // Start checkout for the selected tier
+        fetch('/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tier: upgradeTier })
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.url) {
+              window.location.href = data.url
+            } else {
+              showErrorToast(data.error || 'Failed to start checkout')
+            }
+          })
+          .catch(err => {
+            console.error('Checkout error:', err)
+            showErrorToast('Failed to start checkout')
+          })
+      }
+    }
+  }, [searchParams, user])
 
   // Auto-deploy after hatching (post-checkout reload)
   // This ensures the code is synced to cloud immediately after payment
