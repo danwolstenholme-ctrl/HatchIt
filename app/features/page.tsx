@@ -1,9 +1,25 @@
 'use client'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
-import { useState } from 'react'
+import { motion, useReducedMotion as useFramerReducedMotion } from 'framer-motion'
+import { useState, useEffect } from 'react'
+
+// Custom hook to detect mobile or reduced motion preference
+function useReducedMotion() {
+  const prefersReducedMotion = useFramerReducedMotion()
+  const [isMobile, setIsMobile] = useState(false)
+  
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+  
+  return prefersReducedMotion || isMobile
+}
 
 export default function FeaturesPage() {
+  const reducedMotion = useReducedMotion()
   const [expandedFeature, setExpandedFeature] = useState<string | null>(null)
 
   const coreFeatures = [
@@ -171,6 +187,17 @@ export default function FeaturesPage() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
+      {/* CSS Animations for mobile */}
+      <style jsx global>{`
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
+        .animate-fade-in-delay-1 { animation: fade-in 0.5s ease-out 0.1s forwards; opacity: 0; }
+        .animate-fade-in-delay-2 { animation: fade-in 0.5s ease-out 0.2s forwards; opacity: 0; }
+      `}</style>
+      
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 via-transparent to-transparent" />
@@ -180,23 +207,41 @@ export default function FeaturesPage() {
         </div>
         
         <div className="relative max-w-6xl mx-auto px-6 pt-32 pb-20">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center"
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm mb-6">
-              <span className="text-lg">✨</span>
-              <span>The Future of Web Development</span>
-            </div>
-            
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-              Every Feature You Need.
-              <br />
-              <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">
-                None You Don&apos;t.
-              </span>
-            </h1>
+          <div className={`text-center ${reducedMotion ? 'animate-fade-in' : ''}`}>
+            {reducedMotion ? (
+              <>
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm mb-6">
+                  <span className="text-lg">✨</span>
+                  <span>The Future of Web Development</span>
+                </div>
+                
+                <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+                  Every Feature You Need.
+                  <br />
+                  <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">
+                    None You Don&apos;t.
+                  </span>
+                </h1>
+              </>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm mb-6">
+                  <span className="text-lg">✨</span>
+                  <span>The Future of Web Development</span>
+                </div>
+                
+                <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+                  Every Feature You Need.
+                  <br />
+                  <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">
+                    None You Don&apos;t.
+                  </span>
+                </h1>
+              </motion.div>
+            )}
             
             <p className="text-xl text-zinc-400 max-w-3xl mx-auto mb-10">
               HatchIt combines the most advanced AI with intuitive design to create the ultimate website building experience. 
@@ -206,7 +251,7 @@ export default function FeaturesPage() {
             <div className="flex flex-wrap justify-center gap-4">
               <Link
                 href="/builder"
-                className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-semibold text-lg transition-all hover:scale-105 hover:shadow-lg hover:shadow-purple-500/25"
+                className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-semibold text-lg transition-all md:hover:scale-105 active:scale-95 hover:shadow-lg hover:shadow-purple-500/25"
               >
                 Start Building Free
               </Link>
@@ -217,7 +262,7 @@ export default function FeaturesPage() {
                 Our Story
               </Link>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 

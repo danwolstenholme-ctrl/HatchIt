@@ -1371,20 +1371,33 @@ export default function Home() {
       })
       const data = await response.json()
       if (data.url) {
-        // Poll for deployment readiness instead of fixed wait
+        // Poll for deployment readiness - actually verify the site responds
         const startTime = Date.now()
         const maxWait = 120000 // 2 minutes max
-        const pollInterval = 3000 // Check every 3 seconds
+        const pollInterval = 4000 // Check every 4 seconds
+        let isReady = false
+        
+        // Initial delay to let Cloudflare propagate (sites take ~10-15s minimum)
+        await new Promise(r => setTimeout(r, 8000))
         
         while (Date.now() - startTime < maxWait) {
           try {
-            const checkResponse = await fetch(data.url, { method: 'HEAD', mode: 'no-cors' })
-            // If we get here without error, site is likely ready
-            break
+            // Use a proxy endpoint to check site status (avoids CORS issues)
+            const checkResponse = await fetch(`/api/deploy?check=${encodeURIComponent(data.url)}`)
+            const checkData = await checkResponse.json()
+            if (checkData.ready) {
+              isReady = true
+              break
+            }
           } catch {
-            // Site not ready yet, wait and retry
-            await new Promise(r => setTimeout(r, pollInterval))
+            // Check failed, continue polling
           }
+          await new Promise(r => setTimeout(r, pollInterval))
+        }
+        
+        // Even if polling times out, show the URL (it might just be slow)
+        if (!isReady) {
+          console.log('Deploy polling timed out, showing URL anyway')
         }
         setDeployedUrl(data.url)
         updateCurrentProject({ deployedSlug: customName || slugName?.toLowerCase().replace(/[^a-z0-9-]/g, '-') })
@@ -1755,12 +1768,12 @@ export default function Home() {
           <div className="absolute inset-2 border-4 border-transparent border-t-blue-500 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '0.8s' }}></div>
         </div>
         <h2 className="text-xl font-bold text-white mb-2">Deploying your site...</h2>
-        <p className="text-zinc-400 text-sm mb-4">This usually takes about a minute.</p>
+        <p className="text-zinc-400 text-sm mb-4">Building and deploying to our global CDN. This usually takes 15-30 seconds.</p>
         <div className="flex items-center justify-center gap-2 text-zinc-500 text-xs">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
-          <span>Building & optimizing</span>
+          <span>Building & verifying site is live</span>
         </div>
       </div>
     </div>

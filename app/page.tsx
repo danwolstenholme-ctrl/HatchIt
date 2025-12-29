@@ -5,6 +5,24 @@ import Link from 'next/link'
 import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import { motion, useInView } from 'framer-motion'
 
+// Check if user prefers reduced motion or is on mobile
+function useReducedMotion() {
+  const [reduced, setReduced] = useState(true) // Default to reduced for SSR
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const isMobile = window.innerWidth < 768
+    setReduced(mq.matches || isMobile)
+    const handler = () => setReduced(mq.matches || window.innerWidth < 768)
+    mq.addEventListener('change', handler)
+    window.addEventListener('resize', handler)
+    return () => {
+      mq.removeEventListener('change', handler)
+      window.removeEventListener('resize', handler)
+    }
+  }, [])
+  return reduced
+}
+
 // Typewriter effect for code demo
 function TypewriterCode({ code, speed = 30 }: { code: string; speed?: number }) {
   const [displayedCode, setDisplayedCode] = useState('')
@@ -67,49 +85,54 @@ function AnimatedCounter({ value, suffix = '' }: { value: number; suffix?: strin
   return <span ref={ref}>{count}{suffix}</span>
 }
 
-// Floating chicks background - hidden on mobile for performance
+// Floating chicks background - DESKTOP ONLY
 function FloatingChicks() {
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none hidden md:block">
-      {[...Array(4)].map((_, i) => (
-        <motion.div
+    <div className="absolute inset-0 overflow-hidden pointer-events-none hidden lg:block">
+      {[...Array(3)].map((_, i) => (
+        <div
           key={i}
-          className="absolute text-3xl opacity-20"
-          initial={{ 
-            x: `${Math.random() * 100}%`, 
-            y: `${Math.random() * 100}%`,
-            scale: 0.5 + Math.random() * 0.5
-          }}
-          animate={{ 
-            y: [`${Math.random() * 100}%`, `${Math.random() * 100}%`],
-            x: [`${Math.random() * 100}%`, `${Math.random() * 100}%`],
-          }}
-          transition={{ 
-            duration: 25 + Math.random() * 10, 
-            repeat: Infinity,
-            repeatType: 'reverse',
-            ease: 'linear'
+          className="absolute text-3xl opacity-10"
+          style={{
+            left: `${20 + i * 30}%`,
+            top: `${20 + i * 20}%`,
+            animation: `float ${20 + i * 5}s ease-in-out infinite`,
           }}
         >
           🐣
-        </motion.div>
+        </div>
       ))}
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-20px); }
+        }
+      `}</style>
     </div>
   )
 }
 
-// Section wrapper with animations
+// Section wrapper - simplified for mobile
 function Section({ children, className = '', id = '' }: { children: React.ReactNode; className?: string; id?: string }) {
   const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: "-100px" })
+  const isInView = useInView(ref, { once: true, margin: "-50px" })
+  const reducedMotion = useReducedMotion()
+  
+  if (reducedMotion) {
+    return (
+      <section ref={ref} id={id} className={`${className} ${isInView ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500`}>
+        {children}
+      </section>
+    )
+  }
   
   return (
     <motion.section
       ref={ref}
       id={id}
-      initial={{ opacity: 0, y: 40 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
-      transition={{ duration: 0.8, ease: [0.21, 0.47, 0.32, 0.98] }}
+      initial={{ opacity: 0, y: 30 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
       className={className}
     >
       {children}
@@ -136,16 +159,41 @@ const demoCode = `export default function Hero() {
 }`
 
 export default function Home() {
+  const reducedMotion = useReducedMotion()
+  
+  // Simple fade-in for mobile, motion for desktop
+  const fadeIn = reducedMotion 
+    ? { className: "animate-fade-in" }
+    : { 
+        initial: { opacity: 0, y: 20 }, 
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: 0.5 }
+      }
+  
   return (
     <div className="min-h-screen bg-zinc-950 text-white relative">
       <FloatingChicks />
       
-      {/* Gradient orbs - reduced blur on mobile for performance */}
+      {/* Gradient orbs - simplified on mobile */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl md:blur-[100px]" />
-        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl md:blur-[100px] hidden sm:block" />
-        <div className="absolute -bottom-40 left-1/3 w-80 h-80 bg-pink-500/15 rounded-full blur-3xl md:blur-[100px] hidden sm:block" />
+        <div className="absolute -top-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-2xl md:blur-[100px]" />
+        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-blue-500/15 rounded-full blur-2xl md:blur-[100px] hidden md:block" />
+        <div className="absolute -bottom-40 left-1/3 w-80 h-80 bg-pink-500/10 rounded-full blur-2xl md:blur-[100px] hidden md:block" />
       </div>
+      
+      {/* CSS animations for mobile */}
+      <style jsx global>{`
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.4s ease-out forwards;
+        }
+        .animate-fade-in-delay-1 { animation-delay: 0.1s; opacity: 0; }
+        .animate-fade-in-delay-2 { animation-delay: 0.2s; opacity: 0; }
+        .animate-fade-in-delay-3 { animation-delay: 0.3s; opacity: 0; }
+      `}</style>
 
       {/* Navigation */}
       <nav className="relative z-50 px-6 py-5">
@@ -182,90 +230,152 @@ export default function Home() {
       <section className="relative px-4 sm:px-6 pt-6 pb-16 md:pt-16 md:pb-32">
         <div className="max-w-6xl mx-auto">
           {/* Badge */}
-          <motion.div 
-            className="flex justify-center mb-8"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-full">
-              <span className="relative flex h-2 w-2 flex-shrink-0">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-              </span>
-              <span className="text-xs sm:text-sm text-amber-200/80 text-center">Built in 3 days. Already changing how people build.</span>
-            </div>
-          </motion.div>
+          <div className={`flex justify-center mb-8 ${reducedMotion ? 'animate-fade-in' : ''}`}>
+            {reducedMotion ? (
+              <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-full">
+                <span className="relative flex h-2 w-2 flex-shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                </span>
+                <span className="text-xs sm:text-sm text-amber-200/80 text-center">Built in 3 days. Already changing how people build.</span>
+              </div>
+            ) : (
+              <motion.div 
+                className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-full"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <span className="relative flex h-2 w-2 flex-shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                </span>
+                <span className="text-xs sm:text-sm text-amber-200/80 text-center">Built in 3 days. Already changing how people build.</span>
+              </motion.div>
+            )}
+          </div>
 
           {/* Main headline */}
-          <motion.div 
-            className="text-center mb-6"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.1 }}
-          >
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black leading-[1] sm:leading-[0.95] tracking-tight mb-6">
-              <span className="block">Describe it.</span>
-              <span className="block bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">Watch it build.</span>
-              <span className="block">Ship it.</span>
-            </h1>
-          </motion.div>
+          <div className={`text-center mb-6 ${reducedMotion ? 'animate-fade-in animate-fade-in-delay-1' : ''}`}>
+            {reducedMotion ? (
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black leading-[1] sm:leading-[0.95] tracking-tight mb-6">
+                <span className="block">Describe it.</span>
+                <span className="block bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">Watch it build.</span>
+                <span className="block">Ship it.</span>
+              </h1>
+            ) : (
+              <motion.h1
+                className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black leading-[1] sm:leading-[0.95] tracking-tight mb-6"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+              >
+                <span className="block">Describe it.</span>
+                <span className="block bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">Watch it build.</span>
+                <span className="block">Ship it.</span>
+              </motion.h1>
+            )}
+          </div>
 
           {/* Subheadline */}
-          <motion.p 
-            className="text-center text-lg sm:text-xl md:text-2xl text-zinc-400 max-w-3xl mx-auto mb-8 leading-relaxed"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            The AI website builder that writes <span className="text-white font-medium">real, maintainable</span> React code. Not drag-and-drop garbage. Actual code you own.
-          </motion.p>
+          <div className={`${reducedMotion ? 'animate-fade-in animate-fade-in-delay-2' : ''}`}>
+            {reducedMotion ? (
+              <p className="text-center text-lg sm:text-xl md:text-2xl text-zinc-400 max-w-3xl mx-auto mb-8 leading-relaxed">
+                The AI website builder that writes <span className="text-white font-medium">real, maintainable</span> React code. Not drag-and-drop garbage. Actual code you own.
+              </p>
+            ) : (
+              <motion.p 
+                className="text-center text-lg sm:text-xl md:text-2xl text-zinc-400 max-w-3xl mx-auto mb-8 leading-relaxed"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                The AI website builder that writes <span className="text-white font-medium">real, maintainable</span> React code. Not drag-and-drop garbage. Actual code you own.
+              </motion.p>
+            )}
+          </div>
 
           {/* CTAs */}
-          <motion.div 
-            className="flex flex-col sm:flex-row justify-center gap-4 mb-12"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            <Link href="/builder" className="group px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-bold text-lg transition-all hover:scale-105 hover:shadow-xl hover:shadow-purple-500/25 flex items-center justify-center gap-2">
-              Start Building Free
-              <span className="group-hover:translate-x-1 transition-transform">→</span>
-            </Link>
-            <Link href="/how-it-works" className="px-8 py-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-xl font-semibold text-lg transition-all flex items-center justify-center gap-2">
-              See How It Works
-            </Link>
-          </motion.div>
+          <div className={`flex flex-col sm:flex-row justify-center gap-4 mb-12 ${reducedMotion ? 'animate-fade-in animate-fade-in-delay-3' : ''}`}>
+            {reducedMotion ? (
+              <>
+                <Link href="/builder" className="group px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-bold text-lg transition-all active:scale-95 flex items-center justify-center gap-2">
+                  Start Building Free
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </Link>
+                <Link href="/how-it-works" className="px-8 py-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-xl font-semibold text-lg transition-all flex items-center justify-center gap-2">
+                  See How It Works
+                </Link>
+              </>
+            ) : (
+              <motion.div 
+                className="flex flex-col sm:flex-row justify-center gap-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+              >
+                <Link href="/builder" className="group px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-bold text-lg transition-all hover:scale-105 hover:shadow-xl hover:shadow-purple-500/25 flex items-center justify-center gap-2">
+                  Start Building Free
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </Link>
+                <Link href="/how-it-works" className="px-8 py-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-xl font-semibold text-lg transition-all flex items-center justify-center gap-2">
+                  See How It Works
+                </Link>
+              </motion.div>
+            )}
+          </div>
 
           {/* Trust badges */}
-          <motion.div 
-            className="flex flex-wrap justify-center gap-6 text-sm text-zinc-500 mb-16"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <div className="flex items-center gap-2">
-              <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
-              <span>No credit card required</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
-              <span>10 free generations/day</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
-              <span>Export your code anytime</span>
-            </div>
-          </motion.div>
+          <div className={`flex flex-wrap justify-center gap-6 text-sm text-zinc-500 mb-16 ${reducedMotion ? 'animate-fade-in animate-fade-in-delay-3' : ''}`}>
+            {reducedMotion ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+                  <span>No credit card required</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+                  <span>10 free generations/day</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+                  <span>Export your code anytime</span>
+                </div>
+              </>
+            ) : (
+              <motion.div
+                className="flex flex-wrap justify-center gap-6"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+              >
+                <div className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+                  <span>No credit card required</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+                  <span>10 free generations/day</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+                  <span>Export your code anytime</span>
+                </div>
+              </motion.div>
+            )}
+          </div>
 
           {/* LIVE CODE DEMO - The showstopper */}
-          <motion.div 
-            className="relative max-w-5xl mx-auto"
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-          >
-            <div className="absolute -inset-4 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-amber-500/20 rounded-3xl blur-2xl" />
+          <div className={`relative max-w-5xl mx-auto ${reducedMotion ? 'animate-fade-in animate-fade-in-delay-3' : ''}`}>
+            {!reducedMotion && (
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.5 }}
+                className="absolute inset-0 pointer-events-none"
+              />
+            )}
+            <div className="absolute -inset-4 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-amber-500/20 rounded-3xl blur-xl" />
             <div className="relative bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl">
               {/* Browser chrome */}
               <div className="bg-zinc-900 px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
@@ -323,7 +433,7 @@ export default function Home() {
             
             {/* Caption */}
             <p className="text-center text-sm text-zinc-500 mt-6">↑ This is real. Type a prompt, watch your site get written line by line.</p>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -362,7 +472,7 @@ export default function Home() {
               { icon: '⚡', title: 'Live Code Streaming', description: 'Watch your site being written in real-time. See the code appear as the AI thinks. Pure magic.', gradient: 'from-amber-500 to-orange-600', badge: 'Hatched' },
               { icon: '🚀', title: 'Ship in One Click', description: 'Deploy to our global CDN instantly. Get a live URL in seconds. Connect your own domain.', gradient: 'from-emerald-500 to-teal-600' },
             ].map((feature, i) => (
-              <motion.div key={i} className="group relative p-6 bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-zinc-700 transition-all duration-300" whileHover={{ y: -4 }}>
+              <div key={i} className="group relative p-6 bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-zinc-700 transition-all duration-300 hover:-translate-y-1">
                 <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-5 rounded-2xl transition-opacity`} />
                 <div className="relative">
                   <div className="flex items-start justify-between mb-4">
@@ -374,7 +484,7 @@ export default function Home() {
                   <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
                   <p className="text-zinc-400">{feature.description}</p>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
 
@@ -437,11 +547,11 @@ export default function Home() {
               { name: 'Fast', icon: '⚡', desc: 'Performance' },
               { name: 'Yours', icon: '💝', desc: '100% ownership' },
             ].map((tech, i) => (
-              <motion.div key={i} className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl text-center hover:border-zinc-700 transition-colors" whileHover={{ scale: 1.02 }}>
+              <div key={i} className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl text-center hover:border-zinc-700 transition-all hover:scale-[1.02]">
                 <span className="text-2xl block mb-2">{tech.icon}</span>
                 <div className="font-medium text-sm">{tech.name}</div>
                 <div className="text-xs text-zinc-600">{tech.desc}</div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -521,19 +631,19 @@ export default function Home() {
       {/* FINAL CTA */}
       <Section className="px-6 py-24">
         <div className="max-w-4xl mx-auto text-center">
-          <motion.div initial={{ scale: 0.9, opacity: 0 }} whileInView={{ scale: 1, opacity: 1 }} viewport={{ once: true }} className="relative p-12 md:p-16 bg-gradient-to-br from-purple-900/40 via-pink-900/30 to-amber-900/40 border border-purple-500/20 rounded-3xl overflow-hidden">
+          <div className={`relative p-12 md:p-16 bg-gradient-to-br from-purple-900/40 via-pink-900/30 to-amber-900/40 border border-purple-500/20 rounded-3xl overflow-hidden ${reducedMotion ? 'animate-fade-in' : ''}`}>
             <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
             <div className="absolute top-4 left-4 text-4xl opacity-30">🐣</div>
             <div className="absolute bottom-4 right-4 text-4xl opacity-30">🐣</div>
             <div className="relative">
               <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6">Ready to hatch something?</h2>
               <p className="text-xl text-zinc-300 mb-8 max-w-2xl mx-auto">Your next website is one prompt away. Start building for free.</p>
-              <Link href="/builder" className="inline-flex items-center gap-2 px-10 py-5 bg-white text-zinc-900 hover:bg-zinc-100 rounded-xl font-bold text-xl transition-all hover:scale-105">
+              <Link href="/builder" className="inline-flex items-center gap-2 px-10 py-5 bg-white text-zinc-900 hover:bg-zinc-100 rounded-xl font-bold text-xl transition-all md:hover:scale-105 active:scale-95">
                 Start Building Free <span>→</span>
               </Link>
               <p className="text-sm text-zinc-500 mt-4">No credit card • No signup required to try</p>
             </div>
-          </motion.div>
+          </div>
         </div>
       </Section>
 

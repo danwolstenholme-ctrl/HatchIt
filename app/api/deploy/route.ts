@@ -3,6 +3,48 @@ import { auth } from '@clerk/nextjs/server'
 import { clerkClient } from '@clerk/nextjs/server'
 import { track } from '@vercel/analytics/server'
 
+// GET handler to check if a deployed site is ready
+export async function GET(req: NextRequest) {
+  const checkUrl = req.nextUrl.searchParams.get('check')
+  
+  if (!checkUrl) {
+    return NextResponse.json({ error: 'Missing check URL' }, { status: 400 })
+  }
+  
+  try {
+    // Validate the URL is from our domain
+    const url = new URL(checkUrl)
+    if (!url.hostname.endsWith('.hatchitsites.dev')) {
+      return NextResponse.json({ error: 'Invalid URL' }, { status: 400 })
+    }
+    
+    // Try to fetch the site with a timeout
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 5000)
+    
+    try {
+      const response = await fetch(checkUrl, {
+        method: 'HEAD',
+        signal: controller.signal,
+        headers: {
+          'User-Agent': 'HatchIt-Deploy-Check/1.0'
+        }
+      })
+      clearTimeout(timeout)
+      
+      // Site is ready if we get any successful response
+      const ready = response.ok || response.status === 304
+      return NextResponse.json({ ready, status: response.status })
+    } catch (fetchError) {
+      clearTimeout(timeout)
+      // Site not ready yet
+      return NextResponse.json({ ready: false, error: 'Site not responding' })
+    }
+  } catch (error) {
+    return NextResponse.json({ ready: false, error: 'Invalid URL format' })
+  }
+}
+
 // Type for site subscription
 interface SiteSubscription {
   projectSlug: string
