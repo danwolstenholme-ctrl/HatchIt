@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/favicon.png', type: 'image/png' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
     ],
     apple: [
       { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
@@ -40,10 +40,10 @@ export const metadata: Metadata = {
     url: 'https://hatchit.dev',
     siteName: 'HatchIt',
     title: 'HatchIt — Describe it. Watch it build. Ship it.',
-    description: 'The AI website builder that writes real React code. Not drag-and-drop. Real code you own. Built with Claude Opus 4.5.',
+    description: 'The AI website builder that writes real React code. Not drag-and-drop. Real code you own. Built with Claude Sonnet 4.',
     images: [
       {
-        url: '/og-image.png',
+        url: '/banner-og.svg',
         width: 1200,
         height: 630,
         alt: 'HatchIt — AI Website Builder That Writes Real Code',
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     creator: '@HatchItD',
     title: 'HatchIt — Describe it. Watch it build. Ship it. 🐣',
     description: 'The AI website builder that writes real React code. Not drag-and-drop garbage. Real code you own.',
-    images: ['/og-image.png'],
+    images: ['/banner-og.svg'],
   },
   robots: {
     index: true,

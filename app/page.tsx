@@ -600,18 +600,6 @@ export default function Home() {
               { step: '03', title: 'Ship', description: 'One click. Live URL. Your site is on the internet. Connect your domain if you want.', icon: '🚀' },
             ].map((item, i) => (
               <div key={i} className="relative">
-                {i < 2 && (
-                  <div className="hidden md:block absolute top-12 left-full w-[calc(100%-2rem)] h-[2px] z-0 overflow-hidden">
-                    <motion.div 
-                      className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-transparent shimmer-smooth"
-                      style={{ willChange: 'transform' }}
-                      initial={{ x: '-100%' }}
-                      whileInView={{ x: '0%' }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 1, delay: 0.5 + i * 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-                    />
-                  </div>
-                )}
                 <motion.div 
                   className="relative z-10 text-center md:text-left"
                   style={{ willChange: 'transform, opacity' }}
