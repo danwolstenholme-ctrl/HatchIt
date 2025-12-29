@@ -336,7 +336,7 @@ function WelcomeContent() {
           onClick={() => router.push(config.ctaUrl)}
           className={`px-8 py-4 ${
             tier === 'agency' 
-              ? 'bg-gradient-to-r from-orange-500 to-amber-500 shadow-orange-500/25' 
+              ? 'bg-gradient-to-r from-amber-500 to-orange-500 shadow-amber-500/25' 
               : tier === 'pro'
               ? 'bg-gradient-to-r from-purple-600 to-pink-600 shadow-purple-500/25'
               : 'bg-gradient-to-r from-zinc-600 to-zinc-500 shadow-zinc-500/25'

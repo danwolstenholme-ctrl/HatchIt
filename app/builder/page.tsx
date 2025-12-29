@@ -1794,7 +1794,7 @@ function LegacyBuilder() {
         )}
         <div className="flex gap-3 justify-end">
           <button onClick={() => setShowStartOverModal(false)} className="px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors">Cancel</button>
-          <button onClick={startOver} className="px-4 py-2 text-sm bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white rounded-xl transition-colors">Start Fresh</button>
+          <button onClick={startOver} className="px-4 py-2 text-sm bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white rounded-xl transition-colors">Start Fresh</button>
         </div>
       </div>
     </div>
