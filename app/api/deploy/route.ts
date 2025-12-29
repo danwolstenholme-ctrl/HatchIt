@@ -108,7 +108,10 @@ export async function POST(req: NextRequest) {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '') || 'site'
-    const slug = `${baseSlug}-${userSuffix}`
+    
+    // Check if the slug already ends with the user suffix (re-deploying existing project)
+    // This prevents double-suffix issue when updating a deployed project
+    const slug = baseSlug.endsWith(`-${userSuffix}`) ? baseSlug : `${baseSlug}-${userSuffix}`
 
     // Verify this specific project has an active subscription
     const client = await clerkClient()
