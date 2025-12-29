@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, Suspense } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useUser } from '@clerk/nextjs'
@@ -11,6 +11,7 @@ import CodePreview from '@/components/CodePreview'
 import LivePreview from '@/components/LivePreview'
 import HatchModal from '@/components/HatchModal'    
 import SuccessModal from '@/components/SuccessModal'
+import BuildFlowController from '@/components/BuildFlowController'
 import { isPaidUser } from '@/app/lib/generation-limit'
 import { showSuccessToast, showErrorToast } from '@/app/lib/toast'
 
@@ -300,7 +301,49 @@ const migrateToMultiPage = (project: Project): Project => {
   }
 }
 
+// =============================================================================
+// BUILDER PAGE WRAPPER
+// Switches between V3 structured flow and legacy freeform builder
+// URL: /builder → V3 (default)
+// URL: /builder?mode=legacy → Legacy builder
+// =============================================================================
+
+function BuilderContent() {
+  const searchParams = useSearchParams()
+  const mode = searchParams.get('mode')
+  const projectId = searchParams.get('project') // For resuming V3 projects
+
+  // V3 Structured Build Flow (default)
+  if (mode !== 'legacy') {
+    return <BuildFlowController existingProjectId={projectId || undefined} />
+  }
+
+  // Legacy freeform builder
+  return <LegacyBuilder />
+}
+
 export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full"
+        />
+      </div>
+    }>
+      <BuilderContent />
+    </Suspense>
+  )
+}
+
+// =============================================================================
+// LEGACY BUILDER
+// The original freeform builder (now accessible via /builder?mode=legacy)
+// =============================================================================
+
+function LegacyBuilder() {
   const [projects, setProjects] = useState<Project[]>([])
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null)
   const [isLoadingProjects, setIsLoadingProjects] = useState(true)

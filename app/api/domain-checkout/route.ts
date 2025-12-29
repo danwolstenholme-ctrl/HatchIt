@@ -3,9 +3,15 @@ import { auth } from '@clerk/nextjs/server'
 import { clerkClient } from '@clerk/nextjs/server'
 import Stripe from 'stripe'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-12-15.clover',
-})
+// Lazy initialization to prevent build-time errors when env vars are missing
+const getStripe = () => {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('STRIPE_SECRET_KEY is not configured')
+  }
+  return new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2025-12-15.clover',
+  })
+}
 
 // Markup percentage (e.g., 0.20 = 20% markup)
 const MARKUP = 0.20
@@ -21,6 +27,7 @@ interface SiteSubscription {
 
 export async function POST(request: NextRequest) {
   try {
+    const stripe = getStripe()
     const { userId } = await auth()
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

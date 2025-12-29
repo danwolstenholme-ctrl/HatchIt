@@ -331,7 +331,7 @@ export default function Home() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
               </span>
-              <span className="relative text-xs sm:text-sm text-amber-200/80 text-center">Built in 3 days. Already changing how people build.</span>
+              <span className="relative text-xs sm:text-sm text-amber-200/80 text-center">Built in 3 days. Perfected in 7.</span>
             </motion.div>
           </div>
 
@@ -510,7 +510,7 @@ export default function Home() {
           <div className="relative">
             <div className="absolute -left-4 top-0 text-6xl text-purple-500/20">{"\""}</div>
             <blockquote className="text-xl sm:text-2xl md:text-3xl text-center font-medium text-zinc-200 leading-relaxed pl-8">
-              I built this entire product in 3 days with Claude Opus 4.5. <span className="text-purple-400">The AI writes the code, I make the decisions.</span> This is the future of building.
+              I built this entire product in 7 days with Claude Opus 4.5. <span className="text-purple-400">The AI writes the code, I make the decisions.</span> This is the future of building.
             </blockquote>
             <div className="mt-6 text-center">
               <div className="text-zinc-400 font-medium">Dan</div>
@@ -555,7 +555,7 @@ export default function Home() {
                     <motion.span 
                       className="text-4xl block"
                       style={{ willChange: 'transform' }}
-                      whileHover={{ scale: 1.2, rotate: [0, -10, 10, 0] }}
+                      whileHover={{ scale: 1.2, rotate: 10 }}
                       transition={{ type: 'spring', stiffness: 400, damping: 10 }}
                     >
                       {feature.icon}
@@ -674,7 +674,7 @@ export default function Home() {
                 <motion.span 
                   className="text-2xl block mb-2"
                   style={{ willChange: 'transform' }}
-                  whileHover={{ scale: 1.2, rotate: [0, -10, 10, 0] }}
+                  whileHover={{ scale: 1.2, rotate: 10 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 10 }}
                 >
                   {tech.icon}

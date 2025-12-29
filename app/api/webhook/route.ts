@@ -4,9 +4,15 @@ import Stripe from 'stripe'
 import { clerkClient } from '@clerk/nextjs/server'
 import { track } from '@vercel/analytics/server'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-12-15.clover',
-})
+// Lazy initialization to prevent build-time errors when env vars are missing
+const getStripe = () => {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('STRIPE_SECRET_KEY is not configured')
+  }
+  return new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2025-12-15.clover',
+  })
+}
 
 // Type for site subscription
 interface SiteSubscription {
@@ -29,6 +35,7 @@ export async function POST(req: Request) {
   let event: Stripe.Event
 
   try {
+    const stripe = getStripe()
     event = stripe.webhooks.constructEvent(
       body,
       signature,

@@ -51,7 +51,7 @@ function logAssistantUsage(userId: string, messageLength: number, inputTokens: n
     inputTokens,
     outputTokens,
     totalTokens: inputTokens + outputTokens,
-    model: 'claude-opus-4-20250514'
+    model: 'claude-3-5-haiku-20241022'
   }))
 }
 
@@ -206,7 +206,7 @@ export async function POST(request: NextRequest) {
     messages.push({ role: 'user', content: message })
 
     const response = await anthropic.messages.create({
-      model: 'claude-opus-4-20250514',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 1024,
       system: systemPrompt,
       messages
@@ -222,7 +222,10 @@ export async function POST(request: NextRequest) {
       response.usage.output_tokens
     )
 
-    return NextResponse.json({ message: assistantMessage })
+    return NextResponse.json({ 
+      message: assistantMessage,
+      model: 'haiku-3.5'
+    })
   } catch (error) {
     console.error('Assistant error:', error instanceof Error ? error.message : String(error))
     console.error('Full error:', error)

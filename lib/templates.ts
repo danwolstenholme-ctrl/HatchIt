@@ -1,0 +1,377 @@
+// HatchIt V3.0 - Structured Build Templates
+// The shift from "magic box" to "guided craftsmanship"
+
+export interface Section {
+  id: string
+  name: string
+  description: string // Shown to user - why this section matters
+  prompt: string // Contextual prompt/tip for the user
+  estimatedTime: string // "~30 seconds"
+  required: boolean
+  order: number
+}
+
+export interface Template {
+  id: string
+  name: string
+  icon: string
+  description: string
+  sections: Section[]
+  isAdvanced?: boolean // For "Custom" mode
+}
+
+// =============================================================================
+// LANDING PAGE TEMPLATE
+// The most common use case - SaaS, product launches, services
+// =============================================================================
+export const landingPageTemplate: Template = {
+  id: 'landing-page',
+  name: 'Landing Page',
+  icon: '🚀',
+  description: 'Perfect for SaaS, products, services, or any business that needs to convert visitors.',
+  sections: [
+    {
+      id: 'hero',
+      name: 'Hero Section',
+      description: 'Your first impression. The headline and call-to-action that hooks visitors.',
+      prompt: 'Describe your product/service and who it\'s for. What\'s the main benefit?',
+      estimatedTime: '~30s',
+      required: true,
+      order: 1,
+    },
+    {
+      id: 'social-proof',
+      name: 'Social Proof',
+      description: 'Build trust with testimonials, client logos, or stats.',
+      prompt: 'Who uses your product? Any testimonials, notable clients, or impressive numbers?',
+      estimatedTime: '~30s',
+      required: false,
+      order: 2,
+    },
+    {
+      id: 'features',
+      name: 'Features',
+      description: 'Show what you offer. Benefits over features when possible.',
+      prompt: 'What are the 3-6 main features or benefits? Focus on what users get, not how it works.',
+      estimatedTime: '~30s',
+      required: true,
+      order: 3,
+    },
+    {
+      id: 'how-it-works',
+      name: 'How It Works',
+      description: 'A simple 3-step process that shows ease of use.',
+      prompt: 'Break down the user journey into 3 simple steps. Start → Middle → Result.',
+      estimatedTime: '~30s',
+      required: false,
+      order: 4,
+    },
+    {
+      id: 'pricing',
+      name: 'Pricing',
+      description: 'Clear pricing tiers with a recommended option.',
+      prompt: 'Describe your pricing tiers. Which one should be highlighted as recommended?',
+      estimatedTime: '~30s',
+      required: false,
+      order: 5,
+    },
+    {
+      id: 'faq',
+      name: 'FAQ',
+      description: 'Answer common questions before they\'re asked.',
+      prompt: 'What are 4-6 questions your users commonly ask?',
+      estimatedTime: '~30s',
+      required: false,
+      order: 6,
+    },
+    {
+      id: 'footer',
+      name: 'Footer',
+      description: 'Navigation, legal links, and contact info.',
+      prompt: 'Company name, key links, and any social media handles?',
+      estimatedTime: '~20s',
+      required: true,
+      order: 7,
+    },
+  ],
+}
+
+// =============================================================================
+// PORTFOLIO TEMPLATE
+// For creatives, developers, designers, photographers
+// =============================================================================
+export const portfolioTemplate: Template = {
+  id: 'portfolio',
+  name: 'Portfolio',
+  icon: '🎨',
+  description: 'Showcase your work. Perfect for designers, developers, photographers, and creatives.',
+  sections: [
+    {
+      id: 'hero',
+      name: 'Hero / Intro',
+      description: 'Your name, title, and a brief intro that captures who you are.',
+      prompt: 'Your name, what you do, and one sentence about your style or approach.',
+      estimatedTime: '~30s',
+      required: true,
+      order: 1,
+    },
+    {
+      id: 'work',
+      name: 'Work / Projects',
+      description: 'A grid or gallery of your best work.',
+      prompt: 'Describe 3-6 projects. Include project names and brief descriptions.',
+      estimatedTime: '~45s',
+      required: true,
+      order: 2,
+    },
+    {
+      id: 'about',
+      name: 'About Me',
+      description: 'Your story, background, and what makes you unique.',
+      prompt: 'A paragraph about your background, experience, and what drives your work.',
+      estimatedTime: '~30s',
+      required: true,
+      order: 3,
+    },
+    {
+      id: 'services',
+      name: 'Services',
+      description: 'What you offer and how people can work with you.',
+      prompt: 'What services do you offer? Include any specialties or unique offerings.',
+      estimatedTime: '~30s',
+      required: false,
+      order: 4,
+    },
+    {
+      id: 'contact',
+      name: 'Contact',
+      description: 'How to get in touch.',
+      prompt: 'Email, social links, or a contact form? What\'s your preferred contact method?',
+      estimatedTime: '~20s',
+      required: true,
+      order: 5,
+    },
+    {
+      id: 'footer',
+      name: 'Footer',
+      description: 'Simple footer with links and copyright.',
+      prompt: 'Your name/brand and any additional links.',
+      estimatedTime: '~15s',
+      required: true,
+      order: 6,
+    },
+  ],
+}
+
+// =============================================================================
+// PRODUCT PAGE TEMPLATE
+// For e-commerce, physical products, apps
+// =============================================================================
+export const productPageTemplate: Template = {
+  id: 'product-page',
+  name: 'Product Page',
+  icon: '📦',
+  description: 'Sell a specific product. Great for e-commerce, apps, or physical goods.',
+  sections: [
+    {
+      id: 'product-hero',
+      name: 'Product Hero',
+      description: 'The product front and center with key selling points.',
+      prompt: 'Product name, tagline, price, and the main visual description.',
+      estimatedTime: '~30s',
+      required: true,
+      order: 1,
+    },
+    {
+      id: 'features-benefits',
+      name: 'Features & Benefits',
+      description: 'What the product does and why it matters.',
+      prompt: 'List 4-6 features and the benefit each provides to the user.',
+      estimatedTime: '~30s',
+      required: true,
+      order: 2,
+    },
+    {
+      id: 'specifications',
+      name: 'Specifications',
+      description: 'Technical details, dimensions, materials.',
+      prompt: 'Any specs, dimensions, materials, or technical details?',
+      estimatedTime: '~25s',
+      required: false,
+      order: 3,
+    },
+    {
+      id: 'reviews',
+      name: 'Reviews',
+      description: 'Customer testimonials and ratings.',
+      prompt: 'Any customer reviews or testimonials to include?',
+      estimatedTime: '~30s',
+      required: false,
+      order: 4,
+    },
+    {
+      id: 'related-products',
+      name: 'Related Products',
+      description: 'Cross-sell or upsell opportunities.',
+      prompt: 'Any related products or accessories to show?',
+      estimatedTime: '~25s',
+      required: false,
+      order: 5,
+    },
+    {
+      id: 'cta',
+      name: 'Call to Action',
+      description: 'Final push to buy with urgency or bonus.',
+      prompt: 'Any special offer, guarantee, or urgency to include?',
+      estimatedTime: '~20s',
+      required: true,
+      order: 6,
+    },
+  ],
+}
+
+// =============================================================================
+// DOCUMENTATION TEMPLATE
+// For developer docs, help centers, knowledge bases
+// =============================================================================
+export const documentationTemplate: Template = {
+  id: 'documentation',
+  name: 'Documentation',
+  icon: '📚',
+  description: 'Clean documentation for products, APIs, or help centers.',
+  sections: [
+    {
+      id: 'doc-hero',
+      name: 'Documentation Hero',
+      description: 'Title, search bar, and quick links.',
+      prompt: 'What is this documentation for? Any main categories to highlight?',
+      estimatedTime: '~25s',
+      required: true,
+      order: 1,
+    },
+    {
+      id: 'getting-started',
+      name: 'Getting Started',
+      description: 'Quick start guide for new users.',
+      prompt: 'What are the first 3-5 steps a new user should take?',
+      estimatedTime: '~30s',
+      required: true,
+      order: 2,
+    },
+    {
+      id: 'categories',
+      name: 'Categories / Topics',
+      description: 'Main documentation sections.',
+      prompt: 'What are the 4-8 main categories or topics?',
+      estimatedTime: '~30s',
+      required: true,
+      order: 3,
+    },
+    {
+      id: 'popular-articles',
+      name: 'Popular Articles',
+      description: 'Most-read or most-needed docs.',
+      prompt: 'What are the most common questions or popular articles?',
+      estimatedTime: '~25s',
+      required: false,
+      order: 4,
+    },
+    {
+      id: 'doc-footer',
+      name: 'Footer',
+      description: 'Links, support contact, version info.',
+      prompt: 'Support email, version number, any important links?',
+      estimatedTime: '~15s',
+      required: true,
+      order: 5,
+    },
+  ],
+}
+
+// =============================================================================
+// CUSTOM TEMPLATE
+// For power users who know what they want
+// =============================================================================
+export const customTemplate: Template = {
+  id: 'custom',
+  name: 'Custom',
+  icon: '⚡',
+  description: 'Build anything. For experienced users who know exactly what they need.',
+  isAdvanced: true,
+  sections: [
+    {
+      id: 'custom-build',
+      name: 'Custom Build',
+      description: 'Freeform building with AI assistance.',
+      prompt: 'In one sentence, what are you building?',
+      estimatedTime: 'Varies',
+      required: true,
+      order: 1,
+    },
+  ],
+}
+
+// =============================================================================
+// EXPORTS
+// =============================================================================
+export const templates: Template[] = [
+  landingPageTemplate,
+  portfolioTemplate,
+  productPageTemplate,
+  documentationTemplate,
+  customTemplate,
+]
+
+export const getTemplateById = (id: string): Template | undefined => {
+  return templates.find(t => t.id === id)
+}
+
+export const getSectionById = (template: Template, sectionId: string): Section | undefined => {
+  return template.sections.find(s => s.id === sectionId)
+}
+
+// Helper to get required sections
+export const getRequiredSections = (template: Template): Section[] => {
+  return template.sections.filter(s => s.required)
+}
+
+// Helper to get optional sections
+export const getOptionalSections = (template: Template): Section[] => {
+  return template.sections.filter(s => !s.required)
+}
+
+// =============================================================================
+// THREE-MODEL SYSTEM (V3.0)
+// =============================================================================
+// | Model           | Role     | When                                         |
+// |-----------------|----------|----------------------------------------------|
+// | Sonnet 4.5      | Builder  | First generation per section                 |
+// | Opus 4.5        | Refiner  | Auto-runs after each section (silent/polish) |
+// | Gemini 2.5 Pro  | Auditor  | Optional "Final Audit" after all complete    |
+// =============================================================================
+
+// Build state for tracking progress
+export interface BuildState {
+  templateId: string
+  currentSectionIndex: number
+  completedSections: string[]
+  skippedSections: string[]
+  sectionCode: Record<string, string> // sectionId -> generated code
+  sectionRefined: Record<string, boolean> // sectionId -> was it refined by Opus?
+  sectionChanges: Record<string, string[]> // sectionId -> what Opus changed
+  // Gemini final audit (optional, end-of-build)
+  finalAuditComplete: boolean
+  finalAuditChanges: string[] | null // What Gemini found/fixed, null = not run yet
+}
+
+export const createInitialBuildState = (templateId: string): BuildState => ({
+  templateId,
+  currentSectionIndex: 0,
+  completedSections: [],
+  skippedSections: [],
+  sectionCode: {},
+  sectionRefined: {},
+  sectionChanges: {},
+  finalAuditComplete: false,
+  finalAuditChanges: null,
+})
