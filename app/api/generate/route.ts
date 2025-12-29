@@ -683,6 +683,18 @@ export async function POST(request: NextRequest) {
 
     const data = await response.json()
     
+    // Log response for debugging
+    console.log('Step 10: Anthropic response status:', response.status)
+    
+    // Handle Anthropic API errors
+    if (!response.ok || data.error) {
+      console.error('Anthropic API error:', data.error || response.statusText)
+      const errorMessage = data.error?.message || data.error || 'AI service error'
+      return NextResponse.json({ 
+        error: `Generation failed: ${errorMessage}` 
+      }, { status: response.status || 500 })
+    }
+    
     // Check if response was truncated due to token limit
     if (data.stop_reason === 'max_tokens') {
       console.error('Response truncated due to max_tokens')
@@ -978,7 +990,9 @@ Return the COMPLETE fixed component:`
       return NextResponse.json({ code: cleanGeneratedCode(code), message, suggestions })
     }
 
-    return NextResponse.json({ error: 'No response' }, { status: 500 })
+    // If we got here, no valid content was returned
+    console.error('No content in response. Full response:', JSON.stringify(data).slice(0, 500))
+    return NextResponse.json({ error: 'No response from AI. Please try again.' }, { status: 500 })
   } catch (error) {
     console.error('Generation error:', error)
     console.error('Error stack:', error instanceof Error ? error.stack : 'No stack')

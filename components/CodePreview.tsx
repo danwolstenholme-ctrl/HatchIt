@@ -87,11 +87,21 @@ function CodePreview({ code, isPaid = false, onCodeChange, pagePath = '/', strea
   const [editedCode, setEditedCode] = useState(code)
   const [syntaxError, setSyntaxError] = useState<string | null>(null)
   const streamingRef = useRef<HTMLPreElement>(null)
+  const lastScrollRef = useRef<number>(0)
 
-  // Auto-scroll streaming code to bottom
+  // Auto-scroll streaming code to bottom (throttled to prevent jank)
   useEffect(() => {
     if (isStreaming && streamingRef.current) {
-      streamingRef.current.scrollTop = streamingRef.current.scrollHeight
+      const now = Date.now()
+      // Only scroll every 100ms to prevent janky rapid scrolling on mobile
+      if (now - lastScrollRef.current > 100) {
+        lastScrollRef.current = now
+        requestAnimationFrame(() => {
+          if (streamingRef.current) {
+            streamingRef.current.scrollTop = streamingRef.current.scrollHeight
+          }
+        })
+      }
     }
   }, [streamingCode, isStreaming])
 
@@ -239,14 +249,22 @@ function CodePreview({ code, isPaid = false, onCodeChange, pagePath = '/', strea
           />
         ) : (
           <>
-            <pre ref={streamingRef} className={`p-4 text-sm font-mono leading-relaxed ${isStreaming ? 'h-full overflow-auto' : ''}`}>
+            <pre 
+              ref={streamingRef} 
+              className={`p-4 text-sm font-mono leading-relaxed ${isStreaming ? 'h-full overflow-auto scroll-smooth' : ''}`}
+              style={isStreaming ? { 
+                willChange: 'scroll-position',
+                WebkitOverflowScrolling: 'touch',
+                overscrollBehavior: 'contain'
+              } : undefined}
+            >
               <code>
                 {visibleLines.map((line, i) => (
                   <div key={i} className="flex group hover:bg-zinc-800/40 transition-colors duration-150">
                     <span className="w-10 text-zinc-700 group-hover:text-zinc-500 text-right pr-4 select-none flex-shrink-0 text-xs transition-colors">
                       {String(i + 1).padStart(3, ' ')}
                     </span>
-                    <span className={`${isStreaming ? 'text-purple-300' : 'text-zinc-300'}`}>{line || '\u00A0'}</span>
+                    <span className={`${isStreaming ? 'text-purple-300' : 'text-zinc-300'} whitespace-pre`}>{line || '\u00A0'}</span>
                   </div>
                 ))}
                 {isStreaming && (
