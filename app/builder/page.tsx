@@ -2929,12 +2929,8 @@ export default function Home() {
         {/* Mobile menu overlay */}
         {showMobileMenu && (
           <div className="fixed inset-0 z-[60]" onClick={() => setShowMobileMenu(false)}>
-            <motion.div
-              initial={{ opacity: 0, y: -10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              transition={{ duration: 0.15 }}
-              className="absolute right-4 top-14 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-2 min-w-[200px] z-50" onClick={e => e.stopPropagation()}
+            <div
+              className="absolute right-4 top-14 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-2 min-w-[200px] z-50 animate-in fade-in slide-in-from-top-2 duration-150" onClick={e => e.stopPropagation()}
             >
               <Link href="/" className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -2987,48 +2983,19 @@ export default function Home() {
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
                 </a>
               </div>
-            </motion.div>
+            </div>
           </div>
         )}
         <div className="px-3 py-2.5 border-b border-zinc-800 flex items-center justify-between bg-zinc-900">
           <div className="flex items-center gap-2 min-w-0">
             {/* Mobile Menu Button */}
-            <motion.button
+            <button
               onClick={() => setShowMobileMenu(!showMobileMenu)}
-              className={`relative flex items-center justify-center w-8 h-8 rounded-lg border transition-all overflow-hidden flex-shrink-0 group ${isCurrentProjectPaid ? 'bg-gradient-to-br from-amber-500/20 via-yellow-500/20 to-orange-500/20 border-amber-500/30' : 'bg-zinc-800 border-zinc-700'}`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              className={`relative flex items-center justify-center w-8 h-8 rounded-lg border transition-transform active:scale-95 overflow-hidden flex-shrink-0 ${isCurrentProjectPaid ? 'bg-gradient-to-br from-amber-500/20 via-yellow-500/20 to-orange-500/20 border-amber-500/30 shadow-[0_0_12px_rgba(251,191,36,0.2)]' : 'bg-zinc-800 border-zinc-700'}`}
               title="Menu"
             >
-              {/* Animated glow ring - only for paid */}
-              {isCurrentProjectPaid && (
-                <motion.div
-                  className="absolute inset-0 rounded-lg bg-gradient-to-r from-amber-400/0 via-amber-400/30 to-amber-400/0"
-                  animate={{ x: ['-100%', '100%'] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                />
-              )}
-              {/* Pulse glow - only for paid */}
-              {isCurrentProjectPaid && (
-                <motion.div
-                  className="absolute inset-0 rounded-lg bg-amber-400/20"
-                  animate={{ opacity: [0.2, 0.4, 0.2] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                />
-              )}
-              {/* Outer glow - only for paid */}
-              {isCurrentProjectPaid && (
-                <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/20 via-yellow-400/20 to-orange-500/20 rounded-xl blur-md opacity-60 group-hover:opacity-100 transition-opacity" />
-              )}
-              {/* Emoji */}
-              <motion.span 
-                className="relative text-lg z-10"
-                animate={isCurrentProjectPaid ? { y: [0, -1, 0] } : {}}
-                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-              >
-                🐣
-              </motion.span>
-            </motion.button>
+              <span className="text-lg">🐣</span>
+            </button>
             <ProjectSelector mobile />
             <PagesButton mobile />
           </div>
