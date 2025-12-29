@@ -168,21 +168,11 @@ function Section({ children, className = '', id = '' }: { children: React.ReactN
   const isInView = useInView(ref, { once: true, margin: "-50px" })
   const reducedMotion = useReducedMotion()
   const isMobile = useIsMobile()
-  const isClient = useIsClient()
   
   // Mobile: lighter animation (less distance, faster)
   // Desktop: full effect
   const yOffset = isMobile ? 15 : 30
   const duration = isMobile ? 0.35 : 0.5
-  
-  // On server or before hydration, render without animation to prevent flash
-  if (!isClient) {
-    return (
-      <section id={id} className={className} style={{ opacity: 0 }}>
-        {children}
-      </section>
-    )
-  }
   
   return (
     <motion.section
