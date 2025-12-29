@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useSyncExternalStore } from 'react'
 import Link from 'next/link'
-import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
+import { SignInButton, SignedIn, SignedOut, UserButton, useUser } from '@clerk/nextjs'
 import { motion, useInView } from 'framer-motion'
 import HatchCharacter from '@/components/HatchCharacter'
 
@@ -259,6 +259,51 @@ function MouseFollowingHatch() {
         <div className="absolute bottom-3 right-1 w-1.5 h-1 bg-pink-300/50 rounded-full" />
       </div>
     </div>
+  )
+}
+
+// Pricing button that handles auth + checkout
+function PricingButton({ tier, className, children }: { tier: 'pro' | 'agency', className: string, children: React.ReactNode }) {
+  const { isSignedIn, user } = useUser()
+  const [isLoading, setIsLoading] = useState(false)
+  
+  const handleClick = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    
+    if (!isSignedIn) {
+      // Redirect to sign in, then back to builder with upgrade param
+      window.location.href = `/sign-in?redirect_url=/builder?upgrade=${tier}`
+      return
+    }
+    
+    setIsLoading(true)
+    
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tier })
+      })
+      
+      const data = await res.json()
+      
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        alert(data.error || 'Failed to start checkout')
+        setIsLoading(false)
+      }
+    } catch (err) {
+      console.error('Checkout error:', err)
+      alert('Failed to start checkout')
+      setIsLoading(false)
+    }
+  }
+  
+  return (
+    <button onClick={handleClick} disabled={isLoading} className={className}>
+      {isLoading ? 'Loading...' : children}
+    </button>
   )
 }
 
@@ -899,7 +944,12 @@ export default function Home() {
                   </li>
                 ))}
               </ul>
-              <Link href="/builder?upgrade=pro" className="block w-full py-3 text-center bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-semibold transition-all">Get Pro</Link>
+              <PricingButton 
+                tier="pro" 
+                className="block w-full py-3 text-center bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-semibold transition-all disabled:opacity-50"
+              >
+                Get Pro
+              </PricingButton>
             </div>
 
             {/* Agency */}
@@ -927,7 +977,12 @@ export default function Home() {
                   </li>
                 ))}
               </ul>
-              <Link href="/builder?upgrade=agency" className="block w-full py-3 text-center bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-900 rounded-xl font-semibold transition-all">Get Agency</Link>
+              <PricingButton 
+                tier="agency" 
+                className="block w-full py-3 text-center bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-900 rounded-xl font-semibold transition-all disabled:opacity-50"
+              >
+                Get Agency
+              </PricingButton>
             </div>
           </div>
           <p className="text-center text-sm text-zinc-600 mt-8">Cancel anytime. Your code is always yours to export.</p>
