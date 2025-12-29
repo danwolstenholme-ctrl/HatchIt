@@ -714,8 +714,9 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
       const html = '<!DOCTYPE html>' +
         '<html><head>' +
         '<script src="https://cdn.tailwindcss.com"></script>' +
+        '<script>tailwind.config = { theme: { extend: {} }, darkMode: "class" }</script>' +
         '<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet">' +
-        '<style>* { margin: 0; padding: 0; box-sizing: border-box; } html, body, #root { min-height: 100%; width: 100%; } body { background: #FAFAFC; font-family: "Raleway", system-ui, sans-serif; } .fallback-container { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center; font-family: system-ui, sans-serif; } .fallback-icon { font-size: 4rem; margin-bottom: 1rem; } .fallback-title { color: #fff; font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; } .fallback-text { color: #a1a1aa; max-width: 300px; line-height: 1.6; } .loading { color: #71717a; padding: 2rem; text-align: center; font-family: system-ui; }</style>' +
+        '<style>* { margin: 0; padding: 0; box-sizing: border-box; } html, body, #root { min-height: 100%; width: 100%; } body { background: #18181b; font-family: "Raleway", system-ui, sans-serif; } .fallback-container { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center; font-family: system-ui, sans-serif; } .fallback-icon { font-size: 4rem; margin-bottom: 1rem; } .fallback-title { color: #fff; font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; } .fallback-text { color: #a1a1aa; max-width: 300px; line-height: 1.6; } .loading { color: #71717a; padding: 2rem; text-align: center; font-family: system-ui; background: #18181b; min-height: 100vh; display: flex; align-items: center; justify-content: center; }</style>' +
         '</head><body>' +
         '<div id="root"><div class="loading">Loading preview...</div></div>' +
         '<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>' +
@@ -945,8 +946,9 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
     const html = '<!DOCTYPE html>' +
       '<html><head>' +
       '<script src="https://cdn.tailwindcss.com"></script>' +
+      '<script>tailwind.config = { theme: { extend: {} }, darkMode: "class" }</script>' +
       '<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet">' +
-      '<style>* { margin: 0; padding: 0; box-sizing: border-box; } html, body, #root { min-height: 100%; width: 100%; } body { background: #18181b; } .error { color: #ef4444; padding: 2rem; font-family: monospace; white-space: pre-wrap; background: #18181b; line-height: 1.6; } .error h2 { color: #fecaca; margin-bottom: 1rem; font-size: 1rem; font-weight: bold; } .loading { color: #71717a; padding: 2rem; text-align: center; font-family: system-ui; }</style>' +
+      '<style>* { margin: 0; padding: 0; box-sizing: border-box; } html, body, #root { min-height: 100%; width: 100%; } body { background: #18181b; } .error { color: #ef4444; padding: 2rem; font-family: monospace; white-space: pre-wrap; background: #18181b; line-height: 1.6; } .error h2 { color: #fecaca; margin-bottom: 1rem; font-size: 1rem; font-weight: bold; } .loading { color: #71717a; padding: 2rem; text-align: center; font-family: system-ui; background: #18181b; }</style>' +
       '</head><body>' +
       '<div id="root"><div class="loading">Loading preview...</div></div>' +
       '<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>' +
