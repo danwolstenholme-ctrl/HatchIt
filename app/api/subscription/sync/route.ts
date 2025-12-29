@@ -1,0 +1,124 @@
+import { auth, clerkClient } from '@clerk/nextjs/server'
+import { NextResponse } from 'next/server'
+import Stripe from 'stripe'
+import { AccountSubscription } from '@/types/subscriptions'
+
+const getStripe = () => {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('STRIPE_SECRET_KEY is not configured')
+  }
+  return new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2025-12-15.clover',
+  })
+}
+
+/**
+ * GET /api/subscription/sync
+ * Syncs subscription status from Stripe to Clerk metadata
+ * Useful for recovering from webhook failures
+ */
+export async function GET() {
+  try {
+    const { userId } = await auth()
+    
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const stripe = getStripe()
+    const client = await clerkClient()
+    const user = await client.users.getUser(userId)
+    
+    const customerId = user.publicMetadata?.stripeCustomerId as string | undefined
+    const existingSubscription = user.publicMetadata?.accountSubscription as AccountSubscription | null
+    
+    // If no customer ID, check if there's a subscription by searching
+    if (!customerId && !existingSubscription) {
+      return NextResponse.json({ 
+        synced: false,
+        message: 'No Stripe customer ID found. No subscription to sync.',
+        subscription: null
+      })
+    }
+
+    // Look up active subscriptions for this customer
+    let activeSubscription: Stripe.Subscription | null = null
+    
+    if (customerId) {
+      const subscriptions = await stripe.subscriptions.list({
+        customer: customerId,
+        status: 'active',
+        limit: 1,
+      })
+      activeSubscription = subscriptions.data[0] || null
+    }
+
+    // If no active subscription found, clear the metadata
+    if (!activeSubscription) {
+      if (existingSubscription) {
+        await client.users.updateUser(userId, {
+          publicMetadata: {
+            ...user.publicMetadata,
+            accountSubscription: null,
+          },
+        })
+        return NextResponse.json({
+          synced: true,
+          message: 'Subscription expired or canceled. Cleared from metadata.',
+          subscription: null
+        })
+      }
+      return NextResponse.json({
+        synced: false,
+        message: 'No active subscription found in Stripe.',
+        subscription: null
+      })
+    }
+
+    // Determine tier from price ID
+    const priceId = activeSubscription.items.data[0]?.price?.id
+    let tier: 'pro' | 'agency' = 'pro'
+    
+    if (priceId === process.env.STRIPE_AGENCY_PRICE_ID) {
+      tier = 'agency'
+    } else if (priceId === process.env.STRIPE_PRO_PRICE_ID) {
+      tier = 'pro'
+    } else {
+      // Fallback: check metadata
+      tier = (activeSubscription.metadata?.tier as 'pro' | 'agency') || 'pro'
+    }
+
+    const periodEnd = (activeSubscription as unknown as { current_period_end: number }).current_period_end
+
+    const accountSubscription: AccountSubscription = {
+      tier,
+      stripeSubscriptionId: activeSubscription.id,
+      stripeCustomerId: customerId || activeSubscription.customer as string,
+      status: 'active',
+      currentPeriodEnd: new Date(periodEnd * 1000).toISOString(),
+      createdAt: existingSubscription?.createdAt || new Date().toISOString(),
+    }
+
+    // Update user metadata
+    await client.users.updateUser(userId, {
+      publicMetadata: {
+        ...user.publicMetadata,
+        stripeCustomerId: accountSubscription.stripeCustomerId,
+        accountSubscription,
+      },
+    })
+
+    return NextResponse.json({
+      synced: true,
+      message: `Successfully synced ${tier} subscription`,
+      subscription: accountSubscription
+    })
+
+  } catch (error) {
+    console.error('Subscription sync error:', error)
+    return NextResponse.json({ 
+      error: 'Failed to sync subscription',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
+  }
+}

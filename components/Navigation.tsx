@@ -5,10 +5,13 @@ import { usePathname } from 'next/navigation'
 import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
+import { SubscriptionBadge } from './SubscriptionIndicator'
+import { useSubscription } from '@/contexts/SubscriptionContext'
 
 export default function Navigation() {
   const pathname = usePathname()
   const [scrolled, setScrolled] = useState(false)
+  const { isPaidUser, tier, tierColor } = useSubscription()
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
@@ -88,20 +91,26 @@ export default function Navigation() {
             </SignInButton>
           </SignedOut>
           <SignedIn>
-            <UserButton 
-              afterSignOutUrl="/"
-              appearance={{
-                elements: {
-                  avatarBox: 'w-9 h-9'
-                }
-              }}
-            />
+            <div className="flex items-center gap-3">
+              {/* Subscription badge with renewal timer */}
+              <div className="hidden sm:block">
+                <SubscriptionBadge showRenewal={true} />
+              </div>
+              <UserButton 
+                afterSignOutUrl="/"
+                appearance={{
+                  elements: {
+                    avatarBox: `w-9 h-9 ${isPaidUser ? `ring-2 ring-offset-2 ring-offset-zinc-950 ${tier === 'agency' ? 'ring-amber-500' : 'ring-purple-500'}` : ''}`
+                  }
+                }}
+              />
+            </div>
           </SignedIn>
           <Link 
             href="/builder" 
-            className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-lg font-semibold text-sm transition-all hover:shadow-lg hover:shadow-purple-500/25 hover:scale-105"
+            className={`px-5 py-2.5 bg-gradient-to-r ${isPaidUser ? tierColor.gradient : 'from-purple-600 to-pink-600'} hover:opacity-90 text-white rounded-lg font-semibold text-sm transition-all hover:shadow-lg ${isPaidUser ? tierColor.glow : 'hover:shadow-purple-500/25'} hover:scale-105`}
           >
-            Start Building
+            {isPaidUser ? 'Open Builder' : 'Start Building'}
           </Link>
         </div>
       </div>

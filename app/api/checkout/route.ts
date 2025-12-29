@@ -1,6 +1,7 @@
-import { auth } from '@clerk/nextjs/server'
+import { auth, clerkClient } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { AccountSubscription } from '@/types/subscriptions'
 
 // Lazy initialization to prevent build-time errors when env vars are missing
 const getStripe = () => {
@@ -27,6 +28,33 @@ export async function POST(req: NextRequest) {
     
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check if user already has an active subscription
+    const client = await clerkClient()
+    const user = await client.users.getUser(userId)
+    const existingSubscription = user.publicMetadata?.accountSubscription as AccountSubscription | null
+    
+    if (existingSubscription?.status === 'active') {
+      // User already has a subscription - check if they're trying to upgrade
+      const { tier } = await req.json()
+      
+      if (existingSubscription.tier === tier) {
+        return NextResponse.json({ 
+          error: 'You already have an active subscription to this tier',
+          existingTier: existingSubscription.tier,
+          currentPeriodEnd: existingSubscription.currentPeriodEnd
+        }, { status: 400 })
+      }
+      
+      if (existingSubscription.tier === 'agency') {
+        return NextResponse.json({ 
+          error: 'You already have the Agency tier - the highest tier available',
+          existingTier: 'agency'
+        }, { status: 400 })
+      }
+      
+      // Allow Pro -> Agency upgrade (will be handled below)
     }
 
     const { tier, projectSlug, projectName } = await req.json()

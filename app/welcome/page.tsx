@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState, Suspense } from 'react'
+import { useEffect, useState, Suspense, useCallback } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import HatchCharacter from '@/components/HatchCharacter'
 import { AccountSubscription } from '@/types/subscriptions'
+import { useSubscription } from '@/contexts/SubscriptionContext'
 
 // =============================================================================
 // WELCOME PAGE
@@ -199,6 +200,18 @@ function WelcomeContent() {
   const searchParams = useSearchParams()
   const [tier, setTier] = useState<WelcomeTier>('free')
   const [isReady, setIsReady] = useState(false)
+  const [syncAttempts, setSyncAttempts] = useState(0)
+  const { syncSubscription, subscription } = useSubscription()
+
+  // Sync subscription when coming from checkout with tier param
+  const syncAndVerify = useCallback(async () => {
+    const urlTier = searchParams.get('tier') as WelcomeTier | null
+    if (urlTier && ['pro', 'agency'].includes(urlTier)) {
+      // Coming from checkout - sync to make sure it registered
+      await syncSubscription()
+      setSyncAttempts(prev => prev + 1)
+    }
+  }, [searchParams, syncSubscription])
 
   useEffect(() => {
     if (!isLoaded) return
@@ -208,6 +221,11 @@ function WelcomeContent() {
     if (urlTier && ['pro', 'agency'].includes(urlTier)) {
       setTier(urlTier)
       setIsReady(true)
+      
+      // Trigger sync to verify payment registered
+      if (syncAttempts === 0) {
+        syncAndVerify()
+      }
       return
     }
 

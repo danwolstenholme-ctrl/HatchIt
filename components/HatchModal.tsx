@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { track } from '@vercel/analytics'
+import { useSubscription } from '@/contexts/SubscriptionContext'
 
 interface HatchModalProps {
   isOpen: boolean
@@ -15,6 +16,8 @@ interface HatchModalProps {
 
 export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', projectName = 'this project', generationsRemaining }: HatchModalProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const { isPaidUser, tier, syncSubscription, isSyncing } = useSubscription()
 
   // Track when modal is shown
   useEffect(() => {
@@ -61,7 +64,16 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
   const { title, description, icon } = messages[reason]
 
   const handleHatch = async () => {
+    // Double-check they don't already have a subscription
+    if (isPaidUser) {
+      setError(`You already have a ${tier} subscription!`)
+      // Try to sync to make sure the UI updates
+      await syncSubscription()
+      return
+    }
+    
     setIsLoading(true)
+    setError(null)
     track('Hatch Started', { reason, projectSlug })
     try {
       const response = await fetch('/api/checkout', {
@@ -73,12 +85,20 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
       
       if (data.url) {
         window.location.href = data.url
+      } else if (data.existingTier) {
+        // User already has subscription - sync and close
+        setError(`You already have a ${data.existingTier} subscription! Syncing your account...`)
+        await syncSubscription()
+        setTimeout(() => {
+          onClose()
+          window.location.reload()
+        }, 2000)
       } else {
-        alert('Failed to start checkout. Please try again.')
+        setError(data.error || 'Failed to start checkout. Please try again.')
       }
     } catch (error) {
       console.error('Checkout error:', error)
-      alert('Failed to start checkout. Please try again.')
+      setError('Failed to start checkout. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -155,26 +175,68 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
           </div>
         </div>
 
-        <motion.button
-          onClick={handleHatch}
-          disabled={isLoading}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 disabled:opacity-50 text-white rounded-xl font-semibold transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40"
+        {/* Error message */}
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm text-center"
+          >
+            {error}
+          </motion.div>
+        )}
+
+        {/* Already subscribed message */}
+        {isPaidUser && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 p-4 bg-green-500/10 border border-green-500/30 rounded-xl text-center"
+          >
+            <p className="text-green-400 font-semibold mb-1">🎉 You&apos;re already a {tier === 'agency' ? 'Agency' : 'Pro'} member!</p>
+            <p className="text-zinc-400 text-sm">You have full access to all features.</p>
+            <button
+              onClick={onClose}
+              className="mt-3 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
+            >
+              Got it
+            </button>
+          </motion.div>
+        )}
+
+        {!isPaidUser && (
+          <>
+            <motion.button
+              onClick={handleHatch}
+              disabled={isLoading || isSyncing}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 disabled:opacity-50 text-white rounded-xl font-semibold transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40"
+            >
+              {isLoading ? 'Loading...' : isSyncing ? 'Syncing...' : (
+                <>
+                  <span>🐣</span>
+                  <span>Get Pro — $39/mo</span>
+                </>
+              )}
+            </motion.button>
+
+            <p className="text-zinc-600 text-xs text-center mt-4">
+              Cancel anytime. Your code is always yours.
+            </p>
+          </>
+        )}
+
+        {/* Sync button for users who paid but it didn't register */}
+        <button
+          onClick={syncSubscription}
+          disabled={isSyncing}
+          className="w-full mt-3 py-2 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
         >
-          {isLoading ? 'Loading...' : (
-            <>
-              <span>🐣</span>
-              <span>Get Pro — $39/mo</span>
-            </>
-          )}
-        </motion.button>
+          {isSyncing ? 'Syncing...' : 'Already paid? Click to sync your subscription'}
+        </button>
 
-        <p className="text-zinc-600 text-xs text-center mt-4">
-          Cancel anytime. Your code is always yours.
-        </p>
-
-        <div className="flex items-center justify-center gap-4 text-zinc-500 text-xs mt-6 pt-4 border-t border-zinc-800">
+        <div className="flex items-center justify-center gap-4 text-zinc-500 text-xs mt-4 pt-4 border-t border-zinc-800">
           <a href="/terms" className="hover:text-white transition-colors">Terms</a>
           <span>•</span>
           <a href="/privacy" className="hover:text-white transition-colors">Privacy</a>
