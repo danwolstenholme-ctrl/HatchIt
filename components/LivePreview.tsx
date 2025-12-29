@@ -717,17 +717,19 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
         '<style>* { margin: 0; padding: 0; box-sizing: border-box; } html, body, #root { min-height: 100%; width: 100%; } body { background: #18181b; font-family: "Raleway", system-ui, sans-serif; } .fallback-container { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center; font-family: system-ui, sans-serif; } .fallback-icon { font-size: 4rem; margin-bottom: 1rem; } .fallback-title { color: #fff; font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; } .fallback-text { color: #a1a1aa; max-width: 300px; line-height: 1.6; } .loading { color: #71717a; padding: 2rem; text-align: center; font-family: system-ui; background: #18181b; min-height: 100vh; display: flex; align-items: center; justify-content: center; }</style>' +
         '</head><body>' +
         '<div id="root"><div class="loading">Loading preview...</div></div>' +
+        // Load React first and expose globally IMMEDIATELY (lucide needs this during init)
         '<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>' +
+        '<script>window.React = React; window.react = React;</script>' +
         '<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>' +
+        '<script>window.ReactDOM = ReactDOM;</script>' +
+        // Load Tailwind and configure IMMEDIATELY
         '<script src="https://cdn.tailwindcss.com"></script>' +
+        '<script>if(typeof tailwind!=="undefined"){tailwind.config={theme:{extend:{}},darkMode:"class"};}</script>' +
+        // Now load framer-motion and lucide (they can find React on window)
         '<script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js"></script>' +
         '<script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js"></script>' +
         '<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>' +
         '<script>' +
-        '// Set up globals after all scripts have loaded\n' +
-        'window.React = React;\n' +
-        'window.ReactDOM = ReactDOM;\n' +
-        'if (typeof tailwind !== "undefined") { tailwind.config = { theme: { extend: {} }, darkMode: "class" }; }\n' +
         '// Expose motion and lucide icons as globals with robust fallbacks\n' +
         'window.motion = window.Motion?.motion || { div: "div", button: "button", a: "a", span: "span", p: "p", h1: "h1", h2: "h2", h3: "h3", section: "section", main: "main", nav: "nav", ul: "ul", li: "li", img: "img", input: "input", form: "form", label: "label", textarea: "textarea", header: "header", footer: "footer", article: "article", aside: "aside" };\n' +
         'window.AnimatePresence = window.Motion?.AnimatePresence || function(props) { return props.children; };\n' +
@@ -950,17 +952,19 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
       '<style>* { margin: 0; padding: 0; box-sizing: border-box; } html, body, #root { min-height: 100%; width: 100%; } body { background: #18181b; } .error { color: #ef4444; padding: 2rem; font-family: monospace; white-space: pre-wrap; background: #18181b; line-height: 1.6; } .error h2 { color: #fecaca; margin-bottom: 1rem; font-size: 1rem; font-weight: bold; } .loading { color: #71717a; padding: 2rem; text-align: center; font-family: system-ui; background: #18181b; }</style>' +
       '</head><body>' +
       '<div id="root"><div class="loading">Loading preview...</div></div>' +
+      // Load React first and expose globally IMMEDIATELY (lucide needs this during init)
       '<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>' +
+      '<script>window.React = React; window.react = React;</script>' +
       '<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>' +
+      '<script>window.ReactDOM = ReactDOM;</script>' +
+      // Load Tailwind and configure IMMEDIATELY
       '<script src="https://cdn.tailwindcss.com"></script>' +
+      '<script>if(typeof tailwind!=="undefined"){tailwind.config={theme:{extend:{}},darkMode:"class"};}</script>' +
+      // Now load framer-motion and lucide (they can find React on window)
       '<script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js"></script>' +
       '<script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js"></script>' +
       '<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>' +
       '<script>' +
-      '// Set up globals after all scripts have loaded\n' +
-      'window.React = React;\n' +
-      'window.ReactDOM = ReactDOM;\n' +
-      'if (typeof tailwind !== "undefined") { tailwind.config = { theme: { extend: {} }, darkMode: "class" }; }\n' +
       '// Expose motion and lucide icons as globals\n' +
       'window.motion = window.Motion?.motion || { div: "div", button: "button", a: "a", span: "span", p: "p", h1: "h1", h2: "h2", h3: "h3", section: "section", main: "main", nav: "nav", ul: "ul", li: "li", img: "img", input: "input", form: "form", label: "label", textarea: "textarea" };\n' +
       'window.AnimatePresence = window.Motion?.AnimatePresence || function(props) { return props.children; };\n' +
