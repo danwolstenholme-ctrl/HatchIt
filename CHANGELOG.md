@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.2.1] - 2024-12-28
+## [1.2.1] - 2025-12-28
 ### Fixed
 - **Contact page generation**: AI now generates working contact forms that render in preview
 - Forms use client-side state with visual feedback instead of form actions that break preview
@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.2.0] - 2024-12-28
+## [1.2.0] - 2025-12-28
 ### Added
 - **Required project naming**: New projects must be named (no more random names)
 - **Welcome Back modal**: Shows on new device when you have cloud projects, auto-pulls paid projects
@@ -36,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.1.8] - 2024-12-28
+## [1.1.8] - 2025-12-28
 ### Fixed
 - Payment success now forces page reload to sync Clerk subscription metadata
 - Fixes issue where paid subscription reverted to free after checkout
@@ -46,7 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.1.7] - 2024-12-28
+## [1.1.7] - 2025-12-28
 ### Changed
 - Updated pricing copy: "$24 to launch, then $19/mo"
 - Removed misleading "50% off" references
@@ -55,7 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.1.6] - 2024-12-28
+## [1.1.6] - 2025-12-28
 ### Changed
 - Renamed "Generate" to "Build" for consistency
 - Clarified mode descriptions: Build creates/edits, Ask AI advises without changing code
@@ -63,7 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.1.5] - 2024-12-28
+## [1.1.5] - 2025-12-28
 ### Added
 - Start Over button for non-deployed projects in builder
 - Upload Code modal with guidelines before file selection
@@ -75,7 +75,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.1.4] - 2024-12-28
+## [1.1.4] - 2025-12-28
 ### Changed
 - New pricing structure: $24 first month (50% early bird), $19/mo ongoing
 - Annual pricing: $190/year (save 2 months)
@@ -83,7 +83,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.1.3] - 2024-12-28
+## [1.1.3] - 2025-12-28
 ### Added
 - Deploy warning step before publish
 - Social proof section with trust indicators
@@ -101,7 +101,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.1.2] - 2024-12-28
+## [1.1.2] - 2025-12-28
 ### Added
 - TypeScript types extraction (`types/builder.ts`)
 - Project utilities module (`lib/project-utils.ts`)
@@ -109,7 +109,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.1.1] - 2024-12-28
+## [1.1.1] - 2025-12-28
 ### Added
 - ErrorBoundary component with fallback UI
 - Loading skeleton for builder page (`loading.tsx`)
@@ -117,7 +117,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.0.0] - 2024-12-27
+## [1.0.0] - 2025-12-27
 ### Added
 - Initial release of HatchIt.dev
 - AI-powered website builder

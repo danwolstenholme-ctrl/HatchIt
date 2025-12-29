@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 export default function AboutPage() {
   const timeline = [
     {
-      year: '2024',
+      year: '2025',
       title: 'The Spark',
       description: 'Frustrated with the gap between idea and execution, we asked: what if anyone could build professional websites just by describing them?',
     },
