@@ -26,8 +26,7 @@ const tierConfig = {
     description: "Start creating beautiful websites with AI. When you're ready to hatch your creations into the wild, upgrade to Pro.",
     ctaText: 'Start Building',
     ctaUrl: '/builder',
-    gradient: 'from-zinc-600 to-zinc-500',
-    bgGradient: 'from-zinc-950 via-zinc-900 to-zinc-950',
+    gradient: 'from-zinc-400 to-zinc-300',
     accentColor: 'zinc',
     features: [
       { icon: '🎨', text: '5 AI generations per day' },
@@ -43,8 +42,7 @@ const tierConfig = {
     description: "You now have unlimited power to create, deploy, and share your websites with the world. Let's make something incredible.",
     ctaText: 'Start Creating',
     ctaUrl: '/builder',
-    gradient: 'from-violet-600 to-purple-600',
-    bgGradient: 'from-zinc-950 via-violet-950/30 to-zinc-950',
+    gradient: 'from-violet-400 to-purple-400',
     accentColor: 'violet',
     features: [
       { icon: '∞', text: 'Unlimited AI generations' },
@@ -62,8 +60,7 @@ const tierConfig = {
     description: "You're now part of an elite group of creators. Build unlimited sites for clients, access white-label features, and scale your agency.",
     ctaText: 'Enter the Studio',
     ctaUrl: '/builder',
-    gradient: 'from-amber-500 to-yellow-500',
-    bgGradient: 'from-zinc-950 via-amber-950/20 to-zinc-950',
+    gradient: 'from-amber-400 to-yellow-400',
     accentColor: 'amber',
     features: [
       { icon: '👑', text: 'Everything in Pro, plus...' },
@@ -74,38 +71,6 @@ const tierConfig = {
       { icon: '💼', text: 'Commercial license included' },
     ],
   },
-}
-
-// Animated floating particles for the background
-function FloatingParticles({ color }: { color: string }) {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(20)].map((_, i) => (
-        <motion.div
-          key={i}
-          className={`absolute w-1 h-1 rounded-full ${
-            color === 'violet' ? 'bg-violet-400/30' :
-            color === 'amber' ? 'bg-amber-400/30' :
-            'bg-zinc-400/20'
-          }`}
-          initial={{ 
-            x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000),
-            y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800),
-            scale: Math.random() * 0.5 + 0.5
-          }}
-          animate={{
-            y: [null, Math.random() * -200 - 100],
-            opacity: [0, 1, 0],
-          }}
-          transition={{
-            duration: Math.random() * 3 + 2,
-            repeat: Infinity,
-            delay: Math.random() * 2,
-          }}
-        />
-      ))}
-    </div>
-  )
 }
 
 // Golden Chicken for Agency tier
@@ -271,26 +236,18 @@ function WelcomeContent() {
   }
 
   return (
-    <div className={`min-h-screen bg-gradient-to-b ${config.bgGradient} flex flex-col items-center justify-center relative overflow-hidden px-4`}>
-      {/* Background effects */}
-      <FloatingParticles color={config.accentColor} />
-      
-      {/* Gradient orbs */}
+    <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center relative overflow-hidden px-4">
+      {/* Background effects - subtle, matching site aesthetic */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className={`absolute -top-40 -left-40 w-80 h-80 ${
-          tier === 'agency' ? 'bg-amber-500/20' :
-          tier === 'pro' ? 'bg-violet-500/20' :
-          'bg-zinc-500/10'
+          tier === 'agency' ? 'bg-amber-500/10' :
+          tier === 'pro' ? 'bg-violet-500/10' :
+          'bg-zinc-500/5'
         } rounded-full blur-[100px]`} />
         <div className={`absolute top-1/3 -right-40 w-96 h-96 ${
-          tier === 'agency' ? 'bg-yellow-500/15' :
-          tier === 'pro' ? 'bg-purple-500/15' :
-          'bg-zinc-500/10'
-        } rounded-full blur-[100px]`} />
-        <div className={`absolute -bottom-40 left-1/3 w-72 h-72 ${
-          tier === 'agency' ? 'bg-orange-500/10' :
-          tier === 'pro' ? 'bg-pink-500/10' :
-          'bg-zinc-500/10'
+          tier === 'agency' ? 'bg-yellow-500/10' :
+          tier === 'pro' ? 'bg-purple-500/10' :
+          'bg-zinc-500/5'
         } rounded-full blur-[100px]`} />
       </div>
 
@@ -347,9 +304,9 @@ function WelcomeContent() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className={`bg-zinc-900/50 backdrop-blur-sm border ${
-            tier === 'agency' ? 'border-amber-500/20' :
-            tier === 'pro' ? 'border-violet-500/20' :
+          className={`bg-zinc-900/80 backdrop-blur-sm border ${
+            tier === 'agency' ? 'border-amber-500/30' :
+            tier === 'pro' ? 'border-violet-500/30' :
             'border-zinc-800'
           } rounded-2xl p-6 mb-10`}
         >
@@ -377,11 +334,13 @@ function WelcomeContent() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => router.push(config.ctaUrl)}
-          className={`px-8 py-4 bg-gradient-to-r ${config.gradient} text-white font-semibold rounded-xl shadow-lg ${
-            tier === 'agency' ? 'shadow-amber-500/25' :
-            tier === 'pro' ? 'shadow-violet-500/25' :
-            'shadow-zinc-500/25'
-          } transition-all text-lg`}
+          className={`px-8 py-4 ${
+            tier === 'agency' 
+              ? 'bg-gradient-to-r from-amber-500 to-yellow-500 shadow-amber-500/25' 
+              : tier === 'pro'
+              ? 'bg-gradient-to-r from-violet-600 to-purple-600 shadow-violet-500/25'
+              : 'bg-gradient-to-r from-zinc-600 to-zinc-500 shadow-zinc-500/25'
+          } text-white font-semibold rounded-xl shadow-lg transition-all text-lg`}
         >
           {config.ctaText} →
         </motion.button>
