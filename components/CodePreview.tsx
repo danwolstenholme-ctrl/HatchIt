@@ -282,15 +282,16 @@ function CodePreview({ code, isPaid = false, onCodeChange, pagePath = '/', strea
               <div className="absolute bottom-0 left-0 right-0">
                 <div className="h-32 bg-gradient-to-t from-zinc-950 via-zinc-950/95 to-transparent" />
                 
+                {/* Security: Show placeholder text, not actual code */}
                 <div className="bg-zinc-950 px-4 pb-4">
                   <pre className="text-sm font-mono blur-sm select-none pointer-events-none opacity-50">
                     <code>
-                      {lines.slice(15, 25).map((line, i) => (
+                      {Array.from({ length: 10 }, (_, i) => (
                         <div key={i} className="flex">
                           <span className="w-8 text-zinc-600 text-right pr-4 text-xs">
                             {i + 16}
                           </span>
-                          <span className="text-zinc-300 whitespace-pre">{line}</span>
+                          <span className="text-zinc-300 whitespace-pre">{'/// Protected code - Hatch to view ///'}</span>
                         </div>
                       ))}
                     </code>

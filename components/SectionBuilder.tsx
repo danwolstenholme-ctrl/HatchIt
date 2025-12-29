@@ -1084,18 +1084,48 @@ export default function SectionBuilder({
         </div>
 
         <div className="flex-1 flex min-h-0">
-          {/* Show streaming code during generation or user refinement */}
+          {/* Show streaming code during generation or user refinement - ONLY for paid users */}
           {((stage === 'generating' || stage === 'refining') && streamingCode) || (isUserRefining && streamingCode) ? (
-            <div className="flex-1 overflow-auto p-4 bg-zinc-950">
-              <pre className="text-xs font-mono whitespace-pre-wrap">
-                <code className={(stage === 'refining' || isUserRefining) ? 'text-violet-400' : 'text-emerald-400'}>
-                  {streamingCode}
-                </code>
-                <span className="animate-pulse">▊</span>
-              </pre>
-              <div ref={codeEndRef} />
-            </div>
-          ) : showCode && generatedCode ? (
+            isPaid ? (
+              <div className="flex-1 overflow-auto p-4 bg-zinc-950">
+                <pre className="text-xs font-mono whitespace-pre-wrap">
+                  <code className={(stage === 'refining' || isUserRefining) ? 'text-violet-400' : 'text-emerald-400'}>
+                    {streamingCode}
+                  </code>
+                  <span className="animate-pulse">▊</span>
+                </pre>
+                <div ref={codeEndRef} />
+              </div>
+            ) : (
+              /* Free users see building animation, not actual code */
+              <div className="flex-1 flex items-center justify-center bg-zinc-950">
+                <div className="text-center p-8">
+                  <motion.div
+                    animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                    className="text-6xl mb-4"
+                  >
+                    {stage === 'refining' || isUserRefining ? '🐣' : '⚡'}
+                  </motion.div>
+                  <h3 className="text-lg font-semibold text-white mb-2">
+                    {stage === 'refining' || isUserRefining ? 'Opus is polishing...' : 'Sonnet is building...'}
+                  </h3>
+                  <p className="text-sm text-zinc-500 mb-4">Your section is being crafted</p>
+                  <div className="flex justify-center gap-1">
+                    {[0, 1, 2].map(i => (
+                      <motion.div
+                        key={i}
+                        className="w-2 h-2 rounded-full bg-emerald-500"
+                        animate={{ opacity: [0.3, 1, 0.3] }}
+                        transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )
+          ) : isPaid && showCode && generatedCode ? (
+            /* Fix #2: Only show code view if isPaid AND showCode */
             <div className="flex-1 overflow-auto p-4 bg-zinc-950">
               <pre className="text-xs font-mono whitespace-pre-wrap p-4">
                 <code className="text-emerald-400">{generatedCode}</code>
