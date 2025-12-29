@@ -458,9 +458,9 @@ export default function Home() {
           setCurrentProjectId(defaultProject.id)
         }
       } else {
-        // First time user - show welcome modal to name project
+        // First time user - but wait to show welcome modal
+        // We need to wait for Clerk to load to check if they have cloud projects first
         setIsFirstTimeUser(true)
-        setShowFirstTimeWelcome(true)
         // Create a placeholder project that will be renamed
         const defaultProject = createNewProject('My Project')
         setProjects([defaultProject])
@@ -477,6 +477,7 @@ export default function Home() {
   }, [])
 
   // Check if we should show Welcome Back modal (new device with cloud projects)
+  // OR FirstTimeWelcome (truly new user with no cloud projects)
   useEffect(() => {
     if (isLoadingProjects || !isLoaded) return
     
@@ -485,10 +486,16 @@ export default function Home() {
     const hasCloudProjects = deployedProjects.length > 0
     const hasSeenWelcome = localStorage.getItem('hatchit-seen-welcome')
     
+    // Priority: WelcomeBack > FirstTimeWelcome
     if (!hasLocalProjects && hasCloudProjects && !hasSeenWelcome) {
+      // Has cloud projects - show sync modal first (not FirstTimeWelcome)
+      setShowFirstTimeWelcome(false)
       setShowWelcomeBackModal(true)
+    } else if (isFirstTimeUser && !hasCloudProjects && !hasSeenWelcome) {
+      // Truly new user with no cloud projects - show FirstTimeWelcome
+      setShowFirstTimeWelcome(true)
     }
-  }, [isLoadingProjects, isLoaded, projects, deployedProjects])
+  }, [isLoadingProjects, isLoaded, projects, deployedProjects, isFirstTimeUser])
 
   // Pull all Go Hatched (paid) projects from cloud
   const pullAllPaidProjects = () => {
@@ -554,6 +561,12 @@ export default function Home() {
       // Force reload to get fresh user data from Clerk (webhook may have updated metadata)
       const projectSlug = searchParams.get('project')
       setShowSuccessModal(true)
+      
+      // Store the project slug for auto-deploy after reload
+      if (projectSlug) {
+        localStorage.setItem('hatchit-pending-deploy', projectSlug)
+      }
+      
       window.history.replaceState({}, '', '/builder')
       
       // Reload the page after a short delay to ensure Clerk metadata is synced
@@ -573,6 +586,52 @@ export default function Home() {
       window.history.replaceState({}, '', '/builder')
     }
   }, [searchParams])
+
+  // Auto-deploy after hatching (post-checkout reload)
+  // This ensures the code is synced to cloud immediately after payment
+  useEffect(() => {
+    const pendingDeploy = localStorage.getItem('hatchit-pending-deploy')
+    if (!pendingDeploy || isLoadingProjects || !isLoaded || isDeploying) return
+    
+    // Find the project that matches the pending deploy slug
+    const projectToAutoDeploy = projects.find(p => {
+      // Match by name generating the same slug pattern
+      const userSuffix = user?.id?.slice(-6).toLowerCase() || ''
+      const expectedSlug = p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + userSuffix
+      return expectedSlug === pendingDeploy || p.deployedSlug === pendingDeploy
+    })
+    
+    // Check if this project has an active subscription
+    const hasSubscription = subscriptions.some(s => s.projectSlug === pendingDeploy && s.status === 'active')
+    
+    if (projectToAutoDeploy && hasSubscription && !projectToAutoDeploy.deployedSlug) {
+      // Has code to deploy and subscription is active - auto deploy!
+      const hasCode = (projectToAutoDeploy.versions?.length ?? 0) > 0 || 
+                      projectToAutoDeploy.pages?.some(page => (page.versions?.length ?? 0) > 0)
+      
+      if (hasCode) {
+        console.log('Auto-deploying hatched project:', pendingDeploy)
+        localStorage.removeItem('hatchit-pending-deploy')
+        
+        // Switch to this project and deploy
+        setCurrentProjectId(projectToAutoDeploy.id)
+        
+        // Small delay to ensure state is updated
+        setTimeout(() => {
+          handleDeploy(pendingDeploy)
+        }, 500)
+      } else {
+        // No code yet, clear the pending flag
+        localStorage.removeItem('hatchit-pending-deploy')
+      }
+    } else if (!hasSubscription) {
+      // Subscription not yet synced, wait for next render
+      // (Clerk webhook may still be processing)
+    } else {
+      // Already deployed or project not found
+      localStorage.removeItem('hatchit-pending-deploy')
+    }
+  }, [isLoadingProjects, isLoaded, projects, subscriptions, isDeploying, user?.id])
 
   // Keyboard shortcuts
   useEffect(() => {
