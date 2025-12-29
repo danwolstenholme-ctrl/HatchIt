@@ -370,6 +370,8 @@ export default function Home() {
   const [showDesktopMenu, setShowDesktopMenu] = useState(false)
   const [showNewProjectModal, setShowNewProjectModal] = useState(false)
   const [showWelcomeBackModal, setShowWelcomeBackModal] = useState(false)
+  const [showFirstTimeWelcome, setShowFirstTimeWelcome] = useState(false)
+  const [isFirstTimeUser, setIsFirstTimeUser] = useState(false)
   const [domainSearch, setDomainSearch] = useState('')
   const [domainSearchResult, setDomainSearchResult] = useState<{ domain: string; available: boolean; price?: number } | null>(null)
   const [isSearchingDomain, setIsSearchingDomain] = useState(false)
@@ -387,6 +389,7 @@ export default function Home() {
   const dropdownRef = useRef<HTMLDivElement>(null)
   const domainInputRef = useRef<HTMLInputElement>(null)
   const projectNameInputRef = useRef<HTMLInputElement>(null)
+  const firstTimeProjectNameRef = useRef<HTMLInputElement>(null)
   const generationRequestIdRef = useRef(0)
   const abortControllerRef = useRef<AbortController | null>(null)
 
@@ -454,10 +457,13 @@ export default function Home() {
           setCurrentProjectId(defaultProject.id)
         }
       } else {
-        const defaultProject = createNewProject('My First Project')
+        // First time user - show welcome modal to name project
+        setIsFirstTimeUser(true)
+        setShowFirstTimeWelcome(true)
+        // Create a placeholder project that will be renamed
+        const defaultProject = createNewProject('My Project')
         setProjects([defaultProject])
         setCurrentProjectId(defaultProject.id)
-        // Don't show onboarding immediately - wait until first generation
       }
     } catch (storageError) {
       // localStorage may be unavailable in private browsing
@@ -2720,6 +2726,49 @@ export default function Home() {
     )
   }
 
+  // First Time Welcome Modal - asks new users to name their project
+  const FirstTimeWelcomeModal = () => {
+    const handleConfirm = () => {
+      const name = firstTimeProjectNameRef.current?.value?.trim() || 'My Project'
+      // Update the first project's name
+      setProjects(prev => prev.map((p, i) => i === 0 ? { ...p, name } : p))
+      setShowFirstTimeWelcome(false)
+    }
+    
+    return (
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[10001] p-4">
+        <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 md:p-8 w-full max-w-md shadow-2xl">
+          <div className="text-center mb-6">
+            <div className="text-5xl mb-4">🐣</div>
+            <h2 className="text-2xl font-bold text-white mb-2">Welcome to HatchIt!</h2>
+            <p className="text-zinc-400">Let's name your first project. What are you building?</p>
+          </div>
+          
+          <input
+            ref={firstTimeProjectNameRef}
+            type="text"
+            onKeyDown={(e) => e.key === 'Enter' && handleConfirm()}
+            placeholder="e.g. My Portfolio, Landing Page, Business Site..."
+            className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder:text-zinc-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 mb-4 text-base"
+            autoFocus
+          />
+          
+          <button
+            onClick={handleConfirm}
+            className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-semibold rounded-xl transition-all mb-4"
+          >
+            Start Building →
+          </button>
+          
+          <div className="text-center text-xs text-zinc-500">
+            <p className="mb-2">✨ <span className="text-white">10 free generations per day</span></p>
+            <p>Just describe what you want and watch it build!</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (isMobile) {
     return (
       <div className="h-dvh bg-zinc-950 flex flex-col overflow-hidden relative">
@@ -2748,6 +2797,7 @@ export default function Home() {
         {showAddPageModal && <AddPageModal />}
         {showNewProjectModal && <NewProjectModal />}
         {showWelcomeBackModal && <WelcomeBackModal />}
+        {showFirstTimeWelcome && <FirstTimeWelcomeModal />}
         {isDeploying && <DeployingOverlay />}
         
         {/* Brand Panel Modal */}
@@ -3101,6 +3151,7 @@ export default function Home() {
       {showAddPageModal && <AddPageModal />}
       {showNewProjectModal && <NewProjectModal />}
       {showWelcomeBackModal && <WelcomeBackModal />}
+      {showFirstTimeWelcome && <FirstTimeWelcomeModal />}
       <div className={`h-full ${!isLoadingProjects && !isDeployed ? 'pt-10' : ''}`}>
       <Group orientation="horizontal" className="h-full rounded-2xl overflow-hidden border border-zinc-800/80 shadow-2xl shadow-black/50 ring-1 ring-white/5">
         <Panel id="chat" defaultSize={28} minSize={20}>
