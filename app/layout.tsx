@@ -3,7 +3,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/next";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import CrispChat from "@/components/CrispChat";
-import Navigation from "@/components/Navigation";
+import ConditionalNavigation from "@/components/ConditionalNavigation";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -75,7 +75,7 @@ export default function RootLayout({
       <html lang="en">
         <body>
           <ServiceWorkerRegistration />
-          <Navigation />
+          <ConditionalNavigation />
           {children}
           <CrispChat />
           <Analytics />
