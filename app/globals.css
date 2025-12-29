@@ -9,6 +9,7 @@ html, body {
   height: 100%;
   width: 100%;
   margin: 0;
+  background-color: #09090b;
   /* Prevent browser swipe-back/forward gestures on horizontal swipe */
   overscroll-behavior-x: none;
 }

@@ -82,15 +82,15 @@ function GoldenChicken() {
       transition={{ type: 'spring', bounce: 0.5, delay: 0.3 }}
       className="relative"
     >
-      {/* Glow effect */}
-      <div className="absolute inset-0 blur-3xl bg-gradient-to-r from-amber-400/40 to-yellow-400/40 rounded-full scale-150" />
+      {/* Subtle glow effect */}
+      <div className="absolute inset-0 blur-2xl bg-amber-500/20 rounded-full scale-125" />
       
       {/* Main chicken */}
       <motion.div
         animate={{ y: [0, -10, 0] }}
         transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-        className="relative text-9xl drop-shadow-2xl"
-        style={{ filter: 'drop-shadow(0 0 30px rgba(251, 191, 36, 0.5))' }}
+        className="relative text-9xl"
+        style={{ filter: 'drop-shadow(0 0 20px rgba(251, 191, 36, 0.3))' }}
       >
         🐔
       </motion.div>
@@ -138,8 +138,8 @@ function ProHatchCharacter() {
       transition={{ type: 'spring', bounce: 0.5, delay: 0.3 }}
       className="relative"
     >
-      {/* Purple glow */}
-      <div className="absolute inset-0 blur-3xl bg-gradient-to-r from-violet-500/30 to-purple-500/30 rounded-full scale-150" />
+      {/* Subtle purple glow */}
+      <div className="absolute inset-0 blur-2xl bg-violet-500/20 rounded-full scale-125" />
       
       <motion.div
         animate={{ y: [0, -10, 0] }}
