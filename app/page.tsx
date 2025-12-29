@@ -611,7 +611,7 @@ export default function Home() {
             ].map((item, i) => (
               <div key={i} className="relative">
                 {i < 2 && (
-                  <div className="hidden md:block absolute top-12 left-full w-full h-[2px] z-0 overflow-hidden">
+                  <div className="hidden md:block absolute top-12 left-full w-[calc(100%-2rem)] h-[2px] z-0 overflow-hidden">
                     <motion.div 
                       className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-transparent shimmer-smooth"
                       style={{ willChange: 'transform' }}
