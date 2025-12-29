@@ -24,6 +24,8 @@ interface SectionBuilderProps {
   allSectionsCode: Record<string, string> // For preview context
   demoMode?: boolean // Local testing without API
   brandConfig?: BrandConfig | null // Brand styling from branding step
+  isPaid?: boolean // Whether project is hatched (paid)
+  onShowHatchModal?: () => void // Show paywall modal
 }
 
 type BuildStage = 'input' | 'generating' | 'refining' | 'complete'
@@ -117,6 +119,8 @@ export default function SectionBuilder({
   allSectionsCode,
   demoMode = false,
   brandConfig = null,
+  isPaid = false,
+  onShowHatchModal,
 }: SectionBuilderProps) {
   const [prompt, setPrompt] = useState(dbSection.user_prompt || '')
   const [stage, setStage] = useState<BuildStage>(
@@ -152,12 +156,26 @@ export default function SectionBuilder({
   const helperChatRef = useRef<HTMLDivElement>(null)
 
   const handleCopyCode = () => {
+    // Paywall: only paid users can copy code
+    if (!isPaid) {
+      onShowHatchModal?.()
+      return
+    }
     const codeToCopy = streamingCode || generatedCode
     if (codeToCopy) {
       navigator.clipboard.writeText(codeToCopy)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     }
+  }
+
+  // Paywall: only paid users can view full code
+  const handleViewCode = () => {
+    if (!isPaid) {
+      onShowHatchModal?.()
+      return
+    }
+    setShowCode(!showCode)
   }
 
   // Auto-focus textarea on mount
@@ -1028,10 +1046,15 @@ export default function SectionBuilder({
             )}
             {generatedCode && stage === 'complete' && !isUserRefining && (
               <button
-                onClick={() => setShowCode(!showCode)}
-                className="text-xs px-2 py-1 rounded bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors"
+                onClick={handleViewCode}
+                className="text-xs px-2 py-1 rounded bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors flex items-center gap-1"
               >
-                {showCode ? '← Preview' : 'View Code →'}
+                {showCode ? '← Preview' : (
+                  <>
+                    View Code
+                    {!isPaid && <span className="text-amber-400 ml-1">🔒</span>}
+                  </>
+                )}
               </button>
             )}
           </div>
@@ -1044,7 +1067,10 @@ export default function SectionBuilder({
                 {copied ? (
                   <><span className="text-emerald-400">✓</span> Copied!</>
                 ) : (
-                  <><span>📋</span> Copy Code</>
+                  <>
+                    <span>📋</span> Copy
+                    {!isPaid && <span className="text-amber-400 ml-1">🔒</span>}
+                  </>
                 )}
               </button>
               {stage === 'complete' && (

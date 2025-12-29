@@ -8,6 +8,7 @@ import TemplateSelector, { BuildComplete } from './TemplateSelector'
 import BrandingStep, { BrandConfig } from './BrandingStep'
 import SectionProgress from './SectionProgress'
 import SectionBuilder from './SectionBuilder'
+import HatchModal from './HatchModal'
 import { Template, Section, getTemplateById, createInitialBuildState, BuildState } from '@/lib/templates'
 import { DbProject, DbSection } from '@/lib/supabase'
 
@@ -40,6 +41,11 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isAuditRunning, setIsAuditRunning] = useState(false)
+  const [showHatchModal, setShowHatchModal] = useState(false)
+
+  // Check if project is paid (hatched) - for now, always false in BuildFlowController
+  // Users must deploy/hatch to get code access
+  const isPaid = false
 
   // Check for existing project on mount (from URL or localStorage)
   useEffect(() => {
@@ -465,6 +471,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
                   allSectionsCode={buildState.sectionCode}
                   demoMode={demoMode}
                   brandConfig={brandConfig}
+                  isPaid={isPaid}
+                  onShowHatchModal={() => setShowHatchModal(true)}
                 />
               )}
             </div>
@@ -491,6 +499,13 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Hatch Modal - paywall for code access */}
+      <HatchModal
+        isOpen={showHatchModal}
+        onClose={() => setShowHatchModal(false)}
+        reason="code_access"
+      />
     </div>
   )
 }
