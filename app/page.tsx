@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import { motion, useInView } from 'framer-motion'
 
-// Check if user prefers reduced motion - always use motion components, just skip animations
+// Only respect user's accessibility preference - NOT device type
 function useReducedMotion() {
   const [reduced, setReduced] = useState(false)
   const [isClient, setIsClient] = useState(false)
@@ -13,19 +13,29 @@ function useReducedMotion() {
   useEffect(() => {
     setIsClient(true)
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const isMobile = window.innerWidth < 768
-    setReduced(mq.matches || isMobile)
-    const handler = () => setReduced(mq.matches || window.innerWidth < 768)
+    setReduced(mq.matches)
+    const handler = () => setReduced(mq.matches)
     mq.addEventListener('change', handler)
-    window.addEventListener('resize', handler)
-    return () => {
-      mq.removeEventListener('change', handler)
-      window.removeEventListener('resize', handler)
-    }
+    return () => mq.removeEventListener('change', handler)
   }, [])
   
-  // Always return false on server and first render for consistent hydration
   return isClient ? reduced : false
+}
+
+// Check if mobile for lighter animations (not disabled, just optimized)
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+  const [isClient, setIsClient] = useState(false)
+  
+  useEffect(() => {
+    setIsClient(true)
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+  
+  return isClient ? isMobile : false
 }
 
 // Typewriter effect for code demo
@@ -117,19 +127,25 @@ function FloatingChicks() {
   )
 }
 
-// Section wrapper - always uses motion, just skips animation when reduced
+// Section wrapper - optimized animations for all devices
 function Section({ children, className = '', id = '' }: { children: React.ReactNode; className?: string; id?: string }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-50px" })
   const reducedMotion = useReducedMotion()
+  const isMobile = useIsMobile()
+  
+  // Mobile: lighter animation (less distance, faster)
+  // Desktop: full effect
+  const yOffset = isMobile ? 15 : 30
+  const duration = isMobile ? 0.35 : 0.5
   
   return (
     <motion.section
       ref={ref}
       id={id}
-      initial={reducedMotion ? false : { opacity: 0, y: 30 }}
-      animate={isInView ? { opacity: 1, y: 0 } : (reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 })}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
+      initial={reducedMotion ? false : { opacity: 0, y: yOffset }}
+      animate={isInView ? { opacity: 1, y: 0 } : (reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: yOffset })}
+      transition={{ duration, ease: [0.25, 0.1, 0.25, 1] }}
       className={className}
     >
       {children}
@@ -157,15 +173,21 @@ const demoCode = `export default function Hero() {
 
 export default function Home() {
   const reducedMotion = useReducedMotion()
+  const isMobile = useIsMobile()
   
-  // Simple fade-in for mobile, motion for desktop
-  const fadeIn = reducedMotion 
-    ? { className: "animate-fade-in" }
-    : { 
-        initial: { opacity: 0, y: 20 }, 
-        animate: { opacity: 1, y: 0 },
-        transition: { duration: 0.5 }
+  // Animation config - lighter on mobile, full on desktop
+  const getAnimation = (delay = 0, yOffset = 20) => {
+    if (reducedMotion) return {}
+    return {
+      initial: { opacity: 0, y: isMobile ? yOffset * 0.5 : yOffset },
+      animate: { opacity: 1, y: 0 },
+      transition: { 
+        duration: isMobile ? 0.35 : 0.5, 
+        delay: isMobile ? delay * 0.7 : delay,
+        ease: [0.25, 0.1, 0.25, 1] as const // easeOut cubic bezier
       }
+    }
+  }
   
   return (
     <div className="min-h-screen bg-zinc-950 text-white relative">
@@ -178,18 +200,16 @@ export default function Home() {
         <div className="absolute -bottom-40 left-1/3 w-80 h-80 bg-pink-500/10 rounded-full blur-2xl md:blur-[100px] hidden md:block" />
       </div>
       
-      {/* CSS animations for mobile */}
+      {/* GPU-accelerated animations */}
       <style jsx global>{`
         @keyframes fade-in {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
+          from { opacity: 0; transform: translate3d(0, 10px, 0); }
+          to { opacity: 1; transform: translate3d(0, 0, 0); }
         }
         .animate-fade-in {
-          animation: fade-in 0.4s ease-out forwards;
+          animation: fade-in 0.35s ease-out forwards;
+          will-change: opacity, transform;
         }
-        .animate-fade-in-delay-1 { animation-delay: 0.1s; opacity: 0; }
-        .animate-fade-in-delay-2 { animation-delay: 0.2s; opacity: 0; }
-        .animate-fade-in-delay-3 { animation-delay: 0.3s; opacity: 0; }
       `}</style>
 
       {/* Navigation */}
@@ -230,9 +250,7 @@ export default function Home() {
           <div className="flex justify-center mb-8">
             <motion.div 
               className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-full"
-              initial={reducedMotion ? false : { opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+              {...getAnimation(0, 20)}
             >
               <span className="relative flex h-2 w-2 flex-shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
@@ -246,9 +264,7 @@ export default function Home() {
           <div className="text-center mb-6">
             <motion.h1
               className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black leading-[1] sm:leading-[0.95] tracking-tight mb-6"
-              initial={reducedMotion ? false : { opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
+              {...getAnimation(0.1, 30)}
             >
               <span className="block">Describe it.</span>
               <span className="block bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">Watch it build.</span>
@@ -259,9 +275,7 @@ export default function Home() {
           {/* Subheadline */}
           <motion.p 
             className="text-center text-lg sm:text-xl md:text-2xl text-zinc-400 max-w-3xl mx-auto mb-8 leading-relaxed"
-            initial={reducedMotion ? false : { opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+            {...getAnimation(0.2, 20)}
           >
             The AI website builder that writes <span className="text-white font-medium">real, maintainable</span> React code. Not drag-and-drop garbage. Actual code you own.
           </motion.p>
@@ -269,9 +283,7 @@ export default function Home() {
           {/* CTAs */}
           <motion.div 
             className="flex flex-col sm:flex-row justify-center gap-4 mb-12"
-            initial={reducedMotion ? false : { opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
+            {...getAnimation(0.3, 20)}
           >
             <Link href="/builder" className="group px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-bold text-lg transition-all hover:scale-105 hover:shadow-xl hover:shadow-purple-500/25 flex items-center justify-center gap-2">
               Start Building Free
@@ -285,9 +297,7 @@ export default function Home() {
           {/* Trust badges */}
           <motion.div
             className="flex flex-wrap justify-center gap-6 text-sm text-zinc-500 mb-16"
-            initial={reducedMotion ? false : { opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
+            {...getAnimation(0.4, 10)}
           >
             <div className="flex items-center gap-2">
               <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
@@ -306,9 +316,9 @@ export default function Home() {
           {/* LIVE CODE DEMO - The showstopper */}
           <motion.div 
             className="relative max-w-5xl mx-auto"
-            initial={reducedMotion ? false : { opacity: 0, y: 40 }}
+            initial={reducedMotion ? false : { opacity: 0, y: isMobile ? 20 : 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
+            transition={{ duration: isMobile ? 0.5 : 0.8, delay: isMobile ? 0.35 : 0.5, ease: [0.25, 0.1, 0.25, 1] }}
           >
             <div className="absolute -inset-4 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-amber-500/20 rounded-3xl blur-xl" />
             <div className="relative bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl">
