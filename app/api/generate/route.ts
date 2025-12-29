@@ -153,6 +153,96 @@ function analyzePromptComplexity(prompt: string): { isComplex: boolean; warning?
   return { isComplex: false }
 }
 
+// Detect simple edits that can be handled surgically (find/replace style)
+// Returns the edit details if it's a simple edit, null otherwise
+function detectSimpleEdit(prompt: string, currentCode: string): { 
+  isSimple: boolean; 
+  editType?: 'text' | 'color' | 'style' | 'attribute';
+  findPattern?: string;
+  description?: string;
+} | null {
+  if (!currentCode || currentCode.length < 50) return null;
+  
+  const lowerPrompt = prompt.toLowerCase().trim();
+  
+  // Patterns that indicate simple text changes
+  const textChangePatterns = [
+    /^change\s+["']?(.+?)["']?\s+to\s+["']?(.+?)["']?$/i,
+    /^replace\s+["']?(.+?)["']?\s+with\s+["']?(.+?)["']?$/i,
+    /^update\s+(?:the\s+)?(?:text|heading|title|button|headline)\s+(?:to\s+)?["']?(.+?)["']?$/i,
+    /^(?:make|set)\s+(?:the\s+)?(?:headline|title|heading|button\s+text)\s+(?:say\s+)?["']?(.+?)["']?$/i,
+    /^change\s+(?:the\s+)?(?:headline|title|heading|button)\s+to\s+["']?(.+?)["']?$/i,
+  ];
+  
+  // Patterns for color changes
+  const colorChangePatterns = [
+    /^change\s+(?:the\s+)?(?:background\s+)?color\s+(?:of\s+.+\s+)?to\s+(\S+)$/i,
+    /^make\s+(?:the\s+)?(?:background|button|text)\s+(\S+)$/i,
+    /^(?:set|change)\s+(?:the\s+)?(?:primary|accent|button)\s+color\s+to\s+(\S+)$/i,
+  ];
+  
+  // Check for text changes
+  for (const pattern of textChangePatterns) {
+    if (pattern.test(prompt)) {
+      return { isSimple: true, editType: 'text', description: prompt };
+    }
+  }
+  
+  // Check for color changes
+  for (const pattern of colorChangePatterns) {
+    if (pattern.test(prompt)) {
+      return { isSimple: true, editType: 'color', description: prompt };
+    }
+  }
+  
+  // Short prompts that are likely simple edits (under 10 words, contains "change/update/replace")
+  const wordCount = prompt.split(/\s+/).length;
+  if (wordCount <= 12 && /^(change|update|replace|make|set|fix)\s/i.test(prompt)) {
+    // Check it's not asking for structural changes
+    const structuralKeywords = /section|component|add|remove|delete|create|build|new|layout|grid|flex|responsive/i;
+    if (!structuralKeywords.test(prompt)) {
+      return { isSimple: true, editType: 'text', description: prompt };
+    }
+  }
+  
+  return null;
+}
+
+// Surgical edit prompt - asks AI to return only find/replace pairs
+const surgicalEditPrompt = `You are a precise code editor. The user wants to make a small change to their React component.
+
+TASK: Return ONLY the specific find/replace operations needed. Do NOT rewrite the entire component.
+
+FORMAT your response EXACTLY like this:
+---FIND---
+[exact text to find in the code]
+---REPLACE---
+[exact text to replace it with]
+---END---
+
+You can include multiple find/replace blocks if needed.
+
+RULES:
+1. Find strings must EXACTLY match text in the current code (including quotes, spaces)
+2. Only change what's necessary - preserve everything else
+3. For text changes, include the surrounding JSX (e.g., the full string with quotes)
+4. If you can't find an exact match, explain why in a ---MESSAGE--- block
+
+Example - changing "Welcome" to "Hello":
+---FIND---
+>Welcome to Our Site</
+---REPLACE---
+>Hello to Our Site</
+---END---
+
+Example - changing button text:
+---FIND---
+>Get Started</button>
+---REPLACE---
+>Start Now</button>
+---END---
+`;
+
 // Simple syntax check
 function checkSyntax(code: string): { valid: boolean; error?: string } {
   try {
@@ -609,6 +699,78 @@ export async function POST(request: NextRequest) {
         warning: complexity.warning,
         suggestions: complexity.suggestions
       })
+    }
+  }
+
+  // Check for simple edits that can be handled surgically
+  const simpleEdit = detectSimpleEdit(prompt, currentCode)
+  if (simpleEdit?.isSimple && currentCode) {
+    console.log('Step 7b: Detected simple edit, using surgical approach')
+    
+    try {
+      const surgicalResponse = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY || '',
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-opus-4-20250514',
+          max_tokens: 2000, // Much smaller - we only need the diff
+          system: surgicalEditPrompt,
+          messages: [{
+            role: 'user',
+            content: `CURRENT CODE:\n\`\`\`jsx\n${currentCode}\n\`\`\`\n\nEDIT REQUEST: ${prompt}`
+          }]
+        })
+      })
+
+      const surgicalData = await surgicalResponse.json()
+      
+      if (surgicalData.content && surgicalData.content[0]) {
+        const surgicalText = surgicalData.content[0].text
+        
+        // Parse find/replace blocks
+        const findReplacePattern = /---FIND---\s*([\s\S]*?)\s*---REPLACE---\s*([\s\S]*?)\s*---END---/g
+        let modifiedCode = currentCode
+        let replacementCount = 0
+        let match
+        
+        while ((match = findReplacePattern.exec(surgicalText)) !== null) {
+          const findStr = match[1].trim()
+          const replaceStr = match[2].trim()
+          
+          if (modifiedCode.includes(findStr)) {
+            modifiedCode = modifiedCode.replace(findStr, replaceStr)
+            replacementCount++
+            console.log(`Surgical edit: replaced "${findStr.slice(0, 50)}..." with "${replaceStr.slice(0, 50)}..."`)
+          }
+        }
+        
+        // If we made at least one replacement, return the modified code
+        if (replacementCount > 0) {
+          console.log(`Surgical edit successful: ${replacementCount} replacement(s)`)
+          return NextResponse.json({
+            code: modifiedCode,
+            message: `Updated! Made ${replacementCount} change${replacementCount > 1 ? 's' : ''} ✓`,
+            suggestions: ['Make another text change', 'Update colors', 'Add a new section'],
+            surgicalEdit: true
+          })
+        }
+        
+        // Check if there's a message explaining why it couldn't find the text
+        const messageMatch = surgicalText.match(/---MESSAGE---\s*([\s\S]*?)(?:---|$)/)
+        if (messageMatch) {
+          console.log('Surgical edit failed, falling back to full generation:', messageMatch[1])
+        }
+      }
+      
+      // If surgical edit didn't work, fall through to full generation
+      console.log('Surgical edit failed to find matches, falling back to full generation')
+    } catch (surgicalError) {
+      console.error('Surgical edit error, falling back:', surgicalError)
+      // Fall through to normal generation
     }
   }
 
