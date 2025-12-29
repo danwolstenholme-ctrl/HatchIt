@@ -1,16 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
+import { auth, clerkClient } from '@clerk/nextjs/server'
 import Anthropic from '@anthropic-ai/sdk'
 
 // =============================================================================
 // OPUS 4.5 - THE REFINER
 // Auto-polishes code after Sonnet builds
 // Fixes issues WITHOUT adding features
+// Pro tier: 30 refinements/month, Agency tier: unlimited
 // =============================================================================
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 })
+
+// Monthly Opus limit for Pro tier (Agency is unlimited)
+const PRO_OPUS_MONTHLY_LIMIT = 30
 
 const REFINER_SYSTEM_PROMPT = `You are a surgical code refiner. Your ONLY job is to polish React + Tailwind code.
 
@@ -99,6 +103,42 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Check user tier and Opus usage limits
+    const client = await clerkClient()
+    const user = await client.users.getUser(userId)
+    const accountSub = user.publicMetadata?.accountSubscription as { 
+      status?: string
+      tier?: 'pro' | 'agency'
+    } | undefined
+    
+    // Only paid users can use Opus refinements
+    if (!accountSub || accountSub.status !== 'active') {
+      return NextResponse.json({ 
+        error: 'Opus refinements require Pro or Agency subscription',
+        upgradeRequired: true 
+      }, { status: 403 })
+    }
+
+    // Check Opus usage for Pro tier (Agency is unlimited)
+    if (accountSub.tier === 'pro') {
+      const opusUsed = (user.publicMetadata?.opusRefinementsUsed as number) || 0
+      const resetDate = user.publicMetadata?.opusRefinementsResetDate as string | undefined
+      const today = new Date().toISOString().split('T')[0]
+      
+      // Check if we need to reset (new month or past reset date)
+      const shouldReset = !resetDate || new Date(resetDate) <= new Date(today)
+      const currentUsage = shouldReset ? 0 : opusUsed
+      
+      if (currentUsage >= PRO_OPUS_MONTHLY_LIMIT) {
+        return NextResponse.json({ 
+          error: `Monthly Opus limit reached (${PRO_OPUS_MONTHLY_LIMIT}/month). Upgrade to Agency for unlimited refinements.`,
+          limitReached: true,
+          used: currentUsage,
+          limit: PRO_OPUS_MONTHLY_LIMIT
+        }, { status: 429 })
+      }
+    }
+
     const body = await request.json()
     const { sectionId, code, sectionType, sectionName, userPrompt, refineRequest } = body
 
@@ -176,6 +216,37 @@ ${code}`
       refinedCode = code
       changes = []
       wasRefined = false
+    }
+
+    // Increment Opus usage for Pro tier after successful refinement
+    if (accountSub.tier === 'pro' && wasRefined) {
+      try {
+        const currentUsed = (user.publicMetadata?.opusRefinementsUsed as number) || 0
+        const resetDate = user.publicMetadata?.opusRefinementsResetDate as string | undefined
+        const today = new Date()
+        
+        // Calculate next month's reset date if needed
+        let newResetDate = resetDate
+        if (!resetDate || new Date(resetDate) <= today) {
+          // Set reset to first of next month
+          const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1)
+          newResetDate = nextMonth.toISOString().split('T')[0]
+        }
+        
+        const shouldReset = !resetDate || new Date(resetDate) <= today
+        const newUsed = shouldReset ? 1 : currentUsed + 1
+        
+        await client.users.updateUser(userId, {
+          publicMetadata: {
+            ...user.publicMetadata,
+            opusRefinementsUsed: newUsed,
+            opusRefinementsResetDate: newResetDate,
+          }
+        })
+      } catch (updateError) {
+        console.error('[refine-section] Failed to update Opus usage:', updateError)
+        // Don't fail the request, just log
+      }
     }
 
     return NextResponse.json({

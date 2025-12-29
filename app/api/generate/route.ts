@@ -48,7 +48,7 @@ function checkRateLimit(userId: string): boolean {
 // Server-side daily generation tracking
 // Note: In serverless, this resets per cold start - actual limits enforced via DB in production
 const dailyGenerations = new Map<string, { count: number; date: string }>()
-const FREE_DAILY_LIMIT = 10
+const FREE_DAILY_LIMIT = 5  // Matches pricing page: 5 free generations per day
 const MAX_DAILY_GEN_ENTRIES = 10000 // Prevent unbounded growth
 
 function checkAndRecordGeneration(userId: string, isPaid: boolean): { allowed: boolean; remaining: number } {
@@ -407,13 +407,15 @@ export async function POST(request: NextRequest) {
     }
     console.log('Step 3: Rate limit passed')
 
-    // Check if user is paid
+    // Check if user is paid (has active account subscription)
     let isPaid = false
     try {
       const client = await clerkClient()
       const user = await client.users.getUser(userId)
-      isPaid = user.publicMetadata?.paid === true
-      console.log('Step 4: Clerk lookup done, isPaid:', isPaid)
+      // Check account subscription (new tier system: pro/agency)
+      const accountSub = user.publicMetadata?.accountSubscription as { status?: string; tier?: string } | undefined
+      isPaid = accountSub?.status === 'active'
+      console.log('Step 4: Clerk lookup done, isPaid:', isPaid, 'tier:', accountSub?.tier)
     } catch (clerkError) {
       console.error('Clerk lookup failed:', clerkError)
       // Continue as free user if lookup fails
@@ -476,7 +478,7 @@ export async function POST(request: NextRequest) {
           'anthropic-version': '2023-06-01'
         },
         body: JSON.stringify({
-          model: 'claude-opus-4-20250514',
+          model: 'claude-sonnet-4-20250514',  // Sonnet for builds
           max_tokens: 2000, // Much smaller - we only need the diff
           system: surgicalEditPrompt,
           messages: [{
@@ -596,7 +598,7 @@ export async function POST(request: NextRequest) {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-opus-4-20250514',
+        model: 'claude-sonnet-4-20250514',  // Sonnet for builds
         max_tokens: 32000,
         system: systemPrompt,
         messages
@@ -724,7 +726,7 @@ export async function POST(request: NextRequest) {
                   'anthropic-version': '2023-06-01'
                 },
                 body: JSON.stringify({
-                  model: 'claude-opus-4-20250514',
+                  model: 'claude-sonnet-4-20250514',  // Sonnet for builds
                   max_tokens: 8000,
                   messages: [{
                     role: 'user',
@@ -772,7 +774,7 @@ export async function POST(request: NextRequest) {
             'anthropic-version': '2023-06-01'
           },
           body: JSON.stringify({
-            model: 'claude-opus-4-20250514',
+            model: 'claude-sonnet-4-20250514',  // Sonnet for builds
             max_tokens: 16000,
             messages: [{
               role: 'user',
@@ -830,7 +832,7 @@ Return the COMPLETE fixed component:`
               'anthropic-version': '2023-06-01'
             },
             body: JSON.stringify({
-              model: 'claude-opus-4-20250514',
+              model: 'claude-sonnet-4-20250514',  // Sonnet for builds
               max_tokens: 8000,
               system: `You generate VERY COMPACT React components. Max 150 lines. Use map() for lists. 3 items max for any repeated content. Tailwind CSS only. No imports. Return ONLY code, no markdown.`,
               messages: messages
@@ -880,7 +882,7 @@ Return the COMPLETE fixed component:`
             'anthropic-version': '2023-06-01'
           },
           body: JSON.stringify({
-            model: 'claude-opus-4-20250514',
+            model: 'claude-sonnet-4-20250514',  // Sonnet for builds
             max_tokens: 32000,
             system: systemPrompt,
             messages: [{

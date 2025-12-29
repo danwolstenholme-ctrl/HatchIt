@@ -133,7 +133,7 @@ function checkRateLimit(userId: string): boolean {
 
 // Daily generation tracking
 const dailyGenerations = new Map<string, { count: number; date: string }>()
-const FREE_DAILY_LIMIT = 10
+const FREE_DAILY_LIMIT = 5  // Matches pricing page: 5 free generations per day
 
 function checkAndRecordGeneration(userId: string, isPaid: boolean): { allowed: boolean } {
   if (isPaid) return { allowed: true }
@@ -173,12 +173,14 @@ export async function POST(request: NextRequest) {
     })
   }
 
-  // Check if user is paid
+  // Check if user is paid (has active account subscription)
   let isPaid = false
   try {
     const client = await clerkClient()
     const user = await client.users.getUser(userId)
-    isPaid = user.publicMetadata?.paid === true
+    // Check account subscription (new tier system: pro/agency)
+    const accountSub = user.publicMetadata?.accountSubscription as { status?: string; tier?: string } | undefined
+    isPaid = accountSub?.status === 'active'
   } catch {
     // Continue as free user
   }
@@ -252,7 +254,7 @@ export async function POST(request: NextRequest) {
             'anthropic-version': '2023-06-01'
           },
           body: JSON.stringify({
-            model: 'claude-opus-4-20250514',
+            model: 'claude-sonnet-4-20250514',  // Sonnet for builds
             max_tokens: 16000,
             stream: true,
             system: systemPrompt,

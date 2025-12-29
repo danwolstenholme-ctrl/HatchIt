@@ -1,4 +1,4 @@
-const DAILY_LIMIT = 10
+const DAILY_LIMIT = 5  // Matches pricing page: 5 free generations per day
 const STORAGE_KEY = 'hatchit_generations'
 
 interface GenerationData {
