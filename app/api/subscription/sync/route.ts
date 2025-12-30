@@ -29,14 +29,28 @@ export async function GET() {
     const client = await clerkClient()
     const user = await client.users.getUser(userId)
     
-    const customerId = user.publicMetadata?.stripeCustomerId as string | undefined
+    let customerId = user.publicMetadata?.stripeCustomerId as string | undefined
     const existingSubscription = user.publicMetadata?.accountSubscription as AccountSubscription | null
+    const userEmail = user.emailAddresses?.[0]?.emailAddress
     
-    // If no customer ID, check if there's a subscription by searching
-    if (!customerId && !existingSubscription) {
+    // If no customer ID, try to find by email
+    if (!customerId && userEmail) {
+      console.log('No stripeCustomerId, searching by email:', userEmail)
+      const customers = await stripe.customers.list({
+        email: userEmail,
+        limit: 1,
+      })
+      if (customers.data[0]) {
+        customerId = customers.data[0].id
+        console.log('Found customer by email:', customerId)
+      }
+    }
+    
+    // If still no customer ID, can't sync
+    if (!customerId) {
       return NextResponse.json({ 
         synced: false,
-        message: 'No Stripe customer ID found. No subscription to sync.',
+        message: 'No Stripe customer found for this account.',
         subscription: null
       })
     }
@@ -44,14 +58,12 @@ export async function GET() {
     // Look up active subscriptions for this customer
     let activeSubscription: Stripe.Subscription | null = null
     
-    if (customerId) {
-      const subscriptions = await stripe.subscriptions.list({
-        customer: customerId,
-        status: 'active',
-        limit: 1,
-      })
-      activeSubscription = subscriptions.data[0] || null
-    }
+    const subscriptions = await stripe.subscriptions.list({
+      customer: customerId,
+      status: 'active',
+      limit: 1,
+    })
+    activeSubscription = subscriptions.data[0] || null
 
     // If no active subscription found, clear the metadata
     if (!activeSubscription) {
