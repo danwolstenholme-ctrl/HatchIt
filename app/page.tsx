@@ -570,7 +570,7 @@ export default function Home() {
                   🧠
                 </motion.span>
                 <h3 className="text-xl font-bold mb-2 group-hover:text-purple-300 transition-colors">Three-Model Pipeline</h3>
-                <p className="text-zinc-400">Sonnet builds. Opus polishes. Gemini audits. Each AI does what it&apos;s best at. Not just one model doing everything.</p>
+                <p className="text-zinc-400">Sonnet 4.5 builds. Opus 4.5 polishes. Gemini 2.5 audits. Each AI does what it&apos;s best at. Not just one model doing everything.</p>
               </div>
             </AnimatedCard>
 
@@ -640,11 +640,11 @@ export default function Home() {
             <p className="text-xl text-zinc-400 max-w-2xl mx-auto">Most builders use a single model for everything. We orchestrate three specialists to build, polish, and audit your code.</p>
           </div>
 
-          <div className="relative grid md:grid-cols-3 gap-8">
+          <div className="relative grid md:grid-cols-4 gap-6">
             {/* Connecting Line (Desktop) */}
-            <div className="hidden md:block absolute top-8 left-[16%] right-[16%] h-0.5 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-amber-500/20" />
+            <div className="hidden md:block absolute top-8 left-[12%] right-[12%] h-0.5 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-amber-500/20" />
             
-            {/* Sonnet */}
+            {/* YOU - The Architect */}
             <motion.div 
               className="relative"
               initial={{ opacity: 0, y: 20 }}
@@ -652,11 +652,27 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ delay: 0 }}
             >
-              <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-8 rounded-2xl hover:border-purple-500/30 transition-colors group">
-                <div className="w-16 h-16 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6 text-3xl group-hover:scale-110 transition-transform duration-300">🏗️</div>
+              <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-6 rounded-2xl hover:border-white/30 transition-colors group h-full">
+                <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center mb-6 text-2xl group-hover:scale-110 transition-transform duration-300">👑</div>
+                <div className="text-xs font-mono text-white/60 mb-3 tracking-wider">THE ARCHITECT</div>
+                <h3 className="text-xl font-bold mb-3">You</h3>
+                <p className="text-sm text-zinc-400 leading-relaxed">The visionary. You describe the dream, set the constraints, and make the final call. You pull the strings.</p>
+              </div>
+            </motion.div>
+
+            {/* Sonnet */}
+            <motion.div 
+              className="relative"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+            >
+              <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-6 rounded-2xl hover:border-purple-500/30 transition-colors group h-full">
+                <div className="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6 text-2xl group-hover:scale-110 transition-transform duration-300">🏗️</div>
                 <div className="text-xs font-mono text-purple-400 mb-3 tracking-wider">THE BUILDER</div>
-                <h3 className="text-2xl font-bold mb-3">Claude Sonnet 3.5</h3>
-                <p className="text-zinc-400 leading-relaxed">Writes the initial React + Tailwind code. Fast, accurate, and knows modern web standards inside out.</p>
+                <h3 className="text-xl font-bold mb-3">Sonnet 4.5</h3>
+                <p className="text-sm text-zinc-400 leading-relaxed">Writes the initial React + Tailwind code. Fast, accurate, and knows modern web standards inside out.</p>
               </div>
             </motion.div>
 
@@ -666,13 +682,13 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
+              transition={{ delay: 0.2 }}
             >
-              <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-8 rounded-2xl hover:border-pink-500/30 transition-colors group">
-                <div className="w-16 h-16 bg-pink-500/10 rounded-2xl flex items-center justify-center mb-6 text-3xl group-hover:scale-110 transition-transform duration-300">✨</div>
+              <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-6 rounded-2xl hover:border-pink-500/30 transition-colors group h-full">
+                <div className="w-14 h-14 bg-pink-500/10 rounded-2xl flex items-center justify-center mb-6 text-2xl group-hover:scale-110 transition-transform duration-300">✨</div>
                 <div className="text-xs font-mono text-pink-400 mb-3 tracking-wider">THE DESIGNER</div>
-                <h3 className="text-2xl font-bold mb-3">Claude Opus</h3>
-                <p className="text-zinc-400 leading-relaxed">Polishes the UI. Fixes accessibility. Adds hover states, smooth animations, and responsive touches.</p>
+                <h3 className="text-xl font-bold mb-3">Opus 4.5</h3>
+                <p className="text-sm text-zinc-400 leading-relaxed">Polishes the UI. Fixes accessibility. Adds hover states, smooth animations, and responsive touches.</p>
               </div>
             </motion.div>
 
@@ -682,13 +698,13 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
+              transition={{ delay: 0.3 }}
             >
-              <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-8 rounded-2xl hover:border-amber-500/30 transition-colors group">
-                <div className="w-16 h-16 bg-amber-500/10 rounded-2xl flex items-center justify-center mb-6 text-3xl group-hover:scale-110 transition-transform duration-300">🛡️</div>
+              <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-6 rounded-2xl hover:border-amber-500/30 transition-colors group h-full">
+                <div className="w-14 h-14 bg-amber-500/10 rounded-2xl flex items-center justify-center mb-6 text-2xl group-hover:scale-110 transition-transform duration-300">🛡️</div>
                 <div className="text-xs font-mono text-amber-400 mb-3 tracking-wider">THE AUDITOR</div>
-                <h3 className="text-2xl font-bold mb-3">Gemini 1.5 Pro</h3>
-                <p className="text-zinc-400 leading-relaxed">Reviews the code for bugs, security issues, and performance bottlenecks before you ship.</p>
+                <h3 className="text-xl font-bold mb-3">Gemini 2.5 Pro</h3>
+                <p className="text-sm text-zinc-400 leading-relaxed">Reviews the code for bugs, security issues, and performance bottlenecks before you ship.</p>
               </div>
             </motion.div>
           </div>
@@ -785,9 +801,9 @@ export default function Home() {
               <ul className="space-y-3 mb-8">
                 {[
                   { text: '5 generations per day', included: true },
-                  { text: 'Sonnet builds', included: true },
+                  { text: 'Sonnet 4.5 builds', included: true },
                   { text: 'Live preview', included: true },
-                  { text: 'Opus refinements', included: false },
+                  { text: 'Opus 4.5 refinements', included: false },
                   { text: 'Deploy to web', included: false },
                   { text: 'Code export', included: false },
                 ].map((item, i) => (
@@ -816,8 +832,8 @@ export default function Home() {
               <div className="text-zinc-400 text-sm mb-6">per account</div>
               <ul className="space-y-3 mb-8">
                 {[
-                  'Unlimited Sonnet builds',
-                  '30 Opus refinements/mo',
+                  'Unlimited Sonnet 4.5 builds',
+                  '30 Opus 4.5 refinements/mo',
                   'Deploy to hatchitsites.dev',
                   'Code export (ZIP)',
                   'Version history',
@@ -850,7 +866,7 @@ export default function Home() {
               <ul className="space-y-3 mb-8">
                 {[
                   'Everything in Pro',
-                  'Unlimited Opus refinements',
+                  'Unlimited Opus 4.5 refinements',
                   'Custom domains',
                   'Priority support',
                   'Early access to features',
