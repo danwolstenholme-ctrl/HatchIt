@@ -183,7 +183,8 @@ function LivePreview({ code, pages, currentPageId, isLoading = false, loadingPro
     
     try {
       // Dynamically import JSZip
-      const JSZip = (await import('jszip')).default
+      const JSZipModule = await import('jszip')
+      const JSZip = JSZipModule.default || JSZipModule
       const zip = new JSZip()
       
       // Package.json
@@ -453,7 +454,7 @@ export default function RootLayout({
       // Build components directly in the Babel script (so JSX gets transpiled)
       const pageComponents = pages.map((page, idx) => {
         const regex = /(?:function|const|let|var)\s+([A-Z][a-zA-Z0-9]*)(?:\s*[=:(]|\s*:)/g
-        const matches = [...page.code.matchAll(regex)]
+        const matches = Array.from(page.code.matchAll(regex))
         // Use FIRST match (the main component) not last (which catches inline helpers)
         const componentName = matches.length > 0 ? matches[0][1] : `Page${idx}`
 
@@ -588,66 +589,26 @@ ${pageRegistry}
       };
       `
 
-      // Wolsten Studios theme config (inlined for import compatibility)
+      // Theme config - Minimal defaults for preview environment
       const themeConfig = `
-// Design tokens from Wolsten Studios config/theme.ts
+// Default Tailwind-compatible tokens
 const colors = {
-  cyan: { primary: '#00A5C7', bright: '#00D4FF', light: 'rgba(0, 165, 199, 0.08)' },
-  background: { light: '#FAFAFC', white: '#FFFFFF', dark: '#0A0A0A', darker: '#0F0F0F' },
-  text: { primary: '#0E0E0E', secondary: '#606260', tertiary: '#949797', light: '#C0C8D0', lighter: '#D8DCE0', white: '#FAFAFC' },
-  border: { light: '#EBEBEF', cyan: 'rgba(0, 212, 255, 0.2)', default: '#DADADA' },
-};
-const spacing = { section: { py: 'py-16 md:py-24', px: 'px-8' } };
-const typography = {
-  eyebrow: { fontSize: '0.813rem', letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 500 },
-  hero: { fontSize: 'clamp(3rem, 7vw, 5.5rem)', lineHeight: '1.1', letterSpacing: '-0.03em', fontWeight: 300 },
-  h2: { fontSize: 'clamp(2rem, 4vw, 2.75rem)', fontWeight: 300, lineHeight: '1.2' },
-  h3: { fontSize: '1.25rem', fontWeight: 400 },
-  body: { fontSize: '1rem', lineHeight: '1.7' },
-  bodyLarge: { fontSize: 'clamp(1.25rem, 2.5vw, 1.75rem)', lineHeight: '1.5' },
-};
-const effects = {
-  glass: { backgroundColor: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(0, 212, 255, 0.2)', backdropFilter: 'blur(10px)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05)' },
-  glassLight: { backgroundColor: 'rgba(255, 255, 255, 0.05)', border: '1px solid #00A5C7', backdropFilter: 'blur(10px)', boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.1)' },
-  cardBorder: { backgroundColor: '#FFFFFF', border: '1px solid #EBEBEF' },
+  cyan: { primary: '#06b6d4', bright: '#22d3ee', light: 'rgba(6, 182, 212, 0.08)' },
+  background: { light: '#f4f4f5', white: '#ffffff', dark: '#09090b', darker: '#000000' },
+  text: { primary: '#18181b', secondary: '#71717a', tertiary: '#a1a1aa', light: '#d4d4d8', white: '#ffffff' },
 };
 
-// Animation config from Wolsten Studios config/animations.ts
-const easings = { smooth: [0.21, 0.47, 0.32, 0.98], bounce: [0.34, 1.56, 0.64, 1], easeOut: 'easeOut', easeInOut: 'easeInOut' };
-const durations = { fast: 0.2, normal: 0.4, medium: 0.6, slow: 0.8 };
+// Animation primitives
+const easings = { smooth: [0.21, 0.47, 0.32, 0.98], bounce: [0.34, 1.56, 0.64, 1] };
 const springs = {
   snappy: { type: 'spring', stiffness: 400, damping: 17 },
   bouncy: { type: 'spring', stiffness: 300, damping: 20 },
   smooth: { type: 'spring', stiffness: 100, damping: 15 },
-  gentle: { type: 'spring', stiffness: 90, damping: 15 },
-};
-const fadeInUp = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 } };
-const fadeInLeft = { initial: { opacity: 0, x: -20 }, animate: { opacity: 1, x: 0 } };
-const fadeIn = { initial: { opacity: 0 }, animate: { opacity: 1 } };
-const scaleIn = { initial: { opacity: 0, scale: 0.95 }, animate: { opacity: 1, scale: 1 } };
-
-// useRouter hook for hash-based navigation in preview
-const useRouter = () => {
-  const [currentPath, setCurrentPath] = React.useState(window.location.hash.slice(1) || '/');
-  React.useEffect(() => {
-    const handleHashChange = () => setCurrentPath(window.location.hash.slice(1) || '/');
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
-  const navigate = (path) => { window.location.hash = path; };
-  return { currentPath, navigate };
 };
 
-// Navigation component stub (renders nothing in preview - pages work standalone)
-const Navigation = () => null;
-const Footer = () => null;
-const GlassCard = ({ children, className }) => React.createElement('div', { className, style: effects.glass }, children);
-const SectionHeader = ({ eyebrow, title, description }) => React.createElement('div', { className: 'text-center mb-12' }, 
-  eyebrow && React.createElement('p', { style: { ...typography.eyebrow, color: colors.cyan.primary } }, eyebrow),
-  React.createElement('h2', { style: { ...typography.h2, color: colors.text.primary } }, title),
-  description && React.createElement('p', { style: { ...typography.body, color: colors.text.secondary } }, description)
-);
-`;
+// Helper components for preview compatibility
+const GlassCard = ({ children, className }) => React.createElement('div', { className, style: { backdropFilter: 'blur(10px)', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' } }, children);
+`;;
 
       const html = '<!DOCTYPE html>' +
         '<html><head>' +
@@ -672,7 +633,7 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
         '.preview-fallback-hint-text { color: #a1a1aa; font-size: 12px; }' +
         '</style>' +
         '</head><body>' +
-        '<div id="root"><div class="preview-loading"><div class="preview-loading-spinner"></div><div class="preview-loading-text">Rendering preview...</div></div></div>' +
+        '<div id="root"><div class="preview-loading"><div class="preview-loading-spinner"></div><div class="preview-loading-text">Genesis Engine Active...</div></div></div>' +
         '<script>' +
         'window.DEPS_LOADED = { react: false, reactdom: false, tailwind: false, motion: false, lucide: false, babel: false };' +
         'window.DEPS_TIMEOUT = null;' +
@@ -869,7 +830,7 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
     const hooksDestructure = 'const { useState, useEffect, useMemo, useCallback, useRef } = React;'
 
     const regex = /(?:function|const|let|var)\s+([A-Z][a-zA-Z0-9]*)(?:\s*[=:(]|\s*:)/g
-    const matches = [...code.matchAll(regex)]
+    const matches = Array.from(code.matchAll(regex))
     // Use FIRST match (the main component) not last (which catches inline helpers)
     const componentName = matches.length > 0 ? matches[0][1] : 'Component'
 
@@ -917,9 +878,9 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
       'html, body, #root { min-height: 100%; width: 100%; }' +
       'body { background: #09090b; font-family: "Inter", system-ui, sans-serif; }' +
       '.preview-loading { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(180deg, #09090b 0%, #18181b 100%); }' +
-      '.preview-loading-spinner { width: 32px; height: 32px; border: 2px solid #27272a; border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.8s linear infinite; }' +
+      '.preview-loading-spinner { width: 40px; height: 40px; border: 2px solid rgba(255,255,255,0.1); border-top-color: #fff; border-radius: 50%; animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite; }' +
       '@keyframes spin { to { transform: rotate(360deg); } }' +
-      '.preview-loading-text { margin-top: 16px; color: #71717a; font-size: 13px; letter-spacing: 0.01em; }' +
+      '.preview-loading-text { margin-top: 20px; color: #a1a1aa; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 500; }' +
       '.preview-fallback { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(180deg, #09090b 0%, #18181b 100%); padding: 32px; text-align: center; }' +
       '.preview-fallback-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2); border-radius: 100px; margin-bottom: 24px; }' +
       '.preview-fallback-badge-dot { width: 6px; height: 6px; background: #3b82f6; border-radius: 50%; animation: pulse 2s ease-in-out infinite; }' +
@@ -934,7 +895,7 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
       '.error h2 { color: #fecaca; margin-bottom: 1rem; font-size: 1rem; font-weight: bold; }' +
       '</style>' +
       '</head><body>' +
-      '<div id="root"><div class="preview-loading"><div class="preview-loading-spinner"></div><div class="preview-loading-text">Rendering preview...</div></div></div>' +
+      '<div id="root"><div class="preview-loading"><div class="preview-loading-spinner"></div><div class="preview-loading-text">Genesis Engine Active...</div></div></div>' +
       '<script>' +
       'window.showFallback = function() {' +
       '  document.getElementById("root").innerHTML = \'<div class="preview-fallback">\' +' +
@@ -1228,15 +1189,17 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
       {(code || (pages && pages.length > 0)) ? (
         <div className="relative h-full">
           {showSpinner && (
-            <div className="absolute inset-0 bg-gradient-to-b from-zinc-900 to-zinc-950 flex items-center justify-center z-10">
-              <div className="flex flex-col items-center gap-4">
-                <div className="relative w-14 h-14">
-                  <div className="absolute inset-0 border-2 border-zinc-700 rounded-full"></div>
-                  <div className="absolute inset-0 border-2 border-transparent border-t-blue-500 border-r-purple-500 rounded-full animate-spin shadow-lg shadow-purple-500/20"></div>
-                  <div className="absolute inset-2 border-2 border-transparent border-t-purple-500 border-r-pink-500 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
-                  <div className="absolute inset-0 rounded-full animate-pulse bg-purple-500/10"></div>
+            <div className="absolute inset-0 bg-zinc-950 flex items-center justify-center z-10">
+              <div className="flex flex-col items-center gap-6">
+                <div className="relative w-12 h-12">
+                  <div className="absolute inset-0 border border-zinc-800 rounded-full"></div>
+                  <div className="absolute inset-0 border border-transparent border-t-white rounded-full animate-spin"></div>
+                  <div className="absolute inset-0 rounded-full animate-pulse bg-white/5"></div>
                 </div>
-                <span className="text-zinc-400 text-sm font-medium">{isLoading ? (loadingProgress || 'Generating...') : 'Rendering...'}</span>
+                <div className="flex flex-col items-center gap-1">
+                  <span className="text-white text-xs font-medium tracking-widest uppercase">{isLoading ? 'Genesis Engine Building' : 'Materializing'}</span>
+                  {loadingProgress && <span className="text-zinc-500 text-xs">{loadingProgress}</span>}
+                </div>
               </div>
             </div>
           )}
@@ -1253,46 +1216,42 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
       ) : (
         <div className="h-full flex items-center justify-center">
           {isLoading ? (
-            <div className="flex flex-col items-center gap-4">
-              <div className="relative w-14 h-14">
-                <div className="absolute inset-0 border-2 border-zinc-700 rounded-full"></div>
-                <div className="absolute inset-0 border-2 border-transparent border-t-blue-500 border-r-purple-500 rounded-full animate-spin shadow-lg shadow-purple-500/20"></div>
-                <div className="absolute inset-2 border-2 border-transparent border-t-purple-500 border-r-pink-500 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
-                <div className="absolute inset-0 rounded-full animate-pulse bg-purple-500/10"></div>
+            <div className="flex flex-col items-center gap-6">
+              <div className="relative w-12 h-12">
+                <div className="absolute inset-0 border border-zinc-800 rounded-full"></div>
+                <div className="absolute inset-0 border border-transparent border-t-white rounded-full animate-spin"></div>
+                <div className="absolute inset-0 rounded-full animate-pulse bg-white/5"></div>
               </div>
-              <span className="text-zinc-400 text-sm font-medium">{loadingProgress || 'Generating...'}</span>
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-white text-xs font-medium tracking-widest uppercase">Genesis Engine Building</span>
+                {loadingProgress && <span className="text-zinc-500 text-xs">{loadingProgress}</span>}
+              </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center gap-6 text-center max-w-md px-8">
+            <div className="flex flex-col items-center gap-8 text-center max-w-md px-8">
               {/* Preview illustration */}
-              <div className="relative">
-                <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-zinc-800 to-zinc-900 border border-zinc-700/50 flex items-center justify-center shadow-xl shadow-black/30">
-                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-zinc-600">
-                    <rect x="3" y="3" width="18" height="18" rx="2" />
-                    <path d="M3 9h18" />
-                    <path d="M9 21V9" />
+              <div className="relative group">
+                <div className="w-20 h-20 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center shadow-2xl shadow-black/50 group-hover:border-zinc-700 transition-colors duration-500">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="text-zinc-500 group-hover:text-zinc-300 transition-colors duration-500">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
                   </svg>
                 </div>
-                <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                    <path d="M12 5v14M5 12h14" />
-                  </svg>
-                </div>
+                <div className="absolute inset-0 rounded-full bg-white/5 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
               </div>
               
-              <div>
-                <h3 className="text-zinc-300 font-medium mb-2">Your preview will appear here</h3>
-                <p className="text-zinc-500 text-sm leading-relaxed">
-                  Describe what you want to build in the chat and watch it come to life.
+              <div className="space-y-2">
+                <h3 className="text-white text-sm font-medium tracking-widest uppercase">Awaiting Input</h3>
+                <p className="text-zinc-500 text-xs leading-relaxed max-w-xs mx-auto">
+                  The Genesis Engine is ready. Describe your vision to begin.
                 </p>
               </div>
 
               {/* Example prompts */}
-              <div className="flex flex-wrap justify-center gap-2">
-                {['Landing page', 'Dashboard', 'Form', 'Card'].map((example) => (
+              <div className="flex flex-wrap justify-center gap-2 opacity-50 hover:opacity-100 transition-opacity duration-300">
+                {['Landing page', 'Dashboard', 'SaaS Pricing', 'Portfolio'].map((example) => (
                   <span 
                     key={example}
-                    className="px-3 py-1.5 bg-zinc-800/50 border border-zinc-700/50 rounded-full text-xs text-zinc-500 hover:text-zinc-400 hover:border-zinc-600 transition-colors"
+                    className="px-3 py-1 bg-zinc-900 border border-zinc-800 rounded text-[10px] text-zinc-500 hover:text-zinc-300 hover:border-zinc-700 transition-colors cursor-pointer uppercase tracking-wide"
                   >
                     {example}
                   </span>

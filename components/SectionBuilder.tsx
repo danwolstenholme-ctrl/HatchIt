@@ -336,6 +336,17 @@ export default function SectionBuilder({
   const [explanation, setExplanation] = useState<string | null>(null)
   const [isExplaining, setIsExplaining] = useState(false)
   
+  // Visual Feedback Loop (The Retina)
+  const [captureTrigger, setCaptureTrigger] = useState(0)
+  const screenshotPromiseRef = useRef<((value: string | null) => void) | null>(null)
+
+  const handleScreenshotCaptured = (dataUrl: string) => {
+    if (screenshotPromiseRef.current) {
+      screenshotPromiseRef.current(dataUrl)
+      screenshotPromiseRef.current = null
+    }
+  }
+  
   // Inline Code Editing
   const [editingLineIndex, setEditingLineIndex] = useState<number | null>(null)
   const [editingLineContent, setEditingLineContent] = useState('')
@@ -777,6 +788,27 @@ export default function SectionBuilder({
     }
 
     try {
+      // Capture screenshot for visual context (The Retina)
+      let screenshot = null
+      if (!demoMode) {
+         setCaptureTrigger(Date.now())
+         try {
+           screenshot = await new Promise<string | null>((resolve) => {
+             screenshotPromiseRef.current = resolve
+             // Timeout after 2 seconds if no screenshot
+             setTimeout(() => {
+               if (screenshotPromiseRef.current) {
+                 console.warn('Screenshot capture timed out')
+                 screenshotPromiseRef.current(null)
+                 screenshotPromiseRef.current = null
+               }
+             }, 2000)
+           })
+         } catch (e) {
+           console.error('Screenshot capture failed', e)
+         }
+      }
+
       // Construct context-aware refinement prompt
       let finalRefineRequest = refinePrompt
       if (selectedElement) {
@@ -793,6 +825,7 @@ export default function SectionBuilder({
           sectionName: section.name,
           userPrompt: prompt,
           refineRequest: finalRefineRequest,
+          screenshot, // Pass the visual context to Gemini
         }),
       })
 
@@ -1887,6 +1920,8 @@ export default function SectionBuilder({
               onRuntimeError={handleRuntimeError}
               inspectorMode={inspectorMode}
               onElementSelect={handleElementSelect}
+              captureTrigger={captureTrigger}
+              onScreenshotCaptured={handleScreenshotCaptured}
             />
           )}
         </div>

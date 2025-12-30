@@ -215,6 +215,10 @@ ${code}`
     }
 
     // Call Gemini 2.0 Flash for refinement
+    if (!genai) {
+      return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 })
+    }
+
     const response = await genai.models.generateContent({
       model: 'gemini-2.0-flash-001',
       config: {

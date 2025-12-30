@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 
 interface SectionPreviewProps {
@@ -9,6 +9,8 @@ interface SectionPreviewProps {
   onRuntimeError?: (error: string) => void
   inspectorMode?: boolean
   onElementSelect?: (element: { tagName: string; text: string; className: string }) => void
+  captureTrigger?: number
+  onScreenshotCaptured?: (dataUrl: string) => void
 }
 
 type DeviceView = 'mobile' | 'tablet' | 'desktop'
@@ -19,10 +21,18 @@ const deviceSizes: Record<DeviceView, { width: string; icon: string; label: stri
   desktop: { width: '100%', icon: '🖥️', label: 'Desktop' },
 }
 
-export default function SectionPreview({ code, darkMode = true, onRuntimeError, inspectorMode = false, onElementSelect }: SectionPreviewProps) {
+export default function SectionPreview({ code, darkMode = true, onRuntimeError, inspectorMode = false, onElementSelect, captureTrigger = 0, onScreenshotCaptured }: SectionPreviewProps) {
   const [deviceView, setDeviceView] = useState<DeviceView>('desktop')
+  const iframeRef = useRef<HTMLIFrameElement>(null)
 
-  // Listen for runtime errors and element selection from the iframe
+  // Handle screenshot trigger
+  useEffect(() => {
+    if (captureTrigger > 0 && iframeRef.current?.contentWindow) {
+      iframeRef.current.contentWindow.postMessage({ type: 'capture-screenshot' }, '*')
+    }
+  }, [captureTrigger])
+
+  // Listen for runtime errors, element selection, and screenshots from the iframe
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (!event.data) return
@@ -35,10 +45,14 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
       if (event.data.type === 'element-selected') {
         onElementSelect?.(event.data.element)
       }
+
+      if (event.data.type === 'screenshot-captured') {
+        onScreenshotCaptured?.(event.data.dataUrl)
+      }
     }
     window.addEventListener('message', handleMessage)
     return () => window.removeEventListener('message', handleMessage)
-  }, [onRuntimeError, onElementSelect])
+  }, [onRuntimeError, onElementSelect, onScreenshotCaptured])
 
   const srcDoc = useMemo(() => {
     if (!code) return ''
@@ -101,6 +115,7 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -155,6 +170,29 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
     if (!window.LucideIcons || Object.keys(window.LucideIcons).length === 0) {
       window.LucideIcons = new Proxy({}, { get: () => () => null });
     }
+
+    window.addEventListener('message', async (event) => {
+      if (event.data.type === 'capture-screenshot') {
+        try {
+          // Wait for any animations or images to settle
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          const canvas = await html2canvas(document.body, {
+            useCORS: true,
+            logging: false,
+            scale: 1,
+            allowTaint: true,
+            backgroundColor: null
+          });
+          
+          const dataUrl = canvas.toDataURL('image/png');
+          window.parent.postMessage({ type: 'screenshot-captured', dataUrl }, '*');
+        } catch (error) {
+          console.error('Screenshot failed:', error);
+          window.parent.postMessage({ type: 'screenshot-error', error: error.message }, '*');
+        }
+      }
+    });
 
     window.onerror = function(msg, url, line) {
       window.parent.postMessage({ type: 'preview-error', message: msg, line: line }, '*');
@@ -340,6 +378,7 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
             </div>
           )}
           <iframe
+            ref={iframeRef}
             srcDoc={srcDoc}
             className="w-full border-0"
             style={{ 

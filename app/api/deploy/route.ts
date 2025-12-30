@@ -145,7 +145,9 @@ export async function POST(req: NextRequest) {
           dependencies: {
             next: '^14.0.0',
             react: '^18.2.0',
-            'react-dom': '^18.2.0'
+            'react-dom': '^18.2.0',
+            'framer-motion': '^11.0.0',
+            'lucide-react': '^0.300.0'
           },
           devDependencies: {
             typescript: '^5.0.0',
@@ -264,15 +266,20 @@ export default function RootLayout({
       let prepared = pageCode
       
       // Add 'use client' if not present
-      if (!prepared.includes("'use client'")) {
+      if (!prepared.includes("'use client'") && !prepared.includes('"use client"')) {
         prepared = `'use client'\n${prepared}`
       }
       
       // Add all required React imports if not present
-      if (!prepared.includes('import')) {
+      // Check if React is imported (single or double quotes)
+      const hasReactImport = prepared.includes("from 'react'") || prepared.includes('from "react"')
+      
+      if (!hasReactImport) {
+        // Add React imports after 'use client'
+        // We look for the 'use client' directive and insert after it
         prepared = prepared.replace(
-          "'use client'\n",
-          "'use client'\nimport { useState, useEffect, useRef, useMemo, useCallback } from 'react'\n\n"
+          /('use client'|'use client';|"use client"|"use client";)(\s+)/,
+          "$1\nimport { useState, useEffect, useRef, useMemo, useCallback } from 'react'\n"
         )
       }
       
