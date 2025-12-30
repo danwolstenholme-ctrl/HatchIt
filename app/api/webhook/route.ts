@@ -154,15 +154,16 @@ export async function POST(req: Request) {
           
           // Get subscription details for period end
           const subscriptionResponse = await stripe.subscriptions.retrieve(subscriptionId)
-          const periodEnd = (subscriptionResponse as unknown as { current_period_end: number }).current_period_end
-          console.log(`Retrieved subscription, periodEnd: ${periodEnd}`)
+          const periodEnd = subscriptionResponse.current_period_end || Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60
+          const periodEndDate = new Date(periodEnd * 1000)
+          console.log(`Retrieved subscription, periodEnd: ${periodEnd}, date: ${periodEndDate.toISOString()}`)
           
           const accountSubscription: AccountSubscription = {
             tier,
             stripeSubscriptionId: subscriptionId,
             stripeCustomerId: customerId,
             status: 'active',
-            currentPeriodEnd: new Date(periodEnd * 1000).toISOString(),
+            currentPeriodEnd: periodEndDate.toISOString(),
             createdAt: new Date().toISOString(),
           }
 
@@ -173,7 +174,7 @@ export async function POST(req: Request) {
               accountSubscription,
               // Reset refinement count on new subscription
               opusRefinementsUsed: 0,
-              opusRefinementsResetDate: new Date(periodEnd * 1000).toISOString(),
+              opusRefinementsResetDate: periodEndDate.toISOString(),
             },
           })
 
@@ -370,7 +371,8 @@ export async function POST(req: Request) {
           if (accountSub?.stripeSubscriptionId === subscriptionId) {
             // Get new period end
             const subscriptionResponse = await stripe.subscriptions.retrieve(subscriptionId)
-            const periodEnd = (subscriptionResponse as unknown as { current_period_end: number }).current_period_end
+            const periodEnd = subscriptionResponse.current_period_end || Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60
+            const periodEndDate = new Date(periodEnd * 1000)
             
             await client.users.updateUser(user.id, {
               publicMetadata: {
@@ -378,11 +380,11 @@ export async function POST(req: Request) {
                 accountSubscription: { 
                   ...accountSub, 
                   status: 'active',
-                  currentPeriodEnd: new Date(periodEnd * 1000).toISOString(),
+                  currentPeriodEnd: periodEndDate.toISOString(),
                 },
                 // Reset Opus refinement count for new billing period
                 opusRefinementsUsed: 0,
-                opusRefinementsResetDate: new Date(periodEnd * 1000).toISOString(),
+                opusRefinementsResetDate: periodEndDate.toISOString(),
               },
             })
             console.log(`✅ Renewed account subscription for user ${user.id}, reset refinement count`)
