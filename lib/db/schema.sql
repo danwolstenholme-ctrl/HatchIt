@@ -99,8 +99,37 @@ CREATE TABLE builds (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Index
+-- Index for fast lookups
 CREATE INDEX idx_builds_project_id ON builds(project_id);
+-- Unique constraint to prevent duplicate versions
+CREATE UNIQUE INDEX idx_builds_project_version ON builds(project_id, version);
+
+-- =============================================================================
+-- ATOMIC BUILD CREATION FUNCTION
+-- Prevents race conditions when creating builds
+-- =============================================================================
+CREATE OR REPLACE FUNCTION create_build_atomic(
+  p_project_id UUID,
+  p_full_code TEXT
+) RETURNS builds AS $$
+DECLARE
+  v_next_version INT;
+  v_new_build builds;
+BEGIN
+  -- Get and increment version atomically using FOR UPDATE
+  SELECT COALESCE(MAX(version), 0) + 1 INTO v_next_version
+  FROM builds
+  WHERE project_id = p_project_id
+  FOR UPDATE;
+
+  -- Insert new build
+  INSERT INTO builds (project_id, full_code, version, audit_complete)
+  VALUES (p_project_id, p_full_code, v_next_version, false)
+  RETURNING * INTO v_new_build;
+
+  RETURN v_new_build;
+END;
+$$ LANGUAGE plpgsql;
 
 -- =============================================================================
 -- ROW LEVEL SECURITY (RLS)
