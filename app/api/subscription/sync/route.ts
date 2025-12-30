@@ -57,14 +57,16 @@ export async function GET() {
         tier = (sub.metadata?.tier as 'pro' | 'agency') || 'pro'
       }
       
-      const periodEnd = (sub as unknown as { current_period_end: number }).current_period_end
+      // Safely get period end - handle different Stripe API response formats
+      const periodEnd = sub.current_period_end || Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60
+      const periodEndDate = new Date(typeof periodEnd === 'number' ? periodEnd * 1000 : Date.now() + 30 * 24 * 60 * 60 * 1000)
       
       const accountSubscription: AccountSubscription = {
         tier,
         stripeSubscriptionId: sub.id,
         stripeCustomerId: customerId,
         status: 'active',
-        currentPeriodEnd: new Date(periodEnd * 1000).toISOString(),
+        currentPeriodEnd: periodEndDate.toISOString(),
         createdAt: new Date().toISOString(),
       }
       
@@ -74,7 +76,7 @@ export async function GET() {
           stripeCustomerId: customerId,
           accountSubscription,
           opusRefinementsUsed: 0,
-          opusRefinementsResetDate: new Date(periodEnd * 1000).toISOString(),
+          opusRefinementsResetDate: periodEndDate.toISOString(),
         },
       })
       
@@ -152,14 +154,16 @@ export async function GET() {
       tier = (activeSubscription.metadata?.tier as 'pro' | 'agency') || 'pro'
     }
 
-    const periodEnd = (activeSubscription as unknown as { current_period_end: number }).current_period_end
+    // Safely get period end
+    const periodEnd = activeSubscription.current_period_end || Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60
+    const periodEndDate = new Date(typeof periodEnd === 'number' ? periodEnd * 1000 : Date.now() + 30 * 24 * 60 * 60 * 1000)
 
     const accountSubscription: AccountSubscription = {
       tier,
       stripeSubscriptionId: activeSubscription.id,
       stripeCustomerId: customerId || activeSubscription.customer as string,
       status: 'active',
-      currentPeriodEnd: new Date(periodEnd * 1000).toISOString(),
+      currentPeriodEnd: periodEndDate.toISOString(),
       createdAt: existingSubscription?.createdAt || new Date().toISOString(),
     }
 
