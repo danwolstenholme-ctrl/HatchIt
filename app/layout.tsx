@@ -17,9 +17,9 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://hatchit.dev'),
-  title: 'HatchIt — AI Website Builder That Writes Real Code',
-  description: 'Describe your website in plain English. Watch AI write real React + Tailwind code in real-time. Deploy in one click. No drag-and-drop, just code you actually own.',
-  keywords: ['AI website builder', 'React', 'Tailwind CSS', 'code generator', 'web development', 'deploy website', 'build website fast', 'Claude AI', 'live code streaming'],
+  title: 'HatchIt — The Architect | AI Website Builder',
+  description: 'Initialize your next project with The Architect. A unified AI pipeline that builds, refines, and audits your code. Real code, section-by-section architecture, instant deployment.',
+  keywords: ['AI website builder', 'React', 'Tailwind CSS', 'code generator', 'web development', 'deploy website', 'build website fast', 'AI Architect', 'live code streaming'],
   authors: [{ name: 'HatchIt' }],
   creator: 'HatchIt',
   manifest: '/manifest.json',
@@ -41,14 +41,14 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://hatchit.dev',
     siteName: 'HatchIt',
-    title: 'HatchIt — Describe it. Watch it build. Ship it.',
-    description: 'The AI website builder that writes real React code. Not drag-and-drop. Real code you own. Built with Claude Sonnet 4.',
+    title: 'HatchIt — The Architect | AI Website Builder',
+    description: 'Initialize your next project with The Architect. A unified AI pipeline that builds, refines, and audits your code.',
     images: [
       {
         url: '/assets/og-1200x630.png',
         width: 1200,
         height: 630,
-        alt: 'HatchIt — AI Website Builder That Writes Real Code',
+        alt: 'HatchIt — The Architect',
       },
     ],
   },
@@ -56,8 +56,8 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     site: '@HatchItD',
     creator: '@HatchItD',
-    title: 'HatchIt — Describe it. Watch it build. Ship it. 🐣',
-    description: 'The AI website builder that writes real React code. Not drag-and-drop garbage. Real code you own.',
+    title: 'HatchIt — The Architect | AI Website Builder',
+    description: 'Initialize your next project with The Architect. A unified AI pipeline that builds, refines, and audits your code.',
     images: ['/assets/og-1200x630.png'],
   },
   robots: {

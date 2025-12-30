@@ -7,7 +7,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useUser } from '@clerk/nextjs'
 import { motion, useInView } from 'framer-motion'
-import HatchCharacter from '@/components/HatchCharacter'
+import { Cpu, Terminal, Layers, Shield, Zap, Code2, Globe, ArrowRight, CheckCircle2, Layout, Sparkles } from 'lucide-react'
 
 // Client-side check to prevent hydration mismatch - uses useSyncExternalStore for proper SSR handling
 const emptySubscribe = () => () => {}
@@ -98,63 +98,15 @@ function AnimatedCounter({ value, suffix = '' }: { value: number; suffix?: strin
   return <span ref={ref}>{count}{suffix}</span>
 }
 
-// Floating chicks background - DESKTOP ONLY with premium motion
-function FloatingChicks() {
-  const isClient = useIsClient()
-  const chicks = [
-    { left: '15%', top: '20%', delay: 0, duration: 20 },
-    { left: '75%', top: '15%', delay: 2, duration: 25 },
-    { left: '85%', top: '60%', delay: 4, duration: 22 },
-    { left: '10%', top: '70%', delay: 1, duration: 28 },
-    { left: '50%', top: '80%', delay: 3, duration: 24 },
-  ]
-  
-  // Don't render until client to prevent hydration flash
-  if (!isClient) return null
-  
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none hidden lg:block">
-      {chicks.map((chick, i) => (
-        <motion.div
-          key={i}
-          className="absolute text-2xl"
-          style={{ 
-            left: chick.left, 
-            top: chick.top,
-            willChange: 'transform, opacity',
-            backfaceVisibility: 'hidden'
-          }}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ 
-            opacity: [0.08, 0.15, 0.08],
-            scale: [0.8, 1, 0.8],
-            y: [0, -30, 0],
-            x: [0, 10, -10, 0],
-            rotate: [0, 5, -5, 0]
-          }}
-          transition={{ 
-            duration: chick.duration,
-            delay: chick.delay,
-            repeat: Infinity,
-            ease: 'easeInOut'
-          }}
-        >
-          🐣
-        </motion.div>
-      ))}
-    </div>
-  )
-}
-
-// AI Thinking Caption - shows rotating "reasoning" messages
-function AIThinkingCaption() {
-  const thoughts = [
-    { icon: '💭', text: 'Analyzing your prompt for intent and tone...' },
-    { icon: '🎨', text: 'Choosing gradient direction to guide eye flow toward CTA' },
-    { icon: '📐', text: 'Using 6xl headline — bold enough to anchor, not overwhelm' },
-    { icon: '🎯', text: 'Purple CTA on dark = high contrast, draws immediate focus' },
-    { icon: '✨', text: 'Adding subtle hover state to reinforce interactivity' },
-    { icon: '📱', text: 'Responsive padding: tight on mobile, breathing room on desktop' },
+// System Status - shows technical initialization messages
+function SystemStatus() {
+  const statusMessages = [
+    { icon: <Terminal className="w-3 h-3" />, text: 'Initializing Architect core...' },
+    { icon: <Layout className="w-3 h-3" />, text: 'Refining UI components...' },
+    { icon: <Shield className="w-3 h-3" />, text: 'Running security audit...' },
+    { icon: <Zap className="w-3 h-3" />, text: 'Optimizing for Core Web Vitals...' },
+    { icon: <Code2 className="w-3 h-3" />, text: 'Generating production-ready React code...' },
+    { icon: <Globe className="w-3 h-3" />, text: 'System ready for deployment.' },
   ]
   
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -164,25 +116,25 @@ function AIThinkingCaption() {
     const interval = setInterval(() => {
       setIsVisible(false)
       setTimeout(() => {
-        setCurrentIndex(prev => (prev + 1) % thoughts.length)
+        setCurrentIndex(prev => (prev + 1) % statusMessages.length)
         setIsVisible(true)
       }, 300)
-    }, 4000)
+    }, 3000)
     return () => clearInterval(interval)
-  }, [thoughts.length])
+  }, [statusMessages.length])
   
-  const current = thoughts[currentIndex]
+  const current = statusMessages[currentIndex]
   
   return (
     <div className="flex items-center justify-center gap-2 mt-6">
       <motion.div
-        className="flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full"
+        className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/5 border border-emerald-500/20 rounded-md"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : -5 }}
         transition={{ duration: 0.3 }}
       >
-        <span className="text-sm">{current.icon}</span>
-        <span className="text-sm text-purple-300/90">{current.text}</span>
+        <span className="text-emerald-500 animate-pulse">{current.icon}</span>
+        <span className="text-xs font-mono text-emerald-400/90">{current.text}</span>
       </motion.div>
     </div>
   )
@@ -358,9 +310,9 @@ export default function Home() {
               {...getAnimation(0, 20)}
             >
               <span className="flex h-2 w-2 flex-shrink-0">
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 animate-pulse"></span>
               </span>
-              <span className="text-xs sm:text-sm text-zinc-400">V3.0 — Section-by-section building</span>
+              <span className="text-xs sm:text-sm text-zinc-400 font-mono">HatchIt — The Architect</span>
             </motion.div>
           </div>
 
@@ -378,7 +330,7 @@ export default function Home() {
                 Describe it.
               </motion.span>
               <motion.span 
-                className="block bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent pb-2"
+                className="block bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent pb-2"
                 style={{ willChange: 'transform, opacity' }}
                 initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -405,7 +357,7 @@ export default function Home() {
             className="text-center text-lg sm:text-xl md:text-2xl text-zinc-400 max-w-3xl mx-auto mb-8 leading-relaxed"
             {...getAnimation(0.2, 20)}
           >
-            <span>The AI website builder that writes <span className="text-white font-medium">real, maintainable</span> React code. Section by section. With Hatch, your friendly helper</span>
+            <span>The AI architecture platform that generates <span className="text-white font-medium">production-grade</span> React code. Section by section. With full architectural control.</span>
           </motion.div>
 
           {/* CTAs */}
@@ -420,9 +372,10 @@ export default function Home() {
               whileTap={{ scale: 0.98 }}
               transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
-              <Link href="/builder" className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-colors">
-                <span>Start Building Free</span>
-                <span>→</span>
+              <Link href="/builder" className="px-8 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-colors text-white shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+                <Terminal className="w-5 h-5" />
+                <span>Initialize Project</span>
+                <ArrowRight className="w-4 h-4" />
               </Link>
             </motion.div>
             <motion.div
@@ -432,27 +385,28 @@ export default function Home() {
               transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
               <Link href="/how-it-works" className="px-8 py-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl font-semibold text-lg transition-colors flex items-center justify-center gap-2">
-                See How It Works
+                <Layers className="w-5 h-5 text-zinc-400" />
+                <span>System Architecture</span>
               </Link>
             </motion.div>
           </motion.div>
 
           {/* Trust badges */}
           <motion.div
-            className="flex flex-wrap justify-center gap-6 text-sm text-zinc-500 mb-16"
+            className="flex flex-wrap justify-center gap-6 text-sm text-zinc-500 mb-16 font-mono"
             {...getAnimation(0.4, 10)}
           >
             <div className="flex items-center gap-2">
-              <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
               <span>No credit card required</span>
             </div>
             <div className="flex items-center gap-2">
-              <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
               <span>5 free generations/day</span>
             </div>
             <div className="flex items-center gap-2">
-              <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
-              <span>Real React code you own</span>
+              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+              <span>100% Code Ownership</span>
             </div>
           </motion.div>
 
@@ -463,63 +417,69 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
           >
-            <div className="relative bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-xl">
+            <div className="relative bg-zinc-950 border border-zinc-800 rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/5">
               {/* Browser chrome */}
-              <div className="bg-zinc-900 px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
+              <div className="bg-zinc-900/50 px-4 py-3 border-b border-zinc-800 flex items-center justify-between backdrop-blur-sm">
                 <div className="flex items-center gap-2">
                   <div className="flex gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
-                    <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
-                    <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
+                    <div className="w-3 h-3 rounded-full bg-zinc-700"></div>
+                    <div className="w-3 h-3 rounded-full bg-zinc-700"></div>
+                    <div className="w-3 h-3 rounded-full bg-zinc-700"></div>
                   </div>
                 </div>
                 <div className="flex-1 mx-4">
-                  <div className="bg-zinc-800 rounded-lg px-4 py-1.5 text-xs text-zinc-400 max-w-md mx-auto flex items-center gap-2">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                  <div className="bg-zinc-950 rounded border border-zinc-800 px-4 py-1.5 text-xs text-zinc-400 max-w-md mx-auto flex items-center gap-2 font-mono">
+                    <Shield className="w-3 h-3 text-emerald-500" />
                     hatchit.dev/builder
                   </div>
                 </div>
-                <div className="text-xs text-zinc-500">⌘K</div>
+                <div className="text-xs text-zinc-500 font-mono">⌘K</div>
               </div>
               
               {/* Split view */}
               <div className="grid md:grid-cols-2">
                 {/* Code panel */}
-                <div className="bg-[#0d1117] p-3 sm:p-6 border-r border-zinc-800 h-[250px] sm:h-[400px] overflow-hidden">
-                  <div className="flex items-center gap-2 mb-4 text-xs text-zinc-500">
-                    <div className="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></div>
-                    <span>Live generating...</span>
+                <div className="bg-[#0d1117] p-3 sm:p-6 border-r border-zinc-800 h-[250px] sm:h-[400px] overflow-hidden relative group">
+                  <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="px-2 py-1 bg-zinc-800 rounded text-[10px] text-zinc-400 font-mono">tsx</div>
                   </div>
-                  <div className="text-purple-400/90">
+                  <div className="flex items-center gap-2 mb-4 text-xs text-zinc-500 font-mono">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                    <span>Architect Generating...</span>
+                  </div>
+                  <div className="text-emerald-400/90 font-mono text-xs leading-relaxed">
                     <TypewriterCode code={demoCode} speed={25} />
                   </div>
                 </div>
                 
                 {/* Preview panel */}
-                <div className="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4 sm:p-8 h-[250px] sm:h-[400px] flex flex-col justify-center">
-                  <div className="text-3xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">Build Something Amazing</div>
-                  <p className="text-sm sm:text-lg text-slate-300 mb-4 sm:mb-6">Your vision, brought to life with AI.</p>
-                  <div>
-                    <Link href="/builder" className="inline-block px-4 sm:px-6 py-2 sm:py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-lg sm:rounded-xl font-semibold text-sm sm:text-base transition-colors">Get Started</Link>
+                <div className="bg-zinc-900 p-4 sm:p-8 h-[250px] sm:h-[400px] flex flex-col justify-center relative overflow-hidden">
+                  <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+                  <div className="relative z-10">
+                    <div className="text-3xl sm:text-4xl font-bold text-white mb-3 sm:mb-4 tracking-tight">Build Something Amazing</div>
+                    <p className="text-sm sm:text-lg text-zinc-400 mb-4 sm:mb-6">Your vision, brought to life with AI.</p>
+                    <div>
+                      <Link href="/builder" className="inline-block px-4 sm:px-6 py-2 sm:py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-semibold text-sm sm:text-base transition-colors">Get Started</Link>
+                    </div>
                   </div>
                 </div>
               </div>
               
               {/* Status bar */}
-              <div className="bg-zinc-900 px-4 py-2 border-t border-zinc-800 flex items-center justify-between text-xs text-zinc-500">
+              <div className="bg-zinc-900/50 px-4 py-2 border-t border-zinc-800 flex items-center justify-between text-xs text-zinc-500 font-mono">
                 <div className="flex items-center gap-4">
                   <span className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-green-400"></span>
-                    Preview ready
+                    <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                    System Online
                   </span>
-                  <span>React + Tailwind</span>
+                  <span>React 19 + Tailwind 4</span>
                 </div>
-                <span>Auto-saves • One-click deploy</span>
+                <span>Auto-deploy enabled</span>
               </div>
             </div>
             
-            {/* AI Thinking Caption */}
-            <AIThinkingCaption />
+            {/* System Status */}
+            <SystemStatus />
           </motion.div>
         </div>
       </section>
@@ -528,13 +488,13 @@ export default function Home() {
       <Section className="px-6 py-16 bg-zinc-900/30 border-y border-zinc-800/50">
         <div className="max-w-4xl mx-auto">
           <div className="relative">
-            <div className="absolute -left-4 top-0 text-6xl text-purple-500/20">{"\""}</div>
+            <div className="absolute -left-4 top-0 text-6xl text-emerald-500/20 font-serif">{"\""}</div>
             <blockquote className="text-xl sm:text-2xl md:text-3xl text-center font-medium text-zinc-200 leading-relaxed pl-8">
-              I rebuilt HatchIt with a three-model AI pipeline. <span className="text-purple-400">Sonnet builds, Opus polishes, Gemini audits.</span> Section by section, with Hatch guiding you through.
+              I rebuilt HatchIt with a unified AI pipeline. <span className="text-emerald-400">The Architect builds, refines, and audits.</span> Section by section, with full architectural control.
             </blockquote>
             <div className="mt-6 text-center">
               <div className="text-zinc-400 font-medium">Dan</div>
-              <div className="text-sm text-zinc-600">Founder, HatchIt.dev</div>
+              <div className="text-sm text-zinc-600 font-mono">Lead Architect, HatchIt.dev</div>
             </div>
           </div>
         </div>
@@ -544,11 +504,11 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6">
-              V3.0 is here.
-              <span className="block bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Build smarter, not harder.</span>
+              The Architect is here.
+              <span className="block bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">Build smarter, not harder.</span>
             </h2>
             <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
-              A three-model AI pipeline. Section-by-section building. And Hatch — your friendly prompt helper who's genuinely excited about your business.
+              A unified AI pipeline. Section-by-section building. And a dedicated architectural assistant to guide your build.
             </p>
           </div>
 
@@ -557,77 +517,78 @@ export default function Home() {
             {/* Three-Model Pipeline Card */}
             <AnimatedCard 
               delay={0}
-              className="group relative p-6 bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-zinc-700 transition-colors duration-300 gpu-accelerate"
+              className="group relative p-6 bg-zinc-900/50 border border-zinc-800 rounded-xl hover:border-emerald-500/30 transition-colors duration-300 gpu-accelerate"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-indigo-600 opacity-0 group-hover:opacity-10 rounded-2xl transition-opacity duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 rounded-xl transition-opacity duration-500" />
               <div className="relative">
-                <motion.span 
-                  className="text-4xl block mb-4"
+                <motion.div 
+                  className="w-12 h-12 bg-zinc-800 rounded-lg flex items-center justify-center mb-4 text-emerald-400"
                   style={{ willChange: 'transform' }}
-                  whileHover={{ scale: 1.2, rotate: 10 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                  whileHover={{ scale: 1.1 }}
                 >
-                  🧠
-                </motion.span>
-                <h3 className="text-xl font-bold mb-2 group-hover:text-purple-300 transition-colors">Three-Model Pipeline</h3>
-                <p className="text-zinc-400">Sonnet 4.5 builds. Opus 4.5 polishes. Gemini 2.5 audits. Each AI does what it&apos;s best at. Not just one model doing everything.</p>
+                  <Cpu className="w-6 h-6" />
+                </motion.div>
+                <h3 className="text-xl font-bold mb-2 group-hover:text-emerald-300 transition-colors">Unified Intelligence</h3>
+                <p className="text-zinc-400">The Builder. The Refiner. The Auditor. Each aspect of the Architect does what it&apos;s best at. Not just one model doing everything.</p>
               </div>
             </AnimatedCard>
 
-            {/* MEET HATCH - The star of the show! */}
+            {/* THE ARCHITECT - The star of the show! */}
             <AnimatedCard 
               delay={0.1}
-              className="group relative p-6 bg-gradient-to-br from-amber-500/5 to-orange-500/5 border border-amber-500/20 rounded-2xl hover:border-amber-500/40 transition-colors duration-300 gpu-accelerate"
+              className="group relative p-6 bg-zinc-900/50 border border-zinc-800 rounded-xl hover:border-emerald-500/30 transition-colors duration-300 gpu-accelerate"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-amber-500 to-orange-600 opacity-0 group-hover:opacity-10 rounded-2xl transition-opacity duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 rounded-xl transition-opacity duration-500" />
               <div className="relative">
                 <div className="flex items-start justify-between mb-4">
                   <motion.div
-                    className="text-4xl block"
+                    className="w-12 h-12 bg-zinc-800 rounded-lg flex items-center justify-center text-emerald-400"
                     style={{ willChange: 'transform' }}
-                    whileHover={{ scale: 1.2, rotate: 10 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                    whileHover={{ scale: 1.1 }}
                   >
-                    <HatchCharacter state="excited" size="md" />
+                    <Terminal className="w-6 h-6" />
                   </motion.div>
                   <motion.span 
-                    className="flex items-center gap-1 px-2 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full text-[10px] text-amber-400"
+                    className="flex items-center gap-1 px-2 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded text-[10px] text-emerald-400 font-mono"
                     style={{ willChange: 'transform' }}
-                    initial={{ scale: 1 }}
-                    animate={{ scale: [1, 1.05, 1] }}
+                    initial={{ opacity: 0.8 }}
+                    animate={{ opacity: 1 }}
                     transition={{ duration: 2, repeat: Infinity }}
                   >
-                    ✨ NEW
+                    LIVE
                   </motion.span>
                 </div>
-                <h3 className="text-xl font-bold mb-2 text-amber-200 group-hover:text-amber-100 transition-colors">Meet Hatch</h3>
-                <p className="text-zinc-400">Your friendly prompt helper. Stuck on what to write? Hatch writes it for you. She&apos;s cute, helpful, and genuinely excited about your project.</p>
+                <h3 className="text-xl font-bold mb-2 group-hover:text-emerald-300 transition-colors">The Architect</h3>
+                <p className="text-zinc-400">Your technical co-founder. Stuck on architecture? The Architect guides you. Precise, helpful, and focused on code quality.</p>
               </div>
             </AnimatedCard>
 
             {/* Section-by-Section Card */}
             <AnimatedCard 
               delay={0.2}
-              className="group relative p-6 bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-zinc-700 transition-colors duration-300 gpu-accelerate"
+              className="group relative p-6 bg-zinc-900/50 border border-zinc-800 rounded-xl hover:border-emerald-500/30 transition-colors duration-300 gpu-accelerate"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600 opacity-0 group-hover:opacity-10 rounded-2xl transition-opacity duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 rounded-xl transition-opacity duration-500" />
               <div className="relative">
-                <motion.span 
-                  className="text-4xl block mb-4"
+                <motion.div 
+                  className="w-12 h-12 bg-zinc-800 rounded-lg flex items-center justify-center mb-4 text-emerald-400"
                   style={{ willChange: 'transform' }}
-                  whileHover={{ scale: 1.2, rotate: 10 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                  whileHover={{ scale: 1.1 }}
                 >
-                  🏗️
-                </motion.span>
-                <h3 className="text-xl font-bold mb-2 group-hover:text-purple-300 transition-colors">Section-by-Section</h3>
+                  <Layers className="w-6 h-6" />
+                </motion.div>
+                <h3 className="text-xl font-bold mb-2 group-hover:text-emerald-300 transition-colors">Section-by-Section</h3>
                 <p className="text-zinc-400">Build your site one section at a time. Header, hero, features, pricing — each piece crafted and refined before moving on.</p>
               </div>
             </AnimatedCard>
           </div>
 
           <div className="text-center mt-12">
-            <Link href="/features" className="inline-flex items-center gap-2 text-purple-400 hover:text-purple-300 font-medium transition-colors">See all features <span>→</span></Link>
+            <Link href="/features" className="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-medium transition-colors font-mono text-sm">
+              <Terminal className="w-4 h-4" />
+              <span>View System Capabilities</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
         </div>
       </Section>
@@ -636,13 +597,13 @@ export default function Home() {
       <Section className="px-6 py-24 bg-zinc-900/30">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl sm:text-5xl font-bold mb-4">Not just one AI. A team.</h2>
-            <p className="text-xl text-zinc-400 max-w-2xl mx-auto">Most builders use a single model for everything. We orchestrate three specialists to build, polish, and audit your code.</p>
+            <h2 className="text-4xl sm:text-5xl font-bold mb-4">Not just one AI. A system.</h2>
+            <p className="text-xl text-zinc-400 max-w-2xl mx-auto">Most builders use a single model for everything. We orchestrate specialized intelligence to build, polish, and audit your code.</p>
           </div>
 
           <div className="relative grid md:grid-cols-4 gap-6">
             {/* Connecting Line (Desktop) */}
-            <div className="hidden md:block absolute top-8 left-[12%] right-[12%] h-0.5 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-amber-500/20" />
+            <div className="hidden md:block absolute top-8 left-[12%] right-[12%] h-px bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-cyan-500/20" />
             
             {/* YOU - The Architect */}
             <motion.div 
@@ -652,11 +613,13 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ delay: 0 }}
             >
-              <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-6 rounded-2xl hover:border-white/30 transition-colors group h-full">
-                <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center mb-6 text-2xl group-hover:scale-110 transition-transform duration-300">👑</div>
-                <div className="text-xs font-mono text-white/60 mb-3 tracking-wider">THE ARCHITECT</div>
+              <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-6 rounded-xl hover:border-white/30 transition-colors group h-full">
+                <div className="w-14 h-14 bg-white/5 rounded-lg flex items-center justify-center mb-6 text-2xl group-hover:scale-110 transition-transform duration-300 border border-white/10">
+                  <Terminal className="w-6 h-6 text-white" />
+                </div>
+                <div className="text-xs font-mono text-white/60 mb-3 tracking-wider">THE VISIONARY</div>
                 <h3 className="text-xl font-bold mb-3">You</h3>
-                <p className="text-sm text-zinc-400 leading-relaxed">The visionary. You describe the dream, set the constraints, and make the final call. You pull the strings.</p>
+                <p className="text-sm text-zinc-400 leading-relaxed">The visionary. You describe the system, set the constraints, and make the final call. You control the architecture.</p>
               </div>
             </motion.div>
 
@@ -668,10 +631,12 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
             >
-              <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-6 rounded-2xl hover:border-purple-500/30 transition-colors group h-full">
-                <div className="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6 text-2xl group-hover:scale-110 transition-transform duration-300">🏗️</div>
-                <div className="text-xs font-mono text-purple-400 mb-3 tracking-wider">THE BUILDER</div>
-                <h3 className="text-xl font-bold mb-3">Sonnet 4.5</h3>
+              <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-6 rounded-xl hover:border-emerald-500/30 transition-colors group h-full">
+                <div className="w-14 h-14 bg-emerald-500/5 rounded-lg flex items-center justify-center mb-6 text-2xl group-hover:scale-110 transition-transform duration-300 border border-emerald-500/10">
+                  <Cpu className="w-6 h-6 text-emerald-500" />
+                </div>
+                <div className="text-xs font-mono text-emerald-400 mb-3 tracking-wider">THE BUILDER</div>
+                <h3 className="text-xl font-bold mb-3">Core Engine</h3>
                 <p className="text-sm text-zinc-400 leading-relaxed">Writes the initial React + Tailwind code. Fast, accurate, and knows modern web standards inside out.</p>
               </div>
             </motion.div>
@@ -684,11 +649,13 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
             >
-              <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-6 rounded-2xl hover:border-pink-500/30 transition-colors group h-full">
-                <div className="w-14 h-14 bg-pink-500/10 rounded-2xl flex items-center justify-center mb-6 text-2xl group-hover:scale-110 transition-transform duration-300">✨</div>
-                <div className="text-xs font-mono text-pink-400 mb-3 tracking-wider">THE DESIGNER</div>
-                <h3 className="text-xl font-bold mb-3">Opus 4.5</h3>
-                <p className="text-sm text-zinc-400 leading-relaxed">Polishes the UI. Fixes accessibility. Adds hover states, smooth animations, and responsive touches.</p>
+              <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-6 rounded-xl hover:border-teal-500/30 transition-colors group h-full">
+                <div className="w-14 h-14 bg-teal-500/5 rounded-lg flex items-center justify-center mb-6 text-2xl group-hover:scale-110 transition-transform duration-300 border border-teal-500/10">
+                  <Sparkles className="w-6 h-6 text-teal-500" />
+                </div>
+                <div className="text-xs font-mono text-teal-400 mb-3 tracking-wider">THE POLISHER</div>
+                <h3 className="text-xl font-bold mb-3">Refinement</h3>
+                <p className="text-sm text-zinc-400 leading-relaxed">Refines the UI. Fixes accessibility. Adds hover states, smooth animations, and responsive touches.</p>
               </div>
             </motion.div>
 
@@ -700,10 +667,12 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ delay: 0.3 }}
             >
-              <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-6 rounded-2xl hover:border-amber-500/30 transition-colors group h-full">
-                <div className="w-14 h-14 bg-amber-500/10 rounded-2xl flex items-center justify-center mb-6 text-2xl group-hover:scale-110 transition-transform duration-300">🛡️</div>
-                <div className="text-xs font-mono text-amber-400 mb-3 tracking-wider">THE AUDITOR</div>
-                <h3 className="text-xl font-bold mb-3">Gemini 2.5 Pro</h3>
+              <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-6 rounded-xl hover:border-violet-500/30 transition-colors group h-full">
+                <div className="w-14 h-14 bg-violet-500/5 rounded-lg flex items-center justify-center mb-6 text-2xl group-hover:scale-110 transition-transform duration-300 border border-violet-500/10">
+                  <Shield className="w-6 h-6 text-violet-500" />
+                </div>
+                <div className="text-xs font-mono text-violet-400 mb-3 tracking-wider">THE AUDITOR</div>
+                <h3 className="text-xl font-bold mb-3">Security Audit</h3>
                 <p className="text-sm text-zinc-400 leading-relaxed">Reviews the code for bugs, security issues, and performance bottlenecks before you ship.</p>
               </div>
             </motion.div>
@@ -727,18 +696,18 @@ export default function Home() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { name: 'React 19', icon: '⚛️', desc: 'Latest React' },
-              { name: 'Tailwind CSS', icon: '🎨', desc: 'Utility-first' },
-              { name: 'TypeScript', icon: '📘', desc: 'Type-safe' },
-              { name: 'Responsive', icon: '📱', desc: 'Mobile-first' },
-              { name: 'Accessible', icon: '♿', desc: 'WCAG ready' },
-              { name: 'SEO Ready', icon: '🔍', desc: 'Optimized' },
-              { name: 'Fast', icon: '⚡', desc: 'Performance' },
-              { name: 'Yours', icon: '💝', desc: '100% ownership' },
+              { name: 'React 19', icon: <Code2 className="w-6 h-6" />, desc: 'Latest React' },
+              { name: 'Tailwind CSS', icon: <Layout className="w-6 h-6" />, desc: 'Utility-first' },
+              { name: 'TypeScript', icon: <Terminal className="w-6 h-6" />, desc: 'Type-safe' },
+              { name: 'Responsive', icon: <Smartphone className="w-6 h-6" />, desc: 'Mobile-first' },
+              { name: 'Accessible', icon: <CheckCircle2 className="w-6 h-6" />, desc: 'WCAG ready' },
+              { name: 'SEO Ready', icon: <Globe className="w-6 h-6" />, desc: 'Optimized' },
+              { name: 'Fast', icon: <Zap className="w-6 h-6" />, desc: 'Performance' },
+              { name: 'Yours', icon: <Shield className="w-6 h-6" />, desc: '100% ownership' },
             ].map((tech, i) => (
               <motion.div 
                 key={i} 
-                className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl text-center hover:border-purple-500/30 transition-colors gpu-accelerate"
+                className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl text-center hover:border-emerald-500/30 transition-colors gpu-accelerate"
                 style={{ willChange: 'transform, opacity' }}
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
@@ -746,16 +715,16 @@ export default function Home() {
                 transition={{ duration: 0.4, delay: i * 0.05, ease: [0.25, 0.1, 0.25, 1] }}
                 whileHover={{ scale: 1.05, y: -4 }}
               >
-                <motion.span 
-                  className="text-2xl block mb-2"
+                <motion.div 
+                  className="w-12 h-12 mx-auto bg-zinc-800 rounded-lg flex items-center justify-center mb-3 text-zinc-400"
                   style={{ willChange: 'transform' }}
-                  whileHover={{ scale: 1.2, rotate: 10 }}
+                  whileHover={{ scale: 1.1, color: '#10b981' }}
                   transition={{ type: 'spring', stiffness: 400, damping: 10 }}
                 >
                   {tech.icon}
-                </motion.span>
+                </motion.div>
                 <div className="font-medium text-sm">{tech.name}</div>
-                <div className="text-xs text-zinc-600">{tech.desc}</div>
+                <div className="text-xs text-zinc-600 font-mono mt-1">{tech.desc}</div>
               </motion.div>
             ))}
           </div>
@@ -769,14 +738,14 @@ export default function Home() {
             {[
               { value: 30, suffix: 's', label: 'Avg. generation' },
               { value: 100, suffix: '%', label: 'Code ownership' },
-              { value: 10, suffix: '', label: 'Days (& nights) to build V3' },
+              { value: 10, suffix: '', label: 'Days to build V3' },
               { value: 1, suffix: '', label: 'Person team' },
             ].map((stat, i) => (
               <div key={i}>
-                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
+                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-2 font-mono">
                   <AnimatedCounter value={stat.value} suffix={stat.suffix} />
                 </div>
-                <div className="text-sm text-zinc-500">{stat.label}</div>
+                <div className="text-sm text-zinc-500 font-mono">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -793,94 +762,94 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-6">
             {/* Free */}
-            <div className="p-8 bg-zinc-900/50 border border-zinc-800 rounded-2xl">
-              <div className="text-sm text-zinc-500 mb-2">For exploring</div>
+            <div className="p-8 bg-zinc-900/50 border border-zinc-800 rounded-xl">
+              <div className="text-sm text-zinc-500 mb-2 font-mono">For exploring</div>
               <h3 className="text-2xl font-bold mb-1">Free</h3>
-              <div className="text-4xl font-bold mb-2">$0</div>
+              <div className="text-4xl font-bold mb-2 font-mono">$0</div>
               <div className="text-zinc-500 text-sm mb-6">forever</div>
               <ul className="space-y-3 mb-8">
                 {[
                   { text: '5 generations per day', included: true },
-                  { text: 'Sonnet 4.5 builds', included: true },
+                  { text: 'AI builds', included: true },
                   { text: 'Live preview', included: true },
-                  { text: 'Opus 4.5 refinements', included: false },
+                  { text: 'AI refinements', included: false },
                   { text: 'Deploy to web', included: false },
                   { text: 'Code export', included: false },
                 ].map((item, i) => (
                   <li key={i} className={`flex items-center gap-2 text-sm ${item.included ? 'text-zinc-400' : 'text-zinc-600'}`}>
                     {item.included ? (
-                      <svg className="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
                     ) : (
-                      <svg className="w-4 h-4 text-zinc-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/></svg>
+                      <div className="w-4 h-4 rounded-full border border-zinc-700 flex-shrink-0" />
                     )}
                     {item.text}
                   </li>
                 ))}
               </ul>
-              <Link href="/builder" className="block w-full py-3 text-center bg-zinc-800 hover:bg-zinc-700 rounded-xl font-semibold transition-colors">Start Free</Link>
+              <Link href="/builder" className="block w-full py-3 text-center bg-zinc-800 hover:bg-zinc-700 rounded-lg font-semibold transition-colors">Start Free</Link>
             </div>
 
             {/* Pro */}
-            <div className="relative p-8 bg-gradient-to-br from-purple-900/30 to-pink-900/20 border border-purple-500/30 rounded-2xl overflow-hidden">
-              <div className="absolute top-0 right-0 px-3 py-1 bg-gradient-to-r from-purple-600 to-pink-600 text-xs font-semibold rounded-bl-xl">RECOMMENDED</div>
-              <div className="flex items-center gap-2 text-sm text-purple-300 mb-2"><span>🐣</span><span>For shipping projects</span></div>
+            <div className="relative p-8 bg-gradient-to-br from-emerald-900/10 to-teal-900/10 border border-emerald-500/30 rounded-xl overflow-hidden">
+              <div className="absolute top-0 right-0 px-3 py-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-xs font-semibold rounded-bl-xl text-white font-mono">RECOMMENDED</div>
+              <div className="flex items-center gap-2 text-sm text-emerald-400 mb-2 font-mono"><span>🚀</span><span>For shipping projects</span></div>
               <h3 className="text-2xl font-bold mb-1">Pro</h3>
               <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-4xl font-bold">$39</span>
+                <span className="text-4xl font-bold font-mono">$39</span>
                 <span className="text-zinc-500">/month</span>
               </div>
               <div className="text-zinc-400 text-sm mb-6">per account</div>
               <ul className="space-y-3 mb-8">
                 {[
-                  'Unlimited Sonnet 4.5 builds',
-                  '30 Opus 4.5 refinements/mo',
+                  'Unlimited AI builds',
+                  '30 AI refinements/mo',
                   'Deploy to hatchitsites.dev',
                   'Code export (ZIP)',
                   'Version history',
                   'Cloud sync',
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm text-zinc-300">
-                    <svg className="w-4 h-4 text-purple-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                     {item}
                   </li>
                 ))}
               </ul>
               <PricingButton 
                 tier="pro" 
-                className="block w-full py-3 text-center bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-semibold transition-all disabled:opacity-50"
+                className="block w-full py-3 text-center bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-lg font-semibold transition-all disabled:opacity-50 text-white shadow-[0_0_20px_rgba(16,185,129,0.2)]"
               >
                 Get Pro
               </PricingButton>
             </div>
 
             {/* Agency */}
-            <div className="relative p-8 bg-gradient-to-br from-amber-900/20 to-orange-900/10 border border-amber-500/30 rounded-2xl overflow-hidden">
-              <div className="absolute top-0 right-0 px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-xs font-semibold text-zinc-900 rounded-bl-xl">UNLIMITED</div>
-              <div className="flex items-center gap-2 text-sm text-amber-300 mb-2"><span>⚡</span><span>For power users</span></div>
+            <div className="relative p-8 bg-gradient-to-br from-violet-900/10 to-purple-900/10 border border-violet-500/30 rounded-xl overflow-hidden">
+              <div className="absolute top-0 right-0 px-3 py-1 bg-gradient-to-r from-violet-500 to-purple-500 text-xs font-semibold text-white rounded-bl-xl font-mono">UNLIMITED</div>
+              <div className="flex items-center gap-2 text-sm text-violet-300 mb-2 font-mono"><span>⚡</span><span>For power users</span></div>
               <h3 className="text-2xl font-bold mb-1">Agency</h3>
               <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-4xl font-bold">$99</span>
+                <span className="text-4xl font-bold font-mono">$99</span>
                 <span className="text-zinc-500">/month</span>
               </div>
               <div className="text-zinc-400 text-sm mb-6">per account</div>
               <ul className="space-y-3 mb-8">
                 {[
                   'Everything in Pro',
-                  'Unlimited Opus 4.5 refinements',
+                  'Unlimited AI refinements',
                   'Custom domains',
                   'Priority support',
                   'Early access to features',
                   'Dedicated onboarding',
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm text-zinc-300">
-                    <svg className="w-4 h-4 text-amber-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+                    <CheckCircle2 className="w-4 h-4 text-violet-400 flex-shrink-0" />
                     {item}
                   </li>
                 ))}
               </ul>
               <PricingButton 
                 tier="agency" 
-                className="block w-full py-3 text-center bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-900 rounded-xl font-semibold transition-all disabled:opacity-50"
+                className="block w-full py-3 text-center bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-400 hover:to-purple-400 text-white rounded-lg font-semibold transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(139,92,246,0.2)]"
               >
                 Get Agency
               </PricingButton>
@@ -893,17 +862,22 @@ export default function Home() {
       {/* FINAL CTA */}
       <Section className="px-6 py-24">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="relative p-12 md:p-16 bg-gradient-to-br from-purple-900/40 via-pink-900/30 to-amber-900/40 border border-purple-500/20 rounded-3xl overflow-hidden">
+          <div className="relative p-12 md:p-16 bg-gradient-to-br from-emerald-900/20 via-teal-900/10 to-zinc-900/40 border border-emerald-500/20 rounded-xl overflow-hidden">
             <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
-            <div className="absolute top-4 left-4 text-4xl opacity-30">🐣</div>
-            <div className="absolute bottom-4 right-4 text-4xl opacity-30">🐣</div>
+            <div className="absolute top-4 left-4 text-emerald-500/20">
+              <Terminal className="w-12 h-12" />
+            </div>
+            <div className="absolute bottom-4 right-4 text-emerald-500/20">
+              <Cpu className="w-12 h-12" />
+            </div>
             <div className="relative">
-              <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6">Ready to hatch something?</h2>
-              <p className="text-xl text-zinc-300 mb-8 max-w-2xl mx-auto">Your next website is one prompt away. Start building for free.</p>
-              <Link href="/builder" className="inline-flex items-center gap-2 px-10 py-5 bg-white text-zinc-900 hover:bg-zinc-100 rounded-xl font-bold text-xl transition-all md:hover:scale-105 active:scale-95">
-                Start Building Free <span>→</span>
+              <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6">Ready to initialize?</h2>
+              <p className="text-xl text-zinc-300 mb-8 max-w-2xl mx-auto">Your next project is one prompt away. Initialize the system.</p>
+              <Link href="/builder" className="inline-flex items-center gap-2 px-10 py-5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-lg font-bold text-xl transition-all md:hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+                <Terminal className="w-6 h-6" />
+                Initialize System
               </Link>
-              <p className="text-sm text-zinc-500 mt-4">No credit card • No signup required to try</p>
+              <p className="text-sm text-zinc-500 mt-4 font-mono">No credit card • No signup required to try</p>
             </div>
           </div>
         </div>
@@ -915,13 +889,13 @@ export default function Home() {
           <h2 className="text-3xl font-bold mb-12">Built by developers, for developers.</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-12 opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
              {/* Placeholders for "Featured on Product Hunt", "Hacker News", etc. since we don't have real logos yet */}
-             <div className="flex items-center justify-center font-bold text-xl hover:text-orange-500 transition-colors cursor-default">Product Hunt</div>
-             <div className="flex items-center justify-center font-bold text-xl hover:text-orange-600 transition-colors cursor-default">Hacker News</div>
-             <div className="flex items-center justify-center font-bold text-xl hover:text-blue-400 transition-colors cursor-default">Twitter / X</div>
-             <div className="flex items-center justify-center font-bold text-xl hover:text-red-500 transition-colors cursor-default">Reddit</div>
+             <div className="flex items-center justify-center font-bold text-xl hover:text-orange-500 transition-colors cursor-default font-mono">Product Hunt</div>
+             <div className="flex items-center justify-center font-bold text-xl hover:text-orange-600 transition-colors cursor-default font-mono">Hacker News</div>
+             <div className="flex items-center justify-center font-bold text-xl hover:text-blue-400 transition-colors cursor-default font-mono">Twitter / X</div>
+             <div className="flex items-center justify-center font-bold text-xl hover:text-red-500 transition-colors cursor-default font-mono">Reddit</div>
           </div>
           <div className="mt-12">
-            <a href="https://x.com/HatchItD" target="_blank" rel="noopener noreferrer" className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
+            <a href="https://x.com/HatchItD" target="_blank" rel="noopener noreferrer" className="text-sm text-zinc-500 hover:text-emerald-400 transition-colors font-mono">
               Join the conversation on X →
             </a>
           </div>

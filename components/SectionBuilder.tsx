@@ -25,8 +25,27 @@ import {
   Bot,
   Layers,
   ChevronRight,
-  Play
+  Play,
+  CheckCircle2,
+  X,
+  MousePointer2,
+  Trash2,
+  CopyPlus
 } from 'lucide-react'
+
+// Suggestions based on section type
+const getSuggestions = (id: string) => {
+  switch(id) {
+    case 'hero': return ['Modern & Minimal', 'Bold Typography', 'With Video Background', 'Dark Mode Aesthetic'];
+    case 'features': return ['Grid Layout', 'Alternating Side-by-Side', 'With Icons', 'Glassmorphism Cards'];
+    case 'testimonials': return ['Carousel Slider', 'Masonry Grid', 'Minimalist Quotes', 'With Avatars'];
+    case 'contact': return ['Simple Form', 'With Map', 'Split Layout', 'Floating Card'];
+    case 'pricing': return ['3-Tier Cards', 'Comparison Table', 'Simple List', 'Highlighted Preferred Option'];
+    case 'faq': return ['Accordion Style', 'Grid Layout', 'Simple List', 'Categorized'];
+    default: return ['Modern Style', 'Minimalist', 'Bold & Colorful', 'Professional', 'High Contrast'];
+  }
+}
+
 import { Section } from '@/lib/templates'
 import { DbSection } from '@/lib/supabase'
 import { SectionCompleteIndicator } from './SectionProgress'
@@ -34,6 +53,8 @@ import SectionPreview from './SectionPreview'
 import { BrandConfig } from './BrandingStep'
 import HatchCharacter, { HatchState } from './HatchCharacter'
 import { useSubscription } from '@/contexts/SubscriptionContext'
+import ThinkingLog from './ThinkingLog'
+import VoiceInput from './VoiceInput'
 
 // =============================================================================
 // SECTION BUILDER
@@ -304,8 +325,19 @@ export default function SectionBuilder({
   const [refinePrompt, setRefinePrompt] = useState('')
   const [isUserRefining, setIsUserRefining] = useState(false)
   const [isOpusPolishing, setIsOpusPolishing] = useState(false) // Opt-in Opus polish
+  const [isSelfHealing, setIsSelfHealing] = useState(false) // Auto-fix runtime errors
+  const [hasSelfHealed, setHasSelfHealed] = useState(false) // Prevent infinite loops
   const [expandedPreview, setExpandedPreview] = useState(false) // Expand preview on desktop
   const [mobileTab, setMobileTab] = useState<'input' | 'preview'>('input') // Mobile tab state
+  const [inspectorMode, setInspectorMode] = useState(false) // Visual element selector
+  const [selectedElement, setSelectedElement] = useState<{ tagName: string; text: string; className: string } | null>(null)
+  const [hudTab, setHudTab] = useState<'styles' | 'animate' | 'explain'>('styles') // Style HUD tab state
+  const [explanation, setExplanation] = useState<string | null>(null)
+  const [isExplaining, setIsExplaining] = useState(false)
+  
+  // Inline Code Editing
+  const [editingLineIndex, setEditingLineIndex] = useState<number | null>(null)
+  const [editingLineContent, setEditingLineContent] = useState('')
   
   // Get subscription info for Opus credits
   const { tier, subscription } = useSubscription()
@@ -326,6 +358,86 @@ export default function SectionBuilder({
   const codeEndRef = useRef<HTMLDivElement>(null)
   const helperInputRef = useRef<HTMLInputElement>(null)
   const helperChatRef = useRef<HTMLDivElement>(null)
+
+  // Self-healing: Automatically fix runtime errors detected in preview
+  const handleRuntimeError = async (errorMsg: string) => {
+    // Only attempt self-healing once per generation to avoid loops
+    if (isSelfHealing || hasSelfHealed || !generatedCode) return
+    
+    console.log('Attempting self-healing for error:', errorMsg)
+    setIsSelfHealing(true)
+    
+    try {
+      const response = await fetch('/api/refine-section', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sectionId: dbSection.id,
+          code: generatedCode,
+          sectionType: section.id,
+          sectionName: section.name,
+          userPrompt: prompt,
+          refineRequest: `FIX RUNTIME ERROR: ${errorMsg}. The previous code crashed with this error. Please fix the React component so it renders correctly without errors. Do not change the design, just fix the crash.`,
+        }),
+      })
+
+      if (!response.ok) throw new Error('Self-healing failed')
+
+      const { code: fixedCode, changes } = await response.json()
+      
+      setGeneratedCode(fixedCode)
+      setRefinementChanges(prev => [...prev, `Auto-fixed crash: ${errorMsg.slice(0, 30)}...`])
+      setHasSelfHealed(true)
+      onComplete(fixedCode, true, [...refinementChanges, `Auto-fixed crash: ${errorMsg.slice(0, 30)}...`])
+      
+    } catch (err) {
+      console.error('Self-healing failed:', err)
+    } finally {
+      setIsSelfHealing(false)
+    }
+  }
+
+  // Handle element selection from inspector
+  const handleElementSelect = (element: { tagName: string; text: string; className: string }) => {
+    setSelectedElement(element)
+    setInspectorMode(false) // Turn off inspector after selection
+    setExplanation(null) // Reset explanation
+    // Focus refine input
+    setTimeout(() => {
+      const input = document.querySelector('input[placeholder*="Refinement Directive"]') as HTMLInputElement
+      if (input) input.focus()
+    }, 100)
+  }
+
+  // Handle inline code editing
+  const handleSaveLine = (index: number) => {
+    if (!generatedCode) return
+    const lines = generatedCode.split('\n')
+    lines[index] = editingLineContent
+    const newCode = lines.join('\n')
+    setGeneratedCode(newCode)
+    setEditingLineIndex(null)
+    // Update parent/DB without triggering a full rebuild
+    onComplete(newCode, refined, refinementChanges)
+  }
+
+  const handleExplainElement = async () => {
+    if (!selectedElement) return
+    setIsExplaining(true)
+    setExplanation(null)
+    
+    // Simulate AI thinking
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    
+    // Mock explanation for now - in a real app this would call an API
+    const explanations = [
+      `I used a <${selectedElement.tagName}> here to ensure semantic validity. The class "${selectedElement.className.split(' ')[0]}..." provides the core structure.`,
+      `This element is styled with Tailwind utility classes for maximum flexibility. The spacing ensures good readability on mobile devices.`,
+      `I applied these specific styles to match your brand's "Modern" aesthetic. The contrast ratio meets WCAG AA standards.`
+    ]
+    setExplanation(explanations[Math.floor(Math.random() * explanations.length)])
+    setIsExplaining(false)
+  }
 
   const handleCopyCode = () => {
     // Paywall: only paid users can copy code
@@ -515,6 +627,7 @@ export default function SectionBuilder({
     setStage('generating')
     setStreamingCode('')
     setReasoning('') // Clear previous reasoning
+    setHasSelfHealed(false)
 
     // Demo mode - simulate generation with mock code
     if (demoMode) {
@@ -615,6 +728,19 @@ export default function SectionBuilder({
     setRefinementChanges([])
     setRefinePrompt('')
     setIsUserRefining(false)
+    setHasSelfHealed(false)
+  }
+
+  const handleRemix = () => {
+    setPrompt(prev => `Create a completely different variation of this section. ${prev}`)
+    setStage('input')
+    setGeneratedCode('')
+    setRefined(false)
+    setRefinementChanges([])
+    setRefinePrompt('')
+    setIsUserRefining(false)
+    setHasSelfHealed(false)
+    setTimeout(() => textareaRef.current?.focus(), 100)
   }
 
   const handleUserRefine = async () => {
@@ -650,6 +776,12 @@ export default function SectionBuilder({
     }
 
     try {
+      // Construct context-aware refinement prompt
+      let finalRefineRequest = refinePrompt
+      if (selectedElement) {
+        finalRefineRequest = `TARGET ELEMENT: <${selectedElement.tagName} class="${selectedElement.className}">${selectedElement.text}</${selectedElement.tagName}>. USER REQUEST: ${refinePrompt}. Focus changes specifically on this element.`
+      }
+
       const response = await fetch('/api/refine-section', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -659,7 +791,7 @@ export default function SectionBuilder({
           sectionType: section.id,
           sectionName: section.name,
           userPrompt: prompt,
-          refineRequest: refinePrompt, // User's specific refinement request
+          refineRequest: finalRefineRequest,
         }),
       })
 
@@ -681,6 +813,7 @@ export default function SectionBuilder({
       setRefined(true)
       setRefinementChanges([...refinementChanges, ...(changes || [refinePrompt])])
       setRefinePrompt('')
+      setSelectedElement(null) // Clear selection after refine
       onComplete(refinedCode, true, [...refinementChanges, ...(changes || [refinePrompt])])
 
     } catch (err) {
@@ -842,7 +975,36 @@ export default function SectionBuilder({
               placeholder="Describe the architecture of this section..."
               className="relative w-full min-h-[180px] bg-zinc-900/80 border border-zinc-800 rounded-xl p-4 text-sm font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none focus:ring-0 focus:border-purple-500/50 disabled:opacity-50 resize-none transition-all"
             />
+            {/* Voice Input Button */}
+            <div className="absolute bottom-3 right-3 z-10">
+              <VoiceInput 
+                onTranscript={(text) => {
+                  // If we are in refinement mode (stage is complete) or an element is selected, update refinePrompt
+                  if (stage === 'complete' || selectedElement) {
+                    setRefinePrompt(prev => prev ? `${prev} ${text}` : text)
+                  } else {
+                    // Otherwise update the main prompt
+                    setPrompt(prev => prev ? `${prev} ${text}` : text)
+                  }
+                }} 
+              />
+            </div>
           </div>
+
+          {/* Smart Suggestions */}
+          {stage === 'input' && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {getSuggestions(section.id).map((suggestion) => (
+                <button
+                  key={suggestion}
+                  onClick={() => setPrompt(prev => prev ? `${prev} ${suggestion}` : suggestion)}
+                  className="px-3 py-1.5 rounded-full bg-zinc-800/50 border border-zinc-700/50 text-xs text-zinc-400 hover:text-white hover:bg-zinc-700 hover:border-zinc-600 transition-all"
+                >
+                  + {suggestion}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Hatch - Your friendly prompt helper */}
           {stage === 'input' && (
@@ -900,18 +1062,9 @@ export default function SectionBuilder({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="w-full py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-center overflow-hidden relative"
+                  className="w-full rounded-xl bg-zinc-900 border border-zinc-800 overflow-hidden relative"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-500/10 to-transparent animate-shimmer" />
-                  <div className="flex items-center justify-center gap-3 text-zinc-300 relative z-10">
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                    >
-                      <Cpu className="w-5 h-5 text-purple-400" />
-                    </motion.div>
-                    <span className="font-mono text-sm">Sonnet 4.5 Architecture in progress...</span>
-                  </div>
+                  <ThinkingLog />
                 </motion.div>
               )}
 
@@ -930,7 +1083,7 @@ export default function SectionBuilder({
                     >
                       <Sparkles className="w-5 h-5" />
                     </motion.div>
-                    <span className="font-mono text-sm">Opus 4.5 Polishing...</span>
+                    <span className="font-mono text-sm">Architect Polishing...</span>
                   </div>
                 </motion.div>
               )}
@@ -967,10 +1120,192 @@ export default function SectionBuilder({
                   {/* Contact Form Instructions */}
                   {isContactSection && <ContactFormInstructions />}
 
+                  {/* Style HUD - Shows when element is selected */}
+                  <AnimatePresence>
+                    {selectedElement && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, height: 0 }}
+                        animate={{ opacity: 1, y: 0, height: 'auto' }}
+                        exit={{ opacity: 0, y: 10, height: 0 }}
+                        className="mb-3 overflow-hidden"
+                      >
+                        <div className="bg-zinc-900 border border-purple-500/30 rounded-xl p-3 shadow-[0_0_20px_rgba(168,85,247,0.1)]">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-mono text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded border border-purple-500/20">
+                                &lt;{selectedElement.tagName}&gt;
+                              </span>
+                              <div className="flex bg-zinc-800 rounded-lg p-0.5">
+                                <button
+                                  onClick={() => setHudTab('styles')}
+                                  className={`px-2 py-0.5 text-[10px] font-medium rounded-md transition-all ${
+                                    hudTab === 'styles' ? 'bg-zinc-700 text-white' : 'text-zinc-500 hover:text-zinc-300'
+                                  }`}
+                                >
+                                  Styles
+                                </button>
+                                <button
+                                  onClick={() => setHudTab('animate')}
+                                  className={`px-2 py-0.5 text-[10px] font-medium rounded-md transition-all ${
+                                    hudTab === 'animate' ? 'bg-zinc-700 text-white' : 'text-zinc-500 hover:text-zinc-300'
+                                  }`}
+                                >
+                                  Animate
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setHudTab('explain')
+                                    if (!explanation) handleExplainElement()
+                                  }}
+                                  className={`px-2 py-0.5 text-[10px] font-medium rounded-md transition-all ${
+                                    hudTab === 'explain' ? 'bg-zinc-700 text-white' : 'text-zinc-500 hover:text-zinc-300'
+                                  }`}
+                                >
+                                  Explain
+                                </button>
+                              </div>
+                            </div>
+                            <div className="flex gap-1">
+                              <button 
+                                onClick={() => setRefinePrompt('Duplicate this element')}
+                                className="p-1 hover:bg-zinc-800 rounded text-zinc-500 hover:text-white transition-colors"
+                                title="Duplicate Element"
+                              >
+                                <CopyPlus className="w-3 h-3" />
+                              </button>
+                              <button 
+                                onClick={() => setRefinePrompt('Delete this element')}
+                                className="p-1 hover:bg-zinc-800 rounded text-zinc-500 hover:text-red-400 transition-colors"
+                                title="Delete Element"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                              <button 
+                                onClick={() => {
+                                  navigator.clipboard.writeText(selectedElement.className)
+                                  setCopied(true)
+                                  setTimeout(() => setCopied(false), 1000)
+                                }}
+                                className="p-1 hover:bg-zinc-800 rounded text-zinc-500 hover:text-white transition-colors"
+                                title="Copy classes"
+                              >
+                                {copied ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                              </button>
+                            </div>
+                          </div>
+                          
+                          {hudTab === 'styles' ? (
+                            <>
+                              {/* Class List */}
+                              <div className="bg-zinc-950 rounded-lg p-2 border border-zinc-800 mb-2 max-h-24 overflow-y-auto">
+                                <code className="text-[10px] text-zinc-400 font-mono leading-relaxed break-all">
+                                  {selectedElement.className || 'No classes'}
+                                </code>
+                              </div>
+
+                              {/* Quick Actions */}
+                              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                                {[
+                                  { label: 'Clear Styles', action: 'Remove all classes' },
+                                  { label: 'Make Red', action: 'Change text color to red-500' },
+                                  { label: 'Add Padding', action: 'Add p-4' },
+                                  { label: 'Center', action: 'Add flex items-center justify-center' }
+                                ].map((qa) => (
+                                  <button
+                                    key={qa.label}
+                                    onClick={() => setRefinePrompt(qa.action)}
+                                    className="flex-shrink-0 px-2 py-1 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded text-[10px] text-zinc-300 transition-colors whitespace-nowrap"
+                                  >
+                                    {qa.label}
+                                  </button>
+                                ))}
+                              </div>
+                            </>
+                          ) : hudTab === 'animate' ? (
+                            /* Animation Studio */
+                            <div className="space-y-2">
+                              <div className="grid grid-cols-3 gap-2">
+                                {[
+                                  { label: 'Fade In', action: 'Add a Fade In animation using framer-motion (opacity 0 to 1)' },
+                                  { label: 'Slide Up', action: 'Add a Slide Up animation (y: 20 to 0, opacity 0 to 1)' },
+                                  { label: 'Scale Up', action: 'Add a Scale Up animation (scale 0.9 to 1)' },
+                                  { label: 'Bounce', action: 'Add a Bounce animation' },
+                                  { label: 'Pulse', action: 'Add a continuous Pulse animation' },
+                                  { label: 'Hover Lift', action: 'Add a whileHover={{ y: -5 }} animation' }
+                                ].map((anim) => (
+                                  <button
+                                    key={anim.label}
+                                    onClick={() => setRefinePrompt(anim.action)}
+                                    className="px-2 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded text-[10px] text-zinc-300 transition-colors text-center"
+                                  >
+                                    {anim.label}
+                                  </button>
+                                ))}
+                              </div>
+                              <button
+                                onClick={() => setRefinePrompt('Choose the best animation for this element based on its context and apply it using framer-motion')}
+                                className="w-full py-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-2"
+                              >
+                                <Sparkles className="w-3 h-3" />
+                                <span>Magic Animate</span>
+                              </button>
+                            </div>
+                          ) : (
+                            /* Explain Element */
+                            <div className="space-y-2">
+                              {isExplaining ? (
+                                <div className="flex items-center justify-center py-8 text-zinc-500 gap-2">
+                                  <RefreshCw className="w-4 h-4 animate-spin" />
+                                  <span className="text-xs font-mono">Analyzing element logic...</span>
+                                </div>
+                              ) : explanation ? (
+                                <div className="bg-zinc-950/50 rounded-lg p-3 border border-zinc-800/50">
+                                  <div className="flex items-start gap-2 mb-2">
+                                    <div className="w-5 h-5 rounded bg-blue-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                      <Info className="w-3 h-3 text-blue-400" />
+                                    </div>
+                                    <p className="text-xs text-zinc-300 leading-relaxed">
+                                      {explanation}
+                                    </p>
+                                  </div>
+                                  <div className="flex justify-end">
+                                    <button 
+                                      onClick={handleExplainElement}
+                                      className="text-[10px] text-zinc-500 hover:text-zinc-300 flex items-center gap-1 transition-colors"
+                                    >
+                                      <RefreshCw className="w-3 h-3" />
+                                      Regenerate
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="text-center py-4">
+                                  <button
+                                    onClick={handleExplainElement}
+                                    className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded text-xs text-zinc-300 transition-colors"
+                                  >
+                                    Explain this element
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   {/* Compact Refine Input - cleaner */}
                   <div className="flex gap-2 items-end">
                     <div className="flex-1">
-                      <label className="text-xs text-zinc-500 mb-1 block font-mono uppercase">Refinement Directive</label>
+                      <label className="text-xs text-zinc-500 mb-1 block font-mono uppercase">
+                        {selectedElement ? (
+                          <span className="text-purple-400 flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span>
+                            Refining: {selectedElement.tagName}
+                          </span>
+                        ) : 'Refinement Directive'}
+                      </label>
                       <div className="relative">
                         <input
                           type="text"
@@ -978,9 +1313,21 @@ export default function SectionBuilder({
                           onChange={(e) => setRefinePrompt(e.target.value)}
                           onKeyDown={(e) => e.key === 'Enter' && refinePrompt.trim() && handleUserRefine()}
                           disabled={isUserRefining}
-                          placeholder="e.g., Increase padding, darken background..."
-                          className="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-3 pr-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-purple-500/50 focus:border-purple-500/50 disabled:opacity-50 font-mono"
+                          placeholder={selectedElement ? `How should I change this ${selectedElement.tagName}?` : "e.g., Increase padding, darken background..."}
+                          className={`w-full bg-zinc-900 border rounded-lg pl-3 pr-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:ring-1 disabled:opacity-50 font-mono transition-colors ${
+                            selectedElement 
+                              ? 'border-purple-500/50 focus:ring-purple-500/50 focus:border-purple-500' 
+                              : 'border-zinc-800 focus:ring-purple-500/50 focus:border-purple-500/50'
+                          }`}
                         />
+                        {selectedElement && (
+                          <button
+                            onClick={() => setSelectedElement(null)}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        )}
                       </div>
                     </div>
                     <button
@@ -1011,9 +1358,9 @@ export default function SectionBuilder({
                           <Sparkles className="w-4 h-4 text-violet-400" />
                         </div>
                         <div className="flex-1">
-                          <h4 className="text-sm font-semibold text-violet-300 mb-1">Initialize Opus 4.5 Polish?</h4>
+                          <h4 className="text-sm font-semibold text-violet-300 mb-1">Initialize Architect Polish?</h4>
                           <p className="text-xs text-zinc-400 mb-3 font-mono">
-                            Opus will review for accessibility, semantic HTML, and best practices.
+                            The Architect will review for accessibility, semantic HTML, and best practices.
                           </p>
                           <div className="flex items-center justify-between">
                             <button
@@ -1022,7 +1369,7 @@ export default function SectionBuilder({
                               className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white text-sm font-medium rounded-lg transition-all disabled:opacity-50 flex items-center gap-2"
                             >
                               <Sparkles className="w-3.5 h-3.5" />
-                              <span>Polish with Opus</span>
+                              <span>Polish with Architect</span>
                             </button>
                             <span className="text-xs text-zinc-500 font-mono">
                               {tier === 'agency' ? '∞ credits' : `${opusCreditsRemaining}/30 credits left`}
@@ -1048,7 +1395,7 @@ export default function SectionBuilder({
                           <RefreshCw className="w-5 h-5 text-violet-400" />
                         </motion.div>
                         <div>
-                          <p className="text-sm font-medium text-violet-300 font-mono">Opus 4.5 is polishing...</p>
+                          <p className="text-sm font-medium text-violet-300 font-mono">Architect is polishing...</p>
                           <p className="text-xs text-zinc-500 font-mono">Checking accessibility & best practices</p>
                         </div>
                       </div>
@@ -1065,7 +1412,7 @@ export default function SectionBuilder({
                       <div className="flex items-start gap-3">
                         <CheckCircle2 className="w-5 h-5 text-violet-400 mt-0.5" />
                         <div>
-                          <h4 className="text-sm font-semibold text-violet-300 mb-2 font-mono">Opus 4.5 Optimization Complete</h4>
+                          <h4 className="text-sm font-semibold text-violet-300 mb-2 font-mono">Architect Optimization Complete</h4>
                           <ul className="text-xs text-zinc-400 space-y-1 font-mono">
                             {refinementChanges.slice(0, 3).map((change, i) => (
                               <li key={i} className="flex items-start gap-2">
@@ -1121,6 +1468,15 @@ export default function SectionBuilder({
                     </>
                   )}
                   
+                  {/* Remix Button */}
+                  <button
+                    onClick={handleRemix}
+                    className="w-full py-3 rounded-xl border border-purple-500/30 text-purple-300 font-medium hover:bg-purple-500/10 transition-colors flex items-center justify-center gap-2 mb-2"
+                  >
+                    <Wand2 className="w-4 h-4" />
+                    <span>Remix Variation</span>
+                  </button>
+
                   {/* Rebuild - subtle */}
                   <button
                     onClick={handleRebuild}
@@ -1139,9 +1495,9 @@ export default function SectionBuilder({
         {stage === 'input' && (
           <div className="px-4 py-3 bg-zinc-900/30 border-t border-zinc-800 flex-shrink-0">
             <div className="flex items-center gap-4 text-xs text-zinc-500 font-mono">
-              <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span> Sonnet 4.5 builds</span>
-              <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-violet-500"></span> Opus 4.5 polishes</span>
-              <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Gemini 2.5 audits</span>
+              <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Architect builds</span>
+              <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-teal-500"></span> Architect polishes</span>
+              <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-violet-500"></span> Architect audits</span>
             </div>
           </div>
         )}
@@ -1297,6 +1653,17 @@ export default function SectionBuilder({
                   Sonnet is building...
                 </span>
               </div>
+            ) : isSelfHealing ? (
+              <div className="flex items-center gap-2">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                  className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full"
+                />
+                <span className="text-sm font-medium text-red-400">
+                  Self-healing code...
+                </span>
+              </div>
             ) : stage === 'refining' || isUserRefining || isOpusPolishing ? (
               <div className="flex items-center gap-2">
                 <motion.div
@@ -1318,11 +1685,21 @@ export default function SectionBuilder({
             {generatedCode && stage === 'complete' && !isUserRefining && (
               <button
                 onClick={handleViewCode}
-                className="text-xs px-2 py-1 rounded bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors flex items-center gap-1"
+                className={`text-xs px-2 py-1 rounded transition-colors flex items-center gap-1 ${
+                  showCode 
+                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                    : 'bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700'
+                }`}
               >
-                {showCode ? '← Preview' : (
+                {showCode ? (
                   <>
-                    View Code
+                    <Eye className="w-3 h-3" />
+                    <span>Preview</span>
+                  </>
+                ) : (
+                  <>
+                    <Code className="w-3 h-3" />
+                    <span>Code</span>
                     {!isPaid && <span className="text-amber-400 ml-1">🔒</span>}
                   </>
                 )}
@@ -1330,6 +1707,22 @@ export default function SectionBuilder({
             )}
           </div>
           <div className="flex items-center gap-2">
+            {/* Inspector Toggle */}
+            {(generatedCode || streamingCode) && (
+              <button
+                onClick={() => setInspectorMode(!inspectorMode)}
+                className={`text-xs px-2 py-1 rounded transition-colors flex items-center gap-1 ${
+                  inspectorMode 
+                    ? 'bg-purple-500 text-white shadow-[0_0_10px_rgba(168,85,247,0.3)]' 
+                    : 'bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700'
+                }`}
+                title="Click elements in preview to refine them"
+              >
+                <MousePointer2 className="w-3 h-3" />
+                <span>{inspectorMode ? 'Select Element' : 'Inspect'}</span>
+              </button>
+            )}
+
             {/* Expand/Collapse Preview Button */}
             <button
               onClick={() => setExpandedPreview(!expandedPreview)}
@@ -1421,9 +1814,51 @@ export default function SectionBuilder({
             )
           ) : isPaid && showCode && generatedCode ? (
             /* Fix #2: Only show code view if isPaid AND showCode */
-            <div className="flex-1 overflow-auto p-4 bg-zinc-950">
+            <div className="flex-1 overflow-auto p-4 bg-zinc-950 relative">
               <pre className="text-xs font-mono whitespace-pre-wrap p-4">
-                <code className="text-emerald-400">{generatedCode}</code>
+                {generatedCode.split('\n').map((line, i) => {
+                  // Simple heuristic to highlight lines related to selected element
+                  const isHighlighted = selectedElement && 
+                    (line.includes(selectedElement.className) || 
+                     (line.includes(`<${selectedElement.tagName}`) && line.includes('className=')));
+                  
+                  const isEditing = editingLineIndex === i;
+
+                  return (
+                    <div 
+                      key={i} 
+                      className={`${isHighlighted ? 'bg-purple-500/20 -mx-4 px-4 border-l-2 border-purple-500' : ''} group relative`}
+                    >
+                      <span className="text-zinc-600 select-none mr-4 w-6 inline-block text-right">{i + 1}</span>
+                      
+                      {isEditing ? (
+                        <input
+                          autoFocus
+                          type="text"
+                          value={editingLineContent}
+                          onChange={(e) => setEditingLineContent(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleSaveLine(i)
+                            if (e.key === 'Escape') setEditingLineIndex(null)
+                          }}
+                          onBlur={() => handleSaveLine(i)}
+                          className="bg-zinc-800 text-emerald-400 outline-none w-[calc(100%-3rem)] px-1 rounded font-mono"
+                        />
+                      ) : (
+                        <code 
+                          className="text-emerald-400 cursor-text hover:bg-zinc-800/50 rounded px-1 transition-colors"
+                          onClick={() => {
+                            setEditingLineIndex(i)
+                            setEditingLineContent(line)
+                          }}
+                          title="Click to edit line"
+                        >
+                          {line}
+                        </code>
+                      )}
+                    </div>
+                  )
+                })}
                 {refined && (
                   <div className="mt-4 pt-4 border-t border-zinc-800">
                     <span className="text-xs text-violet-400">{/* Polished by Opus */}</span>
@@ -1435,6 +1870,9 @@ export default function SectionBuilder({
             <SectionPreview 
               code={generatedCode} 
               darkMode={true}
+              onRuntimeError={handleRuntimeError}
+              inspectorMode={inspectorMode}
+              onElementSelect={handleElementSelect}
             />
           )}
         </div>

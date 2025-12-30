@@ -1,11 +1,14 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 
 interface SectionPreviewProps {
   code: string
   darkMode?: boolean
+  onRuntimeError?: (error: string) => void
+  inspectorMode?: boolean
+  onElementSelect?: (element: { tagName: string; text: string; className: string }) => void
 }
 
 type DeviceView = 'mobile' | 'tablet' | 'desktop'
@@ -16,8 +19,26 @@ const deviceSizes: Record<DeviceView, { width: string; icon: string; label: stri
   desktop: { width: '100%', icon: '🖥️', label: 'Desktop' },
 }
 
-export default function SectionPreview({ code, darkMode = true }: SectionPreviewProps) {
+export default function SectionPreview({ code, darkMode = true, onRuntimeError, inspectorMode = false, onElementSelect }: SectionPreviewProps) {
   const [deviceView, setDeviceView] = useState<DeviceView>('desktop')
+
+  // Listen for runtime errors and element selection from the iframe
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (!event.data) return
+      
+      if (event.data.type === 'preview-error') {
+        console.warn('Preview Runtime Error:', event.data.message)
+        onRuntimeError?.(event.data.message)
+      }
+      
+      if (event.data.type === 'element-selected') {
+        onElementSelect?.(event.data.element)
+      }
+    }
+    window.addEventListener('message', handleMessage)
+    return () => window.removeEventListener('message', handleMessage)
+  }, [onRuntimeError, onElementSelect])
 
   const srcDoc = useMemo(() => {
     if (!code) return ''
@@ -138,6 +159,73 @@ export default function SectionPreview({ code, darkMode = true }: SectionPreview
     window.onerror = function(msg, url, line) {
       window.parent.postMessage({ type: 'preview-error', message: msg, line: line }, '*');
     };
+
+    // Inspector Mode Logic
+    const inspectorMode = ${inspectorMode};
+    
+    if (inspectorMode) {
+      document.addEventListener('mouseover', (e) => {
+        e.stopPropagation();
+        const target = e.target;
+        if (target === document.body || target.id === 'root') return;
+        
+        target.style.outline = '2px solid #a855f7'; // Purple outline
+        target.style.cursor = 'crosshair';
+        
+        // Add label
+        const label = document.createElement('div');
+        label.id = 'inspector-label';
+        label.style.position = 'fixed';
+        label.style.background = '#a855f7';
+        label.style.color = 'white';
+        label.style.padding = '2px 6px';
+        label.style.borderRadius = '4px';
+        label.style.fontSize = '10px';
+        label.style.zIndex = '9999';
+        label.style.pointerEvents = 'none';
+        label.textContent = target.tagName.toLowerCase();
+        
+        const rect = target.getBoundingClientRect();
+        label.style.top = (rect.top - 20) + 'px';
+        label.style.left = rect.left + 'px';
+        
+        const existing = document.getElementById('inspector-label');
+        if (existing) existing.remove();
+        document.body.appendChild(label);
+      }, true);
+      
+      document.addEventListener('mouseout', (e) => {
+        e.stopPropagation();
+        const target = e.target;
+        target.style.outline = '';
+        target.style.cursor = '';
+        const label = document.getElementById('inspector-label');
+        if (label) label.remove();
+      }, true);
+      
+      document.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const target = e.target;
+        if (target === document.body || target.id === 'root') return;
+        
+        // Flash effect
+        target.style.transition = 'all 0.2s';
+        target.style.backgroundColor = 'rgba(168, 85, 247, 0.2)';
+        setTimeout(() => {
+          target.style.backgroundColor = '';
+        }, 300);
+        
+        window.parent.postMessage({ 
+          type: 'element-selected', 
+          element: {
+            tagName: target.tagName.toLowerCase(),
+            text: target.innerText?.slice(0, 50) || '',
+            className: target.className || ''
+          }
+        }, '*');
+      }, true);
+    }
   </script>
   
   <script type="text/babel" data-presets="react,typescript">
@@ -182,7 +270,7 @@ export default function SectionPreview({ code, darkMode = true }: SectionPreview
   </script>
 </body>
 </html>`
-  }, [code, darkMode])
+  }, [code, darkMode, inspectorMode])
 
   if (!code) {
     return (
