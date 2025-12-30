@@ -205,10 +205,23 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   // Check if project is paid (hatched) - now based on account subscription
   const isPaid = isPaidUser
 
+  // Track if we're in the middle of creating a project to prevent reload
+  const [isCreatingProject, setIsCreatingProject] = useState(false)
+
   // Check for existing project on mount (from URL or localStorage)
   useEffect(() => {
+    // Skip if we're currently creating a project
+    if (isCreatingProject) {
+      return
+    }
+    
     // Skip if we just created this project - don't reload it
     if (existingProjectId && existingProjectId === justCreatedProjectId) {
+      return
+    }
+    
+    // Skip if we're already past the select phase (user is actively building)
+    if (phase !== 'select') {
       return
     }
     
@@ -221,7 +234,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
         loadExistingProject(savedProjectId)
       }
     }
-  }, [existingProjectId, justCreatedProjectId])
+  }, [existingProjectId, justCreatedProjectId, isCreatingProject])
 
   const loadExistingProject = async (projectId: string) => {
     setIsLoading(true)
@@ -324,6 +337,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       setBuildState(createInitialBuildState(selectedTemplate.id))
       setPhase('building')
       setDemoMode(true)
+      setIsCreatingProject(false)
       setIsLoading(false)
     }
     
@@ -333,6 +347,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     }
 
     setIsLoading(true)
+    setIsCreatingProject(true)
     setError(null)
 
     try {
@@ -373,6 +388,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       setupDemoMode()
     } finally {
       setIsLoading(false)
+      setIsCreatingProject(false)
     }
   }
 
