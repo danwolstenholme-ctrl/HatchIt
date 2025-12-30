@@ -19,6 +19,7 @@ export {
   getProjectBySlug,
   updateProjectStatus,
   updateProjectName,
+  updateProjectBrandConfig,
   deleteProject,
   getProjectWithProgress,
 } from './projects'

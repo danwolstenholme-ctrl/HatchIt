@@ -1,4 +1,4 @@
-import { supabaseAdmin, DbProject } from '../supabase'
+import { supabaseAdmin, DbProject, DbBrandConfig } from '../supabase'
 
 // =============================================================================
 // PROJECT DATABASE OPERATIONS
@@ -20,12 +20,13 @@ function generateSlug(name: string): string {
 }
 
 /**
- * Create a new project
+ * Create a new project with optional brand config
  */
 export async function createProject(
   userId: string,
   name: string,
-  templateId: string
+  templateId: string,
+  brandConfig?: DbBrandConfig | null
 ): Promise<DbProject | null> {
   if (!supabaseAdmin) {
     console.error('Supabase admin client not configured')
@@ -41,6 +42,7 @@ export async function createProject(
       name,
       slug,
       template_id: templateId,
+      brand_config: brandConfig || null,
       status: 'building',
     })
     .select()
@@ -48,6 +50,30 @@ export async function createProject(
 
   if (error) {
     console.error('Error creating project:', error)
+    return null
+  }
+
+  return data as DbProject
+}
+
+/**
+ * Update project brand config
+ */
+export async function updateProjectBrandConfig(
+  projectId: string,
+  brandConfig: DbBrandConfig
+): Promise<DbProject | null> {
+  if (!supabaseAdmin) return null
+
+  const { data, error } = await supabaseAdmin
+    .from('projects')
+    .update({ brand_config: brandConfig })
+    .eq('id', projectId)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating brand config:', error)
     return null
   }
 

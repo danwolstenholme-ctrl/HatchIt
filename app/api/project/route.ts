@@ -9,7 +9,7 @@ import {
 import { getTemplateById, Section } from '@/lib/templates'
 
 // =============================================================================
-// POST: Create a new project with sections
+// POST: Create a new project with sections and brand config
 // =============================================================================
 export async function POST(request: NextRequest) {
   try {
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { templateId, name, sections: customSections } = body
+    const { templateId, name, sections: customSections, brand } = body
 
     if (!templateId || !name) {
       return NextResponse.json(
@@ -43,8 +43,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid template' }, { status: 400 })
     }
 
-    // Create project
-    const project = await createProject(dbUser.id, name, templateId)
+    // Create project with brand config
+    const project = await createProject(dbUser.id, name, templateId, brand || null)
     if (!project) {
       return NextResponse.json({ error: 'Failed to create project' }, { status: 500 })
     }

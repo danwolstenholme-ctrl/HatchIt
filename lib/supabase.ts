@@ -36,12 +36,27 @@ export interface DbUser {
   created_at: string
 }
 
+export interface DbBrandConfig {
+  brandName: string
+  tagline?: string
+  logoUrl?: string
+  colorPreset?: string
+  colors: {
+    primary: string
+    secondary: string
+    accent: string
+  }
+  fontStyle: string
+  styleVibe: string
+}
+
 export interface DbProject {
   id: string
   user_id: string
   name: string
   slug: string
   template_id: string
+  brand_config: DbBrandConfig | null
   status: 'building' | 'complete' | 'deployed'
   created_at: string
   updated_at: string

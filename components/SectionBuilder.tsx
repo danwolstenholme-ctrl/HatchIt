@@ -111,6 +111,142 @@ const generateMockCode = (sectionType: string, sectionName: string, userPrompt: 
 </section>`
 }
 
+// Brand Quick Reference - Shows current brand settings in the builder
+function BrandQuickReference({ brandConfig }: { brandConfig: BrandConfig }) {
+  const [expanded, setExpanded] = useState(false)
+  
+  return (
+    <motion.div 
+      className="mt-4 bg-zinc-800/50 border border-zinc-700/50 rounded-xl overflow-hidden"
+      initial={false}
+    >
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full px-3 py-2 flex items-center justify-between text-left hover:bg-zinc-800/80 transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-sm">🎨</span>
+          <span className="text-xs font-medium text-zinc-300">
+            {brandConfig.brandName}
+          </span>
+          {/* Color dots preview */}
+          <div className="flex items-center gap-1 ml-2">
+            <span 
+              className="w-3 h-3 rounded-full border border-white/20" 
+              style={{ backgroundColor: brandConfig.colors.primary }}
+              title="Primary"
+            />
+            <span 
+              className="w-3 h-3 rounded-full border border-white/20" 
+              style={{ backgroundColor: brandConfig.colors.secondary }}
+              title="Secondary"
+            />
+            <span 
+              className="w-3 h-3 rounded-full border border-white/20" 
+              style={{ backgroundColor: brandConfig.colors.accent }}
+              title="Accent"
+            />
+          </div>
+        </div>
+        <motion.span 
+          animate={{ rotate: expanded ? 180 : 0 }}
+          className="text-zinc-500 text-xs"
+        >
+          ▼
+        </motion.span>
+      </button>
+      
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="border-t border-zinc-700/50"
+          >
+            <div className="px-3 py-3 space-y-3 text-xs">
+              {/* Brand Name & Tagline */}
+              <div>
+                <span className="text-zinc-500">Brand:</span>
+                <p className="text-white font-medium">{brandConfig.brandName}</p>
+                {brandConfig.tagline && (
+                  <p className="text-zinc-400 italic">"{brandConfig.tagline}"</p>
+                )}
+              </div>
+              
+              {/* Colors */}
+              <div>
+                <span className="text-zinc-500 block mb-1.5">Colors:</span>
+                <div className="flex gap-2 flex-wrap">
+                  <div className="flex items-center gap-1.5 bg-zinc-900/50 px-2 py-1 rounded">
+                    <span 
+                      className="w-4 h-4 rounded border border-white/20" 
+                      style={{ backgroundColor: brandConfig.colors.primary }}
+                    />
+                    <span className="text-zinc-300">Primary</span>
+                    <span className="text-zinc-500 font-mono text-[10px]">{brandConfig.colors.primary}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-zinc-900/50 px-2 py-1 rounded">
+                    <span 
+                      className="w-4 h-4 rounded border border-white/20" 
+                      style={{ backgroundColor: brandConfig.colors.secondary }}
+                    />
+                    <span className="text-zinc-300">Secondary</span>
+                    <span className="text-zinc-500 font-mono text-[10px]">{brandConfig.colors.secondary}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-zinc-900/50 px-2 py-1 rounded">
+                    <span 
+                      className="w-4 h-4 rounded border border-white/20" 
+                      style={{ backgroundColor: brandConfig.colors.accent }}
+                    />
+                    <span className="text-zinc-300">Accent</span>
+                    <span className="text-zinc-500 font-mono text-[10px]">{brandConfig.colors.accent}</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Style & Font */}
+              <div className="flex gap-4">
+                <div>
+                  <span className="text-zinc-500">Style:</span>
+                  <p className="text-zinc-300 capitalize">{brandConfig.styleVibe}</p>
+                </div>
+                <div>
+                  <span className="text-zinc-500">Font:</span>
+                  <p className="text-zinc-300 capitalize">{brandConfig.fontStyle}</p>
+                </div>
+              </div>
+              
+              {/* Logo */}
+              {brandConfig.logoUrl && (
+                <div>
+                  <span className="text-zinc-500 block mb-1">Logo:</span>
+                  <div className="w-10 h-10 bg-zinc-900 rounded-lg overflow-hidden">
+                    <img 
+                      src={brandConfig.logoUrl} 
+                      alt="Brand logo" 
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {/* AI Notice */}
+              <div className="pt-2 border-t border-zinc-700/50">
+                <p className="text-zinc-500 flex items-center gap-1">
+                  <span>✨</span>
+                  AI will use these settings when building sections
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  )
+}
+
 export default function SectionBuilder({
   section,
   dbSection,
@@ -688,6 +824,11 @@ export default function SectionBuilder({
             </div>
           </div>
           <p className="text-sm text-zinc-400 mt-2">{section.description}</p>
+          
+          {/* Brand Quick Reference - Collapsible */}
+          {brandConfig && (
+            <BrandQuickReference brandConfig={brandConfig} />
+          )}
         </div>
 
         {/* Input Area */}

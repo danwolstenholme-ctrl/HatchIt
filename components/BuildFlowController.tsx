@@ -263,6 +263,11 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       setDbSections(sections)
       setSelectedTemplate(template)
       
+      // Restore brand config from project!
+      if (proj.brand_config) {
+        setBrandConfig(proj.brand_config)
+      }
+      
       const state = createInitialBuildState(template.id)
       sections.forEach((s: DbSection) => {
         if (s.status === 'complete') {
@@ -314,6 +319,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
         slug: `demo-${mockProjectId}`,
         template_id: selectedTemplate.id,
         status: 'building',
+        brand_config: brand, // Include brand config in mock project
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }

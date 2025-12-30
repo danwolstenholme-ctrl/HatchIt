@@ -30,10 +30,14 @@ CREATE TABLE projects (
   name TEXT NOT NULL,
   slug TEXT UNIQUE NOT NULL,
   template_id TEXT NOT NULL,
+  brand_config JSONB DEFAULT NULL,
   status TEXT DEFAULT 'building' CHECK (status IN ('building', 'complete', 'deployed')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Comment for documentation
+COMMENT ON COLUMN projects.brand_config IS 'JSON object: brandName, tagline, logoUrl, colors {primary, secondary, accent}, fontStyle, styleVibe';
 
 -- Indexes
 CREATE INDEX idx_projects_user_id ON projects(user_id);
