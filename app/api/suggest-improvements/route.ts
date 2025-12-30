@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
+import { clerkClient } from '@clerk/nextjs/server'
 import Anthropic from '@anthropic-ai/sdk'
+import { AccountSubscription } from '@/types/subscriptions'
 
 // =============================================================================
 // OPUS 4 - PROACTIVE SUGGESTIONS
@@ -56,6 +58,14 @@ export async function POST(request: NextRequest) {
     const { userId } = await auth()
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check for active subscription - Opus API is expensive
+    const client = await clerkClient()
+    const user = await client.users.getUser(userId)
+    const accountSub = user.publicMetadata?.accountSubscription as AccountSubscription | undefined
+    if (!accountSub || accountSub.status !== 'active') {
+      return NextResponse.json({ error: 'Pro subscription required', requiresUpgrade: true }, { status: 403 })
     }
 
     const body = await request.json()

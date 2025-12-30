@@ -393,15 +393,15 @@ Light theme (when requested):
 - Working code beats ambitious broken code`
 
 export async function POST(request: NextRequest) {
-  console.log('=== GENERATE API START ===')
+  
   try {
     // Authenticate user
-    console.log('Step 1: Auth')
+    
     const { userId } = await auth()
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    console.log('Step 2: Auth passed, userId:', userId)
+    
 
     // Check rate limit
     if (!checkRateLimit(userId)) {
@@ -410,7 +410,7 @@ export async function POST(request: NextRequest) {
         { status: 429 }
       )
     }
-    console.log('Step 3: Rate limit passed')
+    
 
     // Check if user is paid (has active account subscription)
     let isPaid = false
@@ -420,7 +420,7 @@ export async function POST(request: NextRequest) {
       // Check account subscription (new tier system: pro/agency)
       const accountSub = user.publicMetadata?.accountSubscription as { status?: string; tier?: string } | undefined
       isPaid = accountSub?.status === 'active'
-      console.log('Step 4: Clerk lookup done, isPaid:', isPaid, 'tier:', accountSub?.tier)
+      
     } catch (clerkError) {
       console.error('Clerk lookup failed:', clerkError)
       // Continue as free user if lookup fails
@@ -434,19 +434,19 @@ export async function POST(request: NextRequest) {
         { status: 429 }
       )
     }
-    console.log('Step 5: Daily limit passed, remaining:', genCheck.remaining)
+    
 
     let body
     try {
       body = await request.json()
-      console.log('Step 6: Body parsed, prompt length:', body?.prompt?.length || 0)
+      
     } catch (parseError) {
       console.error('JSON parse error:', parseError)
       return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
     }
 
     const { prompt, history, currentCode, currentPage, allPages, assets, skipComplexityWarning, brand } = body
-    console.log('Step 7: Destructured body')
+    
 
     // Input validation
     if (!prompt || typeof prompt !== 'string') {
@@ -472,7 +472,7 @@ export async function POST(request: NextRequest) {
   // Check for simple edits that can be handled surgically
   const simpleEdit = detectSimpleEdit(prompt, currentCode)
   if (simpleEdit?.isSimple && currentCode) {
-    console.log('Step 7b: Detected simple edit, using surgical approach')
+    
     
     try {
       const surgicalResponse = await fetch('https://api.anthropic.com/v1/messages', {
@@ -529,12 +529,12 @@ export async function POST(request: NextRequest) {
         // Check if there's a message explaining why it couldn't find the text
         const messageMatch = surgicalText.match(/---MESSAGE---\s*([\s\S]*?)(?:---|$)/)
         if (messageMatch) {
-          console.log('Surgical edit failed, falling back to full generation:', messageMatch[1])
+          
         }
       }
       
       // If surgical edit didn't work, fall through to full generation
-      console.log('Surgical edit failed to find matches, falling back to full generation')
+      
     } catch (surgicalError) {
       console.error('Surgical edit error, falling back:', surgicalError)
       // Fall through to normal generation
@@ -592,9 +592,9 @@ export async function POST(request: NextRequest) {
   }
   messages.push({ role: 'user', content: userContent })
 
-  console.log('Step 8: About to call Anthropic, messages count:', messages.length)
+  
   try {
-    console.log('Step 9: Calling Anthropic API...')
+    
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -613,7 +613,7 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     
     // Log response for debugging
-    console.log('Step 10: Anthropic response status:', response.status)
+    
     
     // Handle Anthropic API errors
     if (!response.ok || data.error) {
@@ -720,7 +720,7 @@ export async function POST(request: NextRequest) {
           if (op.code) {
             const truncationCheck = detectJSXTruncation(op.code);
             if (truncationCheck.truncated) {
-              console.log('Multi-page truncation detected, attempting auto-fix')
+              
               
               // Try to complete this specific page's code
               const fixResponse = await fetch('https://api.anthropic.com/v1/messages', {
@@ -768,7 +768,7 @@ export async function POST(request: NextRequest) {
       // Check for JSX truncation BEFORE syntax check
       const truncationCheck = detectJSXTruncation(code);
       if (truncationCheck.truncated) {
-        console.log('Truncation detected:', truncationCheck.reason, '- attempting auto-completion')
+        
         
         // Auto-complete the truncated code
         const completionResponse = await fetch('https://api.anthropic.com/v1/messages', {
@@ -819,7 +819,7 @@ Return the COMPLETE fixed component:`
           const recheckSyntax = checkSyntax(completedCode)
           
           if (!recheckTruncation.truncated && recheckSyntax.valid) {
-            console.log('Auto-completion successful')
+            
             return NextResponse.json({ 
               code: completedCode, 
               message: message || 'Component generated ✓',
@@ -828,7 +828,7 @@ Return the COMPLETE fixed component:`
           }
           
           // If completion still has issues, try a full regeneration with strict limits
-          console.log('Auto-completion still had issues, trying compact regeneration')
+          
           const regenResponse = await fetch('https://api.anthropic.com/v1/messages', {
             method: 'POST',
             headers: {
@@ -857,7 +857,7 @@ Return the COMPLETE fixed component:`
             
             const finalCheck = detectJSXTruncation(regenCode)
             if (!finalCheck.truncated) {
-              console.log('Compact regeneration successful')
+              
               return NextResponse.json({ 
                 code: regenCode, 
                 message: message || 'Component generated ✓',

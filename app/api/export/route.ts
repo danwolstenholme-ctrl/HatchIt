@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { clerkClient } from '@clerk/nextjs/server'
 import { AccountSubscription } from '@/types/subscriptions'
+import { getOrCreateUser } from '@/lib/db/users'
+import { getProjectsByUserId } from '@/lib/db/projects'
 
 interface Asset {
   name: string
@@ -45,6 +47,22 @@ export async function POST(req: NextRequest) {
 
   if (!projectSlug) {
     return NextResponse.json({ error: 'Project slug required' }, { status: 400 })
+  }
+
+  // Verify project ownership - SECURITY FIX
+  try {
+    const dbUser = await getOrCreateUser(userId)
+    if (!dbUser) {
+      return NextResponse.json({ error: 'Failed to verify user' }, { status: 500 })
+    }
+    
+    const userProjects = await getProjectsByUserId(dbUser.id)
+    const ownsProject = userProjects.some((p: { slug: string }) => p.slug === projectSlug)
+    if (!ownsProject) {
+      return NextResponse.json({ error: 'Project not found or access denied' }, { status: 403 })
+    }
+  } catch {
+    return NextResponse.json({ error: 'Failed to verify project ownership' }, { status: 500 })
   }
 
   const safeAssets: Asset[] = Array.isArray(assets) ? assets.slice(0, MAX_ASSET_COUNT) : []

@@ -5,19 +5,9 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState, useEffect, useSyncExternalStore } from 'react'
+import { useState, useEffect } from 'react'
 import { SubscriptionBadge } from './SubscriptionIndicator'
 import { useSubscription } from '@/contexts/SubscriptionContext'
-
-// Prevent hydration mismatch on mobile detection
-const emptySubscribe = () => () => {}
-function useIsClient() {
-  return useSyncExternalStore(
-    emptySubscribe,
-    () => true,
-    () => false
-  )
-}
 
 export default function Navigation() {
   const pathname = usePathname()
