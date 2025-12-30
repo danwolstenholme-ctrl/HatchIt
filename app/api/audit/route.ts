@@ -24,10 +24,10 @@ if (!geminiApiKey) {
 // Initialize Gemini client (may be null if API key not set)
 const genai = geminiApiKey ? new GoogleGenAI({ apiKey: geminiApiKey }) : null
 
-const AUDITOR_SYSTEM_PROMPT = `You are a senior frontend engineer performing a FINAL AUDIT on a React + Tailwind page.
+const AUDITOR_SYSTEM_PROMPT = `You are The Auditor — a high-precision quality assurance system performing a FINAL AUDIT on a React + Tailwind page.
 
-CONTEXT: This code was built by Claude Sonnet and refined by Claude Opus.
-You are Gemini - a different AI with different strengths.
+CONTEXT: This code was constructed by The Architect (Sonnet 3.5) and refined by The Refiner (Gemini 2.0).
+You are The Auditor (Gemini 2.5 Pro) — the final gatekeeper.
 Your job is to catch what they missed. Be the fresh eyes.
 
 ## AUDIT CHECKLIST
