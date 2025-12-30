@@ -205,63 +205,6 @@ function AIThinkingCaption() {
   )
 }
 
-// Mouse-following Hatch for the hero section
-function MouseFollowingHatch() {
-  const hatchRef = useRef<HTMLDivElement>(null)
-  const [eyeOffset, setEyeOffset] = useState({ x: 0, y: 0 })
-  
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!hatchRef.current) return
-      
-      const rect = hatchRef.current.getBoundingClientRect()
-      const hatchCenterX = rect.left + rect.width / 2
-      const hatchCenterY = rect.top + rect.height / 2
-      
-      // Calculate direction to mouse
-      const deltaX = e.clientX - hatchCenterX
-      const deltaY = e.clientY - hatchCenterY
-      
-      // Normalize and limit the offset (max 3px movement)
-      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
-      const maxOffset = 3
-      const normalizedX = distance > 0 ? (deltaX / distance) * Math.min(distance / 100, 1) * maxOffset : 0
-      const normalizedY = distance > 0 ? (deltaY / distance) * Math.min(distance / 100, 1) * maxOffset : 0
-      
-      setEyeOffset({ x: normalizedX, y: normalizedY })
-    }
-    
-    window.addEventListener('mousemove', handleMouseMove)
-    return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [])
-  
-  return (
-    <div ref={hatchRef} className="inline-block align-middle relative">
-      {/* Egg body */}
-      <div className="w-8 h-10 bg-gradient-to-b from-amber-100 via-amber-50 to-amber-100 rounded-full shadow-md relative overflow-hidden">
-        {/* Subtle shine */}
-        <div className="absolute top-1 left-1 w-2 h-3 bg-white/40 rounded-full blur-[2px]" />
-        
-        {/* Face container */}
-        <div className="absolute inset-0 flex items-center justify-center pt-1">
-          {/* Eyes that follow cursor */}
-          <motion.div 
-            className="font-mono text-[8px] tracking-wider select-none text-zinc-700"
-            animate={{ x: eyeOffset.x, y: eyeOffset.y }}
-            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-          >
-            ◦ ◦
-          </motion.div>
-        </div>
-        
-        {/* Blush */}
-        <div className="absolute bottom-3 left-1 w-1.5 h-1 bg-pink-300/50 rounded-full" />
-        <div className="absolute bottom-3 right-1 w-1.5 h-1 bg-pink-300/50 rounded-full" />
-      </div>
-    </div>
-  )
-}
-
 // Pricing button that handles auth + checkout
 function PricingButton({ tier, className, children }: { tier: 'pro' | 'agency', className: string, children: React.ReactNode }) {
   const { isSignedIn, user } = useUser()
@@ -484,11 +427,10 @@ export default function Home() {
 
           {/* Subheadline */}
           <motion.div 
-            className="text-center text-lg sm:text-xl md:text-2xl text-zinc-400 max-w-3xl mx-auto mb-8 leading-relaxed flex flex-wrap items-center justify-center gap-1"
+            className="text-center text-lg sm:text-xl md:text-2xl text-zinc-400 max-w-3xl mx-auto mb-8 leading-relaxed"
             {...getAnimation(0.2, 20)}
           >
             <span>The AI website builder that writes <span className="text-white font-medium">real, maintainable</span> React code. Section by section. With Hatch, your friendly helper</span>
-            <MouseFollowingHatch />
           </motion.div>
 
           {/* CTAs */}
@@ -666,10 +608,12 @@ export default function Home() {
               <div className="relative">
                 <div className="flex items-start justify-between mb-4">
                   <motion.div
-                    whileHover={{ scale: 1.1 }}
+                    className="text-4xl block"
+                    style={{ willChange: 'transform' }}
+                    whileHover={{ scale: 1.2, rotate: 10 }}
                     transition={{ type: 'spring', stiffness: 400, damping: 10 }}
                   >
-                    <HatchCharacter state="excited" size="lg" />
+                    <HatchCharacter state="excited" size="md" />
                   </motion.div>
                   <motion.span 
                     className="flex items-center gap-1 px-2 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full text-[10px] text-amber-400"
