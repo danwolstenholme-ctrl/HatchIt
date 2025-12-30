@@ -410,10 +410,13 @@ export default function RootLayout({
     }
   }
 
-  const srcDoc = useMemo(() => {
+  // Reset iframe state when content changes - OUTSIDE of useMemo to avoid render loops
+  useEffect(() => {
     setIframeLoaded(false)
     setPreviewError(null)
-    
+  }, [code, pages, currentPageId])
+
+  const srcDoc = useMemo(() => {
     // Multi-page mode
     if (pages && pages.length > 0) {
       const currentPage = pages.find(p => p.id === currentPageId) || pages[0]
