@@ -57,8 +57,8 @@ export default function Navigation() {
             >
               <Image src="/assets/logo.png" alt="HatchIt" width={36} height={36} className="w-9 h-9" />
             </motion.div>
-            <span className="text-xl font-bold bg-gradient-to-r from-white to-zinc-300 bg-clip-text text-transparent group-hover:from-purple-400 group-hover:to-pink-400 transition-all duration-300">
-              HatchIt
+            <span className="text-xl font-bold group-hover:from-purple-400 group-hover:to-pink-400 transition-all duration-300">
+              <span className="text-white">Hatch</span><span className="bg-gradient-to-r from-amber-500 to-amber-400 bg-clip-text text-transparent">It</span>
             </span>
           </Link>
           
