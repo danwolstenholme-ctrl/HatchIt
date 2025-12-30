@@ -972,6 +972,12 @@ export default function SectionBuilder({
               ref={textareaRef}
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  if (prompt.trim()) handleBuildSection()
+                }
+              }}
               disabled={stage !== 'input'}
               placeholder="Describe the architecture of this section..."
               className="relative w-full min-h-[180px] bg-zinc-900/80 border border-zinc-800 rounded-xl p-4 text-sm font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none focus:ring-0 focus:border-purple-500/50 disabled:opacity-50 resize-none transition-all"
