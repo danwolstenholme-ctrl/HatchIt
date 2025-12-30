@@ -35,6 +35,7 @@ import BrandingStep, { BrandConfig } from './BrandingStep'
 import SectionProgress from './SectionProgress'
 import SectionBuilder from './SectionBuilder'
 import HatchModal from './HatchModal'
+import Scorecard from './Scorecard'
 import { Template, Section, getTemplateById, getSectionById, createInitialBuildState, BuildState } from '@/lib/templates'
 import { DbProject, DbSection } from '@/lib/supabase'
 import { AccountSubscription } from '@/types/subscriptions'
@@ -219,6 +220,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const [reviewDeviceView, setReviewDeviceView] = useState<'mobile' | 'tablet' | 'desktop'>('desktop')
   const [editingSectionIndex, setEditingSectionIndex] = useState<number | null>(null)
   const [justCreatedProjectId, setJustCreatedProjectId] = useState<string | null>(null)
+  const [showScorecard, setShowScorecard] = useState(false)
 
   // Get account subscription from user metadata
   const accountSubscription = useMemo(() => {
@@ -694,13 +696,22 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
       if (!response.ok) throw new Error('Audit failed')
 
-      const { auditChanges } = await response.json()
+      const { changes, scores, passed } = await response.json()
+      
+      // Convert changes objects to strings if necessary
+      const changeStrings = Array.isArray(changes) 
+        ? changes.map((c: any) => typeof c === 'string' ? c : c.fix)
+        : []
 
       setBuildState({
         ...buildState,
         finalAuditComplete: true,
-        finalAuditChanges: auditChanges,
+        finalAuditChanges: changeStrings,
+        auditScores: scores,
+        auditPassed: passed
       })
+      
+      setShowScorecard(true)
 
     } catch (err) {
       console.error('Audit error:', err)
@@ -1114,6 +1125,40 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
                 </div>
               </div>
             </div>
+
+            {/* Scorecard Modal */}
+            <AnimatePresence>
+              {showScorecard && buildState.auditScores && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                  onClick={() => setShowScorecard(false)}
+                >
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                    className="bg-zinc-950 border border-zinc-800 rounded-2xl max-w-lg w-full shadow-2xl relative overflow-hidden"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Scorecard 
+                      scores={buildState.auditScores} 
+                      passed={buildState.auditPassed ?? false} 
+                    />
+                    <div className="p-4 bg-zinc-900/50 border-t border-zinc-800 flex justify-end">
+                      <button
+                        onClick={() => setShowScorecard(false)}
+                        className="px-4 py-2 bg-zinc-800 text-white rounded-lg hover:bg-zinc-700 text-sm font-medium"
+                      >
+                        Close Report
+                      </button>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Success Modal after Deploy */}
             <AnimatePresence>

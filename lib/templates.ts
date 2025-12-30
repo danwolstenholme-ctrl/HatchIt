@@ -606,6 +606,13 @@ export interface BuildState {
   // Gemini final audit (optional, end-of-build)
   finalAuditComplete: boolean
   finalAuditChanges: string[] | null // What Gemini found/fixed, null = not run yet
+  auditScores?: {
+    accessibility: number
+    performance: number
+    consistency: number
+    mobile: number
+  }
+  auditPassed?: boolean
 }
 
 export const createInitialBuildState = (templateId: string): BuildState => ({

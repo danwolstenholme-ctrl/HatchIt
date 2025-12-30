@@ -5,6 +5,12 @@ html {
   font-size: 112.5%; /* 18px base instead of 16px - looks normal at 100% zoom */
 }
 
+@media (max-width: 768px) {
+  html {
+    font-size: 100%; /* Reset to 16px on mobile to prevent cramping */
+  }
+}
+
 html, body {
   height: 100%;
   width: 100%;
