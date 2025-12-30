@@ -58,7 +58,7 @@ export const metadata: Metadata = {
     site: '@HatchItD',
     creator: '@HatchItD',
     title: 'HatchIt — The Architect | AI Website Builder',
-    description: 'Initialize your next project with The Architect. A unified AI pipeline that builds, refines, and audits your code.',
+    description: 'The prompt is dead. Speak your intent. Watch the code evolve. The Singularity Interface is here.',
     images: ['/assets/og-1200x630.png'],
   },
   robots: {

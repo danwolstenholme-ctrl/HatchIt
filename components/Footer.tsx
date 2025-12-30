@@ -26,7 +26,7 @@ export default function Footer() {
               </span>
             </Link>
             <p className="text-sm text-zinc-500 leading-relaxed mb-6">
-              The AI website architect that writes real, maintainable code. No lock-in. Just standard React + Tailwind.
+              The prompt is dead. Speak your intent. Watch the code evolve. The Singularity Interface is here.
             </p>
             <div className="flex items-center gap-3">
               <a href="https://x.com/HatchItD" target="_blank" rel="noopener noreferrer" className="p-2 bg-zinc-900 border border-zinc-800 hover:border-emerald-500/30 hover:bg-zinc-800 rounded-lg transition-all group" aria-label="Twitter">
