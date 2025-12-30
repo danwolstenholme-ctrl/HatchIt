@@ -155,17 +155,9 @@ export async function POST(request: NextRequest) {
     // Call Gemini 2.5 Pro for audit
     const response = await genai.models.generateContent({
       model: 'gemini-2.5-pro-preview-06-05',
-      contents: [
-        {
-          role: 'system',
-          parts: [{ text: AUDITOR_SYSTEM_PROMPT }],
-        },
-        {
-          role: 'user',
-          parts: [{ text: `Audit this complete React + Tailwind page:\n\n${fullCode}` }],
-        },
-      ],
-      generationConfig: {
+      contents: `Audit this complete React + Tailwind page:\n\n${fullCode}`,
+      config: {
+        systemInstruction: AUDITOR_SYSTEM_PROMPT,
         temperature: 0.2, // Very low for consistent, precise output
       },
     })
