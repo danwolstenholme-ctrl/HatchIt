@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
+import { auth, currentUser } from '@clerk/nextjs/server'
 import { 
   getProjectById, 
   getSectionsByProjectId,
   getSectionById,
   skipSection as dbSkipSection,
+  getOrCreateUser,
 } from '@/lib/db'
 import { getTemplateById } from '@/lib/templates'
 
@@ -16,9 +17,18 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = await auth()
-    if (!userId) {
+    const { userId: clerkId } = await auth()
+    if (!clerkId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const user = await currentUser()
+    const email = user?.emailAddresses?.[0]?.emailAddress
+
+    // Get or create our user record to get the internal user ID
+    const dbUser = await getOrCreateUser(clerkId, email)
+    if (!dbUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
     const { id } = await params
@@ -28,8 +38,8 @@ export async function GET(
       return NextResponse.json({ error: 'Project not found' }, { status: 404 })
     }
 
-    // Verify ownership
-    if (project.user_id !== userId) {
+    // Verify ownership using internal user ID
+    if (project.user_id !== dbUser.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
