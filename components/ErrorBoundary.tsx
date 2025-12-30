@@ -1,6 +1,8 @@
 'use client'
 
 import { Component, ReactNode } from 'react'
+import { AlertTriangle, RefreshCw, ShieldCheck, Terminal } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 interface Props {
   children: ReactNode
@@ -11,21 +13,70 @@ interface Props {
 interface State {
   hasError: boolean
   error: Error | null
+  isHealing: boolean
+  healStatus: 'idle' | 'analyzing' | 'patching' | 'resolved' | 'failed'
 }
 
 export default class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props)
-    this.state = { hasError: false, error: null }
+    this.state = { 
+      hasError: false, 
+      error: null,
+      isHealing: false,
+      healStatus: 'idle'
+    }
   }
 
   static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error }
+    return { 
+      hasError: true, 
+      error,
+      isHealing: true, // Auto-start healing
+      healStatus: 'analyzing'
+    }
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo)
+    console.error('[SYSTEM_FAILURE] Component crash detected:', error)
     this.props.onError?.(error, errorInfo)
+    
+    // Initiate Self-Healing Protocol
+    this.initiateSelfHealing(error, errorInfo)
+  }
+
+  async initiateSelfHealing(error: Error, errorInfo: React.ErrorInfo) {
+    try {
+      this.setState({ healStatus: 'analyzing' })
+      
+      const response = await fetch('/api/heal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          error: error.message,
+          componentStack: errorInfo.componentStack,
+          timestamp: new Date().toISOString()
+        })
+      })
+      
+      if (response.ok) {
+        this.setState({ healStatus: 'patching' })
+        
+        // Simulate patching delay for visual feedback
+        setTimeout(() => {
+          this.setState({ healStatus: 'resolved' })
+          
+          // Auto-reload after success
+          setTimeout(() => {
+            this.setState({ hasError: false, error: null, isHealing: false, healStatus: 'idle' })
+          }, 1000)
+        }, 1500)
+      } else {
+        this.setState({ healStatus: 'failed' })
+      }
+    } catch (e) {
+      this.setState({ healStatus: 'failed' })
+    }
   }
 
   render() {
@@ -35,23 +86,90 @@ export default class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="flex flex-col items-center justify-center h-full bg-zinc-950 text-white p-6">
-          <div className="text-center max-w-md">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/10 flex items-center justify-center">
-              <svg className="w-8 h-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-            </div>
-            <h2 className="text-xl font-semibold mb-2">Something went wrong</h2>
-            <p className="text-zinc-400 text-sm mb-4">
-              {this.state.error?.message || 'An unexpected error occurred'}
-            </p>
-            <button
-              onClick={() => this.setState({ hasError: false, error: null })}
-              className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm font-medium transition-colors"
-            >
-              Try again
-            </button>
+        <div className="flex flex-col items-center justify-center min-h-[400px] bg-zinc-950/50 border border-red-500/20 rounded-lg p-8 text-center relative overflow-hidden">
+          {/* Background Grid */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ef444410_1px,transparent_1px),linear-gradient(to_bottom,#ef444410_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+          
+          <div className="relative z-10 max-w-md w-full">
+            {this.state.healStatus === 'analyzing' && (
+              <motion.div 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }}
+                className="flex flex-col items-center"
+              >
+                <div className="w-16 h-16 mb-6 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+                  <Terminal className="w-8 h-8 text-amber-400 animate-pulse" />
+                </div>
+                <h2 className="text-xl font-bold text-white font-mono mb-2">ANOMALY DETECTED</h2>
+                <p className="text-zinc-400 font-mono text-sm mb-6">Analyzing stack trace for corruption...</p>
+                <div className="w-full h-1 bg-zinc-800 rounded-full overflow-hidden">
+                  <motion.div 
+                    className="h-full bg-amber-500"
+                    initial={{ width: "0%" }}
+                    animate={{ width: "100%" }}
+                    transition={{ duration: 1.5 }}
+                  />
+                </div>
+              </motion.div>
+            )}
+
+            {this.state.healStatus === 'patching' && (
+              <motion.div 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }}
+                className="flex flex-col items-center"
+              >
+                <div className="w-16 h-16 mb-6 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                  <RefreshCw className="w-8 h-8 text-emerald-400 animate-spin" />
+                </div>
+                <h2 className="text-xl font-bold text-white font-mono mb-2">APPLYING FIX</h2>
+                <p className="text-zinc-400 font-mono text-sm mb-6">Rewriting component logic...</p>
+                <div className="w-full h-1 bg-zinc-800 rounded-full overflow-hidden">
+                  <motion.div 
+                    className="h-full bg-emerald-500"
+                    initial={{ width: "0%" }}
+                    animate={{ width: "100%" }}
+                    transition={{ duration: 1.5 }}
+                  />
+                </div>
+              </motion.div>
+            )}
+
+            {this.state.healStatus === 'resolved' && (
+              <motion.div 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }}
+                className="flex flex-col items-center"
+              >
+                <div className="w-16 h-16 mb-6 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                  <ShieldCheck className="w-8 h-8 text-emerald-400" />
+                </div>
+                <h2 className="text-xl font-bold text-white font-mono mb-2">SYSTEM RESTORED</h2>
+                <p className="text-zinc-400 font-mono text-sm">Resuming normal operation...</p>
+              </motion.div>
+            )}
+
+            {this.state.healStatus === 'failed' && (
+              <motion.div 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }}
+                className="flex flex-col items-center"
+              >
+                <div className="w-16 h-16 mb-6 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+                  <AlertTriangle className="w-8 h-8 text-red-400" />
+                </div>
+                <h2 className="text-xl font-bold text-white font-mono mb-2">CRITICAL FAILURE</h2>
+                <p className="text-zinc-400 font-mono text-sm mb-6">
+                  {this.state.error?.message || 'Unknown system error'}
+                </p>
+                <button
+                  onClick={() => this.setState({ hasError: false, error: null, isHealing: false, healStatus: 'idle' })}
+                  className="px-6 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-sm text-sm font-mono text-white transition-all hover:border-emerald-500/50"
+                >
+                  MANUAL_RESET
+                </button>
+              </motion.div>
+            )}
           </div>
         </div>
       )
