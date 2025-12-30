@@ -319,7 +319,7 @@ export default function Home() {
       
       {/* Subtle gradient orb */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -left-40 w-80 h-80 bg-purple-500/10 rounded-full blur-[100px]" />
+        <div className="absolute -top-40 -left-40 w-80 h-80 bg-purple-500/10 rounded-full blur-[100px] opacity-50 md:opacity-100" />
       </div>
       
       {/* GPU-accelerated animations */}
