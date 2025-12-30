@@ -1,69 +1,58 @@
 # 🐣 HatchIt.dev
 
-> **V1.0 - Launched December 2025**
+> **Figma Make, but the code doesn't suck.**
 
-AI-powered website builder that outputs real code. Describe what you want, watch it build, ship to production.
+The AI website builder that writes code you'd actually be proud of. Describe what you want → watch it build section by section → ship to production.
 
-## Features
+**[hatchit.dev](https://hatchit.dev)**
 
-- **AI Generation** - Describe your site in plain English, get production-ready React code
-- **Live Preview** - See your changes in real-time as you iterate
-- **Multi-page Sites** - Build complete multi-page websites with routing
-- **Code Export** - Download your full project or view/edit the code directly
-- **One-Click Deploy** - Ship to production with a custom subdomain
-- **Custom Domains** - Connect your own domain (coming soon)
+## What Makes It Different
 
-## Getting Started
+- **Three-Model AI Pipeline** - Claude Sonnet builds, Claude Opus polishes, Gemini audits
+- **Section-by-Section Building** - Watch your site come together piece by piece
+- **Real Code Output** - Production-ready React + Tailwind, not drag-and-drop blocks
+- **Live Preview** - See changes in real-time as you iterate
+- **One-Click Deploy** - Ship to `yoursite.hatchit.dev` instantly
+- **Code Export** - Download the full Next.js project, it's yours
+
+## The Pipeline
+
+```
+Your Description → Sonnet (Build) → Opus (Polish) → Gemini (Audit) → Your Site
+```
+
+Each section goes through this pipeline. You get clean, accessible, responsive code.
+
+## Tech Stack
+
+- **Framework**: Next.js 16, React 19, Turbopack
+- **Styling**: Tailwind CSS, Framer Motion
+- **AI**: Claude Sonnet 4, Claude Opus 4, Gemini 2.5 Pro
+- **Auth**: Clerk
+- **Database**: Supabase
+- **Payments**: Stripe
+- **Analytics**: Vercel Analytics
+- **Deployment**: Vercel
+
+## Local Development
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to see the app.
+Requires `.env.local` with:
+- `ANTHROPIC_API_KEY` - Claude API
+- `GEMINI_API_KEY` - Gemini API  
+- `NEXT_PUBLIC_CLERK_*` - Clerk auth
+- `STRIPE_*` - Stripe payments
+- `NEXT_PUBLIC_SUPABASE_*` - Supabase
+- `VERCEL_TOKEN` - Deploy API
 
-## Environment Variables
+## Status
 
-Create a `.env.local` file with:
+🚀 **Live** at [hatchit.dev](https://hatchit.dev)
 
-```bash
-# Authentication (Clerk)
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
-CLERK_SECRET_KEY=
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/builder
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/builder
+---
 
-# AI Generation (Anthropic)
-ANTHROPIC_API_KEY=
-
-# Payments (Stripe)
-STRIPE_SECRET_KEY=
-STRIPE_WEBHOOK_SECRET=
-STRIPE_PRICE_ID=
-STRIPE_EARLYBIRD_COUPON_ID=  # Optional: V1 Early Bird 50% off coupon
-
-# Deployment (Vercel)
-VERCEL_TOKEN=
-VERCEL_TEAM_ID=
-
-# App URL
-NEXT_PUBLIC_APP_URL=https://hatchit.dev
-
-# Live Chat (Crisp) - Optional
-NEXT_PUBLIC_CRISP_WEBSITE_ID=
-```
-
-## Tech Stack
-
-- **Framework**: Next.js 15 (App Router)
-- **UI**: React 19, Tailwind CSS, Framer Motion
-- **Auth**: Clerk
-- **Payments**: Stripe
-- **AI**: Anthropic Claude
-- **Deployment**: Vercel
-
-## License
-
-Private - All rights reserved
+Built by [@danwolstenholme-ctrl](https://github.com/danwolstenholme-ctrl)
