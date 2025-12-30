@@ -37,7 +37,9 @@ export default function Navigation() {
             ? 'py-3 bg-zinc-950/95 backdrop-blur-lg border-b border-zinc-800/50 shadow-lg' 
             : 'py-3 sm:py-5 bg-zinc-950'
         }`}
-        initial={false}
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
       >
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           {/* Logo */}
