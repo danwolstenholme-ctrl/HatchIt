@@ -55,7 +55,7 @@ import { BrandConfig } from './BrandingStep'
 import HatchCharacter, { HatchState } from './HatchCharacter'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import ThinkingLog from './ThinkingLog'
-import VoiceInput from './VoiceInput'
+import DirectLine from './DirectLine'
 
 // =============================================================================
 // SECTION BUILDER
@@ -978,16 +978,23 @@ export default function SectionBuilder({
             />
             {/* Voice Input Button */}
             <div className="absolute bottom-3 right-3 z-10">
-              <VoiceInput 
-                onTranscript={(text) => {
-                  // If we are in refinement mode (stage is complete) or an element is selected, update refinePrompt
-                  if (stage === 'complete' || selectedElement) {
-                    setRefinePrompt(prev => prev ? `${prev} ${text}` : text)
-                  } else {
-                    // Otherwise update the main prompt
-                    setPrompt(prev => prev ? `${prev} ${text}` : text)
+              <DirectLine 
+                context={{
+                  stage,
+                  prompt: stage === 'complete' ? refinePrompt : prompt,
+                  selectedElement
+                }}
+                onAction={(action, value) => {
+                  if (action === 'update_prompt') {
+                    if (stage === 'complete' || selectedElement) {
+                      setRefinePrompt(prev => prev ? `${prev} ${value}` : value)
+                    } else {
+                      setPrompt(prev => prev ? `${prev} ${value}` : value)
+                    }
+                  } else if (action === 'refine') {
+                    setRefinePrompt(value)
                   }
-                }} 
+                }}
               />
             </div>
           </div>
