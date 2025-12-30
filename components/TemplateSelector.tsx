@@ -740,9 +740,9 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                   onClick={handleStartBuilding}
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold text-lg shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 active:shadow-purple-500/30 transition-shadow min-h-[56px]"
+                  className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold text-lg shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 active:shadow-emerald-500/30 transition-shadow min-h-[56px]"
                 >
-                  Start Building →
+                  Initialize Architecture →
                 </motion.button>
               </motion.div>
             )}

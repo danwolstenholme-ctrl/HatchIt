@@ -45,9 +45,9 @@ export default function SuccessModal({ isOpen, onClose }: SuccessModalProps) {
 
         <button
           onClick={onClose}
-          className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-xl font-semibold transition-all"
+          className="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl font-semibold transition-all"
         >
-          Start Building
+          Initialize Project
         </button>
       </div>
     </div>

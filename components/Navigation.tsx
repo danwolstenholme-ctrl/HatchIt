@@ -112,10 +112,10 @@ export default function Navigation() {
             </SignedIn>
             <Link 
               href="/builder" 
-              className={`px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r ${isPaidUser ? tierColor.gradient : 'from-purple-600 to-pink-600'} hover:opacity-90 text-white rounded-lg font-medium text-xs sm:text-sm transition-all`}
+              className={`px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r ${isPaidUser ? tierColor.gradient : 'from-emerald-600 to-teal-600'} hover:opacity-90 text-white rounded-lg font-medium text-xs sm:text-sm transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)]`}
             >
-              <span className="hidden sm:inline">{isPaidUser ? 'Open Builder' : 'Start Building'}</span>
-              <span className="sm:hidden">Build</span>
+              <span className="hidden sm:inline">{isPaidUser ? 'Open Interface' : 'Initialize'}</span>
+              <span className="sm:hidden">Init</span>
             </Link>
             
             {/* Mobile Menu Button */}
@@ -167,7 +167,7 @@ export default function Navigation() {
             >
               <div className="p-5 border-b border-zinc-800 flex justify-between items-center bg-zinc-900/50">
                 <span className="font-bold text-white flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                   Menu
                 </span>
                 <button
@@ -204,7 +204,7 @@ export default function Navigation() {
               <SignedOut>
                 <div className="p-4 mt-auto border-t border-zinc-800 bg-zinc-900/30">
                   <SignInButton mode="modal">
-                    <button className="w-full py-3.5 text-center bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-xl font-semibold transition-all shadow-lg shadow-purple-900/20">
+                    <button className="w-full py-3.5 text-center bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl font-semibold transition-all shadow-lg shadow-emerald-900/20">
                       Sign In
                     </button>
                   </SignInButton>

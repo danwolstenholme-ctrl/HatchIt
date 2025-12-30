@@ -2750,9 +2750,9 @@ export default function LegacyBuilder() {
           
           <button
             onClick={handleConfirm}
-            className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-semibold rounded-xl transition-all mb-4"
+            className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-xl transition-all mb-4"
           >
-            Start Building →
+            Initialize Project →
           </button>
           
           <div className="text-center text-xs text-zinc-500">
