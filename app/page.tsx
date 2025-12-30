@@ -650,7 +650,7 @@ export default function Home() {
               </div>
             </motion.div>
 
-            {/* Sonnet */}
+            {/* Genesis Engine */}
             <motion.div 
               className="relative"
               initial={{ opacity: 0, y: 20 }}
@@ -662,13 +662,13 @@ export default function Home() {
                 <div className="w-14 h-14 bg-emerald-500/5 rounded-lg flex items-center justify-center mb-6 text-2xl group-hover:scale-110 transition-transform duration-300 border border-emerald-500/10">
                   <Cpu className="w-6 h-6 text-emerald-500" />
                 </div>
-                <div className="text-xs font-mono text-emerald-400 mb-3 tracking-wider">THE BUILDER</div>
-                <h3 className="text-xl font-bold mb-3">Core Engine</h3>
-                <p className="text-sm text-zinc-400 leading-relaxed">Writes the initial React + Tailwind code. Fast, accurate, and knows modern web standards inside out.</p>
+                <div className="text-xs font-mono text-emerald-400 mb-3 tracking-wider">THE CREATOR</div>
+                <h3 className="text-xl font-bold mb-3">Genesis Engine</h3>
+                <p className="text-sm text-zinc-400 leading-relaxed">Materializes the initial React + Tailwind structure. Powered by Gemini 2.0 Flash for instant generation.</p>
               </div>
             </motion.div>
 
-            {/* Opus */}
+            {/* The Architect */}
             <motion.div 
               className="relative"
               initial={{ opacity: 0, y: 20 }}
@@ -680,13 +680,13 @@ export default function Home() {
                 <div className="w-14 h-14 bg-teal-500/5 rounded-lg flex items-center justify-center mb-6 text-2xl group-hover:scale-110 transition-transform duration-300 border border-teal-500/10">
                   <Sparkles className="w-6 h-6 text-teal-500" />
                 </div>
-                <div className="text-xs font-mono text-teal-400 mb-3 tracking-wider">THE POLISHER</div>
+                <div className="text-xs font-mono text-teal-400 mb-3 tracking-wider">THE ARCHITECT</div>
                 <h3 className="text-xl font-bold mb-3">Refinement</h3>
-                <p className="text-sm text-zinc-400 leading-relaxed">Refines the UI. Fixes accessibility. Adds hover states, smooth animations, and responsive touches.</p>
+                <p className="text-sm text-zinc-400 leading-relaxed">Polishes the UI, ensures accessibility, and enforces design consistency across all components.</p>
               </div>
             </motion.div>
 
-            {/* Gemini */}
+            {/* The Auditor */}
             <motion.div 
               className="relative"
               initial={{ opacity: 0, y: 20 }}
