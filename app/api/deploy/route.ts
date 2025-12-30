@@ -327,8 +327,8 @@ export default function Home() {
       })
     }
 
-    // Deploy to Vercel
-    const response = await fetch('https://api.vercel.com/v13/deployments', {
+    // Deploy to Vercel (HatchIt Sites team)
+    const response = await fetch('https://api.vercel.com/v13/deployments?teamId=team_itec4dUtXYYa962mXb7ZnLGg', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${process.env.VERCEL_TOKEN}`,
