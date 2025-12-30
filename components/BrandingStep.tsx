@@ -294,12 +294,8 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
         />
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-4xl relative z-10"
-      >
-        {/* Header */}
+      <div className="w-full max-w-4xl relative z-10">
+        {/* Header */}}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <button
@@ -329,12 +325,7 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
           {/* Left Column - Brand Info */}
           <div className="space-y-4">
             {/* Brand Name & Tagline */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 }}
-              className="bg-zinc-900/60 backdrop-blur-sm border border-zinc-800 rounded-2xl p-4"
-            >
+            <div className="bg-zinc-900/60 backdrop-blur-sm border border-zinc-800 rounded-2xl p-4">
               <h3 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
                 <span>✏️</span> Brand Identity
               </h3>
@@ -360,15 +351,10 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
                   />
                 </div>
               </div>
-            </motion.div>
+            </div>
 
             {/* Logo - Upload or Generate */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.15 }}
-              className="bg-zinc-900/60 backdrop-blur-sm border border-zinc-800 rounded-2xl p-4"
-            >
+            <div className="bg-zinc-900/60 backdrop-blur-sm border border-zinc-800 rounded-2xl p-4">
               <h3 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
                 <span>🖼️</span> Logo
               </h3>
@@ -451,15 +437,10 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
                   />
                 </label>
               </div>
-            </motion.div>
+            </div>
 
             {/* Color Palette */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-zinc-900/60 backdrop-blur-sm border border-zinc-800 rounded-2xl p-4"
-            >
+            <div className="bg-zinc-900/60 backdrop-blur-sm border border-zinc-800 rounded-2xl p-4">
               <h3 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
                 <span>🎨</span> Color Palette
               </h3>
@@ -532,18 +513,13 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
                   </motion.div>
                 )}
               </AnimatePresence>
-            </motion.div>
+            </div>
           </div>
 
           {/* Right Column - Style Options */}
           <div className="space-y-4">
             {/* Font Style */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.25 }}
-              className="bg-zinc-900/60 backdrop-blur-sm border border-zinc-800 rounded-2xl p-4"
-            >
+            <div className="bg-zinc-900/60 backdrop-blur-sm border border-zinc-800 rounded-2xl p-4">
               <h3 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
                 <span>🔤</span> Font Style
               </h3>
@@ -569,15 +545,10 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
                   </button>
                 ))}
               </div>
-            </motion.div>
+            </div>
 
             {/* Style Vibe */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-              className="bg-zinc-900/60 backdrop-blur-sm border border-zinc-800 rounded-2xl p-4"
-            >
+            <div className="bg-zinc-900/60 backdrop-blur-sm border border-zinc-800 rounded-2xl p-4">
               <h3 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
                 <span>✨</span> Overall Vibe
               </h3>
@@ -597,15 +568,10 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
                   </button>
                 ))}
               </div>
-            </motion.div>
+            </div>
 
             {/* Preview Card */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.35 }}
-              className="bg-zinc-900/60 backdrop-blur-sm border border-zinc-800 rounded-2xl p-4"
-            >
+            <div className="bg-zinc-900/60 backdrop-blur-sm border border-zinc-800 rounded-2xl p-4">
               <h3 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
                 <span>👁️</span> Preview
               </h3>
@@ -658,17 +624,12 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
                   </button>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
 
         {/* Continue Button */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="mt-8 flex flex-col sm:flex-row gap-3"
-        >
+        <div className="mt-8 flex flex-col sm:flex-row gap-3">
           <button
             onClick={handleSkip}
             className="sm:w-auto px-6 py-4 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-medium transition-all border border-zinc-700"
@@ -681,11 +642,11 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
           >
             {brandName || logoPreview ? 'Continue with Branding →' : 'Continue →'}
           </button>
-        </motion.div>
+        </div>
         <p className="text-center text-sm text-zinc-500 mt-3">
           No pressure — you can always set this up later
         </p>
-      </motion.div>
+      </div>
     </div>
   )
 }

@@ -327,48 +327,30 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
         {!showSectionEditor ? (
           <motion.div
             key="grid"
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className="w-full max-w-5xl relative z-10"
           >
             <div className="text-center mb-8 md:mb-10">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.05, type: 'spring', stiffness: 200 }}
-                className="mb-3 md:mb-4"
-              >
+              <div className="mb-3 md:mb-4">
                 <div className="hidden md:block"><HatchCharacter state="excited" size="lg" /></div>
                 <div className="md:hidden"><HatchCharacter state="excited" size="md" /></div>
-              </motion.div>
-              <motion.h1 
-                className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 md:mb-4 px-2"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-              >
+              </div>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 md:mb-4 px-2">
                 What are you building?
-              </motion.h1>
-              <motion.p 
-                className="text-zinc-400 text-lg max-w-xl mx-auto"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
-              >
+              </h1>
+              <p className="text-zinc-400 text-lg max-w-xl mx-auto">
                 Choose a template to get started. You can customize every section.
-              </motion.p>
+              </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {templates.map((template, index) => {
                 const isExpanded = expandedTemplate === template.id
                 return (
-                  <motion.div
+                  <div
                     key={template.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 + index * 0.05 }}
                     className={`
                       relative rounded-2xl border transition-all duration-200 backdrop-blur-sm overflow-hidden
                       ${template.isAdvanced
@@ -496,18 +478,13 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                         </motion.div>
                       )}
                     </AnimatePresence>
-                  </motion.div>
+                  </div>
                 )
               })}
             </div>
 
             {/* AI Pipeline Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="mt-10"
-            >
+            <div className="mt-10">
               <div className="bg-zinc-900/60 backdrop-blur-sm border border-zinc-800 rounded-2xl p-4 md:p-6">
                 <div className="text-center mb-4 md:mb-5">
                   <h3 className="text-xl md:text-2xl font-semibold text-white mb-1">Powered by 4 AI Models</h3>
@@ -559,12 +536,12 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                   </motion.div>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </motion.div>
         ) : (
           <motion.div
             key="editor"
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className="w-full max-w-2xl relative z-10"
