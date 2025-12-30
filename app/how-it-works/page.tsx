@@ -1,9 +1,8 @@
 'use client'
 
-/* eslint-disable react/no-unescaped-entities */
-
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { Terminal, Cpu, Zap, Code2, ArrowRight, Database, Layers, ShieldCheck } from 'lucide-react'
 
 const sectionVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -16,104 +15,107 @@ const transition = (delay = 0) => ({
   ease: "easeOut" as const
 });
 
-const Step = ({ icon, step, title, description, delay = 0 }: { icon: string, step: string, title: string, description: string, delay?: number }) => (
+const Phase = ({ icon: Icon, phase, title, description, delay = 0 }: { icon: any, phase: string, title: string, description: string, delay?: number }) => (
   <motion.div
-    className="flex flex-col items-center text-center"
+    className="flex flex-col items-start text-left group"
     variants={sectionVariants}
     initial="hidden"
     whileInView="visible"
     viewport={{ once: true, margin: "-50px" }}
     transition={transition(delay)}
   >
-    <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/20 mb-4">
-      <span className="text-3xl">{icon}</span>
+    <div className="flex items-center justify-center w-12 h-12 rounded-sm bg-emerald-500/10 border border-emerald-500/20 mb-6 group-hover:bg-emerald-500/20 transition-colors">
+      <Icon className="w-6 h-6 text-emerald-400" />
     </div>
-    <div className="text-xs font-mono text-purple-400/60 mb-2">STEP {step}</div>
-    <h3 className="text-2xl font-bold mb-2">{title}</h3>
-    <p className="text-zinc-400">{description}</p>
+    <div className="flex items-center gap-2 mb-3">
+      <span className="text-xs font-mono text-emerald-500/60">PHASE_{phase}</span>
+      <div className="h-px w-8 bg-emerald-500/20"></div>
+    </div>
+    <h3 className="text-xl font-bold mb-3 font-mono text-white">{title}</h3>
+    <p className="text-zinc-400 text-sm leading-relaxed font-mono">{description}</p>
   </motion.div>
 );
 
 export default function HowItWorksPage() {
   return (
-    <div className="bg-zinc-950 text-white">
-      {/* Gradient orbs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-[100px] opacity-50 md:opacity-100" />
-        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-blue-500/15 rounded-full blur-[100px] opacity-50 md:opacity-100" />
-        <div className="absolute -bottom-40 left-1/3 w-80 h-80 bg-pink-500/10 rounded-full blur-[100px] opacity-50 md:opacity-100" />
-      </div>
+    <div className="min-h-screen bg-zinc-950 text-white selection:bg-emerald-500/30">
+      {/* Grid Background */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+      
+      {/* Radial Gradient */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_-30%,#10b98115,transparent)] pointer-events-none" />
 
       {/* Hero */}
-      <div className="relative px-6 pt-20 pb-24 text-center">
-        <div className="max-w-3xl mx-auto">
+      <div className="relative px-6 pt-24 pb-24">
+        <div className="max-w-4xl mx-auto">
           <motion.div
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm mb-8"
+            className="inline-flex items-center gap-2 text-emerald-400 mb-6 font-mono text-sm"
             variants={sectionVariants}
             initial="hidden"
             animate="visible"
             transition={transition()}
           >
-            <span className="text-lg">🏗️</span>
-            <span>The Process</span>
+            <Terminal className="w-4 h-4" />
+            <span>EXECUTION_SEQUENCE</span>
           </motion.div>
           
           <motion.h1 
-            className="text-5xl md:text-7xl font-bold mb-6 leading-tight"
+            className="text-4xl md:text-6xl font-bold mb-6 leading-tight font-mono tracking-tight"
             variants={sectionVariants}
             initial="hidden"
             animate="visible"
             transition={transition(0.1)}
           >
-            From Idea to Live Site
+            From Concept to <span className="text-emerald-400">Entity</span>
             <br />
-            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">
-              in Minutes
-            </span>
+            <span className="text-zinc-500">in T-Minus Seconds</span>
           </motion.h1>
           
           <motion.p 
-            className="text-xl text-zinc-400 max-w-2xl mx-auto"
+            className="text-lg text-zinc-400 max-w-2xl font-mono leading-relaxed"
             variants={sectionVariants}
             initial="hidden"
             animate="visible"
             transition={transition(0.2)}
           >
-            HatchIt streamlines the development process by turning your natural language prompts into high-quality, production-ready code. Here's how it works.
+            The System streamlines the materialization process by converting natural language directives into production-grade architecture.
           </motion.p>
         </div>
       </div>
 
-      {/* Steps */}
-      <div className="px-6 py-24 bg-zinc-900/30 border-y border-zinc-800/50">
+      {/* Phases */}
+      <div className="px-6 py-24 border-y border-zinc-800/50 bg-black/20">
         <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-8 md:gap-12 items-start">
-            <Step 
-              icon="🎨"
-              step="01"
-              title="Choose & Brand"
-              description="Pick a template (Website, Portfolio, or SaaS). Set your brand colors, fonts, and business details. Hatch uses this for every section."
+          <div className="grid md:grid-cols-3 gap-12 md:gap-16 items-start relative">
+            {/* Connecting Line */}
+            <div className="hidden md:block absolute top-6 left-0 w-full h-px bg-gradient-to-r from-emerald-500/0 via-emerald-500/20 to-emerald-500/0"></div>
+
+            <Phase 
+              icon={Layers}
+              phase="01"
+              title="Initialization"
+              description="Select a template vector (Website, Portfolio, SaaS). Define brand parameters: color hex codes, typography, and entity identity. The System enforces these constraints globally."
               delay={0}
             />
-            <Step 
-              icon="🏗️"
-              step="02"
-              title="Build Section by Section"
-              description="Work through each section one at a time. Stuck on what to say? Hatch 🥚 writes your prompts. Sonnet builds it, Opus polishes it."
+            <Phase 
+              icon={Cpu}
+              phase="02"
+              title="Fabrication"
+              description="Execute section generation sequentially. If input data is sparse, the Hatch Interface Entity will extrapolate prompts. Sonnet constructs. Opus refines."
               delay={0.1}
             />
-            <Step 
-              icon="🚀"
-              step="03"
-              title="Ship It"
-              description="One click deploys your site. Get a live URL instantly. Connect your own domain if you want. You own the code."
+            <Phase 
+              icon={Zap}
+              phase="03"
+              title="Deployment"
+              description="Instant compilation to live URL. Domain binding available. Full source code ownership retained by the Architect. No platform dependency."
               delay={0.2}
             />
           </div>
         </div>
       </div>
 
-      {/* Deeper Dive Section */}
+      {/* System Architecture */}
       <div className="px-6 py-24">
         <div className="max-w-4xl mx-auto">
           <motion.div 
@@ -124,25 +126,46 @@ export default function HowItWorksPage() {
             viewport={{ once: true }}
             transition={transition(0.1)}
           >
-            <h2 className="text-3xl font-bold text-center mb-12">The V3.0 Experience</h2>
-            <div className="space-y-8">
-              <div className="p-8 bg-zinc-900/50 border border-zinc-800 rounded-2xl">
-                <h3 className="text-xl font-bold mb-2">Three-Model Pipeline</h3>
-                <p className="text-zinc-400">
-                  We don't use one AI for everything. Claude Sonnet 4 builds fast. Claude Opus 4 polishes for accessibility and quality. Gemini 2.5 Pro audits the final result. Each model does what it's best at.
-                </p>
+            <div className="flex items-center gap-2 mb-12">
+              <Database className="w-5 h-5 text-emerald-500" />
+              <h2 className="text-2xl font-bold font-mono">System Architecture V3.0</h2>
+            </div>
+
+            <div className="grid gap-6">
+              <div className="group p-6 bg-zinc-900/30 border border-zinc-800 hover:border-emerald-500/30 transition-colors rounded-sm">
+                <div className="flex items-start gap-4">
+                  <div className="mt-1 font-mono text-emerald-500 text-xs">[01]</div>
+                  <div>
+                    <h3 className="text-lg font-bold mb-2 font-mono text-white group-hover:text-emerald-400 transition-colors">Tri-Core Neural Pipeline</h3>
+                    <p className="text-zinc-400 text-sm font-mono leading-relaxed">
+                      Distributed cognitive load. Claude Sonnet 4 handles rapid construction. Claude Opus 4 executes semantic refinement and accessibility compliance. Gemini 2.5 Pro performs final code audit.
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div className="p-8 bg-zinc-900/50 border border-zinc-800 rounded-2xl">
-                <h3 className="text-xl font-bold mb-2">Meet Hatch 🥚</h3>
-                <p className="text-zinc-400">
-                  Your friendly prompt helper. Stuck on what to say? Click the floating egg button and Hatch writes your prompts for you. She's powered by Claude Haiku and genuinely excited about your business.
-                </p>
+
+              <div className="group p-6 bg-zinc-900/30 border border-zinc-800 hover:border-emerald-500/30 transition-colors rounded-sm">
+                <div className="flex items-start gap-4">
+                  <div className="mt-1 font-mono text-emerald-500 text-xs">[02]</div>
+                  <div>
+                    <h3 className="text-lg font-bold mb-2 font-mono text-white group-hover:text-emerald-400 transition-colors">Hatch Interface Entity</h3>
+                    <p className="text-zinc-400 text-sm font-mono leading-relaxed">
+                      The bridge between Architect and System. Powered by Claude Haiku for low-latency interaction. Capable of extrapolating full prompt directives from minimal user input.
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div className="p-8 bg-zinc-900/50 border border-zinc-800 rounded-2xl">
-                <h3 className="text-xl font-bold mb-2">Real Code, Not Lock-in</h3>
-                <p className="text-zinc-400">
-                  We generate standard React and Tailwind CSS code. Export at any time as a ZIP file. Full ownership, no proprietary formats, no platform lock-in.
-                </p>
+
+              <div className="group p-6 bg-zinc-900/30 border border-zinc-800 hover:border-emerald-500/30 transition-colors rounded-sm">
+                <div className="flex items-start gap-4">
+                  <div className="mt-1 font-mono text-emerald-500 text-xs">[03]</div>
+                  <div>
+                    <h3 className="text-lg font-bold mb-2 font-mono text-white group-hover:text-emerald-400 transition-colors">Sovereign Code Output</h3>
+                    <p className="text-zinc-400 text-sm font-mono leading-relaxed">
+                      Output is standard React/Tailwind architecture. Exportable as ZIP archive. Zero proprietary lock-in. The Architect retains full sovereignty over the generated codebase.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </motion.div>
@@ -150,20 +173,25 @@ export default function HowItWorksPage() {
       </div>
 
       {/* Final CTA */}
-      <div className="px-6 py-24">
+      <div className="px-6 py-24 border-t border-zinc-800/50">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div 
-            className="relative p-12 bg-gradient-to-br from-purple-900/40 to-pink-900/30 border border-purple-500/20 rounded-3xl"
+            className="relative p-12 bg-zinc-900/30 border border-zinc-800 rounded-sm overflow-hidden group"
             variants={sectionVariants}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             transition={transition(0.2)}
           >
-            <h2 className="text-4xl sm:text-5xl font-bold mb-6">Ready to build faster?</h2>
-            <p className="text-xl text-zinc-300 mb-8">Stop writing boilerplate. Start creating.</p>
-            <Link href="/builder" className="inline-flex items-center gap-2 px-8 py-4 bg-white text-zinc-900 hover:bg-zinc-100 rounded-xl font-bold text-lg transition-all">
-              Start Building Free <span>→</span>
+            <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 font-mono relative z-10">Ready to Initialize?</h2>
+            <p className="text-zinc-400 mb-8 font-mono relative z-10">Cease manual coding. Begin materialization.</p>
+            
+            <Link href="/builder" className="relative z-10 inline-flex items-center gap-2 px-8 py-4 bg-emerald-500 text-zinc-950 hover:bg-emerald-400 rounded-sm font-bold text-lg font-mono transition-all">
+              <Code2 className="w-5 h-5" />
+              <span>INIT_BUILDER</span>
+              <ArrowRight className="w-5 h-5" />
             </Link>
           </motion.div>
         </div>

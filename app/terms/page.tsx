@@ -1,42 +1,41 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { Shield, FileText } from 'lucide-react'
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
-      {/* Gradient orbs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-[100px]" />
-        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-blue-500/15 rounded-full blur-[100px]" />
-      </div>
+    <div className="min-h-screen bg-zinc-950 text-white selection:bg-emerald-500/30">
+      {/* Grid Background */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+      
+      {/* Radial Gradient */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_-30%,#10b98115,transparent)] pointer-events-none" />
 
       {/* Hero */}
-      <section className="relative px-6 pt-20 pb-16 text-center">
+      <section className="relative px-6 pt-24 pb-16 text-center">
         <div className="max-w-3xl mx-auto">
           <motion.div
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm mb-8"
+            className="inline-flex items-center gap-2 text-emerald-400 mb-6 font-mono text-sm"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <span className="text-lg">📜</span>
-            <span>Legal Terms</span>
+            <Shield className="w-4 h-4" />
+            <span>LEGAL_PROTOCOL</span>
           </motion.div>
           
           <motion.h1 
-            className="text-5xl md:text-7xl font-bold mb-6 leading-tight"
+            className="text-4xl md:text-6xl font-bold mb-6 leading-tight font-mono tracking-tight"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">
-              Terms of Service
-            </span>
+            Terms of <span className="text-emerald-400">Service</span>
           </motion.h1>
           
           <motion.p 
-            className="text-sm text-zinc-500"
+            className="text-xs text-zinc-500 font-mono uppercase tracking-wider"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
@@ -47,74 +46,55 @@ export default function TermsPage() {
       </section>
 
       {/* Content */}
-      <div className="max-w-3xl mx-auto px-6 pb-16">
-        
-        <div className="space-y-8 text-zinc-300">
-          <section>
-            <h2 className="text-xl font-semibold text-white mb-3">1. Service Description</h2>
-            <p>HatchIt.dev is an AI-powered website builder that generates React code and deploys websites to hatchitsites.dev subdomains.</p>
-          </section>
+      <div className="max-w-3xl mx-auto px-6 pb-24 relative z-10">
+        <div className="prose prose-invert prose-zinc max-w-none prose-headings:font-mono prose-headings:text-white prose-p:text-zinc-400 prose-p:font-mono prose-p:text-sm prose-li:text-zinc-400 prose-li:font-mono prose-li:text-sm prose-strong:text-emerald-400">
+          <p>
+            Welcome to HatchIt.dev ("the System"). By accessing or using our website and services, you agree to be bound by these Terms of Service ("Terms"). If you disagree with any part of the terms, you may not access the System.
+          </p>
 
-          <section>
-            <h2 className="text-xl font-semibold text-white mb-3">2. Subscription & Billing</h2>
-            <ul className="list-disc list-inside space-y-2">
-              <li>Pro accounts are $39/month, Agency accounts are $99/month</li>
-              <li>Payment is processed securely via Stripe</li>
-              <li>Subscription renews automatically each month</li>
-              <li>One subscription covers all your projects</li>
-            </ul>
-          </section>
+          <h3>1. Access & Usage</h3>
+          <p>
+            The System grants you a limited, non-exclusive, non-transferable, and revocable license to use our services for personal or commercial purposes. You agree not to use the System for any illegal or unauthorized purpose.
+          </p>
 
-          <section>
-            <h2 className="text-xl font-semibold text-white mb-3">3. Refund Policy</h2>
-            <ul className="list-disc list-inside space-y-2">
-              <li><strong>All payments are non-refundable for the first 30 days</strong> of your subscription</li>
-              <li>This is because you receive immediate access to generated code, deployment services, and downloads</li>
-              <li>After 30 days, you may cancel anytime. Your access continues until the end of your billing period</li>
-              <li>Upon cancellation or non-renewal, deployed sites will be taken offline immediately</li>
-              <li>You retain ownership of any code you{"'"}ve downloaded</li>
-            </ul>
-          </section>
+          <h3>2. Intellectual Property</h3>
+          <p>
+            <strong>Your Content:</strong> You retain 100% ownership of all code, designs, and content generated through the System. We claim no intellectual property rights over the material you provide or the output generated for you.
+          </p>
+          <p>
+            <strong>Our System:</strong> The HatchIt.dev platform, including its interface, proprietary algorithms, and branding, remains the exclusive property of HatchIt.dev.
+          </p>
 
-          <section>
-            <h2 className="text-xl font-semibold text-white mb-3">4. Code Ownership</h2>
-            <p>All code generated through HatchIt.dev is yours. You own full rights to use, modify, and distribute it for any purpose.</p>
-          </section>
+          <h3>3. Subscription & Payments</h3>
+          <p>
+            Certain features of the System require a paid subscription. By subscribing, you agree to pay the fees indicated for that service. Payments are processed securely via Stripe. You may cancel your subscription at any time.
+          </p>
 
-          <section>
-            <h2 className="text-xl font-semibold text-white mb-3">5. Data Retention & Cancellation</h2>
-            <ul className="list-disc list-inside space-y-2">
-              <li>While subscribed, your projects and code are stored indefinitely</li>
-              <li>Upon cancellation, deployed sites are taken offline at the end of your billing period</li>
-              <li>You have <strong>30 days</strong> to request your code via email before it{"'"}s permanently deleted</li>
-              <li>After 30 days, all project data is permanently deleted</li>
-              <li>We are not responsible for recovering deleted projects</li>
-            </ul>
-          </section>
+          <h3>4. Limitation of Liability</h3>
+          <p>
+            In no event shall HatchIt.dev, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses.
+          </p>
 
-          <section>
-            <h2 className="text-xl font-semibold text-white mb-3">6. Acceptable Use</h2>
-            <ul className="list-disc list-inside space-y-2">
-              <li>Don{"'"}t use HatchIt.dev to generate illegal, harmful, or infringing content</li>
-              <li>Don{"'"}t attempt to abuse, exploit, or overload our systems</li>
-              <li>We reserve the right to terminate accounts that violate these terms</li>
-            </ul>
-          </section>
+          <h3>5. Termination</h3>
+          <p>
+            We may terminate or suspend access to our System immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms.
+          </p>
 
-          <section>
-            <h2 className="text-xl font-semibold text-white mb-3">7. Limitation of Liability</h2>
-            <p>HatchIt.dev is provided {"\"as is\""} without warranties. We{"'"}re not liable for any damages arising from use of the service.</p>
-          </section>
+          <h3>6. Governing Law</h3>
+          <p>
+            These Terms shall be governed and construed in accordance with the laws of the United States, without regard to its conflict of law provisions.
+          </p>
 
-          <section>
-            <h2 className="text-xl font-semibold text-white mb-3">8. Changes</h2>
-            <p>We may update these terms. Continued use means acceptance.</p>
-          </section>
+          <h3>7. Changes</h3>
+          <p>
+            We reserve the right, at our sole discretion, to modify or replace these Terms at any time. By continuing to access or use our System after those revisions become effective, you agree to be bound by the revised terms.
+          </p>
 
-          <section>
-            <h2 className="text-xl font-semibold text-white mb-3">Contact</h2>
-            <p>Questions? Email <a href="mailto:support@hatchit.dev" className="text-blue-400 hover:underline">support@hatchit.dev</a></p>
-          </section>
+          <div className="mt-12 pt-8 border-t border-zinc-800">
+            <p className="text-xs text-zinc-500">
+              Questions regarding these Terms should be directed to <a href="mailto:support@hatchit.dev" className="text-emerald-400 hover:underline">support@hatchit.dev</a>.
+            </p>
+          </div>
         </div>
       </div>
     </div>

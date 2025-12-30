@@ -5,6 +5,7 @@
 import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 import Link from 'next/link'
+import { Terminal, Cpu, Network, Zap, Code2, Shield } from 'lucide-react'
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
@@ -22,57 +23,59 @@ export default function AboutPage() {
   const storyInView = useInView(storyRef, { once: true, margin: "-100px" })
 
   return (
-    <div className="bg-zinc-950 text-white">
+    <div className="bg-zinc-950 text-white min-h-screen overflow-hidden">
+      {/* Matrix/Grid Background */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+
       {/* Gradient orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-[100px] opacity-50 md:opacity-100" />
-        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-blue-500/15 rounded-full blur-[100px] opacity-50 md:opacity-100" />
-        <div className="absolute -bottom-40 left-1/3 w-80 h-80 bg-pink-500/10 rounded-full blur-[100px] opacity-50 md:opacity-100" />
+        <div className="absolute -top-40 -left-40 w-80 h-80 bg-emerald-500/10 rounded-full blur-[100px] opacity-50 md:opacity-100" />
+        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-teal-500/10 rounded-full blur-[100px] opacity-50 md:opacity-100" />
+        <div className="absolute -bottom-40 left-1/3 w-80 h-80 bg-emerald-900/20 rounded-full blur-[100px] opacity-50 md:opacity-100" />
       </div>
 
       {/* Hero */}
-      <div className="relative px-6 pt-20 pb-24 text-center">
+      <div className="relative px-6 pt-20 pb-24 text-center z-10">
         <div className="max-w-3xl mx-auto">
           <motion.div
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm mb-8"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm mb-8 font-mono"
             variants={fadeIn}
             initial="hidden"
             animate="visible"
             transition={transition()}
           >
-            <span className="text-lg">🐣</span>
-            <span>The Story</span>
+            <Terminal className="w-4 h-4" />
+            <span>SYSTEM_LOG: ORIGIN</span>
           </motion.div>
           
           <motion.h1 
-            className="text-5xl md:text-7xl font-bold mb-6 leading-tight"
+            className="text-5xl md:text-7xl font-bold mb-6 leading-tight tracking-tight"
             variants={fadeIn}
             initial="hidden"
             animate="visible"
             transition={transition(0.1)}
           >
-            I didn't learn to code.
+            It wasn't built.
             <br />
-            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">
-              I learned to conduct.
+            <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
+              It was grown.
             </span>
           </motion.h1>
           
           <motion.p 
-            className="text-xl text-zinc-400 max-w-2xl mx-auto"
+            className="text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed"
             variants={fadeIn}
             initial="hidden"
             animate="visible"
             transition={transition(0.2)}
           >
-            HatchIt is proof that you don't need to be a developer to build developer-grade software. 
-            You just need to know what you want—and how to orchestrate the AI that builds it.
+            The Architect is not a tool. It is a recursive system designed to eliminate the gap between thought and code.
           </motion.p>
         </div>
       </div>
 
       {/* The Story */}
-      <div ref={storyRef} className="px-6 py-24 bg-zinc-900/30 border-y border-zinc-800/50">
+      <div ref={storyRef} className="relative px-6 py-24 border-y border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm">
         <div className="max-w-3xl mx-auto">
           <motion.div
             variants={fadeIn}
@@ -80,153 +83,88 @@ export default function AboutPage() {
             animate={storyInView ? "visible" : "hidden"}
             transition={transition()}
           >
-            <h2 className="text-3xl font-bold text-center mb-12">How HatchIt Was Built</h2>
-            <div className="space-y-6 text-lg text-zinc-300 leading-relaxed">
+            <div className="flex items-center gap-3 mb-12 justify-center">
+              <div className="h-px w-12 bg-zinc-800" />
+              <span className="text-zinc-500 font-mono text-sm uppercase tracking-widest">Initialization Sequence</span>
+              <div className="h-px w-12 bg-zinc-800" />
+            </div>
+
+            <div className="space-y-8 text-lg text-zinc-300 leading-relaxed font-light">
               <p>
-                <span className="text-white font-medium">Christmas 2025.</span> I had an idea for an AI website builder. 
-                Not another drag-and-drop template machine—something that writes real React code. 
-                Code that developers would actually want to maintain.
+                <span className="text-emerald-400 font-mono text-sm block mb-2">&gt; TIMESTAMP: DEC_2025</span>
+                The web development paradigm was broken. We were still dragging rectangles on a canvas, pretending it was engineering. Or we were writing boilerplate, pretending it was creativity.
               </p>
               <p>
-                There was one problem: I didn't know React.
+                We asked a simple question: <span className="text-white font-medium">What if the IDE could think?</span>
               </p>
               <p>
-                So I did something different. Instead of spending months learning a framework, I opened Claude 
-                and started describing what I wanted to build. Three days later, V1 was live.
+                HatchIt began as a script. A simple recursive loop that fed error logs back into the generation prompt. It was crude. It broke often. But then, it started fixing itself.
               </p>
               <p>
-                <span className="text-white font-medium">Now we're on V3.0.</span> A three-model AI pipeline where Claude Sonnet 4 builds your sections, 
-                Claude Opus 4 polishes for accessibility, and Gemini 2.5 Pro audits the final result. Plus Hatch 🥚 — your friendly 
-                egg companion who helps you write prompts when you're stuck.
+                <span className="text-emerald-400 font-mono text-sm block mb-2">&gt; CURRENT_STATE: V4.0_SINGULARITY</span>
+                Today, the Architect is a tri-core neural pipeline. 
+                <span className="text-white"> Sonnet</span> constructs the logic. 
+                <span className="text-white"> Opus</span> refines the accessibility. 
+                <span className="text-white"> Gemini</span> audits the security.
               </p>
               <p>
-                The secret isn't any single AI. It's the combination. Different models, different strengths. 
-                Section-by-section building with branding that flows through everything.
-              </p>
-              <p className="text-zinc-400 italic">
-                I built this product using this product. If that's not proof it works, I don't know what is.
+                It is no longer just a builder. It is a partner. It speaks your language, understands your intent, and manifests your vision into production-grade reality.
               </p>
             </div>
           </motion.div>
         </div>
       </div>
 
-      {/* The Philosophy */}
-      <div className="px-6 py-24">
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            className="text-center mb-12"
-            variants={fadeIn}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            transition={transition()}
-          >
-            <h2 className="text-3xl font-bold mb-4">The Philosophy</h2>
-            <p className="text-xl text-zinc-400">Code you can maintain, not code that just renders.</p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                icon: '🎯',
-                title: 'Real Code',
-                description: 'Not proprietary blocks. Standard React + Tailwind that works anywhere, maintained by anyone.',
-              },
-              {
-                icon: '🔓',
-                title: 'Zero Lock-in',
-                description: 'Export anytime. Your code, your servers, your choice. We don\'t hold your project hostage.',
-              },
-              {
-                icon: '⚡',
-                title: 'AI Orchestra',
-                description: 'Multiple models, multiple perspectives. Claude builds. Gemini audits. You decide.',
-              },
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                className="p-6 bg-zinc-900/50 border border-zinc-800 rounded-2xl"
-                variants={fadeIn}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                transition={transition(i * 0.1)}
-              >
-                <span className="text-3xl mb-4 block">{item.icon}</span>
-                <h3 className="text-xl font-bold mb-2">{item.title}</h3>
-                <p className="text-zinc-400">{item.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* The Tech */}
-      <div className="px-6 py-24 bg-zinc-900/30 border-y border-zinc-800/50">
-        <div className="max-w-4xl mx-auto text-center">
-          <motion.div
-            variants={fadeIn}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            transition={transition()}
-          >
-            <h2 className="text-3xl font-bold mb-4">The Stack</h2>
-            <p className="text-zinc-400 mb-8">Built on the latest, outputs the latest.</p>
-          </motion.div>
-          
-          <div className="flex flex-wrap justify-center gap-3">
-            {[
-              'Next.js 16',
-              'React 19',
-              'TypeScript',
-              'Tailwind CSS 4',
-              'Claude Sonnet 4',
-              'Claude Opus 4',
-              'Claude Haiku',
-              'Gemini 2.5 Pro',
-            ].map((tech, i) => (
-              <motion.span
-                key={tech}
-                className="px-4 py-2 bg-zinc-800/50 border border-zinc-700 rounded-full text-sm text-zinc-300"
-                variants={fadeIn}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                transition={transition(i * 0.05)}
-              >
-                {tech}
-              </motion.span>
-            ))}
-          </div>
+      {/* Stats/Grid */}
+      <div className="py-24 px-6 relative z-10">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+          {[
+            { icon: <Cpu className="w-6 h-6" />, label: "Neural Operations", value: "1.2M+", color: "text-emerald-400" },
+            { icon: <Code2 className="w-6 h-6" />, label: "Lines Generated", value: "850k", color: "text-teal-400" },
+            { icon: <Network className="w-6 h-6" />, label: "Self-Healing Events", value: "14k", color: "text-cyan-400" },
+          ].map((stat, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className="p-8 rounded-2xl bg-zinc-900/50 border border-zinc-800 hover:border-emerald-500/30 transition-colors text-center group"
+            >
+              <div className={`inline-flex p-3 rounded-xl bg-zinc-950 border border-zinc-800 mb-4 ${stat.color} group-hover:scale-110 transition-transform duration-300`}>
+                {stat.icon}
+              </div>
+              <div className={`text-4xl font-bold mb-2 ${stat.color}`}>{stat.value}</div>
+              <div className="text-zinc-500 font-mono text-sm uppercase tracking-wider">{stat.label}</div>
+            </motion.div>
+          ))}
         </div>
       </div>
 
       {/* The Founder */}
-      <div className="px-6 py-24">
+      <div className="px-6 py-24 relative z-10">
         <div className="max-w-3xl mx-auto">
           <motion.div
-            className="relative p-8 md:p-12 bg-gradient-to-br from-purple-900/20 to-pink-900/10 border border-purple-500/20 rounded-3xl"
+            className="relative p-8 md:p-12 bg-zinc-900/30 border border-zinc-800 rounded-3xl backdrop-blur-sm"
             variants={fadeIn}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             transition={transition()}
           >
-            <div className="absolute -left-2 -top-2 text-6xl text-purple-500/20">"</div>
-            <blockquote className="text-xl sm:text-2xl font-medium text-zinc-200 leading-relaxed mb-6">
+            <div className="absolute -left-2 -top-2 text-6xl text-emerald-500/20 font-mono">"</div>
+            <blockquote className="text-xl sm:text-2xl font-light text-zinc-200 leading-relaxed mb-6">
               The AI writes the code, I make the decisions. That's not a limitation—it's a superpower. 
               I focus on what matters: the product, the user, the vision. The implementation details? 
               That's what the machines are for.
             </blockquote>
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-xl font-bold">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-xl font-bold text-zinc-950">
                 D
               </div>
               <div>
-                <div className="font-medium">Dan</div>
-                <div className="text-sm text-zinc-500">Founder, HatchIt</div>
+                <div className="font-medium text-white">Dan</div>
+                <div className="text-sm text-emerald-400 font-mono">Founder, HatchIt</div>
               </div>
             </div>
           </motion.div>
@@ -234,7 +172,7 @@ export default function AboutPage() {
       </div>
 
       {/* CTA */}
-      <div className="px-6 py-24">
+      <div className="px-6 py-24 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
             variants={fadeIn}
@@ -243,20 +181,20 @@ export default function AboutPage() {
             viewport={{ once: true }}
             transition={transition()}
           >
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">Ready to build something?</h2>
-            <p className="text-xl text-zinc-400 mb-8">See what you can create in minutes.</p>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4 tracking-tight">Ready to initialize?</h2>
+            <p className="text-xl text-zinc-400 mb-8">The Architect is waiting for your command.</p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link
                 href="/builder"
-                className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-semibold text-lg transition-all"
+                className="px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-xl font-bold text-lg transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)]"
               >
-                Start Building
+                Initialize Builder
               </Link>
               <Link
                 href="/how-it-works"
-                className="px-8 py-4 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl font-semibold text-lg transition-all"
+                className="px-8 py-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-emerald-500/30 rounded-xl font-semibold text-lg transition-all text-zinc-300 hover:text-white"
               >
-                See How It Works
+                View Protocols
               </Link>
             </div>
           </motion.div>
