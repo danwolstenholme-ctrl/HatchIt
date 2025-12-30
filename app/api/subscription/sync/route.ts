@@ -57,9 +57,10 @@ export async function GET() {
         tier = (sub.metadata?.tier as 'pro' | 'agency') || 'pro'
       }
       
-      // Safely get period end - handle different Stripe API response formats
-      const periodEnd = sub.current_period_end || Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60
-      const periodEndDate = new Date(typeof periodEnd === 'number' ? periodEnd * 1000 : Date.now() + 30 * 24 * 60 * 60 * 1000)
+      // Safely get period end - cast to access property (search API types differ)
+      const subData = sub as unknown as { current_period_end?: number }
+      const periodEnd = subData.current_period_end || Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60
+      const periodEndDate = new Date(periodEnd * 1000)
       
       const accountSubscription: AccountSubscription = {
         tier,
@@ -154,9 +155,10 @@ export async function GET() {
       tier = (activeSubscription.metadata?.tier as 'pro' | 'agency') || 'pro'
     }
 
-    // Safely get period end
-    const periodEnd = activeSubscription.current_period_end || Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60
-    const periodEndDate = new Date(typeof periodEnd === 'number' ? periodEnd * 1000 : Date.now() + 30 * 24 * 60 * 60 * 1000)
+    // Safely get period end - cast to access property
+    const subData = activeSubscription as unknown as { current_period_end?: number }
+    const periodEnd = subData.current_period_end || Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60
+    const periodEndDate = new Date(periodEnd * 1000)
 
     const accountSubscription: AccountSubscription = {
       tier,

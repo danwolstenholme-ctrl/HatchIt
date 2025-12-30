@@ -154,7 +154,8 @@ export async function POST(req: Request) {
           
           // Get subscription details for period end
           const subscriptionResponse = await stripe.subscriptions.retrieve(subscriptionId)
-          const periodEnd = subscriptionResponse.current_period_end || Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60
+          const subData = subscriptionResponse as unknown as { current_period_end?: number }
+          const periodEnd = subData.current_period_end || Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60
           const periodEndDate = new Date(periodEnd * 1000)
           console.log(`Retrieved subscription, periodEnd: ${periodEnd}, date: ${periodEndDate.toISOString()}`)
           
@@ -371,7 +372,8 @@ export async function POST(req: Request) {
           if (accountSub?.stripeSubscriptionId === subscriptionId) {
             // Get new period end
             const subscriptionResponse = await stripe.subscriptions.retrieve(subscriptionId)
-            const periodEnd = subscriptionResponse.current_period_end || Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60
+            const subData = subscriptionResponse as unknown as { current_period_end?: number }
+            const periodEnd = subData.current_period_end || Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60
             const periodEndDate = new Date(periodEnd * 1000)
             
             await client.users.updateUser(user.id, {
