@@ -793,101 +793,28 @@ export default function SectionBuilder({
                   {/* Contact Form Instructions */}
                   {isContactSection && <ContactFormInstructions />}
 
-                  {/* Hatch Wakes Up with Suggestions! */}
-                  {(opusSuggestions.length > 0 || isLoadingSuggestions) && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      className="p-4 bg-gradient-to-br from-amber-500/10 to-yellow-500/5 border border-amber-500/20 rounded-xl"
-                    >
-                      {/* Hatch Header */}
-                      <div className="flex items-start gap-3 mb-3">
-                        <motion.div
-                          initial={{ scale: 0, rotate: -20 }}
-                          animate={{ scale: 1, rotate: 0 }}
-                          transition={{ type: 'spring', bounce: 0.5, delay: 0.2 }}
-                        >
-                          <HatchCharacter state={isLoadingSuggestions ? 'thinking' : 'excited'} size="md" />
-                        </motion.div>
-                        <div className="flex-1">
-                          <motion.div
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.3 }}
-                          >
-                            <h4 className="text-sm font-semibold text-amber-300 flex items-center gap-2">
-                              {isLoadingSuggestions ? (
-                                <>Hatch is thinking... <motion.span animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }} className="inline-block">💭</motion.span></>
-                              ) : (
-                                <>I have some ideas! ✨</>
-                              )}
-                            </h4>
-                            {!isLoadingSuggestions && (
-                              <p className="text-xs text-zinc-400 mt-0.5">
-                                Click any to apply, or write your own~
-                              </p>
-                            )}
-                          </motion.div>
-                        </div>
-                      </div>
-
-                      {/* Suggestions as speech bubbles */}
-                      <div className="space-y-2 ml-2">
-                        {opusSuggestions.map((suggestion, index) => (
-                          <motion.button
-                            key={index}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.4 + index * 0.1 }}
-                            onClick={() => handleApplySuggestion(suggestion, index)}
-                            disabled={appliedSuggestions.has(index) || isUserRefining}
-                            className={`w-full text-left p-3 rounded-xl text-sm transition-all flex items-start gap-2 ${
-                              appliedSuggestions.has(index)
-                                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                                : 'bg-zinc-800/50 text-zinc-300 hover:bg-amber-500/10 hover:text-amber-200 hover:border-amber-500/30 border border-transparent'
-                            }`}
-                          >
-                            <span className="mt-0.5 text-amber-400">
-                              {appliedSuggestions.has(index) ? '✓' : '→'}
-                            </span>
-                            <span>{suggestion}</span>
-                          </motion.button>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
+                  {/* Collapsible refinement options - hidden by default */}
                   
-                  {/* Refine Prompt Input */}
-                  <div className="mt-4">
-                    <label className="text-xs font-medium text-zinc-400 mb-2 block">
-                      {opusSuggestions.length > 0 ? 'Or tell me what to change:' : 'Want changes? Tell me what to tweak:'}
-                    </label>
-                    <div className="flex gap-2">
-                      <textarea
-                        ref={refineTextareaRef}
+                  {/* Compact Refine Input - cleaner */}
+                  <div className="flex gap-2 items-end">
+                    <div className="flex-1">
+                      <label className="text-xs text-zinc-500 mb-1 block">Want changes? Tell me what to tweak:</label>
+                      <input
+                        type="text"
                         value={refinePrompt}
                         onChange={(e) => setRefinePrompt(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && refinePrompt.trim() && handleUserRefine()}
                         disabled={isUserRefining}
-                        placeholder="e.g., Make the buttons larger, change the color to blue..."
-                        className="flex-1 min-h-[60px] max-h-[100px] bg-zinc-900/50 border border-zinc-800 rounded-lg p-3 text-sm text-white placeholder-zinc-600 resize-none focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 disabled:opacity-50"
+                        placeholder="e.g., Make the buttons larger..."
+                        className="w-full bg-zinc-900/50 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-amber-500/50 disabled:opacity-50"
                       />
                     </div>
                     <button
                       onClick={handleUserRefine}
                       disabled={!refinePrompt.trim() || isUserRefining}
-                      className="w-full mt-2 py-2.5 rounded-xl bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/30 text-amber-300 text-sm font-medium hover:from-amber-500/30 hover:to-yellow-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      className="px-4 py-2 rounded-lg bg-amber-500/20 border border-amber-500/30 text-amber-300 text-sm font-medium hover:bg-amber-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                     >
-                      {isUserRefining ? (
-                        <>
-                          <HatchCharacter state="thinking" size="sm" />
-                          <span>Refining...</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>🥚</span>
-                          <span>Refine Section</span>
-                        </>
-                      )}
+                      {isUserRefining ? '...' : 'Refine'}
                     </button>
                   </div>
 
@@ -972,29 +899,29 @@ export default function SectionBuilder({
                     </motion.div>
                   )}
 
-                  {/* Review prompt */}
-                  <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
-                    <p className="text-xs text-emerald-400 text-center">
-                      👀 Review the preview and make any refinements before continuing
-                    </p>
-                  </div>
-                  
-                  {/* Next Section Button */}
-                  {!isLastSection && (
+                  {/* Clear Next Section CTA */}
+                  {!isLastSection ? (
                     <button
                       onClick={onNextSection}
-                      className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold hover:shadow-lg hover:shadow-emerald-500/20 transition-all"
+                      className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-lg hover:shadow-lg hover:shadow-emerald-500/20 transition-all"
                     >
                       Looks good! Continue to Next Section →
                     </button>
+                  ) : (
+                    <button
+                      onClick={onNextSection}
+                      className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-500 to-purple-500 text-white font-bold text-lg hover:shadow-lg hover:shadow-violet-500/20 transition-all"
+                    >
+                      🎉 Finish & Review Full Site
+                    </button>
                   )}
                   
-                  {/* Rebuild Button */}
+                  {/* Rebuild - subtle */}
                   <button
                     onClick={handleRebuild}
-                    className="w-full py-2 text-sm text-red-400/70 hover:text-red-400 transition-colors flex items-center justify-center gap-1"
+                    className="w-full py-2 text-xs text-zinc-600 hover:text-red-400 transition-colors"
                   >
-                    <span>🔄</span> Start Over (Rebuild from scratch)
+                    🔄 Start Over
                   </button>
                 </motion.div>
               )}
@@ -1002,26 +929,16 @@ export default function SectionBuilder({
           </div>
         </div>
 
-        {/* Tips & AI Pipeline Info */}
-        <div className="p-4 bg-zinc-900/30 border-t border-zinc-800 flex-shrink-0">
-          <h4 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">
-            AI Pipeline
-          </h4>
-          <ul className="text-xs text-zinc-600 space-y-1">
-            <li className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-              <span><strong className="text-emerald-400">Sonnet</strong> builds your section</span>
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-violet-500"></span>
-              <span><strong className="text-violet-400">Opus</strong> polishes accessibility & details</span>
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-              <span><strong className="text-blue-400">Gemini</strong> audits final site consistency</span>
-            </li>
-          </ul>
-        </div>
+        {/* Minimal AI Pipeline Info - only show during input stage */}
+        {stage === 'input' && (
+          <div className="px-4 py-3 bg-zinc-900/30 border-t border-zinc-800 flex-shrink-0">
+            <div className="flex items-center gap-4 text-xs text-zinc-500">
+              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Sonnet builds</span>
+              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-violet-500"></span> Opus polishes</span>
+              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Gemini audits</span>
+            </div>
+          </div>
+        )}
 
         {/* Prompt Helper Mini-Chat Modal */}
         <AnimatePresence>

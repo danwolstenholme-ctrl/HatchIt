@@ -377,6 +377,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     const dbSection = getCurrentDbSection()
     if (!currentSection || !dbSection) return
 
+    // Save completion state but DON'T auto-advance - let user review first
     const newState: BuildState = {
       ...buildState,
       completedSections: [...buildState.completedSections, currentSection.id],
@@ -385,7 +386,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       sectionChanges: refinementChanges 
         ? { ...buildState.sectionChanges, [currentSection.id]: refinementChanges }
         : buildState.sectionChanges,
-      currentSectionIndex: buildState.currentSectionIndex + 1,
+      // DON'T auto-increment: currentSectionIndex stays the same
+      // User clicks "Next Section" to advance via handleNextSection
     }
 
     setDbSections(prev => 
@@ -397,14 +399,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     )
 
     setBuildState(newState)
-
-    if (newState.currentSectionIndex >= selectedTemplate.sections.length) {
-      setPhase('review')
-      localStorage.removeItem('hatch_current_project')
-      if (!demoMode) {
-        await fetch(`/api/project/${project.id}/build`, { method: 'POST' }).catch(console.error)
-      }
-    }
+    // No auto-advance to review - user clicks "Finish & Review" button
   }
 
   const handleSkipSection = async () => {
@@ -921,28 +916,69 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
                     initial={{ opacity: 0, scale: 0.9, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                    className="bg-zinc-900 border border-zinc-700 rounded-2xl p-8 max-w-md w-full text-center"
+                    className="bg-zinc-900 border border-zinc-700 rounded-2xl p-8 max-w-lg w-full"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: 'spring', bounce: 0.5, delay: 0.2 }}
-                      className="text-6xl mb-4"
-                    >
-                      🎉
-                    </motion.div>
-                    <h2 className="text-2xl font-bold text-white mb-2">Your site is live!</h2>
-                    <p className="text-zinc-400 mb-6">Congratulations! Your website has been deployed.</p>
-                    <a
-                      href={deployedUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-emerald-500/20 transition-all"
-                    >
-                      🌐 Visit Your Site
-                    </a>
-                    <p className="text-sm text-zinc-500 mt-4 break-all">{deployedUrl}</p>
+                    <div className="text-center">
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: 'spring', bounce: 0.5, delay: 0.2 }}
+                        className="text-6xl mb-4"
+                      >
+                        🎉
+                      </motion.div>
+                      <h2 className="text-2xl font-bold text-white mb-2">Your site is live!</h2>
+                      <p className="text-zinc-400 mb-4">Congratulations! Your website has been deployed.</p>
+                      <a
+                        href={deployedUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-emerald-500/20 transition-all"
+                      >
+                        🌐 Visit Your Site
+                      </a>
+                      <p className="text-xs text-zinc-500 mt-3 break-all">{deployedUrl}</p>
+                    </div>
+
+                    {/* Next Steps */}
+                    <div className="mt-6 pt-6 border-t border-zinc-800">
+                      <h3 className="text-sm font-semibold text-zinc-300 mb-3">What's Next?</h3>
+                      <div className="space-y-2">
+                        <a
+                          href={`${deployedUrl}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 p-3 bg-zinc-800/50 hover:bg-zinc-800 rounded-lg transition-colors text-left"
+                        >
+                          <span className="text-lg">🔗</span>
+                          <div>
+                            <p className="text-sm font-medium text-white">Share your site</p>
+                            <p className="text-xs text-zinc-500">Copy the URL and share with your audience</p>
+                          </div>
+                        </a>
+                        <button
+                          onClick={() => setDeployedUrl(null)}
+                          className="w-full flex items-center gap-3 p-3 bg-zinc-800/50 hover:bg-zinc-800 rounded-lg transition-colors text-left"
+                        >
+                          <span className="text-lg">✏️</span>
+                          <div>
+                            <p className="text-sm font-medium text-white">Keep editing</p>
+                            <p className="text-xs text-zinc-500">Make more changes and redeploy anytime</p>
+                          </div>
+                        </button>
+                        <button
+                          onClick={handleStartFresh}
+                          className="w-full flex items-center gap-3 p-3 bg-zinc-800/50 hover:bg-zinc-800 rounded-lg transition-colors text-left"
+                        >
+                          <span className="text-lg">🚀</span>
+                          <div>
+                            <p className="text-sm font-medium text-white">Build another site</p>
+                            <p className="text-xs text-zinc-500">Start a new project from scratch</p>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
                   </motion.div>
                 </motion.div>
               )}
