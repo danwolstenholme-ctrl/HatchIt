@@ -365,24 +365,24 @@ export default function Home() {
           </div>
 
           {/* Main headline */}
-          <div className="text-center mb-6">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black leading-[1] sm:leading-[0.95] tracking-tight mb-6">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black leading-[0.95] sm:leading-[0.9] tracking-tighter mb-6">
               <motion.span 
                 className="block"
                 style={{ willChange: 'transform, opacity' }}
                 initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
+                transition={{ duration: 0.5, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
                 viewport={{ once: true }}
               >
                 Describe it.
               </motion.span>
               <motion.span 
-                className="block bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent"
+                className="block bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent pb-2"
                 style={{ willChange: 'transform, opacity' }}
                 initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+                transition={{ duration: 0.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
                 viewport={{ once: true }}
               >
                 Watch it build.
@@ -392,7 +392,7 @@ export default function Home() {
                 style={{ willChange: 'transform, opacity' }}
                 initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+                transition={{ duration: 0.5, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
                 viewport={{ once: true }}
               >
                 Ship it.
@@ -632,47 +632,71 @@ export default function Home() {
         </div>
       </Section>
 
-      {/* HOW IT WORKS - 3 Steps */}
+      {/* HOW IT WORKS - The AI Pipeline */}
       <Section className="px-6 py-24 bg-zinc-900/30">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl sm:text-5xl font-bold mb-4">Three steps. Infinite possibilities.</h2>
-            <p className="text-xl text-zinc-400">From idea to live website in minutes.</p>
+            <h2 className="text-4xl sm:text-5xl font-bold mb-4">Not just one AI. A team.</h2>
+            <p className="text-xl text-zinc-400 max-w-2xl mx-auto">Most builders use a single model for everything. We orchestrate three specialists to build, polish, and audit your code.</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              { step: '01', title: 'Describe', description: 'Choose your site type, set your brand colors, then describe each section. Stuck? Hatch writes your prompts for you.', icon: '💭' },
-              { step: '02', title: 'Build', description: 'Watch Sonnet generate code live. Opus auto-polishes for accessibility. Get AI suggestions to make it even better.', icon: '⚡' },
-              { step: '03', title: 'Ship', description: 'One click. Live URL. Your site is on the internet. Connect your domain if you want.', icon: '🚀' },
-            ].map((item, i) => (
-              <div key={i} className="relative">
-                <motion.div 
-                  className="relative z-10 text-center md:text-left"
-                  style={{ willChange: 'transform, opacity' }}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: i * 0.15, ease: [0.25, 0.1, 0.25, 1] }}
-                >
-                  <motion.div 
-                    className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/20 mb-4 gpu-accelerate"
-                    style={{ willChange: 'transform' }}
-                    whileHover={{ scale: 1.1, borderColor: 'rgba(168, 85, 247, 0.5)' }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-                  >
-                    <span className="text-3xl">{item.icon}</span>
-                  </motion.div>
-                  <div className="text-xs font-mono text-purple-400/60 mb-2">STEP {item.step}</div>
-                  <h3 className="text-2xl font-bold mb-2">{item.title}</h3>
-                  <p className="text-zinc-400">{item.description}</p>
-                </motion.div>
+          <div className="relative grid md:grid-cols-3 gap-8">
+            {/* Connecting Line (Desktop) */}
+            <div className="hidden md:block absolute top-8 left-[16%] right-[16%] h-0.5 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-amber-500/20" />
+            
+            {/* Sonnet */}
+            <motion.div 
+              className="relative"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0 }}
+            >
+              <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-8 rounded-2xl hover:border-purple-500/30 transition-colors group">
+                <div className="w-16 h-16 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6 text-3xl group-hover:scale-110 transition-transform duration-300">🏗️</div>
+                <div className="text-xs font-mono text-purple-400 mb-3 tracking-wider">THE BUILDER</div>
+                <h3 className="text-2xl font-bold mb-3">Claude Sonnet 3.5</h3>
+                <p className="text-zinc-400 leading-relaxed">Writes the initial React + Tailwind code. Fast, accurate, and knows modern web standards inside out.</p>
               </div>
-            ))}
+            </motion.div>
+
+            {/* Opus */}
+            <motion.div 
+              className="relative"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+            >
+              <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-8 rounded-2xl hover:border-pink-500/30 transition-colors group">
+                <div className="w-16 h-16 bg-pink-500/10 rounded-2xl flex items-center justify-center mb-6 text-3xl group-hover:scale-110 transition-transform duration-300">✨</div>
+                <div className="text-xs font-mono text-pink-400 mb-3 tracking-wider">THE DESIGNER</div>
+                <h3 className="text-2xl font-bold mb-3">Claude Opus</h3>
+                <p className="text-zinc-400 leading-relaxed">Polishes the UI. Fixes accessibility. Adds hover states, smooth animations, and responsive touches.</p>
+              </div>
+            </motion.div>
+
+            {/* Gemini */}
+            <motion.div 
+              className="relative"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+            >
+              <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-8 rounded-2xl hover:border-amber-500/30 transition-colors group">
+                <div className="w-16 h-16 bg-amber-500/10 rounded-2xl flex items-center justify-center mb-6 text-3xl group-hover:scale-110 transition-transform duration-300">🛡️</div>
+                <div className="text-xs font-mono text-amber-400 mb-3 tracking-wider">THE AUDITOR</div>
+                <h3 className="text-2xl font-bold mb-3">Gemini 1.5 Pro</h3>
+                <p className="text-zinc-400 leading-relaxed">Reviews the code for bugs, security issues, and performance bottlenecks before you ship.</p>
+              </div>
+            </motion.div>
           </div>
 
-          <div className="text-center mt-12">
-            <Link href="/how-it-works" className="inline-flex items-center gap-2 text-purple-400 hover:text-purple-300 font-medium transition-colors">Detailed walkthrough <span>→</span></Link>
+          <div className="text-center mt-16">
+            <Link href="/how-it-works" className="inline-flex items-center gap-2 text-zinc-400 hover:text-white font-medium transition-colors border-b border-transparent hover:border-white pb-0.5">
+              See the full architecture <span>→</span>
+            </Link>
           </div>
         </div>
       </Section>
@@ -865,6 +889,25 @@ export default function Home() {
               </Link>
               <p className="text-sm text-zinc-500 mt-4">No credit card • No signup required to try</p>
             </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* COMMUNITY / SOCIAL PROOF */}
+      <Section className="px-6 py-24 border-t border-zinc-800 bg-zinc-950">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl font-bold mb-12">Built by developers, for developers.</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-12 opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
+             {/* Placeholders for "Featured on Product Hunt", "Hacker News", etc. since we don't have real logos yet */}
+             <div className="flex items-center justify-center font-bold text-xl hover:text-orange-500 transition-colors cursor-default">Product Hunt</div>
+             <div className="flex items-center justify-center font-bold text-xl hover:text-orange-600 transition-colors cursor-default">Hacker News</div>
+             <div className="flex items-center justify-center font-bold text-xl hover:text-blue-400 transition-colors cursor-default">Twitter / X</div>
+             <div className="flex items-center justify-center font-bold text-xl hover:text-red-500 transition-colors cursor-default">Reddit</div>
+          </div>
+          <div className="mt-12">
+            <a href="https://x.com/HatchItD" target="_blank" rel="noopener noreferrer" className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
+              Join the conversation on X →
+            </a>
           </div>
         </div>
       </Section>
