@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
+import { auth, currentUser } from '@clerk/nextjs/server'
 import { GoogleGenAI } from '@google/genai'
 import { 
   getLatestBuild, 
   updateBuildAudit,
   createBuild,
   getProjectById,
+  getOrCreateUser,
 } from '@/lib/db'
 
 // =============================================================================
@@ -105,8 +106,8 @@ Be thorough but practical. Focus on real issues, not nitpicks.`
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth()
-    if (!userId) {
+    const { userId: clerkId } = await auth()
+    if (!clerkId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -116,6 +117,13 @@ export async function POST(request: NextRequest) {
         { error: 'Audit feature is currently unavailable. Please try again later.' },
         { status: 503 }
       )
+    }
+
+    const user = await currentUser()
+    const email = user?.emailAddresses?.[0]?.emailAddress
+    const dbUser = await getOrCreateUser(clerkId, email)
+    if (!dbUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
     const body = await request.json()
@@ -128,9 +136,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verify project ownership
+    // Verify project ownership using internal user ID
     const project = await getProjectById(projectId)
-    if (!project || project.user_id !== userId) {
+    if (!project || project.user_id !== dbUser.id) {
       return NextResponse.json(
         { error: 'Project not found' },
         { status: 404 }

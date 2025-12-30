@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
-import { getLatestBuild, updateBuildAudit, getProjectById } from '@/lib/db'
+import { auth, currentUser } from '@clerk/nextjs/server'
+import { getLatestBuild, updateBuildAudit, getProjectById, getOrCreateUser } from '@/lib/db'
 import { GoogleGenAI } from '@google/genai'
 
 // =============================================================================
@@ -56,8 +56,8 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = await auth()
-    if (!userId) {
+    const { userId: clerkId } = await auth()
+    if (!clerkId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -69,11 +69,18 @@ export async function POST(
       )
     }
 
+    const user = await currentUser()
+    const email = user?.emailAddresses?.[0]?.emailAddress
+    const dbUser = await getOrCreateUser(clerkId, email)
+    if (!dbUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
     const { id: projectId } = await params
 
-    // Verify ownership
+    // Verify ownership using internal user ID
     const project = await getProjectById(projectId)
-    if (!project || project.user_id !== userId) {
+    if (!project || project.user_id !== dbUser.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

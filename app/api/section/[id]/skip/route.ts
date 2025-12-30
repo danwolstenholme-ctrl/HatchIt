@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
-import { skipSection, getSectionById, getProjectById } from '@/lib/db'
+import { auth, currentUser } from '@clerk/nextjs/server'
+import { skipSection, getSectionById, getProjectById, getOrCreateUser } from '@/lib/db'
 
 // =============================================================================
 // POST: Skip a section
@@ -10,9 +10,16 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = await auth()
-    if (!userId) {
+    const { userId: clerkId } = await auth()
+    if (!clerkId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const user = await currentUser()
+    const email = user?.emailAddresses?.[0]?.emailAddress
+    const dbUser = await getOrCreateUser(clerkId, email)
+    if (!dbUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
     const { id: sectionId } = await params
@@ -23,7 +30,7 @@ export async function POST(
       return NextResponse.json({ error: 'Section not found' }, { status: 404 })
     }
     const project = await getProjectById(existingSection.project_id)
-    if (!project || project.user_id !== userId) {
+    if (!project || project.user_id !== dbUser.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

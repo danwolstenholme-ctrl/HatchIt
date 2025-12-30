@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth, clerkClient } from '@clerk/nextjs/server'
+import { auth, clerkClient, currentUser } from '@clerk/nextjs/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { PRO_OPUS_MONTHLY_LIMIT, AccountSubscription } from '@/types/subscriptions'
-import { getProjectById, getSectionById } from '@/lib/db'
+import { getProjectById, getSectionById, getOrCreateUser } from '@/lib/db'
 
 // =============================================================================
 // OPUS 4.5 - THE REFINER
@@ -138,6 +138,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const clerkUser = await currentUser()
+    const email = clerkUser?.emailAddresses?.[0]?.emailAddress
+    const dbUser = await getOrCreateUser(userId, email)
+    if (!dbUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
     const body = await request.json()
     const { sectionId, code, sectionType, sectionName, userPrompt, refineRequest } = body
 
@@ -148,13 +155,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verify ownership: section -> project -> user
+    // Verify ownership: section -> project -> user (using internal ID)
     const section = await getSectionById(sectionId)
     if (!section) {
       return NextResponse.json({ error: 'Section not found' }, { status: 404 })
     }
     const project = await getProjectById(section.project_id)
-    if (!project || project.user_id !== userId) {
+    if (!project || project.user_id !== dbUser.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
