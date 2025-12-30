@@ -33,7 +33,59 @@ export async function GET() {
     const existingSubscription = user.publicMetadata?.accountSubscription as AccountSubscription | null
     const userEmail = user.emailAddresses?.[0]?.emailAddress
     
-    // If no customer ID, try to find by email
+    // Strategy 1: Search subscriptions directly by userId in metadata
+    // This handles cases where payment email differs from signup email
+    console.log('Searching for subscription with metadata.userId:', userId)
+    const subscriptionsByMetadata = await stripe.subscriptions.search({
+      query: `metadata["userId"]:"${userId}" AND status:"active"`,
+      limit: 1,
+    })
+    
+    if (subscriptionsByMetadata.data[0]) {
+      const sub = subscriptionsByMetadata.data[0]
+      console.log('Found subscription by userId metadata:', sub.id)
+      customerId = sub.customer as string
+      
+      // Determine tier
+      const priceId = sub.items.data[0]?.price?.id
+      let tier: 'pro' | 'agency' = 'pro'
+      if (priceId === process.env.STRIPE_AGENCY_PRICE_ID) {
+        tier = 'agency'
+      } else if (priceId === process.env.STRIPE_PRO_PRICE_ID) {
+        tier = 'pro'
+      } else {
+        tier = (sub.metadata?.tier as 'pro' | 'agency') || 'pro'
+      }
+      
+      const periodEnd = (sub as unknown as { current_period_end: number }).current_period_end
+      
+      const accountSubscription: AccountSubscription = {
+        tier,
+        stripeSubscriptionId: sub.id,
+        stripeCustomerId: customerId,
+        status: 'active',
+        currentPeriodEnd: new Date(periodEnd * 1000).toISOString(),
+        createdAt: new Date().toISOString(),
+      }
+      
+      await client.users.updateUser(userId, {
+        publicMetadata: {
+          ...user.publicMetadata,
+          stripeCustomerId: customerId,
+          accountSubscription,
+          opusRefinementsUsed: 0,
+          opusRefinementsResetDate: new Date(periodEnd * 1000).toISOString(),
+        },
+      })
+      
+      return NextResponse.json({
+        synced: true,
+        message: `Successfully synced ${tier} subscription (found by userId)`,
+        subscription: accountSubscription
+      })
+    }
+    
+    // Strategy 2: If no customer ID, try to find by email
     if (!customerId && userEmail) {
       console.log('No stripeCustomerId, searching by email:', userEmail)
       const customers = await stripe.customers.list({
@@ -50,7 +102,7 @@ export async function GET() {
     if (!customerId) {
       return NextResponse.json({ 
         synced: false,
-        message: 'No Stripe customer found for this account.',
+        message: 'No Stripe subscription found for this account. Make sure the subscription metadata contains your userId.',
         subscription: null
       })
     }
