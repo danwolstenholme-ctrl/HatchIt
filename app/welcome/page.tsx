@@ -25,6 +25,7 @@ const tierConfig = {
     title: 'Protocol: INITIATE',
     subtitle: "Access granted. System resources allocated.",
     description: "You have been granted basic access to the Architect's tools. Prove your worth to unlock higher functions.",
+    price: '$0 / mo',
     ctaText: 'Initialize Builder',
     ctaUrl: '/builder',
     gradient: 'from-zinc-600 to-zinc-400',
@@ -41,6 +42,7 @@ const tierConfig = {
     title: "Protocol: ARCHITECT",
     subtitle: 'Full neural link established.',
     description: "You are now one with the system. Create, deploy, and manifest without limits. The code obeys your thought.",
+    price: '$29 / mo',
     ctaText: 'Enter the Matrix',
     ctaUrl: '/builder',
     gradient: 'from-emerald-500 to-teal-500',
@@ -59,6 +61,7 @@ const tierConfig = {
     title: 'Protocol: DEMIURGE',
     subtitle: 'Reality distortion field active.',
     description: "You build worlds for others. White-label the Architect and deploy fleets of sites. You are the system administrator.",
+    price: '$199 / mo',
     ctaText: 'Access Control Plane',
     ctaUrl: '/builder',
     gradient: 'from-amber-400 to-orange-500',
@@ -294,6 +297,24 @@ function WelcomeContent() {
         >
           {config.title}
         </motion.h1>
+
+        {/* Price Tag (New) */}
+        {/* @ts-ignore */}
+        {config.price && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3 }}
+            className={`inline-block px-4 py-1 rounded-full border border-white/10 bg-white/5 text-sm font-mono mb-6 ${
+              tier === 'agency' ? 'text-amber-400' :
+              tier === 'pro' ? 'text-emerald-400' :
+              'text-zinc-400'
+            }`}
+          >
+            {/* @ts-ignore */}
+            {config.price}
+          </motion.div>
+        )}
 
         {/* Subtitle with gradient */}
         <motion.p
