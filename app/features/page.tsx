@@ -16,19 +16,7 @@ function useIsClient() {
 // Custom hook to detect reduced motion preference - uses useSyncExternalStore to prevent hydration mismatch
 function useReducedMotion() {
   const prefersReducedMotion = useFramerReducedMotion()
-  
-  const subscribe = (callback: () => void) => {
-    window.addEventListener('resize', callback)
-    return () => window.removeEventListener('resize', callback)
-  }
-  
-  const isMobile = useSyncExternalStore(
-    subscribe,
-    () => window.innerWidth < 768,
-    () => false // Server returns false to prevent hydration mismatch
-  )
-  
-  return prefersReducedMotion || isMobile
+  return prefersReducedMotion
 }
 
 // Animated card that prevents hydration flash
