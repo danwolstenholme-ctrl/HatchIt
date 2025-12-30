@@ -1,5 +1,3 @@
-import { auth } from '@clerk/nextjs/server'
-import { redirect } from 'next/navigation'
 import ErrorBoundary from '@/components/ErrorBoundary'
 
 export default async function BuilderLayout({
@@ -7,11 +5,8 @@ export default async function BuilderLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { userId } = await auth()
-  
-  if (!userId) {
-    redirect('/sign-in')
-  }
+  // Allow unauthenticated users - they'll get demo mode
+  // Auth check happens in BuildFlowController for project persistence
   
   return <ErrorBoundary>{children}</ErrorBoundary>
 }
