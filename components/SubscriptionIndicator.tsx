@@ -86,18 +86,18 @@ export function SubscriptionBadge({ showRenewal = true, compact = false }: { sho
     <motion.div 
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      className={`flex items-center gap-2 px-3 py-1.5 rounded-xl ${tierColor.bgSubtle} border ${tierColor.border}`}
+      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg ${tierColor.bgSubtle} border ${tierColor.border}`}
     >
-      <span className="text-base">{tierEmoji}</span>
-      <div className="flex flex-col">
-        <span className={`text-sm font-semibold bg-gradient-to-r ${tierColor.gradient} bg-clip-text text-transparent`}>
+      <span className="text-sm">{tierEmoji}</span>
+      <div className="flex flex-col leading-tight">
+        <span className={`text-xs font-semibold bg-gradient-to-r ${tierColor.gradient} bg-clip-text text-transparent`}>
           {tierName}
         </span>
         {showRenewal && daysUntilRenewal !== null && (
-          <span className="text-[10px] text-zinc-500">
+          <span className="text-[9px] text-zinc-500">
             {daysUntilRenewal <= 0 ? 'Renews today' : 
-             daysUntilRenewal === 1 ? 'Renews tomorrow' : 
-             `${daysUntilRenewal} days left`}
+             daysUntilRenewal === 1 ? 'Tomorrow' : 
+             `${daysUntilRenewal}d left`}
           </span>
         )}
       </div>

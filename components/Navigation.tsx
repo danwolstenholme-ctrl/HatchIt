@@ -107,7 +107,7 @@ export default function Navigation() {
                   afterSignOutUrl="/"
                   appearance={{
                     elements: {
-                      avatarBox: `w-8 h-8 sm:w-9 sm:h-9 ${isPaidUser ? `ring-2 ring-offset-2 ring-offset-zinc-950 ${tier === 'agency' ? 'ring-amber-500' : 'ring-purple-500'}` : ''}`
+                      avatarBox: `w-7 h-7 sm:w-8 sm:h-8 ${isPaidUser ? `ring-[1.5px] ring-offset-1 ring-offset-zinc-950 ${tier === 'agency' ? 'ring-amber-500/70' : 'ring-purple-500/70'}` : ''}`
                     }
                   }}
                 />
@@ -115,7 +115,7 @@ export default function Navigation() {
             </SignedIn>
             <Link 
               href="/builder" 
-              className={`px-3 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r ${isPaidUser ? tierColor.gradient : 'from-purple-600 to-pink-600'} hover:opacity-90 text-white rounded-lg font-semibold text-sm transition-all`}
+              className={`px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r ${isPaidUser ? tierColor.gradient : 'from-purple-600 to-pink-600'} hover:opacity-90 text-white rounded-lg font-medium text-xs sm:text-sm transition-all`}
             >
               <span className="hidden sm:inline">{isPaidUser ? 'Open Builder' : 'Start Building'}</span>
               <span className="sm:hidden">Build</span>

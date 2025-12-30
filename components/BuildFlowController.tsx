@@ -190,6 +190,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const [deployedUrl, setDeployedUrl] = useState<string | null>(null)
   const [reviewDeviceView, setReviewDeviceView] = useState<'mobile' | 'tablet' | 'desktop'>('desktop')
   const [editingSectionIndex, setEditingSectionIndex] = useState<number | null>(null)
+  const [justCreatedProjectId, setJustCreatedProjectId] = useState<string | null>(null)
 
   // Get account subscription from user metadata
   const accountSubscription = useMemo(() => {
@@ -206,6 +207,11 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
   // Check for existing project on mount (from URL or localStorage)
   useEffect(() => {
+    // Skip if we just created this project - don't reload it
+    if (existingProjectId && existingProjectId === justCreatedProjectId) {
+      return
+    }
+    
     if (existingProjectId) {
       loadExistingProject(existingProjectId)
     } else {
@@ -215,7 +221,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
         loadExistingProject(savedProjectId)
       }
     }
-  }, [existingProjectId])
+  }, [existingProjectId, justCreatedProjectId])
 
   const loadExistingProject = async (projectId: string) => {
     setIsLoading(true)
@@ -351,6 +357,9 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       setDbSections(dbSectionsData)
       setBuildState(createInitialBuildState(selectedTemplate.id))
       setPhase('building')
+      
+      // Mark this project as just created so we don't reload it when URL changes
+      setJustCreatedProjectId(newProject.id)
       
       // Persist project ID in URL and localStorage
       router.replace(`/builder?project=${newProject.id}`, { scroll: false })
@@ -604,6 +613,11 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   }
 
   if (isLoading) {
+    // Show different message depending on if we're loading existing vs creating new
+    const loadingMessage = phase === 'branding' || phase === 'select' 
+      ? 'Setting up your project...' 
+      : 'Resuming your project...'
+    
     return (
       <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center gap-4">
         <motion.div
@@ -611,7 +625,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
           transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
           className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full"
         />
-        <p className="text-zinc-400 text-sm">Resuming your project...</p>
+        <p className="text-zinc-400 text-sm">{loadingMessage}</p>
       </div>
     )
   }
