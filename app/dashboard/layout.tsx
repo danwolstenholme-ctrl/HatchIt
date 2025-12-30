@@ -2,6 +2,8 @@ import { ReactNode } from 'react'
 import Link from 'next/link'
 import { Activity, Box, Cpu, Globe, History, LayoutGrid, Palette, Settings, Shield, Target, Users } from 'lucide-react'
 
+import SystemStatus from '@/components/SystemStatus'
+
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans selection:bg-emerald-500/30">
@@ -57,6 +59,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               <h1 className="font-mono text-sm text-zinc-400">AGENCY_CONTROL_PLANE // <span className="text-emerald-400">ACTIVE</span></h1>
             </div>
             <div className="flex items-center gap-4">
+              <SystemStatus />
               <div className="text-xs font-mono text-zinc-500">v2.0.4-SINGULARITY</div>
             </div>
           </header>

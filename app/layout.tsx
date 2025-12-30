@@ -6,6 +6,7 @@ import ConditionalNavigation from "@/components/ConditionalNavigation";
 import Footer from "@/components/Footer";
 import ConditionalAnalytics from "@/components/ConditionalAnalytics";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
+import TheSubconscious from "@/components/TheSubconscious";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -76,6 +77,7 @@ export default function RootLayout({
       <html lang="en">
         <body>
           <SubscriptionProvider>
+            <TheSubconscious />
             <ServiceWorkerRegistration />
             <ConditionalNavigation />
             {children}
