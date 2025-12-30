@@ -77,7 +77,11 @@ function NavItem({ href, icon, label, active }: { href: string; icon: ReactNode;
   return (
     <Link 
       href={href}
-      className={}
+      className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all ${
+        active 
+          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+          : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900'
+      }`}
     >
       {icon}
       {label}
