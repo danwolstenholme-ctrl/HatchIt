@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
+import { CheckCircle2, Layers, ChevronDown, Menu as MenuIcon, X, Clock, AlertCircle } from 'lucide-react'
 import { Template, BuildState } from '@/lib/templates'
 import { BrandConfig } from './BrandingStep'
 
@@ -240,11 +241,11 @@ export default function SectionProgress({
 
   return (
     <>
-    <div className="w-full bg-zinc-900/80 backdrop-blur-sm border-b border-zinc-800 relative z-50">
+    <div className="w-full bg-zinc-950 border-b border-zinc-800/50 relative z-50">
       {/* Progress Bar */}
-      <div className="h-1 bg-zinc-800">
+      <div className="h-0.5 bg-zinc-900 w-full overflow-hidden">
         <motion.div
-          className="h-full bg-gradient-to-r from-purple-500 to-pink-500"
+          className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"
           initial={{ width: 0 }}
           animate={{ width: `${progressPercent}%` }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
@@ -263,14 +264,20 @@ export default function SectionProgress({
               onViewBrand={onViewBrand}
               brandConfig={brandConfig}
             />
+            <div className="h-8 w-px bg-zinc-800/50 mx-2 hidden sm:block" />
             <div>
-              <span className="text-xs sm:text-sm font-medium text-white">{template.name}</span>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-zinc-500">
-                  {currentSectionIndex + 1}/{totalSections}
+                <span className="text-xs sm:text-sm font-bold text-white tracking-tight">{template.name}</span>
+                <span className="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-[10px] text-zinc-500 font-mono uppercase">
+                  v3.0
                 </span>
-                <span className="text-xs text-zinc-400">
-                  {currentSection?.name || 'Complete!'}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-zinc-500 font-mono">
+                  Step {currentSectionIndex + 1}/{totalSections}
+                </span>
+                <span className="text-xs text-zinc-400 font-medium">
+                  {currentSection?.name || 'System Complete'}
                 </span>
               </div>
             </div>
@@ -278,7 +285,7 @@ export default function SectionProgress({
         </div>
 
         {/* Center: Section Dots */}
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-1.5">
           {sections.map((section, index) => {
             const isCompleted = completedSections.includes(section.id)
             const isSkipped = skippedSections.includes(section.id)
@@ -292,65 +299,57 @@ export default function SectionProgress({
                   onClick={() => onSectionClick?.(index)}
                   disabled={!isCompleted && !isSkipped && !isCurrent}
                   className={`
-                    w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium
-                    transition-all duration-200 cursor-pointer
+                    w-8 h-8 rounded-lg flex items-center justify-center text-xs font-medium
+                    transition-all duration-200 cursor-pointer border
                     ${isCurrent
-                      ? 'bg-purple-500 text-white ring-2 ring-purple-400 ring-offset-2 ring-offset-zinc-900'
+                      ? 'bg-purple-500/10 border-purple-500/50 text-purple-400 shadow-[0_0_10px_rgba(168,85,247,0.2)]'
                       : isCompleted
-                        ? 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30'
+                        ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20'
                         : isSkipped
-                          ? 'bg-zinc-700 text-zinc-500 hover:bg-zinc-600'
-                          : 'bg-zinc-800 text-zinc-500 opacity-50 cursor-not-allowed'
+                          ? 'bg-zinc-900 border-zinc-800 text-zinc-600'
+                          : 'bg-zinc-900 border-zinc-800 text-zinc-700 opacity-50 cursor-not-allowed'
                     }
                   `}
-                  whileHover={isCompleted || isSkipped || isCurrent ? { scale: 1.1 } : {}}
+                  whileHover={isCompleted || isSkipped || isCurrent ? { scale: 1.05 } : {}}
                   whileTap={isCompleted || isSkipped || isCurrent ? { scale: 0.95 } : {}}
-                  animate={isCurrent ? {
-                    boxShadow: [
-                      '0 0 0 0 rgba(16, 185, 129, 0.4)',
-                      '0 0 0 8px rgba(16, 185, 129, 0)',
-                      '0 0 0 0 rgba(16, 185, 129, 0)'
-                    ]
-                  } : {}}
-                  transition={isCurrent ? {
-                    duration: 1.5,
-                    repeat: Infinity,
-                    ease: 'easeOut'
-                  } : {}}
                 >
                   {isCompleted ? (
-                    <span className="flex items-center">
-                      ✓
+                    <div className="relative">
+                      <CheckCircle2 className="w-4 h-4" />
                       {isRefined && (
                         <motion.span
                           initial={{ opacity: 0, scale: 0 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          className="absolute -top-1 -right-1 w-3 h-3 bg-violet-500 rounded-full"
+                          className="absolute -top-1 -right-1 w-2 h-2 bg-violet-500 rounded-full border border-zinc-950"
                         />
                       )}
-                    </span>
+                    </div>
                   ) : isSkipped ? (
-                    '–'
+                    <span className="text-lg leading-none">-</span>
                   ) : (
-                    index + 1
+                    <span className="font-mono">{index + 1}</span>
                   )}
                 </motion.button>
 
                 {/* Tooltip - shows below */}
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
                   {/* Arrow pointing up */}
                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-[-1px] border-4 border-transparent border-b-zinc-800" />
-                  <div className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm whitespace-nowrap shadow-xl">
-                    <div className="font-medium text-white">{section.name}</div>
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm whitespace-nowrap shadow-xl">
+                    <div className="font-medium text-white text-xs font-mono uppercase tracking-wider">{section.name}</div>
                     {section.required && (
-                      <div className="text-xs text-amber-400">Required</div>
+                      <div className="text-[10px] text-amber-400 mt-0.5 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        Required Module
+                      </div>
                     )}
                     {isCompleted && isRefined && changes && changes.length > 0 && (
-                      <div className="mt-1 pt-1 border-t border-zinc-700">
-                        <div className="text-xs text-violet-400 flex items-center gap-1">
-                          ✓ Polished
+                      <div className="mt-2 pt-2 border-t border-zinc-800">
+                        <div className="text-xs text-violet-400 flex items-center gap-1 font-medium">
+                          <CheckCircle2 className="w-3 h-3" />
+                          Opus Polished
                         </div>
-                        <ul className="text-xs text-zinc-400 mt-1 space-y-0.5">
+                        <ul className="text-[10px] text-zinc-400 mt-1 space-y-0.5 font-mono">
                           {changes.slice(0, 3).map((change, i) => (
                             <li key={i}>• {change}</li>
                           ))}
@@ -367,30 +366,32 @@ export default function SectionProgress({
         {/* Mobile: Section drawer trigger */}
         <button
           onClick={() => setShowMobileDrawer(true)}
-          className="md:hidden flex items-center gap-2 px-4 py-2.5 rounded-lg bg-zinc-800 text-zinc-300 text-sm min-h-[44px] active:bg-zinc-700 transition-colors"
+          className="md:hidden flex items-center gap-2 px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 text-sm active:bg-zinc-800 transition-colors"
           aria-label="View all sections"
         >
-          <span className="font-medium">{currentSectionIndex + 1}/{totalSections}</span>
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
+          <Layers className="w-4 h-4" />
+          <span className="font-mono text-xs">{currentSectionIndex + 1}/{totalSections}</span>
+          <ChevronDown className="w-3 h-3 text-zinc-500" />
         </button>
 
         {/* Right: Skip Button (for optional sections) */}
-        <div className="hidden sm:flex items-center gap-3">
+        <div className="hidden sm:flex items-center gap-4">
           {currentSection && !currentSection.required && (
             <motion.button
               onClick={onSkip}
-              className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors px-3 py-1.5 rounded-lg hover:bg-zinc-800"
+              className="text-xs font-mono text-zinc-500 hover:text-zinc-300 transition-colors px-3 py-1.5 rounded-lg hover:bg-zinc-900 border border-transparent hover:border-zinc-800"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              Skip →
+              Skip Module →
             </motion.button>
           )}
           
-          <div className="text-sm text-zinc-500">
-            {progressPercent}%
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800">
+            <Clock className="w-3 h-3 text-zinc-500" />
+            <span className="text-xs font-mono text-zinc-400">
+              {progressPercent}%
+            </span>
           </div>
         </div>
       </div>
@@ -403,11 +404,9 @@ export default function SectionProgress({
           animate={{ opacity: 1, y: 0 }}
           className="hidden sm:block px-4 pb-3 -mt-1"
         >
-          <p className="text-sm text-zinc-400">
+          <p className="text-xs text-zinc-500 font-mono max-w-2xl truncate">
+            <span className="text-purple-400 mr-2">❯</span>
             {currentSection.description}
-          </p>
-          <p className="text-xs text-zinc-500 mt-1">
-            ⏱ {currentSection.estimatedTime}
           </p>
         </motion.div>
       )}
@@ -448,30 +447,31 @@ export function SectionCompleteIndicator({
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="flex items-center gap-3 bg-zinc-800/50 rounded-lg px-4 py-3 border border-zinc-700"
+      className="flex items-center gap-3 bg-zinc-900/50 rounded-lg px-4 py-3 border border-zinc-800"
     >
-      <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
-        <span className="text-purple-400">✓</span>
+      <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
       </div>
       
       <div className="flex-1">
-        <div className="text-sm font-medium text-white">{sectionName} complete</div>
+        <div className="text-sm font-medium text-white font-mono">{sectionName} Module Complete</div>
         
         {wasRefined ? (
           <div className="group relative inline-block">
-            <span className="text-xs text-violet-400 flex items-center gap-1 cursor-help">
-              ✓ Polished
+            <span className="text-xs text-violet-400 flex items-center gap-1 cursor-help font-mono mt-1">
+              <CheckCircle2 className="w-3 h-3" />
+              Opus 4.5 Polished
               {changes.length > 0 && (
-                <span className="text-zinc-500">({changes.length} improvements)</span>
+                <span className="text-zinc-500">({changes.length} optimizations)</span>
               )}
             </span>
             
             {/* Tooltip with changes */}
             {changes.length > 0 && (
               <div className="absolute bottom-full left-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                <div className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-xs whitespace-nowrap shadow-xl">
-                  <div className="font-medium text-violet-400 mb-1">Opus improvements:</div>
-                  <ul className="text-zinc-300 space-y-0.5">
+                <div className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs whitespace-nowrap shadow-xl">
+                  <div className="font-medium text-violet-400 mb-1 font-mono">Opus 4.5 Optimizations:</div>
+                  <ul className="text-zinc-400 space-y-0.5 font-mono">
                     {changes.map((change, i) => (
                       <li key={i}>• {change}</li>
                     ))}
@@ -481,7 +481,7 @@ export function SectionCompleteIndicator({
             )}
           </div>
         ) : (
-          <span className="text-xs text-zinc-500">Code was already good 🐣</span>
+          <span className="text-xs text-zinc-500 font-mono mt-1">Architecture verified stable</span>
         )}
       </div>
     </motion.div>
@@ -592,8 +592,8 @@ export function MobileSectionDrawer({
                       </span>
                     )}
                     {isRefined && (
-                      <span className="text-xs bg-violet-500/20 text-violet-400 px-2 py-0.5 rounded">
-                        Polished
+                      <span className="text-[10px] bg-violet-500/10 text-violet-400 border border-violet-500/20 px-1.5 py-0.5 rounded font-mono">
+                        Opus 4.5
                       </span>
                     )}
                   </div>

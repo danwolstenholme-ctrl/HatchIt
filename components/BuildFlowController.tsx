@@ -6,6 +6,28 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
+import { 
+  Layers, 
+  Box, 
+  Cpu, 
+  Smartphone, 
+  Tablet, 
+  Monitor, 
+  ArrowLeft, 
+  Globe, 
+  Rocket, 
+  CheckCircle2, 
+  AlertCircle, 
+  RefreshCw, 
+  Home,
+  Layout,
+  Maximize2,
+  Minimize2,
+  Share2,
+  Edit3,
+  Plus,
+  Terminal
+} from 'lucide-react'
 import TemplateSelector from './TemplateSelector'
 import BrandingStep, { BrandConfig } from './BrandingStep'
 import SectionProgress from './SectionProgress'
@@ -139,9 +161,11 @@ function FullSitePreviewFrame({ code, deviceView }: { code: string; deviceView: 
     return (
       <div className="w-full h-full flex items-center justify-center bg-zinc-950">
         <div className="text-center">
-          <div className="text-6xl mb-4">🐣</div>
-          <h3 className="text-lg font-semibold text-zinc-400 mb-2">No sections completed</h3>
-          <p className="text-sm text-zinc-500">Complete some sections to see your site preview</p>
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+            <Layers className="w-8 h-8 text-zinc-600" />
+          </div>
+          <h3 className="text-lg font-mono font-semibold text-zinc-400 mb-2">System Initializing</h3>
+          <p className="text-sm text-zinc-600 font-mono">Awaiting architectural components...</p>
         </div>
       </div>
     )
@@ -877,62 +901,63 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col h-screen overflow-hidden"
+            className="flex flex-col h-screen overflow-hidden bg-zinc-950"
           >
             {/* Review Header */}
-            <div className="flex-shrink-0 border-b border-zinc-800 bg-zinc-900/50">
+            <div className="flex-shrink-0 border-b border-zinc-800/50 bg-zinc-950">
               <div className="px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <button
                     onClick={handleGoHome}
-                    className="text-zinc-500 hover:text-white transition-colors"
+                    className="text-zinc-500 hover:text-white transition-colors flex items-center gap-2 text-sm font-medium"
                   >
-                    ← Home
+                    <ArrowLeft className="w-4 h-4" />
+                    <span>Dashboard</span>
                   </button>
-                  <div className="h-6 w-px bg-zinc-700" />
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl">🐣</span>
-                    <h1 className="text-lg font-semibold text-white">{project?.name || 'Your Site'}</h1>
+                  <div className="h-6 w-px bg-zinc-800" />
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+                      <Layout className="w-4 h-4 text-purple-400" />
+                    </div>
+                    <h1 className="text-lg font-bold text-white tracking-tight">{project?.name || 'Untitled Project'}</h1>
                   </div>
-                  <span className="px-2 py-1 text-xs font-medium bg-emerald-500/20 text-emerald-400 rounded-full">
-                    ✓ All sections complete
-                  </span>
+                  <div className="flex items-center gap-2 px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span className="text-xs font-mono text-emerald-400 uppercase tracking-wider">System Online</span>
+                  </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <button
                     onClick={handleStartFresh}
-                    className="px-3 py-2 text-sm text-zinc-400 hover:text-white transition-colors"
+                    className="px-3 py-2 text-sm text-zinc-400 hover:text-white transition-colors font-mono"
                   >
-                    Start New Project
+                    New Project
                   </button>
                   {deployedUrl ? (
                     <a
                       href={deployedUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-4 py-2 text-sm bg-emerald-500/20 text-emerald-400 rounded-xl hover:bg-emerald-500/30 transition-colors flex items-center gap-2"
+                      className="px-4 py-2 text-sm bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg hover:bg-emerald-500/20 transition-colors flex items-center gap-2 font-medium"
                     >
-                      <span>🌐</span> View Live Site
+                      <Globe className="w-4 h-4" />
+                      <span>View Live Site</span>
                     </a>
                   ) : (
                     <button
                       onClick={handleDeploy}
                       disabled={isDeploying || !assembledCode}
-                      className="px-4 py-2 text-sm bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-emerald-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      className="px-4 py-2 text-sm bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-lg hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 group"
                     >
                       {isDeploying ? (
                         <>
-                          <motion.span
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                            className="inline-block"
-                          >⚡</motion.span>
-                          Deploying...
+                          <RefreshCw className="w-4 h-4 animate-spin" />
+                          <span>Deploying System...</span>
                         </>
                       ) : (
                         <>
-                          <span>🚀</span>
-                          {isPaidUser ? 'Deploy Now' : 'Hatch & Deploy'}
+                          <Rocket className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />
+                          <span>{isPaidUser ? 'Deploy to Production' : 'Initialize Deployment'}</span>
                         </>
                       )}
                     </button>
@@ -941,7 +966,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
               </div>
               {error && (
                 <div className="px-6 pb-3">
-                  <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2">
+                  <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4" />
                     {error}
                   </div>
                 </div>
@@ -951,11 +977,11 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
             {/* Main Content - Split Panel */}
             <div className="flex-1 flex min-h-0 overflow-hidden">
               {/* Left Panel - Section List */}
-              <div className="w-80 border-r border-zinc-800 flex flex-col bg-zinc-900/30 overflow-hidden">
-                <div className="p-4 border-b border-zinc-800">
-                  <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wider">Sections</h2>
+              <div className="w-80 border-r border-zinc-800/50 flex flex-col bg-zinc-900/20 overflow-hidden">
+                <div className="p-4 border-b border-zinc-800/50">
+                  <h2 className="text-xs font-mono text-zinc-500 uppercase tracking-wider">Architecture Modules</h2>
                 </div>
-                <div className="flex-1 overflow-auto p-2">
+                <div className="flex-1 overflow-auto p-2 space-y-1">
                   {templateForBuild.sections.map((section, index) => {
                     const isCompleted = buildState.completedSections.includes(section.id)
                     const isSkipped = buildState.skippedSections.includes(section.id)
@@ -968,30 +994,32 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
                             setEditingSectionIndex(index)
                           }
                         }}
-                        className={`w-full text-left p-3 rounded-xl mb-2 transition-all ${
+                        className={`w-full text-left p-3 rounded-lg mb-1 transition-all group ${
                           editingSectionIndex === index
-                            ? 'bg-emerald-500/20 border border-emerald-500/30'
+                            ? 'bg-purple-500/10 border border-purple-500/20'
                             : isCompleted
-                            ? 'bg-zinc-800/50 hover:bg-zinc-800 border border-transparent'
-                            : 'bg-zinc-800/30 border border-transparent opacity-50'
+                            ? 'hover:bg-zinc-800/50 border border-transparent'
+                            : 'opacity-50 cursor-not-allowed border border-transparent'
                         }`}
                       >
                         <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm ${
+                          <div className={`w-6 h-6 rounded flex items-center justify-center text-xs font-mono ${
                             isCompleted 
-                              ? 'bg-emerald-500/20 text-emerald-400' 
+                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
                               : isSkipped
-                              ? 'bg-zinc-700 text-zinc-500'
-                              : 'bg-zinc-700 text-zinc-500'
+                              ? 'bg-zinc-800 text-zinc-500 border border-zinc-700'
+                              : 'bg-zinc-800 text-zinc-500 border border-zinc-700'
                           }`}>
-                            {isCompleted ? '✓' : isSkipped ? '—' : index + 1}
+                            {isCompleted ? <CheckCircle2 className="w-3.5 h-3.5" /> : index + 1}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-sm font-medium text-white truncate">{section.name}</h3>
-                            <p className="text-xs text-zinc-500">
-                              {isCompleted ? 'Click to edit' : isSkipped ? 'Skipped' : 'Pending'}
-                            </p>
+                            <h3 className={`text-sm font-medium truncate ${
+                              editingSectionIndex === index ? 'text-purple-300' : 'text-zinc-300 group-hover:text-white'
+                            }`}>{section.name}</h3>
                           </div>
+                          {isCompleted && (
+                            <Edit3 className="w-3.5 h-3.5 text-zinc-600 group-hover:text-zinc-400" />
+                          )}
                         </div>
                       </button>
                     )
@@ -999,71 +1027,81 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
                 </div>
                 
                 {/* Run Audit Button */}
-                <div className="p-4 border-t border-zinc-800">
+                <div className="p-4 border-t border-zinc-800/50 bg-zinc-900/30">
                   <button
                     onClick={handleRunAudit}
                     disabled={isAuditRunning}
-                    className="w-full py-2.5 text-sm bg-violet-500/20 text-violet-300 rounded-xl hover:bg-violet-500/30 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="w-full py-3 text-sm bg-zinc-800 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-700 hover:text-white transition-all flex items-center justify-center gap-2 disabled:opacity-50 group"
                   >
                     {isAuditRunning ? (
                       <>
-                        <motion.span
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                        >🔍</motion.span>
-                        Running Audit...
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span className="font-mono">Running Gemini 2.5 Diagnostics...</span>
                       </>
                     ) : (
                       <>
-                        <span>🔍</span>
-                        Run Site Audit
+                        <Terminal className="w-4 h-4 text-zinc-500 group-hover:text-zinc-300" />
+                        <span className="font-mono">Run System Audit</span>
                       </>
                     )}
                   </button>
                   {buildState.finalAuditComplete && (
-                    <p className="text-xs text-emerald-400 text-center mt-2">
-                      ✓ Audit complete - {buildState.finalAuditChanges?.length || 0} improvements made
-                    </p>
+                    <div className="mt-3 flex items-center justify-center gap-2 text-xs text-emerald-400 font-mono bg-emerald-500/10 py-1.5 rounded border border-emerald-500/20">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Optimized: {buildState.finalAuditChanges?.length || 0} improvements</span>
+                    </div>
                   )}
                 </div>
               </div>
 
               {/* Right Panel - Full Site Preview */}
-              <div className="flex-1 flex flex-col bg-zinc-900/30 min-h-0">
+              <div className="flex-1 flex flex-col bg-zinc-950 min-h-0 relative">
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+                
                 {/* Preview Header with Device Toggle */}
-                <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
-                  <h3 className="text-sm font-medium text-zinc-400">Full Site Preview</h3>
-                  <div className="flex items-center gap-1 bg-zinc-800 rounded-lg p-1">
+                <div className="p-4 border-b border-zinc-800/50 flex items-center justify-between relative z-10 bg-zinc-950/80 backdrop-blur-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <h3 className="text-xs font-mono text-zinc-500 uppercase tracking-wider">Live Preview Environment</h3>
+                  </div>
+                  
+                  <div className="flex items-center bg-zinc-900 rounded-lg p-1 border border-zinc-800">
                     {(['mobile', 'tablet', 'desktop'] as const).map((device) => (
                       <button
                         key={device}
                         onClick={() => setReviewDeviceView(device)}
-                        className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                        className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${
                           reviewDeviceView === device
-                            ? 'bg-zinc-700 text-white'
+                            ? 'bg-zinc-800 text-white shadow-sm'
                             : 'text-zinc-500 hover:text-zinc-300'
                         }`}
                       >
-                        {device === 'mobile' ? '📱' : device === 'tablet' ? '📱' : '🖥️'} {device.charAt(0).toUpperCase() + device.slice(1)}
+                        {device === 'mobile' ? <Smartphone className="w-3.5 h-3.5" /> : 
+                         device === 'tablet' ? <Tablet className="w-3.5 h-3.5" /> : 
+                         <Monitor className="w-3.5 h-3.5" />}
+                        <span className="hidden sm:inline">{device.charAt(0).toUpperCase() + device.slice(1)}</span>
                       </button>
                     ))}
                   </div>
                 </div>
 
                 {/* Preview Container */}
-                <div className="flex-1 flex items-start justify-center overflow-auto bg-zinc-950 p-4">
+                <div className="flex-1 flex items-start justify-center overflow-auto p-8 relative z-0">
                   <motion.div
                     initial={false}
                     animate={{ 
                       width: reviewDeviceView === 'mobile' ? '375px' : reviewDeviceView === 'tablet' ? '768px' : '100%' 
                     }}
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                    className="h-full bg-zinc-900 rounded-lg overflow-hidden shadow-2xl"
+                    className={`h-full bg-zinc-900 rounded-xl overflow-hidden shadow-2xl border border-zinc-800 transition-all duration-500 ${
+                      reviewDeviceView === 'mobile' ? 'border-[8px] border-zinc-800 rounded-[2rem]' : 
+                      reviewDeviceView === 'tablet' ? 'border-[8px] border-zinc-800 rounded-[1.5rem]' : ''
+                    }`}
                     style={{ maxWidth: '100%', minHeight: '100%' }}
                   >
                     {reviewDeviceView !== 'desktop' && (
-                      <div className="h-6 bg-zinc-800 flex items-center justify-center gap-1 border-b border-zinc-700">
-                        <div className="w-16 h-1 bg-zinc-600 rounded-full" />
+                      <div className="h-6 bg-zinc-800 flex items-center justify-center gap-1 border-b border-zinc-700/50">
+                        <div className="w-16 h-1 bg-zinc-700 rounded-full" />
                       </div>
                     )}
                     <FullSitePreviewFrame 
@@ -1082,72 +1120,78 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                  className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
                   onClick={() => setDeployedUrl(null)}
                 >
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                    className="bg-zinc-900 border border-zinc-700 rounded-2xl p-8 max-w-lg w-full"
+                    className="bg-zinc-950 border border-zinc-800 rounded-2xl p-8 max-w-lg w-full shadow-2xl relative overflow-hidden"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <div className="text-center">
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent pointer-events-none" />
+                    
+                    <div className="text-center relative z-10">
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         transition={{ type: 'spring', bounce: 0.5, delay: 0.2 }}
-                        className="text-6xl mb-4"
+                        className="w-20 h-20 mx-auto mb-6 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center"
                       >
-                        🎉
+                        <Rocket className="w-10 h-10 text-emerald-400" />
                       </motion.div>
-                      <h2 className="text-2xl font-bold text-white mb-2">Your site is live!</h2>
-                      <p className="text-zinc-400 mb-4">Congratulations! Your website has been deployed.</p>
+                      <h2 className="text-2xl font-bold text-white mb-2">System Deployed Successfully</h2>
+                      <p className="text-zinc-400 mb-6">Your architecture is now live and accessible worldwide.</p>
                       <a
                         href={deployedUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-emerald-500/20 transition-all"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-xl hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all group"
                       >
-                        🌐 Visit Your Site
+                        <Globe className="w-5 h-5" />
+                        <span>Visit Live Site</span>
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                       </a>
-                      <p className="text-xs text-zinc-500 mt-3 break-all">{deployedUrl}</p>
+                      <div className="mt-4 p-3 bg-zinc-900/50 border border-zinc-800 rounded-lg flex items-center justify-between gap-3">
+                        <code className="text-xs text-zinc-400 font-mono truncate">{deployedUrl}</code>
+                        <button 
+                          onClick={() => {
+                            navigator.clipboard.writeText(deployedUrl)
+                          }}
+                          className="text-zinc-500 hover:text-white transition-colors"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
 
                     {/* Next Steps */}
-                    <div className="mt-6 pt-6 border-t border-zinc-800">
-                      <h3 className="text-sm font-semibold text-zinc-300 mb-3">What's Next?</h3>
+                    <div className="mt-8 pt-6 border-t border-zinc-800 relative z-10">
+                      <h3 className="text-xs font-mono text-zinc-500 uppercase tracking-wider mb-4">Next Actions</h3>
                       <div className="space-y-2">
-                        <a
-                          href={`${deployedUrl}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-3 p-3 bg-zinc-800/50 hover:bg-zinc-800 rounded-lg transition-colors text-left"
-                        >
-                          <span className="text-lg">🔗</span>
-                          <div>
-                            <p className="text-sm font-medium text-white">Share your site</p>
-                            <p className="text-xs text-zinc-500">Copy the URL and share with your audience</p>
-                          </div>
-                        </a>
                         <button
                           onClick={() => setDeployedUrl(null)}
-                          className="w-full flex items-center gap-3 p-3 bg-zinc-800/50 hover:bg-zinc-800 rounded-lg transition-colors text-left"
+                          className="w-full flex items-center gap-3 p-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg transition-colors text-left group"
                         >
-                          <span className="text-lg">✏️</span>
+                          <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                            <Edit3 className="w-4 h-4 text-purple-400" />
+                          </div>
                           <div>
-                            <p className="text-sm font-medium text-white">Keep editing</p>
-                            <p className="text-xs text-zinc-500">Make more changes and redeploy anytime</p>
+                            <p className="text-sm font-medium text-white group-hover:text-purple-300 transition-colors">Continue Development</p>
+                            <p className="text-xs text-zinc-500">Refine and update your architecture</p>
                           </div>
                         </button>
                         <button
                           onClick={handleStartFresh}
-                          className="w-full flex items-center gap-3 p-3 bg-zinc-800/50 hover:bg-zinc-800 rounded-lg transition-colors text-left"
+                          className="w-full flex items-center gap-3 p-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg transition-colors text-left group"
                         >
-                          <span className="text-lg">🚀</span>
+                          <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                            <Plus className="w-4 h-4 text-blue-400" />
+                          </div>
                           <div>
-                            <p className="text-sm font-medium text-white">Build another site</p>
-                            <p className="text-xs text-zinc-500">Start a new project from scratch</p>
+                            <p className="text-sm font-medium text-white group-hover:text-blue-300 transition-colors">Initialize New Project</p>
+                            <p className="text-xs text-zinc-500">Start a fresh build sequence</p>
                           </div>
                         </button>
                       </div>
