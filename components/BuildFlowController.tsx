@@ -623,7 +623,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full"
+          className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full"
         />
         <p className="text-zinc-400 text-sm">{loadingMessage}</p>
       </div>

@@ -86,7 +86,7 @@ const generateMockCode = (sectionType: string, sectionName: string, userPrompt: 
     </p>
     <div className="mt-10 grid md:grid-cols-3 gap-6">
       <div className="p-6 bg-zinc-900 rounded-2xl border border-zinc-800">
-        <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center mb-4">
+        <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center mb-4">
           <span className="text-2xl">🐣</span>
         </div>
         <h3 className="text-lg font-semibold text-white mb-2">Feature One</h3>
@@ -641,25 +641,29 @@ export default function SectionBuilder({
 
   return (
     <div className="flex-1 flex flex-col md:flex-row min-h-0 max-h-full overflow-hidden">
-      {/* Mobile Tab Switcher */}
+      {/* Mobile Tab Switcher - larger touch targets */}
       <div className="flex md:hidden border-b border-zinc-800 bg-zinc-900">
         <button
           onClick={() => setMobileTab('input')}
-          className={`flex-1 py-3 text-sm font-medium transition-colors ${
+          className={`flex-1 py-4 text-base font-medium transition-colors min-h-[52px] active:bg-zinc-800 ${
             mobileTab === 'input' 
-              ? 'text-white border-b-2 border-emerald-500 bg-zinc-800/50' 
-              : 'text-zinc-400'
+              ? 'text-white border-b-2 border-purple-500 bg-zinc-800/50' 
+              : 'text-zinc-400 hover:text-zinc-300'
           }`}
+          aria-selected={mobileTab === 'input'}
+          role="tab"
         >
           ✏️ Build
         </button>
         <button
           onClick={() => setMobileTab('preview')}
-          className={`flex-1 py-3 text-sm font-medium transition-colors ${
+          className={`flex-1 py-4 text-base font-medium transition-colors min-h-[52px] active:bg-zinc-800 ${
             mobileTab === 'preview' 
-              ? 'text-white border-b-2 border-emerald-500 bg-zinc-800/50' 
-              : 'text-zinc-400'
+              ? 'text-white border-b-2 border-purple-500 bg-zinc-800/50' 
+              : 'text-zinc-400 hover:text-zinc-300'
           }`}
+          aria-selected={mobileTab === 'preview'}
+          role="tab"
         >
           👁️ Preview
         </button>
@@ -675,7 +679,7 @@ export default function SectionBuilder({
         {/* Section Header */}
         <div className="p-4 lg:p-6 border-b border-zinc-800 flex-shrink-0">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
               <span className="text-lg">🐣</span>
             </div>
             <div>
@@ -698,7 +702,7 @@ export default function SectionBuilder({
             onChange={(e) => setPrompt(e.target.value)}
             disabled={stage !== 'input'}
             placeholder="Describe what you want for this section..."
-            className="flex-1 min-h-[180px] bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 disabled:opacity-50 no-swipe-navigation resize-none"
+            className="flex-1 min-h-[180px] bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 disabled:opacity-50 no-swipe-navigation resize-none"
           />
 
           {/* Hatch - Your friendly prompt helper */}
@@ -743,7 +747,7 @@ export default function SectionBuilder({
                   exit={{ opacity: 0 }}
                   onClick={handleBuildSection}
                   disabled={!prompt.trim()}
-                  className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-emerald-500/20 transition-shadow"
+                  className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-purple-500/20 active:scale-[0.98] transition-all min-h-[52px]"
                 >
                   Build Section →
                 </motion.button>
@@ -935,13 +939,13 @@ export default function SectionBuilder({
                       {/* Mobile: View Preview button */}
                       <button
                         onClick={() => setMobileTab('preview')}
-                        className="w-full py-3 rounded-xl border border-zinc-700 text-zinc-300 font-medium md:hidden hover:bg-zinc-800 transition-colors"
+                        className="w-full py-4 rounded-xl border border-zinc-700 text-zinc-300 font-medium md:hidden hover:bg-zinc-800 active:bg-zinc-700 transition-colors min-h-[52px]"
                       >
                         👁️ View Preview
                       </button>
                       <button
                         onClick={onNextSection}
-                        className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-lg hover:shadow-lg hover:shadow-emerald-500/20 transition-all"
+                        className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold text-lg hover:shadow-lg hover:shadow-purple-500/20 active:scale-[0.98] transition-all min-h-[56px]"
                       >
                         Continue to Next Section →
                       </button>
@@ -951,13 +955,13 @@ export default function SectionBuilder({
                       {/* Mobile: View Preview button */}
                       <button
                         onClick={() => setMobileTab('preview')}
-                        className="w-full py-3 rounded-xl border border-zinc-700 text-zinc-300 font-medium md:hidden hover:bg-zinc-800 transition-colors"
+                        className="w-full py-4 rounded-xl border border-zinc-700 text-zinc-300 font-medium md:hidden hover:bg-zinc-800 active:bg-zinc-700 transition-colors min-h-[52px]"
                       >
                         👁️ View Preview
                       </button>
                       <button
                         onClick={onNextSection}
-                        className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-500 to-purple-500 text-white font-bold text-lg hover:shadow-lg hover:shadow-violet-500/20 transition-all"
+                        className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-500 to-purple-500 text-white font-bold text-lg hover:shadow-lg hover:shadow-violet-500/20 active:scale-[0.98] transition-all min-h-[56px]"
                       >
                         🎉 Finish & Review Full Site
                       </button>
@@ -981,7 +985,7 @@ export default function SectionBuilder({
         {stage === 'input' && (
           <div className="px-4 py-3 bg-zinc-900/30 border-t border-zinc-800 flex-shrink-0">
             <div className="flex items-center gap-4 text-xs text-zinc-500">
-              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Sonnet builds</span>
+              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-pink-500"></span> Sonnet builds</span>
               <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-violet-500"></span> Opus polishes</span>
               <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Gemini audits</span>
             </div>

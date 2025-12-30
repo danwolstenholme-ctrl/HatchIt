@@ -280,11 +280,13 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
 
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center p-4 relative">
-        {/* Animated gradient background */}
+        {/* Animated gradient background - simplified on mobile for performance */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Gradient orbs */}
+        {/* Static gradient on mobile, animated on desktop */}
+        <div className="md:hidden absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-violet-500/10" />
+        {/* Gradient orbs - desktop only */}
         <motion.div
-          className="absolute w-[600px] h-[600px] rounded-full bg-purple-500/10 blur-[120px]"
+          className="hidden md:block absolute w-[600px] h-[600px] rounded-full bg-purple-500/10 blur-[120px]"
           animate={{
             x: ['-10%', '5%', '-10%'],
             y: ['-10%', '10%', '-10%'],
@@ -297,7 +299,7 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
           style={{ top: '-20%', left: '-10%' }}
         />
         <motion.div
-          className="absolute w-[500px] h-[500px] rounded-full bg-violet-500/10 blur-[100px]"
+          className="hidden md:block absolute w-[500px] h-[500px] rounded-full bg-violet-500/10 blur-[100px]"
           animate={{
             x: ['10%', '-5%', '10%'],
             y: ['5%', '-10%', '5%'],
@@ -310,7 +312,7 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
           style={{ top: '30%', right: '-10%' }}
         />
         <motion.div
-          className="absolute w-[400px] h-[400px] rounded-full bg-blue-500/8 blur-[80px]"
+          className="hidden md:block absolute w-[400px] h-[400px] rounded-full bg-blue-500/8 blur-[80px]"
           animate={{
             x: ['-5%', '10%', '-5%'],
             y: ['10%', '-5%', '10%'],
@@ -623,21 +625,21 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                   </p>
                 </div>
 
-                {/* Answer buttons */}
-                <div className="flex gap-4 justify-center">
+                {/* Answer buttons - full width on mobile for better touch targets */}
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
                   <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => handleAnswer(true)}
-                    className="px-8 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold text-lg shadow-lg shadow-purple-500/20"
+                    className="w-full sm:w-auto px-8 py-4 sm:py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold text-lg shadow-lg shadow-purple-500/20 active:shadow-purple-500/40 min-h-[48px]"
                   >
                     Yes, add it!
                   </motion.button>
                   <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => handleAnswer(false)}
-                    className="px-8 py-3 rounded-xl bg-zinc-800 text-zinc-300 font-medium text-lg hover:bg-zinc-700"
+                    className="w-full sm:w-auto px-8 py-4 sm:py-3 rounded-xl bg-zinc-800 text-zinc-300 font-medium text-lg hover:bg-zinc-700 active:bg-zinc-600 min-h-[48px]"
                   >
                     Skip
                   </motion.button>
@@ -736,9 +738,9 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
 
                 <motion.button
                   onClick={handleStartBuilding}
-                  whileHover={{ scale: 1.02 }}
+                  whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold text-lg shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 transition-shadow"
+                  className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold text-lg shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 active:shadow-purple-500/30 transition-shadow min-h-[56px]"
                 >
                   Start Building →
                 </motion.button>

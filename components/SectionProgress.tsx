@@ -235,7 +235,7 @@ export default function SectionProgress({
       {/* Progress Bar */}
       <div className="h-1 bg-zinc-800">
         <motion.div
-          className="h-full bg-gradient-to-r from-emerald-500 to-teal-400"
+          className="h-full bg-gradient-to-r from-purple-500 to-pink-500"
           initial={{ width: 0 }}
           animate={{ width: `${progressPercent}%` }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
@@ -286,9 +286,9 @@ export default function SectionProgress({
                     w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium
                     transition-all duration-200 cursor-pointer
                     ${isCurrent
-                      ? 'bg-emerald-500 text-white ring-2 ring-emerald-400 ring-offset-2 ring-offset-zinc-900'
+                      ? 'bg-purple-500 text-white ring-2 ring-purple-400 ring-offset-2 ring-offset-zinc-900'
                       : isCompleted
-                        ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30'
+                        ? 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30'
                         : isSkipped
                           ? 'bg-zinc-700 text-zinc-500 hover:bg-zinc-600'
                           : 'bg-zinc-800 text-zinc-500 opacity-50 cursor-not-allowed'
@@ -358,10 +358,11 @@ export default function SectionProgress({
         {/* Mobile: Section drawer trigger */}
         <button
           onClick={() => setShowMobileDrawer(true)}
-          className="md:hidden flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-800 text-zinc-300 text-xs"
+          className="md:hidden flex items-center gap-2 px-4 py-2.5 rounded-lg bg-zinc-800 text-zinc-300 text-sm min-h-[44px] active:bg-zinc-700 transition-colors"
+          aria-label="View all sections"
         >
-          <span>{currentSectionIndex + 1}/{totalSections}</span>
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <span className="font-medium">{currentSectionIndex + 1}/{totalSections}</span>
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
@@ -440,8 +441,8 @@ export function SectionCompleteIndicator({
       animate={{ opacity: 1, scale: 1 }}
       className="flex items-center gap-3 bg-zinc-800/50 rounded-lg px-4 py-3 border border-zinc-700"
     >
-      <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
-        <span className="text-emerald-400">✓</span>
+      <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
+        <span className="text-purple-400">✓</span>
       </div>
       
       <div className="flex-1">
@@ -527,7 +528,8 @@ export function MobileSectionDrawer({
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white"
+            className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white active:bg-zinc-700 transition-colors min-w-[44px] min-h-[44px]"
+            aria-label="Close section drawer"
           >
             ✕
           </button>
@@ -550,7 +552,7 @@ export function MobileSectionDrawer({
                 className={`
                   w-full text-left p-3 rounded-lg transition-all
                   ${isCurrent
-                    ? 'bg-emerald-500/20 border border-emerald-500/50'
+                    ? 'bg-purple-500/20 border border-purple-500/50'
                     : 'bg-zinc-800/50 border border-zinc-700 hover:border-zinc-600'
                   }
                 `}
@@ -560,7 +562,7 @@ export function MobileSectionDrawer({
                     <div className={`
                       w-6 h-6 rounded-full flex items-center justify-center text-xs
                       ${isCompleted
-                        ? 'bg-emerald-500/20 text-emerald-400'
+                        ? 'bg-purple-500/20 text-purple-400'
                         : isSkipped
                           ? 'bg-zinc-700 text-zinc-500'
                           : 'bg-zinc-700 text-zinc-400'

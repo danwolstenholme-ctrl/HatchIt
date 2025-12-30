@@ -272,10 +272,16 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
 
   return (
     <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated gradient background */}
+      {/* Animated gradient background - simplified on mobile for performance */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Static gradient on mobile */}
+        <div 
+          className="md:hidden absolute inset-0" 
+          style={{ background: `radial-gradient(ellipse at 30% 20%, ${currentColors.primary}15 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, ${currentColors.accent}10 0%, transparent 50%)` }}
+        />
+        {/* Animated on desktop */}
         <motion.div
-          className="absolute w-[600px] h-[600px] rounded-full blur-[120px]"
+          className="hidden md:block absolute w-[600px] h-[600px] rounded-full blur-[120px]"
           style={{ backgroundColor: `${currentColors.primary}20` }}
           animate={{
             x: ['-10%', '5%', '-10%'],
@@ -284,7 +290,7 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
           transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
-          className="absolute w-[500px] h-[500px] rounded-full blur-[100px]"
+          className="hidden md:block absolute w-[500px] h-[500px] rounded-full blur-[100px]"
           style={{ backgroundColor: `${currentColors.accent}15`, top: '30%', right: '-10%' }}
           animate={{
             x: ['10%', '-5%', '10%'],
@@ -296,26 +302,27 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
 
       <div className="w-full max-w-4xl relative z-10">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+          <div className="flex items-center gap-3 sm:gap-4">
             <button
               onClick={onBack}
-              className="w-10 h-10 rounded-full bg-zinc-800/80 hover:bg-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white transition-colors backdrop-blur-sm border border-zinc-700/50"
+              className="w-11 h-11 sm:w-10 sm:h-10 rounded-full bg-zinc-800/80 hover:bg-zinc-700 active:bg-zinc-600 flex items-center justify-center text-zinc-400 hover:text-white transition-colors backdrop-blur-sm border border-zinc-700/50 min-w-[44px] min-h-[44px]"
+              aria-label="Go back"
             >
               ←
             </button>
-            <HatchCharacter state="excited" size="sm" />
-            <div className="flex items-center gap-3">
-              <span className="text-3xl">{templateIcon}</span>
+            <div className="hidden sm:block"><HatchCharacter state="excited" size="sm" /></div>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <span className="text-2xl sm:text-3xl">{templateIcon}</span>
               <div>
-                <h1 className="text-2xl font-bold text-white">Brand Your {templateName}</h1>
-                <p className="text-sm text-zinc-500">Optional — helps AI generate consistent designs</p>
+                <h1 className="text-xl sm:text-2xl font-bold text-white">Brand Your {templateName}</h1>
+                <p className="text-xs sm:text-sm text-zinc-500">Optional — helps AI generate consistent designs</p>
               </div>
             </div>
           </div>
           <button
             onClick={handleSkip}
-            className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
+            className="self-end sm:self-auto text-sm text-zinc-500 hover:text-zinc-300 active:text-white transition-colors py-2 px-3 -mr-3 min-h-[44px] flex items-center"
           >
             Skip for now →
           </button>

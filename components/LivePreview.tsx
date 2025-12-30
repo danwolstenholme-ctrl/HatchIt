@@ -1305,7 +1305,7 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
           <iframe
             ref={iframeRef}
             key={iframeKey}
-            srcDoc={runnerHtml}
+            srcDoc={srcDoc}
             className="w-full h-full border-0"
             sandbox="allow-scripts"
             title="Live Preview"
