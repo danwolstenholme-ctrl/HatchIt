@@ -16,16 +16,11 @@ html, body {
 
 /* Reduce animations on mobile for better performance */
 @media (max-width: 768px) {
-  *, *::before, *::after {
-    animation-duration: 0.15s !important;
-    transition-duration: 0.15s !important;
-  }
-  
-  /* Disable complex transforms on mobile for smoother performance */
-  .motion-reduce-mobile {
-    transform: none !important;
-    animation: none !important;
-  }
+  /* 
+   * Removed blanket animation override as it can cause conflicts with Framer Motion
+   * and lead to flickering if JS and CSS fight for control.
+   * Instead, we rely on specific mobile-optimized variants in components.
+   */
   
   /* GPU acceleration hints for mobile animations */
   [class*="motion"], [class*="animate"] {

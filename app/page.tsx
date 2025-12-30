@@ -35,18 +35,18 @@ function useReducedMotion() {
 }
 
 // Check if mobile for lighter animations - uses useSyncExternalStore to prevent hydration mismatch
-function useIsMobile() {
-  const subscribe = (callback: () => void) => {
-    window.addEventListener('resize', callback)
-    return () => window.removeEventListener('resize', callback)
-  }
+// function useIsMobile() {
+//   const subscribe = (callback: () => void) => {
+//     window.addEventListener('resize', callback)
+//     return () => window.removeEventListener('resize', callback)
+//   }
   
-  return useSyncExternalStore(
-    subscribe,
-    () => window.innerWidth < 768, // Client snapshot
-    () => false // Server snapshot - prevents hydration mismatch flicker
-  )
-}
+//   return useSyncExternalStore(
+//     subscribe,
+//     () => window.innerWidth < 768, // Client snapshot
+//     () => false // Server snapshot - prevents hydration mismatch flicker
+//   )
+// }
 
 // Typewriter effect for code demo
 function TypewriterCode({ code, speed = 30 }: { code: string; speed?: number }) {

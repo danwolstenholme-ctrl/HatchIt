@@ -152,6 +152,7 @@ export default function Navigation() {
             <div 
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
               onClick={() => setMobileMenuOpen(false)}
+              style={{ touchAction: 'none' }} // Prevent scrolling through backdrop
             />
             
             {/* Menu - CSS transform for GPU acceleration */}
@@ -160,8 +161,8 @@ export default function Navigation() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'tween', duration: 0.2, ease: [0.32, 0.72, 0, 1] }} // Faster, smoother tween instead of spring
-              className="absolute right-0 top-0 h-full w-64 bg-zinc-900 border-l border-zinc-800 shadow-2xl"
-              style={{ willChange: 'transform', backfaceVisibility: 'hidden' }}
+              className="absolute right-0 top-0 h-full w-64 bg-zinc-900 border-l border-zinc-800 shadow-2xl overflow-y-auto"
+              style={{ willChange: 'transform', backfaceVisibility: 'hidden', touchAction: 'pan-y' }}
             >
               <div className="p-4 border-b border-zinc-800 flex justify-between items-center">
                 <span className="font-semibold text-white">Menu</span>
