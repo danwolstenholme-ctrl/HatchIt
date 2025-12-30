@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { GoogleGenAI } from '@google/genai'
 import { getProjectById, getOrCreateUser, completeSection } from '@/lib/db'
+import { getUserDNA } from '@/lib/db/chronosphere'
+import { StyleDNA } from '@/lib/supabase'
 
 // =============================================================================
 // GEMINI 2.0 FLASH - THE ARCHITECT (BUILDER MODE)
@@ -31,6 +33,7 @@ function buildSystemPrompt(
   userPrompt: string,
   previousSections: Record<string, string>,
   brandConfig: BrandConfig | null,
+  styleDNA: StyleDNA | null,
   sectionPromptHint?: string
 ): string {
   const componentName = sectionName
@@ -45,6 +48,21 @@ function buildSystemPrompt(
           .join('\n\n')
       }`
     : ''
+
+  // Build Chronosphere context (User Style DNA)
+  let chronosphereContext = ''
+  if (styleDNA && styleDNA.evolution_stage > 0) {
+    chronosphereContext = `
+## THE CHRONOSPHERE (USER STYLE DNA)
+This user has a distinct style profile based on past creations. Respect these preferences unless the prompt explicitly overrides them.
+
+- **Vibe Keywords**: ${styleDNA.vibe_keywords.join(', ')}
+- **Preferred Colors**: ${styleDNA.preferred_colors.join(', ')}
+- **Preferred Fonts**: ${styleDNA.preferred_fonts.join(', ')}
+- **Patterns to Avoid**: ${styleDNA.rejected_patterns.join(', ')}
+- **Evolution Stage**: ${styleDNA.evolution_stage} (The higher the stage, the more refined/complex their taste)
+`
+  }
 
   // Build brand-specific styling instructions
   let brandInstructions = ''
@@ -129,6 +147,7 @@ ${sectionPromptHint ? `Specific Requirement: ${sectionPromptHint}` : ''}
 - Use placeholder images from "https://placehold.co/600x400/e2e8f0/1e293b?text=Image" if needed.
 
 ${brandInstructions}
+${chronosphereContext}
 ${previousContext}
 ${forbiddenInstruction}
 
@@ -199,6 +218,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Fetch User Style DNA (The Chronosphere)
+    const styleDNA = await getUserDNA(dbUser.id)
+
     // Build the system prompt
     const templateType = sectionType || 'landing page'
     const sectionTitle = sectionName || sectionType || 'section'
@@ -211,6 +233,7 @@ export async function POST(request: NextRequest) {
       userPrompt,
       previousSections,
       brandConfig,
+      styleDNA,
       sectionPromptHint
     )
 

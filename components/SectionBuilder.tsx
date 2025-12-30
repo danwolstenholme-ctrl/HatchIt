@@ -346,6 +346,20 @@ export default function SectionBuilder({
       screenshotPromiseRef.current = null
     }
   }
+
+  // The Chronosphere: Evolve user style DNA in background
+  const evolveUserStyle = async (code: string) => {
+    if (demoMode || !code) return
+    try {
+      fetch('/api/chronosphere/evolve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
+      })
+    } catch (e) {
+      console.error('Failed to evolve style DNA:', e)
+    }
+  }
   
   // Inline Code Editing
   const [editingLineIndex, setEditingLineIndex] = useState<number | null>(null)
@@ -723,6 +737,9 @@ export default function SectionBuilder({
 
       // Notify parent with Sonnet-only code
       onComplete(sonnetCode, false)
+      
+      // Evolve style DNA (background)
+      evolveUserStyle(sonnetCode)
 
     } catch (err) {
       console.error('Build error:', err)
@@ -849,6 +866,9 @@ export default function SectionBuilder({
       setRefinePrompt('')
       setSelectedElement(null) // Clear selection after refine
       onComplete(refinedCode, true, [...refinementChanges, ...(changes || [refinePrompt])])
+      
+      // Evolve style DNA (background)
+      evolveUserStyle(refinedCode)
 
     } catch (err) {
       console.error('Refine error:', err)
@@ -904,6 +924,11 @@ export default function SectionBuilder({
       setRefined(wasRefined)
       setRefinementChanges(changes || [])
       onComplete(polishedCode || generatedCode, wasRefined, changes)
+      
+      // Evolve style DNA (background)
+      if (wasRefined) {
+        evolveUserStyle(polishedCode || generatedCode)
+      }
 
     } catch (err) {
       console.error('Opus polish error:', err)

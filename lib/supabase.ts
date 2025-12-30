@@ -34,6 +34,16 @@ export interface DbUser {
   clerk_id: string
   email: string | null
   created_at: string
+  style_dna?: StyleDNA
+}
+
+export interface StyleDNA {
+  vibe_keywords: string[]
+  preferred_colors: string[]
+  preferred_fonts: string[]
+  rejected_patterns: string[]
+  evolution_stage: number
+  last_updated: string
 }
 
 export interface DbBrandConfig {
