@@ -144,15 +144,15 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
         </p>
 
         {/* What's included */}
-        <div className="bg-gradient-to-br from-zinc-800/50 to-zinc-900 border border-purple-500/30 rounded-xl p-6 mb-6 ring-1 ring-purple-500/20 relative overflow-hidden">
+        <div className="bg-gradient-to-br from-zinc-800/50 to-zinc-900 border border-teal-500/30 rounded-xl p-6 mb-6 ring-1 ring-teal-500/20 relative overflow-hidden">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <span className="text-2xl">🐣</span>
-            <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Pro Account</span>
+            <span className="text-2xl">💠</span>
+            <span className="text-xl font-bold bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">Pro Account</span>
           </div>
           
           {/* Price */}
           <div className="flex items-baseline justify-center gap-2 mb-1">
-            <span className="text-4xl font-bold text-white">$39</span>
+            <span className="text-4xl font-bold text-white">$19</span>
             <span className="text-zinc-400">/month</span>
           </div>
           <p className="text-zinc-400 text-sm text-center mb-4">Unlock everything for all your projects</p>
@@ -168,7 +168,7 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
               'Priority support',
             ].map((feature, i) => (
               <div key={i} className="flex items-center gap-2 text-sm text-zinc-300">
-                <span className="text-purple-400">✓</span>
+                <span className="text-teal-400">✓</span>
                 {feature}
               </div>
             ))}
@@ -211,12 +211,12 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
               disabled={isLoading || isSyncing}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 disabled:opacity-50 text-white rounded-xl font-semibold transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40"
+              className="w-full py-4 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500 disabled:opacity-50 text-white rounded-xl font-semibold transition-all flex items-center justify-center gap-2 shadow-lg shadow-teal-500/25 hover:shadow-teal-500/40"
             >
               {isLoading ? 'Loading...' : isSyncing ? 'Syncing...' : (
                 <>
-                  <span>🐣</span>
-                  <span>Get Pro — $39/mo</span>
+                  <span>💠</span>
+                  <span>Get Pro — $19/mo</span>
                 </>
               )}
             </motion.button>

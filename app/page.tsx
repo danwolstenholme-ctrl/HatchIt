@@ -817,12 +817,12 @@ export default function Home() {
             </div>
 
             {/* Pro */}
-            <div className="relative p-8 bg-gradient-to-br from-emerald-900/10 to-teal-900/10 border border-emerald-500/30 rounded-xl overflow-hidden">
-              <div className="absolute top-0 right-0 px-3 py-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-xs font-semibold rounded-bl-xl text-white font-mono">RECOMMENDED</div>
-              <div className="flex items-center gap-2 text-sm text-emerald-400 mb-2 font-mono"><span>🚀</span><span>For shipping projects</span></div>
+            <div className="relative p-8 bg-gradient-to-br from-teal-900/10 to-cyan-900/10 border border-teal-500/30 rounded-xl overflow-hidden">
+              <div className="absolute top-0 right-0 px-3 py-1 bg-gradient-to-r from-teal-600 to-cyan-600 text-xs font-semibold rounded-bl-xl text-white font-mono">POPULAR</div>
+              <div className="flex items-center gap-2 text-sm text-teal-400 mb-2 font-mono"><span>💠</span><span>For shipping projects</span></div>
               <h3 className="text-2xl font-bold mb-1">Pro</h3>
               <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-4xl font-bold font-mono">$39</span>
+                <span className="text-4xl font-bold font-mono">$19</span>
                 <span className="text-zinc-500">/month</span>
               </div>
               <div className="text-zinc-400 text-sm mb-6">per account</div>
@@ -836,26 +836,26 @@ export default function Home() {
                   'Cloud sync',
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm text-zinc-300">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-teal-400 flex-shrink-0" />
                     {item}
                   </li>
                 ))}
               </ul>
               <PricingButton 
                 tier="pro" 
-                className="block w-full py-3 text-center bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-lg font-semibold transition-all disabled:opacity-50 text-white shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+                className="block w-full py-3 text-center bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500 rounded-lg font-semibold transition-all disabled:opacity-50 text-white shadow-[0_0_20px_rgba(20,184,166,0.2)]"
               >
                 Get Pro
               </PricingButton>
             </div>
 
             {/* Agency */}
-            <div className="relative p-8 bg-gradient-to-br from-violet-900/10 to-purple-900/10 border border-violet-500/30 rounded-xl overflow-hidden">
-              <div className="absolute top-0 right-0 px-3 py-1 bg-gradient-to-r from-violet-500 to-purple-500 text-xs font-semibold text-white rounded-bl-xl font-mono">UNLIMITED</div>
-              <div className="flex items-center gap-2 text-sm text-violet-300 mb-2 font-mono"><span>⚡</span><span>For power users</span></div>
+            <div className="relative p-8 bg-gradient-to-br from-emerald-900/10 to-teal-900/10 border border-emerald-500/30 rounded-xl overflow-hidden">
+              <div className="absolute top-0 right-0 px-3 py-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-xs font-semibold text-white rounded-bl-xl font-mono">UNLIMITED</div>
+              <div className="flex items-center gap-2 text-sm text-emerald-300 mb-2 font-mono"><span>⚡</span><span>For power users</span></div>
               <h3 className="text-2xl font-bold mb-1">Agency</h3>
               <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-4xl font-bold font-mono">$99</span>
+                <span className="text-4xl font-bold font-mono">$49</span>
                 <span className="text-zinc-500">/month</span>
               </div>
               <div className="text-zinc-400 text-sm mb-6">per account</div>
@@ -869,14 +869,14 @@ export default function Home() {
                   'Dedicated onboarding',
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm text-zinc-300">
-                    <CheckCircle2 className="w-4 h-4 text-violet-400 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                     {item}
                   </li>
                 ))}
               </ul>
               <PricingButton 
                 tier="agency" 
-                className="block w-full py-3 text-center bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-400 hover:to-purple-400 text-white rounded-lg font-semibold transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(139,92,246,0.2)]"
+                className="block w-full py-3 text-center bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white rounded-lg font-semibold transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(16,185,129,0.2)]"
               >
                 Get Agency
               </PricingButton>

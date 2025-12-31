@@ -166,9 +166,9 @@ export function SubscriptionStatusCard() {
     isSyncing 
   } = useSubscription()
 
-  const tierEmoji = tier === 'agency' ? '⚡' : tier === 'pro' ? '🐣' : '🥚'
+  const tierEmoji = tier === 'agency' ? '⚡' : tier === 'pro' ? '�' : '🥚'
   const tierName = tier === 'agency' ? 'Agency' : tier === 'pro' ? 'Pro' : 'Free'
-  const price = tier === 'agency' ? '$99' : tier === 'pro' ? '$39' : '$0'
+  const price = tier === 'agency' ? '$49' : tier === 'pro' ? '$19' : '$0'
 
   return (
     <div className={`p-6 rounded-2xl ${tierColor.bgSubtle} border ${tierColor.border}`}>
