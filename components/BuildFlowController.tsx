@@ -380,6 +380,12 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
     // If we have an existing project ID, load it
     if (existingProjectId) {
+      // Optimization: If we already have this project loaded, skip
+      if (project?.id === existingProjectId) {
+        console.log('BuildFlowController: Project already loaded, skipping')
+        return
+      }
+
       console.log('BuildFlowController: Loading existing project', existingProjectId)
       loadExistingProject(existingProjectId)
       return
@@ -406,6 +412,14 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     // Wait for replication data to be processed
     if (!isReplicationReady) {
       console.log('BuildFlowController: Waiting for replication data')
+      return
+    }
+
+    // Check for saved project in localStorage to resume
+    const savedProjectId = localStorage.getItem('hatch_current_project')
+    if (savedProjectId) {
+      console.log('BuildFlowController: Found saved project, redirecting', savedProjectId)
+      router.replace(`/builder?project=${savedProjectId}`)
       return
     }
 
