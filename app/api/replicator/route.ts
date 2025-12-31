@@ -109,9 +109,11 @@ export async function POST(req: NextRequest) {
       .slice(0, 30000) // Limit to ~30k chars for the model
 
     // 3. Analyze with Gemini
-    const model = genai.getGenerativeModel({ model: 'gemini-2.0-flash-001' })
-    
-    const result = await model.generateContent({
+    const result = await genai.models.generateContent({
+      model: 'gemini-2.0-flash-001',
+      config: {
+        responseMimeType: 'application/json'
+      },
       contents: [
         {
           role: 'user',
@@ -121,13 +123,10 @@ export async function POST(req: NextRequest) {
             { text: `HTML CONTENT:\n${cleanHtml}` }
           ]
         }
-      ],
-      generationConfig: {
-        responseMimeType: 'application/json'
-      }
+      ]
     })
 
-    const responseText = result.response.text()
+    const responseText = result.text || '{}'
     const replicationData = JSON.parse(responseText)
 
     return NextResponse.json(replicationData)
