@@ -39,7 +39,7 @@ export const PRICING_TIERS: Record<string, PricingTier> = {
   },
   architect: {
     name: 'pro',
-    price: 29,
+    price: 19,
     generationsPerDay: -1,
     architectRefinementsPerMonth: -1,
     features: ['Unlimited generations', 'Unlimited Architect refinements', 'Full code export', 'Custom domains', 'The Living Site (Evolution Engine)'],

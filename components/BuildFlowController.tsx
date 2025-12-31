@@ -458,12 +458,12 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     }
 
     const setupDemoMode = () => {
-      const mockProjectId = generateId()
+      const mockProjectId = `demo-${generateId()}`
       const mockProject: DbProject = {
         id: mockProjectId,
         user_id: 'demo-user',
         name: brand.brandName,
-        slug: `demo-${mockProjectId}`,
+        slug: mockProjectId,
         template_id: template.id,
         status: 'building',
         brand_config: brand,
