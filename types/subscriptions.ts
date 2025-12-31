@@ -51,9 +51,6 @@ export const PRICING_TIERS: Record<string, PricingTier> = {
     opusRefinementsPerMonth: -1,
     features: ['Everything in Architect', 'White-label client portal', 'The Replicator (Clone any site)', 'API Access', 'Priority 24/7 Support'],
   },
-}    opusRefinementsPerMonth: -1,
-    features: ['Unlimited everything', 'White-label exports', 'API access', 'Dedicated support'],
-  },
 }
 
 // Limits (can be overridden via env vars)
