@@ -32,11 +32,16 @@ Requirements:
 - The SVG code must be valid and complete.`
 
     const response = await ai.models.generateContent({
-      model: 'gemini-1.5-flash',
-      contents: logoPrompt,
+      model: 'gemini-2.0-flash-001',
+      contents: [
+        {
+          role: 'user',
+          parts: [{ text: logoPrompt }]
+        }
+      ],
     })
 
-    const text = response.candidates?.[0]?.content?.parts?.[0]?.text
+    const text = response.text || ''
     
     if (text) {
       // Clean up the response to get just the SVG

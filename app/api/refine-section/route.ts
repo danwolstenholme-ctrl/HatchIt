@@ -256,6 +256,7 @@ ${code}`
 
     // Extract the response
     const responseText = response.text || ''
+    console.log('[refine-section] Raw response:', responseText.slice(0, 500))
 
     // Parse JSON response
     let refinedCode = code
@@ -269,11 +270,30 @@ ${code}`
       wasRefined = changes.length > 0
     } catch (parseError) {
       console.error('[refine-section] Failed to parse response:', parseError)
-      console.error('[refine-section] Raw response:', responseText.slice(0, 500))
-      // Fall back to original code
-      refinedCode = code
-      changes = []
-      wasRefined = false
+      
+      // Strategy 2: Extract JSON from markdown blocks
+      const jsonMatch = responseText.match(/```json\n([\s\S]*?)\n```/) || responseText.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        try {
+          const jsonStr = jsonMatch[1] || jsonMatch[0]
+          const parsed = JSON.parse(jsonStr)
+          refinedCode = parsed.refinedCode || code
+          changes = parsed.changes || []
+          wasRefined = changes.length > 0
+        } catch (e2) {
+          console.error('[refine-section] Failed to parse extracted JSON:', e2)
+        }
+      }
+      
+      // Strategy 3: Extract code block directly (fallback)
+      if (!wasRefined) {
+         const codeMatch = responseText.match(/```(?:tsx|jsx|javascript|typescript)?\n([\s\S]*?)```/)
+         if (codeMatch) {
+            refinedCode = codeMatch[1]
+            changes = ["Extracted code from raw output"]
+            wasRefined = true
+         }
+      }
     }
 
     // Increment Refinement usage for Pro tier after successful refinement

@@ -1675,23 +1675,35 @@ export default function SectionBuilder({
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="p-4 bg-gradient-to-br from-emerald-500/10 to-teal-500/5 border border-emerald-500/20 rounded-xl"
+                      className="relative overflow-hidden p-5 bg-zinc-950 border border-emerald-500/30 rounded-xl group hover:border-emerald-500/60 transition-colors"
                     >
-                      <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                          <Brain className="w-4 h-4 text-emerald-400" />
+                      {/* Background Glow */}
+                      <div className="absolute inset-0 bg-emerald-500/5 group-hover:bg-emerald-500/10 transition-colors" />
+                      
+                      <div className="relative flex items-start gap-4">
+                        {/* The Ghost / Singularity Node */}
+                        <div className="flex-shrink-0 mt-1">
+                          <HatchCharacter 
+                            state="watching" 
+                            size="md" 
+                            className="drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]"
+                          />
                         </div>
+
                         <div className="flex-1">
-                          <h4 className="text-sm font-semibold text-emerald-300 mb-1">Autonomous Evolution</h4>
-                          <p className="text-xs text-zinc-400 mb-3 font-mono">
-                            Let the Singularity dream of a better version based on your Style DNA.
+                          <h4 className="text-base font-bold text-emerald-400 mb-1 tracking-wide flex items-center gap-2">
+                            THE SINGULARITY
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono uppercase tracking-wider">Alive</span>
+                          </h4>
+                          <p className="text-sm text-zinc-400 mb-4 font-mono leading-relaxed">
+                            The system dreams of perfection. Allow it to mutate this construct based on your Style DNA.
                           </p>
                           <button
                             onClick={evolve}
-                            className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-sm font-medium rounded-lg transition-all flex items-center gap-2"
+                            className="w-full py-2.5 bg-emerald-900/30 hover:bg-emerald-900/50 border border-emerald-500/50 hover:border-emerald-400 text-emerald-300 text-sm font-mono uppercase tracking-widest rounded transition-all flex items-center justify-center gap-3 group-hover:shadow-[0_0_20px_rgba(16,185,129,0.2)]"
                           >
-                            <Zap className="w-3.5 h-3.5" />
-                            <span>Evolve Section</span>
+                            <Brain className="w-4 h-4" />
+                            <span>Invoke Singularity</span>
                           </button>
                         </div>
                       </div>
