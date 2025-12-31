@@ -1752,7 +1752,7 @@ export default function SectionBuilder({
                         className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-lg hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-[0.98] transition-all min-h-[56px] flex items-center justify-center gap-2 group"
                       >
                         <CheckCircle2 className="w-5 h-5" />
-                        <span>Finalize System Architecture</span>
+                        <span>Review & Deploy System</span>
                       </button>
                     </>
                   )}

@@ -1177,7 +1177,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
                     <button
                       onClick={handleDeploy}
                       disabled={isDeploying || !assembledCode}
-                      className="px-4 py-2 text-sm bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-lg hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 group"
+                      className="px-6 py-2.5 text-sm bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold rounded-lg hover:shadow-[0_0_25px_rgba(16,185,129,0.4)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 group shadow-[0_0_15px_rgba(16,185,129,0.2)]"
                     >
                       {isDeploying ? (
                         <>
@@ -1187,7 +1187,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
                       ) : (
                         <>
                           <Rocket className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />
-                          <span>{isPaidUser ? 'Deploy to Production' : 'Initialize Deployment'}</span>
+                          <span>{isPaidUser ? 'Launch to Production' : 'Initialize Deployment'}</span>
                         </>
                       )}
                     </button>
