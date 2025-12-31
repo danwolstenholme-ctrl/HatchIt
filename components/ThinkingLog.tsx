@@ -122,7 +122,7 @@ export default function ThinkingLog() {
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-          Memory: {Math.floor(Math.random() * 40) + 60}%
+          Memory: 64%
         </div>
       </div>
     </div>

@@ -30,6 +30,25 @@ export default function GenesisEngine() {
   const [isIncubating, setIsIncubating] = useState(true)
   const router = useRouter()
 
+  const generateOrganism = (gen: number): Organism => {
+    const niche = NICHES[Math.floor(Math.random() * NICHES.length)]
+    const vibe = VIBES[Math.floor(Math.random() * VIBES.length)]
+    const color = COLORS[Math.floor(Math.random() * COLORS.length)]
+    const name = `${NAMES_PREFIX[Math.floor(Math.random() * NAMES_PREFIX.length)]}${NAMES_SUFFIX[Math.floor(Math.random() * NAMES_SUFFIX.length)]}`
+    
+    return {
+      id: Math.random().toString(36).substr(2, 9),
+      name,
+      niche,
+      vibe,
+      color,
+      fitness: Math.floor(Math.random() * 30) + 70, // 70-99%
+      generation: gen,
+      status: 'incubating',
+      dna: Array(8).fill(0).map(() => Math.random() > 0.5 ? '1' : '0').join('')
+    }
+  }
+
   // The "God" Loop - Continuously breeds and culls concepts
   useEffect(() => {
     const interval = setInterval(() => {
@@ -59,25 +78,6 @@ export default function GenesisEngine() {
 
     return () => clearInterval(interval)
   }, [generation])
-
-  const generateOrganism = (gen: number): Organism => {
-    const niche = NICHES[Math.floor(Math.random() * NICHES.length)]
-    const vibe = VIBES[Math.floor(Math.random() * VIBES.length)]
-    const color = COLORS[Math.floor(Math.random() * COLORS.length)]
-    const name = `${NAMES_PREFIX[Math.floor(Math.random() * NAMES_PREFIX.length)]}${NAMES_SUFFIX[Math.floor(Math.random() * NAMES_SUFFIX.length)]}`
-    
-    return {
-      id: Math.random().toString(36).substr(2, 9),
-      name,
-      niche,
-      vibe,
-      color,
-      fitness: Math.floor(Math.random() * 30) + 70, // 70-99%
-      generation: gen,
-      status: 'incubating',
-      dna: Array(8).fill(0).map(() => Math.random() > 0.5 ? '1' : '0').join('')
-    }
-  }
 
   const handleManifest = (organism: Organism) => {
     // In a real app, this would create a project in the DB

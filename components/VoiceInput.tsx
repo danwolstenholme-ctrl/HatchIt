@@ -16,6 +16,30 @@ export default function VoiceInput({ onTranscript, onStateChange, className = ''
   const [isSupported, setIsSupported] = useState(false)
   const recognitionRef = useRef<any>(null)
 
+  const startListening = () => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.start()
+        setIsListening(true)
+        onStateChange?.(true)
+      } catch (e) {
+        console.error(e)
+      }
+    }
+  }
+
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop()
+      } catch (e) {
+        // ignore
+      }
+      setIsListening(false)
+      onStateChange?.(false)
+    }
+  }
+
   useEffect(() => {
     if (typeof window !== 'undefined' && ((window as any).webkitSpeechRecognition || (window as any).SpeechRecognition)) {
       setIsSupported(true)
@@ -41,30 +65,6 @@ export default function VoiceInput({ onTranscript, onStateChange, className = ''
       }
     }
   }, [onTranscript])
-
-  const startListening = () => {
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.start()
-        setIsListening(true)
-        onStateChange?.(true)
-      } catch (e) {
-        console.error(e)
-      }
-    }
-  }
-
-  const stopListening = () => {
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.stop()
-      } catch (e) {
-        // ignore
-      }
-      setIsListening(false)
-      onStateChange?.(false)
-    }
-  }
 
   const toggleListening = () => {
     if (isListening) {

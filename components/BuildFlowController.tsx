@@ -37,7 +37,7 @@ import SectionBuilder from './SectionBuilder'
 import HatchModal from './HatchModal'
 import Scorecard from './Scorecard'
 import { Template, Section, getTemplateById, getSectionById, createInitialBuildState, BuildState, websiteTemplate } from '@/lib/templates'
-import { DbProject, DbSection } from '@/lib/supabase'
+import { DbProject, DbSection, DbBrandConfig } from '@/lib/supabase'
 import { AccountSubscription } from '@/types/subscriptions'
 
 // =============================================================================
@@ -307,11 +307,15 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     // Default "Singularity" setup
     const template = SINGULARITY_TEMPLATE
     const sections = template.sections
-    const brand = {
+    const brand: DbBrandConfig = {
       brandName: 'Untitled Project',
-      primaryColor: 'emerald', // Singularity default
-      font: 'inter',
-      style: 'modern'
+      colors: {
+        primary: '#10b981', // Emerald-500
+        secondary: '#09090b', // Zinc-950
+        accent: '#34d399' // Emerald-400
+      },
+      fontStyle: 'Inter',
+      styleVibe: 'modern'
     }
 
     const setupDemoMode = () => {
@@ -437,66 +441,6 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       })
       setCustomizedSections(reconstructed)
       
-      if (proj.brand_config) {
-        setBrandConfig(proj.brand_config)
-      }
-      
-      const state = createInitialBuildState(template.id)
-      sections.forEach((s: DbSection) => {
-        if (s.status === 'complete') {
-          state.completedSections.push(s.section_id)
-          if (s.code) state.sectionCode[s.section_id] = s.code
-          if (s.refined) state.sectionRefined[s.section_id] = true
-          if (s.refinement_changes) state.sectionChanges[s.section_id] = s.refinement_changes
-        } else if (s.status === 'skipped') {
-          state.skippedSections.push(s.section_id)
-        }
-      })
-      
-      const firstPending = sections.findIndex((s: DbSection) => s.status === 'pending' || s.status === 'building')
-      state.currentSectionIndex = firstPending === -1 ? reconstructed.length : firstPending
-      
-      setBuildState(state)
-      
-      const allDone = sections.every((s: DbSection) => s.status === 'complete' || s.status === 'skipped')
-      setPhase(allDone ? 'review' : 'building')
-      
-    } catch (err) {
-      console.error('Error loading project:', err)
-      setError('Failed to load project')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-      
-      const { project: proj, sections } = await response.json()
-      
-      const template = getTemplateById(proj.template_id)
-      if (!template) throw new Error('Unknown template')
-
-      setProject(proj)
-      setDbSections(sections)
-      setSelectedTemplate(template)
-
-      // Reconstruct the exact section sequence from DB order_index.
-      // This prevents blank screens when the user customized sections during template selection.
-      const orderedDbSections = [...sections].sort((a: DbSection, b: DbSection) => a.order_index - b.order_index)
-      const reconstructed = orderedDbSections.map((s: DbSection, index: number): Section => {
-        const def = getSectionById(template, s.section_id)
-        if (def) return def
-        return {
-          id: s.section_id,
-          name: s.section_id,
-          description: '',
-          prompt: 'Describe what you want for this section.',
-          estimatedTime: '~30s',
-          required: false,
-          order: index + 1,
-        }
-      })
-      setCustomizedSections(reconstructed)
-      
-      // Restore brand config from project!
       if (proj.brand_config) {
         setBrandConfig(proj.brand_config)
       }

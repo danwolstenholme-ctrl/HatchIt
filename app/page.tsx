@@ -2,7 +2,7 @@
 
 /* eslint-disable react/no-unescaped-entities */
 
-import { useEffect, useState, useRef, useSyncExternalStore } from 'react'
+import { useEffect, useState, useRef, useSyncExternalStore, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useUser } from '@clerk/nextjs'
@@ -254,17 +254,29 @@ export default function Singularity() {
 // Floating background elements
 function FloatingNodes() {
   const isClient = useIsClient()
+  
+  const nodes = useMemo(() => {
+    return [...Array(12)].map((_, i) => ({
+      id: i,
+      initialX: Math.random() * 100 + '%',
+      initialY: Math.random() * 100 + '%',
+      duration: 10 + Math.random() * 10,
+      delay: Math.random() * 5,
+      size: 24 + Math.random() * 48
+    }))
+  }, [])
+
   if (!isClient) return null
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none select-none z-0">
-      {[...Array(12)].map((_, i) => (
+      {nodes.map((node) => (
         <motion.div
-          key={i}
+          key={node.id}
           className="absolute text-emerald-500/10"
           initial={{ 
-            x: Math.random() * 100 + '%', 
-            y: Math.random() * 100 + '%' 
+            x: node.initialX, 
+            y: node.initialY 
           }}
           animate={{ 
             y: [0, -50, 0],
@@ -272,13 +284,13 @@ function FloatingNodes() {
             scale: [1, 1.5, 1]
           }}
           transition={{ 
-            duration: 10 + Math.random() * 10,
+            duration: node.duration,
             repeat: Infinity,
-            delay: Math.random() * 5,
+            delay: node.delay,
             ease: "easeInOut"
           }}
         >
-          <Code2 size={24 + Math.random() * 48} />
+          <Code2 size={node.size} />
         </motion.div>
       ))}
     </div>
