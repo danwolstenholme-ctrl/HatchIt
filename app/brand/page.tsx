@@ -55,9 +55,9 @@ export default function BrandPage() {
             <div>
               <p className="text-zinc-500 text-sm mb-2">Monospace (Code)</p>
               <div className="font-mono text-sm bg-black p-4 rounded border border-zinc-800 text-emerald-400">
-                > Initializing Genesis Engine...<br/>
-                > [HARM_INHIBITION: ACTIVE]<br/>
-                > Compiling React v19...
+                &gt; Initializing Genesis Engine...<br/>
+                &gt; [HARM_INHIBITION: ACTIVE]<br/>
+                &gt; Compiling React v19...
               </div>
             </div>
           </div>
