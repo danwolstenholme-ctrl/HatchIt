@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { clerkClient } from '@clerk/nextjs/server'
-import Anthropic from '@anthropic-ai/sdk'
+import { GoogleGenAI } from '@google/genai'
 import { AccountSubscription } from '@/types/subscriptions'
 
 // =============================================================================
@@ -9,9 +9,8 @@ import { AccountSubscription } from '@/types/subscriptions'
 // Analyzes completed sections and suggests improvements
 // =============================================================================
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
+const geminiApiKey = process.env.GEMINI_API_KEY
+const genai = geminiApiKey ? new GoogleGenAI({ apiKey: geminiApiKey }) : null
 
 const SUGGESTER_SYSTEM_PROMPT = `You are a proactive UX consultant reviewing a React + Tailwind section. Your job is to suggest 3-5 SPECIFIC improvements that would enhance the section.
 
@@ -78,30 +77,35 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Call Opus for suggestions
-    const response = await anthropic.messages.create({
-      model: 'claude-opus-4-20250514',
-      max_tokens: 1024,
-      messages: [
+    if (!genai) {
+      return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 })
+    }
+
+    // Call Gemini for suggestions
+    const response = await genai.models.generateContent({
+      model: 'gemini-2.0-flash-001',
+      config: {
+        maxOutputTokens: 1024,
+        systemInstruction: SUGGESTER_SYSTEM_PROMPT,
+        responseMimeType: 'application/json',
+      },
+      contents: [
         {
           role: 'user',
-          content: `Section: ${sectionName || sectionType || 'Unknown'}
+          parts: [{
+            text: `Section: ${sectionName || sectionType || 'Unknown'}
 User's goal: "${userPrompt || 'Not specified'}"
 
 Review this code and suggest 3-5 specific improvements:
 
-${code}`,
+${code}`
+          }]
         },
       ],
-      system: SUGGESTER_SYSTEM_PROMPT,
     })
 
     // Extract the response
-    const responseText = response.content
-      .filter(block => block.type === 'text')
-      .map(block => block.type === 'text' ? block.text : '')
-      .join('')
-      .trim()
+    const responseText = response.text || '[]'
 
     // Parse JSON response
     let suggestions: string[] = []
@@ -113,9 +117,16 @@ ${code}`,
         .replace(/\n?```$/gm, '')
         .trim()
 
-      const arrayMatch = cleanedResponse.match(/\[[\s\S]*\]/)
-      if (arrayMatch) {
-        suggestions = JSON.parse(arrayMatch[0])
+      suggestions = JSON.parse(cleanedResponse)
+      
+      if (!Array.isArray(suggestions)) {
+        // If it's not an array, try to extract array from it
+        const arrayMatch = cleanedResponse.match(/\[[\s\S]*\]/)
+        if (arrayMatch) {
+          suggestions = JSON.parse(arrayMatch[0])
+        } else {
+          suggestions = []
+        }
       }
     } catch (parseError) {
       console.error('[suggest-improvements] Failed to parse response:', parseError)
@@ -126,7 +137,7 @@ ${code}`,
 
     return NextResponse.json({
       suggestions,
-      model: 'opus-4',
+      model: 'gemini-2.0-flash-001',
     })
 
   } catch (error) {

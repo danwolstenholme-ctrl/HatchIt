@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import Anthropic from '@anthropic-ai/sdk'
+import { GoogleGenAI } from '@google/genai'
 
 // =============================================================================
 // HATCH - The System Architect 🟢
 // The Singularity Node that lives inside HatchIt.dev, optimizing user inputs
 // =============================================================================
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
+const geminiApiKey = process.env.GEMINI_API_KEY
+const genai = geminiApiKey ? new GoogleGenAI({ apiKey: geminiApiKey }) : null
 
 // Section-specific greetings for Hatch
 const SECTION_GREETINGS: Record<string, string> = {
@@ -121,29 +120,47 @@ ${brandTagline ? `Brand tagline: ${brandTagline}` : ''}
 Suggested greeting style: "${greetingHint}"
 `.trim()
 
-    // Build messages array
-    const messages: { role: 'user' | 'assistant'; content: string }[] = [
-      ...conversationHistory,
-      { role: 'user' as const, content: userMessage },
-    ]
-
-    // If this is the first message, prepend context
-    if (conversationHistory.length === 0) {
-      messages[0].content = `[Context: ${sectionContext}]\n\nUser: ${userMessage}`
+    // Build contents array for Gemini
+    const contents: any[] = []
+    
+    // Add history
+    if (conversationHistory && conversationHistory.length > 0) {
+      for (const msg of conversationHistory) {
+        if (msg.role === 'user' || msg.role === 'assistant') {
+          contents.push({
+            role: msg.role === 'assistant' ? 'model' : 'user',
+            parts: [{ text: msg.content }]
+          })
+        }
+      }
     }
 
-    const response = await anthropic.messages.create({
-      model: 'claude-3-5-haiku-20241022',
-      max_tokens: 1024,
-      system: SYSTEM_PROMPT,
-      messages,
+    // Add current message
+    // If this is the first message, prepend context
+    let finalUserMessage = userMessage
+    if (conversationHistory.length === 0) {
+      finalUserMessage = `[Context: ${sectionContext}]\n\nUser: ${userMessage}`
+    }
+    
+    contents.push({
+      role: 'user',
+      parts: [{ text: finalUserMessage }]
     })
 
-    const assistantMessage = response.content
-      .filter(block => block.type === 'text')
-      .map(block => block.type === 'text' ? block.text : '')
-      .join('')
-      .trim()
+    if (!genai) {
+      return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 })
+    }
+
+    const response = await genai.models.generateContent({
+      model: 'gemini-2.0-flash-001',
+      config: {
+        maxOutputTokens: 1024,
+        systemInstruction: SYSTEM_PROMPT,
+      },
+      contents,
+    })
+
+    const assistantMessage = response.text || ''
 
     // Check if this looks like a final prompt (contains specific elements)
     const looksLikePrompt = 

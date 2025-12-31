@@ -1,13 +1,12 @@
-import Anthropic from '@anthropic-ai/sdk'
+import { GoogleGenAI } from '@google/genai'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from "@clerk/nextjs/server"
 
 // Vercel Pro: extend timeout to 300s (5 min) for AI generation
 export const maxDuration = 300
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
-})
+const geminiApiKey = process.env.GEMINI_API_KEY
+const genai = geminiApiKey ? new GoogleGenAI({ apiKey: geminiApiKey }) : null
 
 // Simple in-memory rate limiting (userId -> timestamps of requests)
 const rateLimits = new Map<string, number[]>()
@@ -51,7 +50,7 @@ function logAssistantUsage(userId: string, messageLength: number, inputTokens: n
     inputTokens,
     outputTokens,
     totalTokens: inputTokens + outputTokens,
-    model: 'claude-3-5-haiku-20241022'
+    model: 'gemini-2.0-flash-001'
   }))
 }
 
@@ -189,42 +188,53 @@ export async function POST(request: NextRequest) {
       recentHistory: chatHistory?.slice(-4) // Last 4 messages for context
     })
 
-    // Build messages array with recent chat history for continuity
-    const messages: Array<{ role: 'user' | 'assistant'; content: string }> = []
+    // Build contents array for Gemini
+    const contents: any[] = []
     
     if (chatHistory && chatHistory.length > 0) {
       // Include last 6 messages for conversation continuity
       const recentMessages = chatHistory.slice(-6)
       for (const msg of recentMessages) {
         if (msg.role === 'user' || msg.role === 'assistant') {
-          messages.push({ role: msg.role, content: msg.content })
+          contents.push({
+            role: msg.role === 'assistant' ? 'model' : 'user',
+            parts: [{ text: msg.content }]
+          })
         }
       }
     }
     
     // Add current message
-    messages.push({ role: 'user', content: message })
-
-    const response = await anthropic.messages.create({
-      model: 'claude-3-5-haiku-20241022',
-      max_tokens: 1024,
-      system: systemPrompt,
-      messages
+    contents.push({
+      role: 'user',
+      parts: [{ text: message }]
     })
 
-    const textContent = response.content.find(block => block.type === 'text')
-    const assistantMessage = textContent ? textContent.text : 'Something went wrong. Try again.'
+    if (!genai) {
+      return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 })
+    }
+
+    const response = await genai.models.generateContent({
+      model: 'gemini-2.0-flash-001',
+      config: {
+        maxOutputTokens: 1024,
+        systemInstruction: systemPrompt,
+      },
+      contents
+    })
+
+    const assistantMessage = response.text || 'Something went wrong. Try again.'
 
     logAssistantUsage(
       userId,
       message.length,
-      response.usage.input_tokens,
-      response.usage.output_tokens
+      0, // Gemini doesn't return token counts in simple response easily, skipping for now
+      0
     )
 
     return NextResponse.json({ 
       message: assistantMessage,
-      model: 'haiku-3.5'
+      model: 'gemini-2.0-flash-001'
     })
   } catch (error) {
     console.error('Assistant error:', error instanceof Error ? error.message : String(error))

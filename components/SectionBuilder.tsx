@@ -475,9 +475,10 @@ export default function SectionBuilder({
     // Demo mode - simulate self-healing
     if (demoMode) {
       await new Promise(resolve => setTimeout(resolve, 2000))
-      setRefinementChanges(prev => [...prev, `Auto-fixed crash: ${errorMsg.slice(0, 30)}...`])
+      const fixMsg = "Auto-fixed crash: " + errorMsg.slice(0, 30) + "..."
+      setRefinementChanges(prev => [...prev, fixMsg])
       setHasSelfHealed(true)
-      onComplete(generatedCode, true, [...refinementChanges, `Auto-fixed crash: ${errorMsg.slice(0, 30)}...`])
+      onComplete(generatedCode, true, [...refinementChanges, fixMsg])
       setIsSelfHealing(false)
       return
     }

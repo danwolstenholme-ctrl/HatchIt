@@ -210,22 +210,24 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify project ownership using internal user ID
-    const project = await getProjectById(projectId)
-    if (!project) {
-      return NextResponse.json(
-        { error: 'Project not found' },
-        { status: 404 }
-      )
-    }
-    if (project.user_id !== dbUser.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized access to project' },
-        { status: 403 }
-      )
+    if (projectId && !projectId.startsWith('demo-')) {
+      const project = await getProjectById(projectId)
+      if (!project) {
+        return NextResponse.json(
+          { error: 'Project not found' },
+          { status: 404 }
+        )
+      }
+      if (!dbUser || project.user_id !== dbUser.id) {
+        return NextResponse.json(
+          { error: 'Unauthorized access to project' },
+          { status: 403 }
+        )
+      }
     }
 
     // Fetch User Style DNA (The Chronosphere)
-    const styleDNA = await getUserDNA(dbUser.id)
+    const styleDNA = dbUser ? await getUserDNA(dbUser.id) : null
 
     // Build the system prompt
     const templateType = sectionType || 'landing page'
