@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
+import { Brain } from 'lucide-react'
 
 interface SectionPreviewProps {
   code: string
@@ -320,17 +321,17 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
         <div className="text-center">
           <motion.div
             animate={{ 
-              y: [0, -10, 0],
-              rotate: [-5, 5, -5]
+              scale: [1, 1.1, 1],
+              opacity: [0.5, 1, 0.5]
             }}
             transition={{ 
-              duration: 2, 
+              duration: 3, 
               repeat: Infinity,
               ease: 'easeInOut'
             }}
-            className="text-6xl mb-4"
+            className="mb-6 inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-500/10 border border-emerald-500/20"
           >
-            🐣
+            <Brain className="w-10 h-10 text-emerald-500" />
           </motion.div>
           <h3 className="text-lg font-semibold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-2">
             Ready to hatch

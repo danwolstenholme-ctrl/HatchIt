@@ -1898,11 +1898,11 @@ export default function SectionBuilder({
             ) : stage === 'refining' || isUserRefining || isOpusPolishing ? (
               <div className="flex items-center gap-2">
                 <motion.div
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 1, repeat: Infinity }}
+                  animate={{ rotate: 180 }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                   className="text-violet-400"
                 >
-                  🐣
+                  <Sparkles className="w-4 h-4" />
                 </motion.div>
                 <span className="text-sm font-medium bg-gradient-to-r from-violet-400 to-purple-400 bg-clip-text text-transparent">
                   {isUserRefining ? 'Applying your changes...' : isOpusPolishing ? 'Opus is polishing...' : 'Refining...'}
