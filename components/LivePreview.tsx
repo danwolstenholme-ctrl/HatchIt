@@ -647,14 +647,14 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
         '};' +
         '</script>' +
         // Load React
-        '<script src="https://unpkg.com/react@18/umd/react.production.min.js" onload="window.React=React;window.react=React;window.DEPS_LOADED.react=true;" onerror="showFallback()"></script>' +
-        '<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" onload="window.ReactDOM=ReactDOM;window.DEPS_LOADED.reactdom=true;" onerror="showFallback()"></script>' +
+        '<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin onload="window.React=React;window.react=React;window.DEPS_LOADED.react=true;" onerror="showFallback()"></script>' +
+        '<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin onload="window.ReactDOM=ReactDOM;window.DEPS_LOADED.reactdom=true;" onerror="showFallback()"></script>' +
         // Load Tailwind
-        '<script src="https://cdn.tailwindcss.com" onload="window.DEPS_LOADED.tailwind=true;if(typeof tailwind!==\'undefined\'){tailwind.config={theme:{extend:{}},darkMode:\'class\'};}" onerror="showFallback()"></script>' +
+        '<script src="https://cdn.tailwindcss.com" crossorigin onload="window.DEPS_LOADED.tailwind=true;if(typeof tailwind!==\'undefined\'){tailwind.config={theme:{extend:{}},darkMode:\'class\'};}" onerror="showFallback()"></script>' +
         // Load Framer Motion and Lucide
-        '<script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js" onload="window.DEPS_LOADED.motion=true;" onerror="window.DEPS_LOADED.motion=true;"></script>' +
-        '<script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js" onload="window.DEPS_LOADED.lucide=true;" onerror="window.DEPS_LOADED.lucide=true;"></script>' +
-        '<script src="https://unpkg.com/@babel/standalone/babel.min.js" onload="window.DEPS_LOADED.babel=true;" onerror="showFallback()"></script>' +
+        '<script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js" crossorigin onload="window.DEPS_LOADED.motion=true;" onerror="window.DEPS_LOADED.motion=true;"></script>' +
+        '<script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js" crossorigin onload="window.DEPS_LOADED.lucide=true;" onerror="window.DEPS_LOADED.lucide=true;"></script>' +
+        '<script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin onload="window.DEPS_LOADED.babel=true;" onerror="showFallback()"></script>' +
         '<script>' +
         '// Setup globals with fallbacks\n' +
         'window.motion = window.Motion?.motion || { div: "div", button: "button", a: "a", span: "span", p: "p", h1: "h1", h2: "h2", h3: "h3", section: "section", main: "main", nav: "nav", ul: "ul", li: "li", img: "img", input: "input", form: "form", label: "label", textarea: "textarea", header: "header", footer: "footer", article: "article", aside: "aside" };\n' +
@@ -666,9 +666,7 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
         'window.useSpring = window.Motion?.useSpring || function(v) { return typeof v === "number" ? v : 0; };\n' +
         'window.useMotionValue = window.Motion?.useMotionValue || function(v) { return { get: function() { return v; }, set: function() {}, onChange: function(){} }; };\n' +
         'window.LucideIcons = window.lucideReact || {};\n' +
-        'if (!window.LucideIcons || Object.keys(window.LucideIcons).length === 0) {\n' +
-        '  window.LucideIcons = new Proxy({}, { get: function() { return function() { return null; }; } });\n' +
-        '}\n' +
+        'window.LucideIcons = new Proxy(window.LucideIcons, { get: function(target, prop) { if (prop in target) return target[prop]; return function() { return null; }; } });\n' +
         '</script>' +
         // Inspector script - handles element selection when inspector mode is enabled
         '<script>' +
@@ -907,14 +905,14 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
       '};' +
       '</script>' +
       // Load React
-      '<script src="https://unpkg.com/react@18/umd/react.production.min.js" onload="window.React=React;window.react=React;" onerror="showFallback()"></script>' +
-      '<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" onload="window.ReactDOM=ReactDOM;" onerror="showFallback()"></script>' +
+      '<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin onload="window.React=React;window.react=React;" onerror="showFallback()"></script>' +
+      '<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin onload="window.ReactDOM=ReactDOM;" onerror="showFallback()"></script>' +
       // Load Tailwind
-      '<script src="https://cdn.tailwindcss.com" onload="if(typeof tailwind!==\'undefined\'){tailwind.config={theme:{extend:{}},darkMode:\'class\'};}" onerror="showFallback()"></script>' +
+      '<script src="https://cdn.tailwindcss.com" crossorigin onload="if(typeof tailwind!==\'undefined\'){tailwind.config={theme:{extend:{}},darkMode:\'class\'};}" onerror="showFallback()"></script>' +
       // Load Framer Motion and Lucide (non-critical - fallbacks work)
-      '<script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js" onerror="true"></script>' +
-      '<script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js" onerror="true"></script>' +
-      '<script src="https://unpkg.com/@babel/standalone/babel.min.js" onerror="showFallback()"></script>' +
+      '<script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js" crossorigin onerror="true"></script>' +
+      '<script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js" crossorigin onerror="true"></script>' +
+      '<script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin onerror="showFallback()"></script>' +
       '<script>' +
       '// Expose motion and lucide icons as globals\n' +
       'window.motion = window.Motion?.motion || { div: "div", button: "button", a: "a", span: "span", p: "p", h1: "h1", h2: "h2", h3: "h3", section: "section", main: "main", nav: "nav", ul: "ul", li: "li", img: "img", input: "input", form: "form", label: "label", textarea: "textarea" };\n' +
@@ -926,9 +924,7 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
       'window.useSpring = window.Motion?.useSpring || function(v) { return v; };\n' +
       'window.useMotionValue = window.Motion?.useMotionValue || function(v) { return { get: function() { return v; }, set: function() {} }; };\n' +
       'window.LucideIcons = window.lucideReact || {};\n' +
-      'if (!window.LucideIcons || Object.keys(window.LucideIcons).length === 0) {\n' +
-      '  window.LucideIcons = new Proxy({}, { get: function() { return function() { return null; }; } });\n' +
-      '}\n' +
+      'window.LucideIcons = new Proxy(window.LucideIcons, { get: function(target, prop) { if (prop in target) return target[prop]; return function() { return null; }; } });\n' +
       '</script>' +
       // Inspector script - handles element selection when inspector mode is enabled
       '<script>' +
@@ -1207,7 +1203,7 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
             ref={iframeRef}
             srcDoc={srcDoc}
             className="w-full h-full border-0"
-            sandbox="allow-scripts"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
             title="Live Preview"
             onLoad={() => setIframeLoaded(true)}
           />

@@ -111,11 +111,11 @@ function FullSitePreviewFrame({ code, deviceView }: { code: string; deviceView: 
 <body class="dark">
   <div id="root"></div>
   
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js"></script>
-  <script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin></script>
+  <script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js" crossorigin></script>
+  <script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js" crossorigin></script>
   
   <script>
     window.motion = window.Motion?.motion || { div: 'div', span: 'span', button: 'button', a: 'a', p: 'p', h1: 'h1', h2: 'h2', h3: 'h3', section: 'section', nav: 'nav', ul: 'ul', li: 'li', img: 'img', form: 'form', input: 'input' };
@@ -127,10 +127,15 @@ function FullSitePreviewFrame({ code, deviceView }: { code: string; deviceView: 
     window.useSpring = window.Motion?.useSpring || function(v) { return v; };
     window.useAnimation = window.Motion?.useAnimation || function() { return { start: () => {}, stop: () => {} }; };
     
+    // Robust Lucide Icons Proxy
     window.LucideIcons = window.lucideReact || {};
-    if (!window.LucideIcons || Object.keys(window.LucideIcons).length === 0) {
-      window.LucideIcons = new Proxy({}, { get: () => () => null });
-    }
+    window.LucideIcons = new Proxy(window.LucideIcons, {
+      get: (target, prop) => {
+        if (prop in target) return target[prop];
+        // Return a dummy component that renders nothing (or a placeholder)
+        return function DummyIcon(props) { return null; };
+      }
+    });
   </script>
   
   <script type="text/babel" data-presets="react,typescript">
@@ -179,7 +184,7 @@ function FullSitePreviewFrame({ code, deviceView }: { code: string; deviceView: 
       srcDoc={srcDoc}
       className="w-full border-0"
       style={{ height: deviceView === 'desktop' ? '100%' : 'calc(100% - 24px)' }}
-      sandbox="allow-scripts"
+      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
       title="Full Site Preview"
     />
   )
