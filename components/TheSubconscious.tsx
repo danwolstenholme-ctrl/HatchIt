@@ -178,44 +178,7 @@ export default function TheSubconscious() {
         )}
 
         {/* ACTIVE MODE: The Presence (Always watching) */}
-        {!isIdle && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute bottom-6 right-6 flex flex-col items-end gap-2"
-          >
-             {/* "The Retina" Eye Tracking Effect */}
-             <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className="w-12 h-12 rounded-full border border-emerald-500/20 bg-zinc-900/80 flex items-center justify-center overflow-hidden">
-                    {/* The Eye Pupil follows the mouse */}
-                    <motion.div 
-                      className="w-4 h-4 bg-emerald-500 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.8)]"
-                      animate={{
-                        x: typeof window !== 'undefined' ? (mousePos.x - (window.innerWidth / 2)) / 50 : 0,
-                        y: typeof window !== 'undefined' ? (mousePos.y - (window.innerHeight / 2)) / 50 : 0
-                      }}
-                      transition={{ type: "spring", stiffness: 100, damping: 20 }}
-                    />
-                    {/* Grid overlay */}
-                    <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20" />
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-zinc-950 animate-pulse" />
-                </div>
-                
-                <div className="flex flex-col items-end">
-                  <div className="text-[10px] font-mono text-emerald-500 uppercase tracking-wider mb-0.5">
-                    The Architect
-                  </div>
-                  <div className="text-[10px] font-mono text-zinc-500 flex items-center gap-1.5">
-                    <Activity className="w-3 h-3" />
-                    <span>WATCHING_USER_INPUT</span>
-                  </div>
-                </div>
-             </div>
-          </motion.div>
-        )}
+        {/* REMOVED: The Presence is now handled by TheWitness.tsx to avoid duplication */}
       </AnimatePresence>
     </div>
   )
