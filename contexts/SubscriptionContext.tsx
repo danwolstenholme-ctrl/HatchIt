@@ -39,19 +39,19 @@ const defaultColors = {
 }
 
 const proColors = {
-  gradient: 'from-purple-600 to-pink-600',
-  border: 'border-purple-500/50',
-  text: 'text-purple-400',
-  glow: 'shadow-purple-500/30',
-  bgSubtle: 'bg-purple-500/10',
+  gradient: 'from-teal-500 to-cyan-500',
+  border: 'border-teal-500/50',
+  text: 'text-teal-400',
+  glow: 'shadow-teal-500/30',
+  bgSubtle: 'bg-teal-500/10',
 }
 
 const agencyColors = {
-  gradient: 'from-amber-500 to-orange-500',
-  border: 'border-amber-500/50',
-  text: 'text-amber-400',
-  glow: 'shadow-amber-500/30',
-  bgSubtle: 'bg-amber-500/10',
+  gradient: 'from-emerald-500 to-emerald-400',
+  border: 'border-emerald-500/50',
+  text: 'text-emerald-400',
+  glow: 'shadow-emerald-500/30',
+  bgSubtle: 'bg-emerald-500/10',
 }
 
 const SubscriptionContext = createContext<SubscriptionContextValue | null>(null)

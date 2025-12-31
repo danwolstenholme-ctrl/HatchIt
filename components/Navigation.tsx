@@ -53,7 +53,7 @@ export default function Navigation() {
             >
               <HatchLogo className="w-9 h-9" />
             </motion.div>
-            <span className="text-xl font-bold group-hover:from-purple-400 group-hover:to-pink-400 transition-all duration-300">
+            <span className="text-xl font-bold group-hover:from-teal-400 group-hover:to-cyan-400 transition-all duration-300">
               <span className="text-white">Hatch</span><span className="bg-gradient-to-r from-emerald-500 to-emerald-400 bg-clip-text text-transparent">It</span>
             </span>
           </Link>
@@ -104,7 +104,7 @@ export default function Navigation() {
                   afterSignOutUrl="/"
                   appearance={{
                     elements: {
-                      avatarBox: `w-7 h-7 sm:w-8 sm:h-8 ${isPaidUser ? `ring-[1.5px] ring-offset-1 ring-offset-zinc-950 ${tier === 'agency' ? 'ring-amber-500/70' : 'ring-purple-500/70'}` : ''}`
+                      avatarBox: `w-7 h-7 sm:w-8 sm:h-8 ${isPaidUser ? `ring-[1.5px] ring-offset-1 ring-offset-zinc-950 ${tier === 'agency' ? 'ring-emerald-500/70' : 'ring-teal-500/70'}` : ''}`
                     }
                   }}
                 />

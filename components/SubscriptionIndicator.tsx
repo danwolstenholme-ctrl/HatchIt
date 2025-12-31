@@ -21,7 +21,7 @@ export function TierGlowOverlay() {
       />
       <div 
         className={`absolute top-0 left-0 right-0 h-8 bg-gradient-to-b ${
-          tier === 'agency' ? 'from-amber-500/10' : 'from-purple-500/10'
+          tier === 'agency' ? 'from-emerald-500/10' : 'from-teal-500/10'
         } to-transparent`}
       />
       
@@ -31,7 +31,7 @@ export function TierGlowOverlay() {
       />
       <div 
         className={`absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t ${
-          tier === 'agency' ? 'from-amber-500/10' : 'from-purple-500/10'
+          tier === 'agency' ? 'from-emerald-500/10' : 'from-teal-500/10'
         } to-transparent`}
       />
       
@@ -47,16 +47,16 @@ export function TierGlowOverlay() {
       
       {/* Corner accents */}
       <div className={`absolute top-0 left-0 w-16 h-16 bg-gradient-to-br ${
-        tier === 'agency' ? 'from-amber-500/20' : 'from-purple-500/20'
+        tier === 'agency' ? 'from-emerald-500/20' : 'from-teal-500/20'
       } to-transparent`} />
       <div className={`absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl ${
-        tier === 'agency' ? 'from-amber-500/20' : 'from-purple-500/20'
+        tier === 'agency' ? 'from-emerald-500/20' : 'from-teal-500/20'
       } to-transparent`} />
       <div className={`absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr ${
-        tier === 'agency' ? 'from-amber-500/20' : 'from-purple-500/20'
+        tier === 'agency' ? 'from-emerald-500/20' : 'from-teal-500/20'
       } to-transparent`} />
       <div className={`absolute bottom-0 right-0 w-16 h-16 bg-gradient-to-tl ${
-        tier === 'agency' ? 'from-amber-500/20' : 'from-purple-500/20'
+        tier === 'agency' ? 'from-emerald-500/20' : 'from-teal-500/20'
       } to-transparent`} />
     </div>
   )
@@ -71,7 +71,7 @@ export function SubscriptionBadge({ showRenewal = true, compact = false }: { sho
 
   if (!isPaidUser) return null
 
-  const tierEmoji = tier === 'agency' ? '⚡' : '🐣'
+  const tierEmoji = tier === 'agency' ? '⚡' : '�'
   const tierName = tier === 'agency' ? 'Agency' : 'Pro'
 
   if (compact) {
