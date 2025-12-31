@@ -1108,7 +1108,7 @@ export default function SectionBuilder({
               className="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1.5 transition-colors"
             >
               <Bot className="w-3.5 h-3.5" />
-              <span>Ask Hatch</span>
+              <span>Ask The Architect</span>
             </button>
           </div>
           
@@ -1166,7 +1166,7 @@ export default function SectionBuilder({
             </div>
           )}
 
-          {/* Hatch - Your friendly prompt helper */}
+          {/* The Architect - Your friendly prompt helper */}
           {stage === 'input' && (
             <motion.button
               onClick={initializePromptHelper}
@@ -1181,7 +1181,7 @@ export default function SectionBuilder({
               </div>
               <div className="relative bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 group-hover:border-amber-500/30 transition-colors">
                 <div className="absolute left-0 top-1/2 -translate-x-1 -translate-y-1/2 w-2 h-2 bg-zinc-900 border-l border-b border-zinc-800 rotate-45 group-hover:border-amber-500/30"></div>
-                <span className="text-xs font-mono text-zinc-400 group-hover:text-amber-300 transition-colors">Need inspiration? Initialize Hatch Assistant.</span>
+                <span className="text-xs font-mono text-zinc-400 group-hover:text-amber-300 transition-colors">Need inspiration? Initialize Architect Assistant.</span>
               </div>
             </motion.button>
           )}
