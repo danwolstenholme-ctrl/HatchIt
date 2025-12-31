@@ -193,8 +193,8 @@ export default function TheSubconscious() {
                     <motion.div 
                       className="w-4 h-4 bg-emerald-500 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.8)]"
                       animate={{
-                        x: (mousePos.x - (window.innerWidth / 2)) / 50,
-                        y: (mousePos.y - (window.innerHeight / 2)) / 50
+                        x: typeof window !== 'undefined' ? (mousePos.x - (window.innerWidth / 2)) / 50 : 0,
+                        y: typeof window !== 'undefined' ? (mousePos.y - (window.innerHeight / 2)) / 50 : 0
                       }}
                       transition={{ type: "spring", stiffness: 100, damping: 20 }}
                     />
