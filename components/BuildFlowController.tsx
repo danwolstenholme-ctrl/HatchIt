@@ -42,6 +42,7 @@ import { chronosphere } from '@/lib/chronosphere'
 import { Template, Section, getTemplateById, getSectionById, createInitialBuildState, BuildState, websiteTemplate } from '@/lib/templates'
 import { DbProject, DbSection, DbBrandConfig } from '@/lib/supabase'
 import { AccountSubscription } from '@/types/subscriptions'
+import * as Babel from '@babel/standalone'
 
 // =============================================================================
 // FULL SITE PREVIEW FRAME
@@ -52,37 +53,26 @@ function FullSitePreviewFrame({ code, deviceView }: { code: string; deviceView: 
   const srcDoc = useMemo(() => {
     if (!code) return ''
 
-    const hooksDestructure = `const { useState, useEffect, useMemo, useCallback, useRef, Fragment } = React;`
+    try {
+      // Use Babel to transform the code safely
+      const transformed = Babel.transform(code, {
+        presets: ['react'],
+        filename: 'preview.tsx',
+      }).code
 
-    let cleanedCode = code
-      // Remove imports (handling multiline)
-      .replace(/import\s+[\s\S]*?from\s+['"].*?['"]\s*;?/g, '')
-      // Remove export default and named exports
-      .replace(/export\s+default\s+/g, '')
-      .replace(/export\s+(const|function|class|let|var)\s+/g, '$1 ')
-      // Fix React.* usage
-      .replace(/React\.useState/g, 'useState')
-      .replace(/React\.useEffect/g, 'useEffect')
-      .replace(/React\.useMemo/g, 'useMemo')
-      .replace(/React\.useCallback/g, 'useCallback')
-      .replace(/React\.useRef/g, 'useRef')
-      .replace(/React\.Fragment/g, 'Fragment')
-
-    // Wrap all sections in a single component
-    cleanedCode = `function GeneratedPage() {
-  return (
-    <main className="min-h-screen bg-zinc-950 text-white">
-      ${cleanedCode}
-    </main>
-  )
-}`.replace(/\|\s*{\/\*.*?\*\/}/g, '') // Remove weird pipe artifacts like "17 | {/* ... */}"
-
-    return `<!DOCTYPE html>
+      // Extract the component name (assuming it's the default export or the last function)
+      // For now, we wrap it to ensure it renders
+      
+      return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/lucide-react@latest"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -130,82 +120,76 @@ function FullSitePreviewFrame({ code, deviceView }: { code: string; deviceView: 
 <body class="dark">
   <div id="root"></div>
   
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin></script>
-  <script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js" crossorigin></script>
-  <script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js" crossorigin></script>
-  
   <script>
-    window.motion = window.Motion?.motion || { div: 'div', span: 'span', button: 'button', a: 'a', p: 'p', h1: 'h1', h2: 'h2', h3: 'h3', section: 'section', nav: 'nav', ul: 'ul', li: 'li', img: 'img', form: 'form', input: 'input' };
-    window.AnimatePresence = window.Motion?.AnimatePresence || function(p) { return p.children; };
-    window.useInView = window.Motion?.useInView || function() { return true; };
-    window.useScroll = window.Motion?.useScroll || function() { return { scrollY: 0, scrollYProgress: 0 }; };
-    window.useTransform = window.Motion?.useTransform || function(v) { return v; };
-    window.useMotionValue = window.Motion?.useMotionValue || function(v) { return { get: () => v, set: () => {} }; };
-    window.useSpring = window.Motion?.useSpring || function(v) { return v; };
-    window.useAnimation = window.Motion?.useAnimation || function() { return { start: () => {}, stop: () => {} }; };
-    
-    // Robust Lucide Icons Proxy
-    window.LucideIcons = window.lucideReact || {};
-    window.LucideIcons = new Proxy(window.LucideIcons, {
+    // Mock Lucide Icons to prevent crashes if CDN fails
+    window.LucideIcons = new Proxy({}, {
       get: (target, prop) => {
-        if (prop in target) return target[prop];
-        // Return a dummy component that renders nothing (or a placeholder)
-        return function DummyIcon(props) { return null; };
+        return function DummyIcon(props) { 
+          // Render SVG placeholder if needed, or just null
+          return React.createElement('span', { ...props, style: { display: 'inline-block', width: 24, height: 24, background: 'rgba(255,255,255,0.1)', borderRadius: 4 } }); 
+        };
       }
     });
   </script>
   
-  <script type="text/babel" data-presets="react,typescript">
-    ${hooksDestructure}
-    
-    const motion = window.motion;
-    const AnimatePresence = window.AnimatePresence;
-    const useInView = window.useInView;
-    const useScroll = window.useScroll;
-    const useTransform = window.useTransform;
-    const useMotionValue = window.useMotionValue;
-    const useSpring = window.useSpring;
-    const useAnimation = window.useAnimation;
-    
-    const { Menu, X, ChevronRight, ChevronLeft, ChevronDown, ChevronUp, ArrowRight, ArrowLeft, Check, CheckCircle, CheckCircle2, Star, Heart, Mail, Phone, MapPin, Github, Twitter, Linkedin, Instagram, Facebook, Youtube, ExternalLink, Search, User, Users, Settings, Home, Plus, Minus, Edit, Trash, Copy, Download, Upload, Share, Send, Bell, Calendar, Clock, Globe, Lock, Unlock, Eye, EyeOff, Filter, Grid, List, MoreHorizontal, MoreVertical, RefreshCw, RotateCcw, Save, Zap, Award, Target, TrendingUp, BarChart, PieChart, Activity, Layers, Box, Package, Cpu, Database, Server, Cloud, Code, Terminal, FileText, Folder, Image, Video, Music, Headphones, Mic, Camera, Bookmark, Tag, AlertCircle, Info, HelpCircle, Loader, Link, MessageCircle, Building, Briefcase, Shield } = window.LucideIcons || {};
-    
-    ${cleanedCode}
-    
+  <script type="text/javascript">
     try {
-      const root = ReactDOM.createRoot(document.getElementById('root'));
-      root.render(<GeneratedPage />);
+      const { useState, useEffect, useMemo, useCallback, useRef, Fragment } = React;
+      const { createRoot } = ReactDOM;
+      
+      // Inject the transformed code here
+      ${transformed}
+
+      // Mount the app
+      const root = createRoot(document.getElementById('root'));
+      
+      // Check if GeneratedPage exists, otherwise try to find the default export
+      // Babel transforms "export default function X" to "var X = ...; exports.default = X;"
+      // But in standalone script tag without modules, it might just be global
+      
+      let App = typeof GeneratedPage !== 'undefined' ? GeneratedPage : null;
+      
+      // If we can't find GeneratedPage, look for the first function that looks like a component
+      if (!App) {
+         // This is a heuristic for when the AI names it something else
+         const potentialComponents = Object.keys(window).filter(k => /^[A-Z]/.test(k) && typeof window[k] === 'function');
+         if (potentialComponents.length > 0) {
+            App = window[potentialComponents[potentialComponents.length - 1]];
+         }
+      }
+
+      if (App) {
+        root.render(React.createElement(App));
+      } else {
+        // If we can't find the component, wrap the raw code in a div (fallback)
+        root.render(React.createElement('div', { className: "p-8 text-red-400" }, "Could not find main component. Ensure you export a component named GeneratedPage or default export."));
+      }
+
     } catch (err) {
-      document.getElementById('root').innerHTML = '<div class="error-display">Render Error: ' + err.message + '</div>';
+      console.error('Eval Error:', err);
+      document.getElementById('root').innerHTML = '<div class="error-display">Build Error: ' + err.message + '</div>';
     }
   </script>
 </body>
 </html>`
+    } catch (err: any) {
+      return `<html><body><pre style="color: red; padding: 20px;">Transpilation Error: ${err.message}</pre></body></html>`
+    }
   }, [code])
 
-  if (!code) {
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-zinc-950">
-        <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center">
-            <Layers className="w-8 h-8 text-zinc-600" />
-          </div>
-          <h3 className="text-lg font-mono font-semibold text-zinc-400 mb-2">System Initializing</h3>
-          <p className="text-sm text-zinc-600 font-mono">Awaiting architectural components...</p>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <iframe
-      srcDoc={srcDoc}
-      className="w-full border-0"
-      style={{ height: deviceView === 'desktop' ? '100%' : 'calc(100% - 24px)' }}
-      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
-      title="Full Site Preview"
-    />
+    <div className={`w-full h-full bg-zinc-950 transition-all duration-300 mx-auto ${
+      deviceView === 'mobile' ? 'max-w-[375px] border-x border-zinc-800' : 
+      deviceView === 'tablet' ? 'max-w-[768px] border-x border-zinc-800' : 
+      'max-w-full'
+    }`}>
+      <iframe
+        title="Preview"
+        srcDoc={srcDoc}
+        className="w-full h-full border-0 bg-zinc-950"
+        sandbox="allow-scripts allow-same-origin"
+      />
+    </div>
   )
 }
 
