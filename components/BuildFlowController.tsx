@@ -74,7 +74,7 @@ function FullSitePreviewFrame({ code, deviceView }: { code: string; deviceView: 
       ${cleanedCode}
     </main>
   )
-}`
+}`.replace(/\|\s*{\/\*.*?\*\/}/g, '') // Remove weird pipe artifacts like "17 | {/* ... */}"
 
     return `<!DOCTYPE html>
 <html>
@@ -924,9 +924,6 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     alert("Brand settings are now managed by The Architect. Just ask to change colors or fonts.")
   }
 
-  // Debug ID to check for remounts
-  const debugId = useRef(Math.random().toString(36).substring(7))
-
   if (isLoading) {
     // Show different message depending on if we're loading existing vs creating new
     let loadingMessage = 'Initializing The Architect...'
@@ -940,7 +937,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
           transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
           className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full"
         />
-        <p className="text-zinc-400 text-sm font-mono">{loadingMessage} [{debugId.current}]</p>
+        <p className="text-zinc-400 text-sm font-mono">{loadingMessage}</p>
         
         {showReset && (
           <motion.div 

@@ -1770,8 +1770,8 @@ export default function SectionBuilder({
                   <div className="flex items-center gap-3">
                     <HatchCharacter state={hatchState} size="md" />
                     <div>
-                      <h3 className="font-semibold text-white text-sm">Hatch</h3>
-                      <p className="text-xs text-amber-400/70">Your prompt helper~</p>
+                      <h3 className="font-semibold text-white text-sm">The Architect</h3>
+                      <p className="text-xs text-emerald-400/70">System Optimization Unit</p>
                     </div>
                   </div>
                   <button
