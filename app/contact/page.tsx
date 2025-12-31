@@ -21,10 +21,10 @@ export default function ContactPage() {
       <div className="max-w-4xl mx-auto">
         <Link 
           href="/"
-          className="inline-flex items-center gap-2 text-zinc-500 hover:text-emerald-400 transition-colors mb-8 group"
+          className="inline-flex items-center gap-2 text-zinc-500 hover:text-violet-400 transition-colors mb-8 group"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span>Return to Base</span>
+          <span>Back to Home</span>
         </Link>
 
         <div className="grid md:grid-cols-2 gap-12">
@@ -36,22 +36,22 @@ export default function ContactPage() {
               transition={{ duration: 0.5 }}
             >
               <h1 className="text-4xl font-bold mb-4 tracking-tight">
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-500">
-                  Establish Connection
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-500">
+                  Contact Support
                 </span>
               </h1>
               <p className="text-zinc-400 mb-8 leading-relaxed">
-                The Architect is always listening. Whether you have a question about the Singularity, 
-                need technical assistance, or want to discuss enterprise solutions, we are ready to receive your transmission.
+                We're here to help. Whether you have a question about the platform, 
+                need technical assistance, or want to discuss enterprise solutions, our team is ready to assist.
               </p>
 
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center flex-shrink-0">
-                    <Mail className="w-5 h-5 text-emerald-500" />
+                    <Mail className="w-5 h-5 text-violet-500" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-white mb-1">Direct Line</h3>
+                    <h3 className="font-medium text-white mb-1">Email Support</h3>
                     <p className="text-sm text-zinc-400">support@hatchit.dev</p>
                     <p className="text-sm text-zinc-500 mt-1">Response time: &lt; 24 hours</p>
                   </div>
@@ -59,10 +59,10 @@ export default function ContactPage() {
 
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center flex-shrink-0">
-                    <MessageSquare className="w-5 h-5 text-emerald-500" />
+                    <MessageSquare className="w-5 h-5 text-violet-500" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-white mb-1">Live Channels</h3>
+                    <h3 className="font-medium text-white mb-1">Live Chat</h3>
                     <p className="text-sm text-zinc-400">Available for Enterprise Clients</p>
                     <p className="text-sm text-zinc-500 mt-1">Mon-Fri, 09:00 - 18:00 UTC</p>
                   </div>
@@ -80,72 +80,72 @@ export default function ContactPage() {
           >
             {formState === 'sent' ? (
               <div className="h-full flex flex-col items-center justify-center text-center py-12">
-                <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mb-4">
-                  <Send className="w-8 h-8 text-emerald-500" />
+                <div className="w-16 h-16 bg-violet-500/10 rounded-full flex items-center justify-center mb-4">
+                  <Send className="w-8 h-8 text-violet-500" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">Transmission Received</h3>
+                <h3 className="text-xl font-bold text-white mb-2">Message Sent</h3>
                 <p className="text-zinc-400">
-                  Your message has been logged in the matrix. Our team will decode it shortly.
+                  We've received your message and will get back to you shortly.
                 </p>
                 <button 
                   onClick={() => setFormState('idle')}
-                  className="mt-6 text-sm text-emerald-400 hover:text-emerald-300 underline underline-offset-4"
+                  className="mt-6 text-sm text-violet-400 hover:text-violet-300 underline underline-offset-4"
                 >
-                  Send another transmission
+                  Send another message
                 </button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-xs font-mono text-zinc-500 uppercase tracking-wider mb-2">
-                    Identity
+                    Name
                   </label>
                   <input 
                     type="text" 
                     placeholder="Your Name"
                     required
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all"
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-white placeholder:text-zinc-600 focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 transition-all"
                   />
                 </div>
                 
                 <div>
                   <label className="block text-xs font-mono text-zinc-500 uppercase tracking-wider mb-2">
-                    Frequency (Email)
+                    Email Address
                   </label>
                   <input 
                     type="email" 
                     placeholder="you@example.com"
                     required
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all"
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-white placeholder:text-zinc-600 focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 transition-all"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-mono text-zinc-500 uppercase tracking-wider mb-2">
-                    Transmission Data
+                    Message
                   </label>
                   <textarea 
                     rows={4}
                     placeholder="How can we assist you?"
                     required
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all resize-none"
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-white placeholder:text-zinc-600 focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 transition-all resize-none"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={formState === 'sending'}
-                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-violet-600 hover:bg-violet-500 text-white font-medium py-3 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {formState === 'sending' ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span>Transmitting...</span>
+                      <span>Sending...</span>
                     </>
                   ) : (
                     <>
                       <Send className="w-4 h-4" />
-                      <span>Initiate Transmission</span>
+                      <span>Send Message</span>
                     </>
                   )}
                 </button>

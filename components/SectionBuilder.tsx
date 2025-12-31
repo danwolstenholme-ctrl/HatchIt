@@ -1808,7 +1808,7 @@ export default function SectionBuilder({
                 className="w-full max-w-md bg-zinc-900 border border-zinc-700 rounded-2xl shadow-2xl overflow-hidden"
               >
                 {/* Header */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-gradient-to-r from-amber-500/5 to-yellow-500/5">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-gradient-to-r from-emerald-500/5 to-teal-500/5">
                   <div className="flex items-center gap-3">
                     <HatchCharacter state={hatchState} size="md" />
                     <div>
@@ -1906,12 +1906,12 @@ export default function SectionBuilder({
                       onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendHelperMessage()}
                       placeholder="Tell me about your business..."
                       disabled={isHelperLoading}
-                      className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 disabled:opacity-50"
+                      className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 disabled:opacity-50"
                     />
                     <button
                       onClick={sendHelperMessage}
                       disabled={!helperInput.trim() || isHelperLoading}
-                      className="px-4 py-2 bg-amber-500 hover:bg-amber-600 disabled:bg-zinc-700 disabled:text-zinc-500 text-white rounded-lg transition-colors"
+                      className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-zinc-700 disabled:text-zinc-500 text-white rounded-lg transition-colors"
                     >
                       →
                     </button>

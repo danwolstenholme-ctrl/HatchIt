@@ -18,11 +18,11 @@ export default function ContactButton() {
         animate={{ scale: 1, opacity: 1 }}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 bg-zinc-900 border border-emerald-500/30 rounded-full shadow-[0_0_20px_rgba(16,185,129,0.2)] group hover:border-emerald-500/60 transition-colors"
+        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 bg-zinc-900 border border-violet-500/30 rounded-full shadow-[0_0_20px_rgba(139,92,246,0.2)] group hover:border-violet-500/60 transition-colors"
       >
         <div className="relative">
-          <MessageSquare className="w-5 h-5 text-emerald-500" />
-          <span className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+          <MessageSquare className="w-5 h-5 text-violet-500" />
+          <span className="absolute -top-1 -right-1 w-2 h-2 bg-violet-500 rounded-full animate-pulse" />
         </div>
         <span className="text-sm font-medium text-zinc-300 group-hover:text-white transition-colors pr-1">
           Contact Support
