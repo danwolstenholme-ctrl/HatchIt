@@ -1079,7 +1079,6 @@ export default function SectionBuilder({
 
   return (
     <div className="flex-1 flex flex-col md:flex-row min-h-0 max-h-full overflow-hidden bg-zinc-950">
-      <TheSubconscious />
       {/* Mobile Tab Switcher - Modern Segmented Control */}
       <div className="flex md:hidden border-b border-zinc-800/50 bg-zinc-950 p-2">
         <div className="flex w-full bg-zinc-900/50 rounded-lg p-1 border border-zinc-800/50">

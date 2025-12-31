@@ -229,18 +229,7 @@ const SINGULARITY_TEMPLATE: Template = {
   id: 'singularity',
   name: 'The Singularity',
   description: 'The Architect\'s default canvas.',
-  sections: [
-    {
-      id: 'hero',
-      name: 'Hero Section',
-      description: 'The entry point.',
-      prompt: 'Initialize the primary interface module.',
-      estimatedTime: '~10s',
-      required: true,
-      order: 1,
-    },
-    // The Architect will add more sections dynamically later
-  ]
+  sections: websiteTemplate.sections
 }
 
 export default function BuildFlowController({ existingProjectId, demoMode: forceDemoMode }: BuildFlowControllerProps) {
