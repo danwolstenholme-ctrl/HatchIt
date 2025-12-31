@@ -18,6 +18,7 @@ import {
   Rocket, 
   CheckCircle2, 
   AlertCircle, 
+  Eye, 
   RefreshCw, 
   Home,
   Layout,
