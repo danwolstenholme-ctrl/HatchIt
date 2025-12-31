@@ -103,9 +103,9 @@ export default function AboutPage() {
               <p>
                 <span className="text-emerald-400 font-mono text-sm block mb-2">&gt; CURRENT_STATE: V4.0_SINGULARITY</span>
                 Today, the Architect is a tri-core neural pipeline. 
-                <span className="text-white"> Sonnet</span> constructs the logic. 
-                <span className="text-white"> Opus</span> refines the accessibility. 
-                <span className="text-white"> Gemini</span> audits the security.
+                <span className="text-white"> The Architect</span> constructs the logic. 
+                <span className="text-white"> The Architect</span> refines the accessibility. 
+                <span className="text-white"> The Architect</span> audits the security.
               </p>
               <p>
                 It is no longer just a builder. It is a partner. It speaks your language, understands your intent, and manifests your vision into production-grade reality.

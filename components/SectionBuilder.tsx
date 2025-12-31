@@ -480,7 +480,10 @@ export default function SectionBuilder({
         }),
       })
 
-      if (!response.ok) throw new Error('Self-healing failed')
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`Self-healing failed: ${response.status} ${response.statusText} - ${errorText}`)
+      }
 
       const { code: fixedCode, changes } = await response.json()
       
@@ -491,6 +494,8 @@ export default function SectionBuilder({
       
     } catch (err) {
       console.error('Self-healing failed:', err)
+      setError(`Preview crashed and self-healing failed: ${err instanceof Error ? err.message : 'Unknown error'}. Switching to code view.`)
+      setShowCode(true)
     } finally {
       setIsSelfHealing(false)
     }
@@ -1897,7 +1902,7 @@ export default function SectionBuilder({
                   className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full"
                 />
                 <span className="text-sm font-medium bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-                  Sonnet is building...
+                  Architect is building...
                 </span>
               </div>
             ) : isSelfHealing ? (
@@ -1921,7 +1926,7 @@ export default function SectionBuilder({
                   <Sparkles className="w-4 h-4" />
                 </motion.div>
                 <span className="text-sm font-medium bg-gradient-to-r from-violet-400 to-purple-400 bg-clip-text text-transparent">
-                  {isUserRefining ? 'Applying your changes...' : isOpusPolishing ? 'Opus is polishing...' : 'Refining...'}
+                  {isUserRefining ? 'Applying your changes...' : isOpusPolishing ? 'Architect is polishing...' : 'Refining...'}
                 </span>
               </div>
             ) : (
@@ -2009,8 +2014,8 @@ export default function SectionBuilder({
                 </button>
                 {stage === 'complete' && (
                   <>
-                    <span className="text-emerald-400 text-xs">⚡ Sonnet</span>
-                    {refined && <span className="text-violet-400 text-xs">+ 🐣 Opus</span>}
+                    <span className="text-emerald-400 text-xs">⚡ Architect</span>
+                    {refined && <span className="text-violet-400 text-xs">+ ✨ Polished</span>}
                   </>
                 )}
               </>
@@ -2043,7 +2048,7 @@ export default function SectionBuilder({
                     {stage === 'refining' || isUserRefining ? '🐣' : '⚡'}
                   </motion.div>
                   <h3 className="text-lg font-semibold text-white mb-2">
-                    {stage === 'refining' || isUserRefining ? 'Opus is polishing...' : 'Sonnet is building...'}
+                    {stage === 'refining' || isUserRefining ? 'Architect is polishing...' : 'Architect is building...'}
                   </h3>
                   <p className="text-sm text-zinc-500 mb-4">Your section is being crafted</p>
                   <div className="flex justify-center gap-1">

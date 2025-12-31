@@ -67,12 +67,12 @@ Created shared subscription types in types/subscriptions.ts for consistent tier 
     items: [
       { 
         title: 'Tri-Core Neural Pipeline', 
-        description: 'Sonnet builds. Opus polishes. Gemini audits.', 
+        description: 'Architect builds. Architect polishes. Architect audits.', 
         status: 'deployed', 
         date: 'Dec 2025',
-        technicalDetails: `Replaced single-model approach with specialized pipeline. Claude Sonnet 4 (claude-sonnet-4-20250514) generates initial code fast. Claude Opus 4 (claude-opus-4-20250514) refines for accessibility, semantic HTML, and quality. Gemini 2.5 Pro (gemini-2.5-pro-preview-06-05) audits final output for best practices.
+        technicalDetails: `Replaced single-model approach with specialized pipeline. The Architect generates initial code fast. The Architect refines for accessibility, semantic HTML, and quality. The Architect audits final output for best practices.
 
-Each model has a specific role and system prompt optimized for its task. The pipeline runs sequentially: Sonnet → Opus → (optional) Gemini audit.`
+Each model has a specific role and system prompt optimized for its task. The pipeline runs sequentially: Build → Polish → (optional) Audit.`
       },
       { 
         title: 'System Architect Interface', 
@@ -103,10 +103,10 @@ Brand config is passed to every AI prompt, ensuring consistent styling across al
       },
       { 
         title: 'Optimization Subroutine', 
-        description: 'Opus analyzes and suggests improvements post-generation.', 
+        description: 'Architect analyzes and suggests improvements post-generation.', 
         status: 'deployed', 
         date: 'Dec 2025',
-        technicalDetails: `After Sonnet generates a section, Opus analyzes and returns suggestions via suggest-improvements API. Displayed in friendly popup with Hatch: "I have some ideas! ✨"
+        technicalDetails: `After the Architect generates a section, it analyzes and returns suggestions via suggest-improvements API. Displayed in friendly popup with The Architect: "I have some ideas! ✨"
 
 Suggestions are contextual to the section type. Click to apply, or dismiss and continue to next section.`
       },

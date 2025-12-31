@@ -18,7 +18,7 @@ export default function FAQPage() {
       },
       {
         q: 'How does the fabrication process function?',
-        a: 'The System utilizes a Tri-Core Neural Pipeline. 1) Vector Selection (Template), 2) Identity Matrix (Branding), 3) Sequential Fabrication (Section Building). Claude Sonnet constructs, Claude Opus refines, and Gemini audits. The Hatch Interface Entity assists with prompt extrapolation.',
+        a: 'The System utilizes a Tri-Core Neural Pipeline. 1) Vector Selection (Template), 2) Identity Matrix (Branding), 3) Sequential Fabrication (Section Building). The Architect constructs, refines, and audits. The Architect Interface Entity assists with prompt extrapolation.',
       },
       {
         q: 'Is coding knowledge required for operation?',

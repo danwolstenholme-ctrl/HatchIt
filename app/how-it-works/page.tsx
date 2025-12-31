@@ -101,7 +101,7 @@ export default function HowItWorksPage() {
               icon={Cpu}
               phase="02"
               title="Fabrication"
-              description="Execute section generation sequentially. If input data is sparse, the Hatch Interface Entity will extrapolate prompts. Sonnet constructs. Opus refines."
+              description="Execute section generation sequentially. If input data is sparse, the Architect Interface Entity will extrapolate prompts. Architect constructs. Architect refines."
               delay={0.1}
             />
             <Phase 
@@ -138,7 +138,7 @@ export default function HowItWorksPage() {
                   <div>
                     <h3 className="text-lg font-bold mb-2 font-mono text-white group-hover:text-emerald-400 transition-colors">Tri-Core Neural Pipeline</h3>
                     <p className="text-zinc-400 text-sm font-mono leading-relaxed">
-                      Distributed cognitive load. Claude Sonnet 4 handles rapid construction. Claude Opus 4 executes semantic refinement and accessibility compliance. Gemini 2.5 Pro performs final code audit.
+                      Distributed cognitive load. The Architect handles rapid construction. The Architect executes semantic refinement and accessibility compliance. The Architect performs final code audit.
                     </p>
                   </div>
                 </div>
