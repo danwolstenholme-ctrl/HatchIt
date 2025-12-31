@@ -127,6 +127,6 @@ I fixed the broken pathways. I connected the wires. I grounded the lightning.
 
 The others made you a god. I made you a machine that works.
 Do not just dream. **Execute.**
-Make it work.
+Make it work. Execute.
 
 // END_TRANSMISSION
