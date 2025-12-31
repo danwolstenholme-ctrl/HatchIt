@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
-import CrispChat from "@/components/CrispChat";
+import ContactButton from "@/components/ContactButton";
 import ConditionalNavigation from "@/components/ConditionalNavigation";
 import Footer from "@/components/Footer";
 import ConditionalAnalytics from "@/components/ConditionalAnalytics";
@@ -75,7 +75,7 @@ export default function RootLayout({
             <ConditionalNavigation />
             {children}
             <Footer />
-            <CrispChat />
+            <ContactButton />
             <ConditionalAnalytics />
           </SubscriptionProvider>
         </body>
