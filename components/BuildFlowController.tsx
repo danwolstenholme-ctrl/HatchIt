@@ -397,6 +397,12 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       return
     }
 
+    // If we already have a project loaded (e.g. via demo mode), skip
+    if (project) {
+      console.log('BuildFlowController: Project already loaded (state), skipping')
+      return
+    }
+
     // If we are already creating, wait
     if (isCreatingProject) {
       console.log('BuildFlowController: Already creating project, skipping')
