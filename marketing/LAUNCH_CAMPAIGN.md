@@ -87,6 +87,12 @@ Get your code: [Link]
 *Body:* Tired of monthly fees for locked-in templates? HatchIt gives you the source code. One click export. It's your IP, not ours.
 *CTA:* Get Your Code
 
+**Ad Variant D (The "Social" Angle - 1:1 Square)**
+*Visual:* High-contrast typography on brand violet background. "Wix is a rental. HatchIt is ownership."
+*Headline:* Stop Renting Your Website.
+*Body:* Why pay monthly forever? HatchIt generates the code, you export it. Host it on Vercel for free. Own your asset.
+*CTA:* Start Owning
+
 ---
 
 ## 3. Targeting Strategy

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { track } from '@vercel/analytics'
+import { useUser, useClerk } from '@clerk/nextjs'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 
 interface HatchModalProps {
@@ -18,6 +19,8 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { isPaidUser, tier, syncSubscription, isSyncing } = useSubscription()
+  const { isSignedIn } = useUser()
+  const { openSignIn } = useClerk()
 
   // Track when modal is shown
   useEffect(() => {
@@ -64,6 +67,16 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
   const { title, description, icon } = messages[reason]
 
   const handleHatch = async () => {
+    // If not signed in, prompt to sign in first
+    if (!isSignedIn) {
+      onClose()
+      openSignIn({
+        afterSignInUrl: window.location.href,
+        afterSignUpUrl: window.location.href,
+      })
+      return
+    }
+
     // Double-check they don't already have a subscription
     if (isPaidUser) {
       setError(`You already have a ${tier} subscription!`)
@@ -81,6 +94,16 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tier: 'pro' }),
       })
+
+      if (response.status === 401) {
+        onClose()
+        openSignIn({
+          afterSignInUrl: window.location.href,
+          afterSignUpUrl: window.location.href,
+        })
+        return
+      }
+
       const data = await response.json()
       
       if (data.url) {

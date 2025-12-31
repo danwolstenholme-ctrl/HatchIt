@@ -163,6 +163,11 @@ function PricingButton({ tier, className, children }: { tier: 'pro' | 'agency', 
         body: JSON.stringify({ tier })
       })
       
+      if (res.status === 401) {
+        window.location.href = `/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`
+        return
+      }
+
       const data = await res.json()
       
       if (data.url) {
