@@ -57,6 +57,7 @@ import HatchCharacter, { HatchState } from './HatchCharacter'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import ThinkingLog from './ThinkingLog'
 import DirectLine from './DirectLine'
+import { chronosphere } from '@/lib/chronosphere'
 
 // =============================================================================
 // SECTION BUILDER
@@ -567,6 +568,11 @@ export default function SectionBuilder({
     }
   }, [stage, section.id])
 
+  // Log navigation to Chronosphere
+  useEffect(() => {
+    chronosphere.log('navigation', { section: section.name, sectionId: section.id }, section.id)
+  }, [section.id, section.name])
+
   // Reset when section changes - intentionally only depends on dbSection.id
   // We read the current dbSection values inside the effect, not as reactive deps
   useEffect(() => {
@@ -726,6 +732,8 @@ export default function SectionBuilder({
     setStreamingCode('')
     setReasoning('') // Clear previous reasoning
     setHasSelfHealed(false)
+    
+    chronosphere.log('generation', { prompt, section: section.name }, section.id)
 
     // Demo mode - simulate generation with mock code
     if (demoMode) {
@@ -823,6 +831,7 @@ export default function SectionBuilder({
 
 
   const handleRebuild = () => {
+    chronosphere.log('rejection', { section: section.name, reason: 'rebuild' }, section.id)
     setStage('input')
     setGeneratedCode('')
     setRefined(false)
@@ -830,6 +839,11 @@ export default function SectionBuilder({
     setRefinePrompt('')
     setIsUserRefining(false)
     setHasSelfHealed(false)
+  }
+
+  const handleNextSection = () => {
+    chronosphere.log('acceptance', { section: section.name }, section.id)
+    onNextSection()
   }
 
   const handleRemix = () => {
@@ -853,6 +867,8 @@ export default function SectionBuilder({
     setError(null)
     setIsUserRefining(true)
     setStreamingCode('')
+    
+    chronosphere.log('refinement', { prompt: refinePrompt, section: section.name }, section.id)
 
     // Demo mode - simulate refinement
     if (demoMode) {
@@ -1672,7 +1688,7 @@ export default function SectionBuilder({
                         <span>View Preview</span>
                       </button>
                       <button
-                        onClick={onNextSection}
+                        onClick={handleNextSection}
                         className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold text-lg hover:shadow-[0_0_20px_rgba(147,51,234,0.3)] active:scale-[0.98] transition-all min-h-[56px] flex items-center justify-center gap-2 group"
                       >
                         <span>Continue to Next Module</span>

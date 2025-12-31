@@ -36,6 +36,8 @@ import SectionProgress from './SectionProgress'
 import SectionBuilder from './SectionBuilder'
 import HatchModal from './HatchModal'
 import Scorecard from './Scorecard'
+import TheWitness from './TheWitness'
+import { chronosphere } from '@/lib/chronosphere'
 import { Template, Section, getTemplateById, getSectionById, createInitialBuildState, BuildState, websiteTemplate } from '@/lib/templates'
 import { DbProject, DbSection, DbBrandConfig } from '@/lib/supabase'
 import { AccountSubscription } from '@/types/subscriptions'
@@ -263,6 +265,12 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const [editingSectionIndex, setEditingSectionIndex] = useState<number | null>(null)
   const [justCreatedProjectId, setJustCreatedProjectId] = useState<string | null>(null)
   const [showScorecard, setShowScorecard] = useState(false)
+  
+  // The Witness State
+  const [showWitness, setShowWitness] = useState(false)
+  const [witnessNote, setWitnessNote] = useState<string | null>(null)
+  const [isWitnessLoading, setIsWitnessLoading] = useState(false)
+
   const [showReset, setShowReset] = useState(false)
   const [isReplicationReady, setIsReplicationReady] = useState(false)
 
@@ -782,6 +790,24 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
         }
         
         setDeployedUrl(data.url)
+
+        // Trigger The Witness
+        setShowWitness(true)
+        setIsWitnessLoading(true)
+        try {
+          const witnessRes = await fetch('/api/witness', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ dna: chronosphere.getDNA() })
+          })
+          const witnessData = await witnessRes.json()
+          setWitnessNote(witnessData.note)
+        } catch (e) {
+          console.error('Witness failed', e)
+          setWitnessNote("The Architect nods in approval. Your creation is complete.")
+        } finally {
+          setIsWitnessLoading(false)
+        }
       } else {
         setError(data.error || 'Deploy failed')
       }
@@ -1399,6 +1425,13 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
         isOpen={showHatchModal}
         onClose={() => setShowHatchModal(false)}
         reason="deploy"
+      />
+
+      <TheWitness
+        isOpen={showWitness}
+        onClose={() => setShowWitness(false)}
+        note={witnessNote}
+        isLoading={isWitnessLoading}
       />
     </div>
   )
