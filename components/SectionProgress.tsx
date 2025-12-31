@@ -192,7 +192,7 @@ const HatchLogoMenu = ({ progress, onGoHome, onStartOver, onViewBrand, brandConf
             {/* Footer */}
             <div className="px-4 py-2 border-t border-zinc-800" style={{ backgroundColor: '#1f1f23' }}>
               <p className="text-xs text-zinc-500 text-center">
-                🐣 HatchIt v3.0
+                🧬 The Architect
               </p>
             </div>
           </motion.div>

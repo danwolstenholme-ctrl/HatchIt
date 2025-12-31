@@ -1814,7 +1814,7 @@ export default function SectionBuilder({
                     >
                       <div className="bg-zinc-800 px-4 py-3 rounded-xl rounded-bl-sm flex items-center gap-3">
                         <HatchCharacter state="thinking" size="sm" />
-                        <span className="text-sm text-zinc-400">Hmm, let me think... 🥚💭</span>
+                        <span className="text-sm text-zinc-400">Analyzing parameters...</span>
                       </div>
                     </motion.div>
                   )}
