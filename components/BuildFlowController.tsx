@@ -247,6 +247,18 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const [editingSectionIndex, setEditingSectionIndex] = useState<number | null>(null)
   const [justCreatedProjectId, setJustCreatedProjectId] = useState<string | null>(null)
   const [showScorecard, setShowScorecard] = useState(false)
+  const [showReset, setShowReset] = useState(false)
+
+  // Show reset button if loading takes too long
+  useEffect(() => {
+    let timer: NodeJS.Timeout
+    if (isLoading) {
+      timer = setTimeout(() => setShowReset(true), 8000) // 8 seconds
+    } else {
+      setShowReset(false)
+    }
+    return () => clearTimeout(timer)
+  }, [isLoading])
 
   // Get account subscription from user metadata
   const accountSubscription = useMemo(() => {
@@ -277,30 +289,42 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
   // AUTO-INITIALIZATION LOGIC
   useEffect(() => {
+    console.log('BuildFlowController: useEffect triggered', { existingProjectId, justCreatedProjectId, isCreatingProject, isLoaded })
+
     // If we have an existing project ID, load it
     if (existingProjectId) {
+      console.log('BuildFlowController: Loading existing project', existingProjectId)
       loadExistingProject(existingProjectId)
       return
     }
 
     // If we just created a project, do nothing (we are already set up)
     if (justCreatedProjectId) {
+      console.log('BuildFlowController: Just created project, skipping')
       return
     }
 
     // If we are already creating, wait
-    if (isCreatingProject) return
+    if (isCreatingProject) {
+      console.log('BuildFlowController: Already creating project, skipping')
+      return
+    }
 
     // If we are not loaded yet, wait
-    if (!isLoaded) return
+    if (!isLoaded) {
+      console.log('BuildFlowController: Clerk not loaded yet, waiting')
+      return
+    }
 
     // Otherwise, INITIALIZE A NEW PROJECT IMMEDIATELY
+    console.log('BuildFlowController: Initializing new project')
     initializeProject()
     
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existingProjectId, justCreatedProjectId, isCreatingProject, isLoaded])
 
   const initializeProject = async () => {
+    console.log('BuildFlowController: initializeProject started')
     setIsCreatingProject(true)
     setIsLoading(true)
     
@@ -411,6 +435,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
         router.replace('/builder', { scroll: false })
         // This will trigger the useEffect again to initialize a new project
         setJustCreatedProjectId(null)
+        setIsLoading(false) // Ensure loading is turned off so the new initialization can start fresh if needed, or at least UI updates
         return
       }
       
@@ -758,6 +783,26 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
           className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full"
         />
         <p className="text-zinc-400 text-sm font-mono">{loadingMessage}</p>
+        
+        {showReset && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-4 flex flex-col items-center gap-2"
+          >
+            <p className="text-zinc-500 text-xs">Taking longer than expected?</p>
+            <button 
+              onClick={() => {
+                // Clear local storage and reload
+                localStorage.removeItem('hatch_current_project')
+                window.location.href = '/builder'
+              }}
+              className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded text-xs text-zinc-400 hover:text-white transition-colors"
+            >
+              Reset & Start New Project
+            </button>
+          </motion.div>
+        )}
       </div>
     )
   }
