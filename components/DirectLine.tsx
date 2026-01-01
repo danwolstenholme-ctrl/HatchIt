@@ -130,11 +130,11 @@ export default function DirectLine({ context, onAction }: DirectLineProps) {
             initial={{ opacity: 0, y: 10, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.9 }}
-            className="absolute bottom-14 right-0 w-64 bg-zinc-900/90 border border-green-500/30 backdrop-blur-md p-4 rounded-xl shadow-2xl z-50"
+            className="absolute bottom-14 right-0 w-64 bg-zinc-900/90 border border-violet-500/30 backdrop-blur-md p-4 rounded-xl shadow-2xl z-50"
           >
-            <div className="flex items-center gap-2 mb-2 border-b border-green-500/20 pb-2">
-              <Activity className="w-4 h-4 text-green-500" />
-              <span className="text-xs font-bold text-green-400 uppercase tracking-wider">The Architect</span>
+            <div className="flex items-center gap-2 mb-2 border-b border-violet-500/20 pb-2">
+              <Activity className="w-4 h-4 text-violet-500" />
+              <span className="text-xs font-bold text-violet-400 uppercase tracking-wider">The Architect</span>
             </div>
             <p className="text-xs text-zinc-300 font-mono leading-relaxed">
               "{architectMessage}"

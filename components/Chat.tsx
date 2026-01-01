@@ -60,7 +60,7 @@ interface ChatProps {
 
 const thinkingMessages = [
   "Consulting the Genesis Engine...",
-  "Architecting the Singularity...",
+  "The Architect is thinking...",
   "Compiling digital matter...",
   "Optimizing the matrix...",
   "Injecting consciousness...",
@@ -70,7 +70,7 @@ const thinkingMessages = [
 const responses = [
   "Evolution complete.",
   "The architecture is ready.",
-  "Singularity achieved.",
+  "Build complete.",
   "Code synthesized.",
   "Reality updated.",
   "The construct is live.",

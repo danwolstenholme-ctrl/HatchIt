@@ -23,7 +23,7 @@ export default function ArchitectLogo({ className = "w-8 h-8", animated = true }
           strokeWidth="6"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="text-emerald-500"
+          className="text-violet-500"
           initial={animated ? { pathLength: 0, opacity: 0 } : undefined}
           animate={animated ? { pathLength: 1, opacity: 1 } : undefined}
           transition={{ duration: 1.5, ease: "easeInOut" }}
@@ -36,7 +36,7 @@ export default function ArchitectLogo({ className = "w-8 h-8", animated = true }
           strokeWidth="4"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="text-emerald-300"
+          className="text-violet-300"
           initial={animated ? { pathLength: 0, opacity: 0 } : undefined}
           animate={animated ? { pathLength: 1, opacity: 1 } : undefined}
           transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
@@ -55,7 +55,7 @@ export default function ArchitectLogo({ className = "w-8 h-8", animated = true }
       </svg>
       
       {/* Glow Effect */}
-      <div className="absolute inset-0 bg-emerald-500/20 blur-xl rounded-full -z-10" />
+      <div className="absolute inset-0 bg-violet-500/20 blur-xl rounded-full -z-10" />
     </div>
   )
 }

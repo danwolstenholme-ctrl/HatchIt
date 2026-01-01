@@ -148,12 +148,12 @@ interface BuildFlowControllerProps {
 
 const generateId = () => Math.random().toString(36).substring(2, 15)
 
-// The Singularity Default Template
+// The Architect's Default Template
 // Minimal, clean, ready for anything.
-const SINGULARITY_TEMPLATE: Template = {
+const ARCHITECT_TEMPLATE: Template = {
   ...websiteTemplate,
-  id: 'singularity',
-  name: 'The Singularity',
+  id: 'architect',
+  name: 'Architect Mode',
   description: 'The Architect\'s default canvas.',
   sections: websiteTemplate.sections
 }
@@ -164,8 +164,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   
   const [demoMode, setDemoMode] = useState(forceDemoMode ?? false)
   const [phase, setPhase] = useState<BuildPhase>('initializing')
-  const [selectedTemplate, setSelectedTemplate] = useState<Template>(SINGULARITY_TEMPLATE)
-  const [customizedSections, setCustomizedSections] = useState<Section[]>(SINGULARITY_TEMPLATE.sections)
+  const [selectedTemplate, setSelectedTemplate] = useState<Template>(ARCHITECT_TEMPLATE)
+  const [customizedSections, setCustomizedSections] = useState<Section[]>(ARCHITECT_TEMPLATE.sections)
   const [brandConfig, setBrandConfig] = useState<any>(null) // Brand config is now implicit or AI-driven
   const [buildState, setBuildState] = useState<BuildState | null>(null)
   const [project, setProject] = useState<DbProject | null>(null)

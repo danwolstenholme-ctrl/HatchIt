@@ -61,7 +61,7 @@ export default function Navigation() {
             <span className="text-xl font-bold transition-all duration-300">
               {pathname === '/builder' ? (
                 <>
-                  <span className="text-white">The</span><span className="bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent ml-1">Architect</span>
+                  <span className="text-white">The</span><span className="bg-gradient-to-r from-violet-500 to-purple-500 bg-clip-text text-transparent ml-1">Architect</span>
                 </>
               ) : (
                 <>
@@ -189,10 +189,13 @@ export default function Navigation() {
               style={{ willChange: 'transform', backfaceVisibility: 'hidden', touchAction: 'pan-y' }}
             >
               <div className="p-5 border-b border-zinc-800 flex justify-between items-center bg-zinc-900/50">
-                <span className="font-bold text-white flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  Menu
-                </span>
+                <div className="flex flex-col">
+                  <span className="font-bold text-white flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    HatchIt
+                  </span>
+                  <span className="text-[10px] text-zinc-500 ml-4">Powered by <span className="text-violet-400">The Architect</span></span>
+                </div>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
                   className="p-2 text-zinc-400 hover:text-white bg-zinc-900 rounded-lg transition-colors"

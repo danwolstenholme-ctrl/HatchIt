@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 
 // =============================================================================
-// THE SINGULARITY NODE
+// THE ARCHITECT'S AVATAR
 // The visual representation of the Architect.
 // Abstract, geometric, pulsing. No faces. No eggs.
 // =============================================================================
