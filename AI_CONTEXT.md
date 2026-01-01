@@ -34,6 +34,7 @@ The user has been instructed to add these. **Do not proceed with code changes un
 - `NEXT_PUBLIC_SUPABASE_URL`: `https://...`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: `ey...`
 - `VERCEL_TOKEN`: `[Configured]` (For Domain Management API)
+  - Project ID: `prj_7iJnRClrcIrJ6snX8KDtAa2RviGS`
 
 ## 3. Recent Technical Changes
 - **`components/BuildFlowController.tsx`**: Modified to inject `const Image = ...` and `const Link = ...` into the preview iframe. This allows the AI to generate `next/image` code without breaking the preview.
