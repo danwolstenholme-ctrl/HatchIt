@@ -100,17 +100,21 @@ export async function POST(req: Request) {
       const { id: clerkId, email_addresses } = data
       const email = email_addresses?.[0]?.email_address
 
+      // Use upsert so that "ghost" users (who exist in Clerk but not Supabase) 
+      // are created when they are updated (e.g. on login).
       const { error } = await supabaseAdmin
         .from('users')
-        .update({ email: email || null })
-        .eq('clerk_id', clerkId)
+        .upsert({ 
+          clerk_id: clerkId, 
+          email: email || null 
+        }, { onConflict: 'clerk_id' })
 
       if (error) {
         console.error('Error updating user in Supabase:', error)
         return NextResponse.json({ error: 'Database error' }, { status: 500 })
       }
       
-      console.log(`User ${clerkId} updated in Supabase`)
+      console.log(`User ${clerkId} updated/synced to Supabase`)
     }
     else if (eventType === 'user.deleted') {
       const { id: clerkId } = data
