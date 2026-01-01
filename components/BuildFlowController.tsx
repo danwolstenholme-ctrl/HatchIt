@@ -64,7 +64,7 @@ function FullSitePreviewFrame({ code, deviceView }: { code: string; deviceView: 
         const transformed = Babel.transform(code, {
           presets: ['react'],
           filename: 'preview.tsx',
-        }).code
+        }).code || ''
 
       // Extract the component name (assuming it's the default export or the last function)
       // For now, we wrap it to ensure it renders

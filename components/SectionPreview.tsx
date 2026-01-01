@@ -74,7 +74,7 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
       transformedCode = Babel.transform(code, {
         presets: ['env', 'react', 'typescript'],
         filename: 'section.tsx',
-      }).code
+      }).code || ''
     } catch (err: any) {
       console.error('Babel Transform Error:', err)
       transformError = err.message

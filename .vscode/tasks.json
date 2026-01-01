@@ -96,6 +96,11 @@
 			"label": "push_npmrc_fix",
 			"type": "shell",
 			"command": "git add .npmrc && git commit -m \"fix: add .npmrc to resolve peer dependency conflict\" && git push"
+		},
+		{
+			"label": "fix_babel_types",
+			"type": "shell",
+			"command": "git add components/SectionPreview.tsx components/BuildFlowController.tsx && git commit -m \"fix: handle potential null return from babel transform\" && git push"
 		}
 	]
 }
