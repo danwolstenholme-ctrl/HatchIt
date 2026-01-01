@@ -66,7 +66,7 @@ export function TierGlowOverlay() {
  * Subscription badge showing tier and renewal info
  * Displays in navigation or wherever needed
  */
-export function SubscriptionBadge({ showRenewal = true, compact = false }: { showRenewal?: boolean; compact?: boolean }) {
+export function SubscriptionBadge({ showRenewal = false, compact = false }: { showRenewal?: boolean; compact?: boolean }) {
   const { tier, isPaidUser, daysUntilRenewal, tierColor, isSyncing } = useSubscription()
 
   if (!isPaidUser) return null
