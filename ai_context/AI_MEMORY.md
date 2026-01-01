@@ -141,6 +141,7 @@ DIRECTIVE:
 *   **`framer-motion` in `iframe` without Proxy:** FAILED. Crashes the preview if the user's code references `window` globals that don't exist. We use a Proxy sandbox now.
 *   **Clerk Default Redirects:** FAILED. Users get lost. We MUST use `forceRedirectUrl` with a captured query param.
 *   **"Light Mode":** FAILED. It breaks the brand immersion. The app is Dark Mode ONLY.
+*   **Stripping Imports without Re-injecting:** FAILED. Stripping `import { Zap } from 'lucide-react'` without ensuring `Zap` is defined in the scope causes "Element type is invalid" runtime errors. We MUST extract used icons and assign them from `window.LucideIcons`.
 
 ## 7. THE STYLE DNA (CODE RULES)
 > **STRICT ENFORCEMENT REQUIRED.**
