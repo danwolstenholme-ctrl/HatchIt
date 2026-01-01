@@ -181,6 +181,15 @@
 			"isBackground": false,
 			"problemMatcher": [],
 			"group": "build"
+		},
+		{
+			"label": "commit-build-fix",
+			"type": "shell",
+			"command": "git add . && git commit -m \"fix: resolve duplicate subscription declaration in SectionBuilder\"",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
 		}
 	]
 }

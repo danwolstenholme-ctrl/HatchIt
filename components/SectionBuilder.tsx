@@ -359,7 +359,7 @@ export default function SectionBuilder({
   }
   
   // Ghost Logic
-  const { subscription } = useSubscription()
+  const { subscription, tier } = useSubscription()
   const [showGhost, setShowGhost] = useState(false)
   
   useEffect(() => {
@@ -527,7 +527,6 @@ export default function SectionBuilder({
   const [editingLineContent, setEditingLineContent] = useState('')
   
   // Get subscription info for Architect credits
-  const { tier, subscription } = useSubscription()
   const architectCreditsUsed = (typeof window !== 'undefined' && subscription) 
     ? (window as unknown as { __architectUsed?: number }).__architectUsed || 0 
     : 0
