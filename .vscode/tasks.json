@@ -91,6 +91,11 @@
 			"label": "manual_fix_push",
 			"type": "shell",
 			"command": "git add package.json && git commit -m \"fix: manually add @next/third-parties to package.json\" && git push"
+		},
+		{
+			"label": "push_npmrc_fix",
+			"type": "shell",
+			"command": "git add .npmrc && git commit -m \"fix: add .npmrc to resolve peer dependency conflict\" && git push"
 		}
 	]
 }
