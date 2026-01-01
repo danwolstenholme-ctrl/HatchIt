@@ -27,7 +27,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             
             <NavItem href="/dashboard/agency" icon={<LayoutGrid className="w-4 h-4" />} label="Overview" active />
             <NavItem href="/dashboard/projects" icon={<Box className="w-4 h-4" />} label="Projects" />
-            <NavItem href="/dashboard/agents" icon={<Users className="w-4 h-4" />} label="Agents" />
+            {/* <NavItem href="/dashboard/agents" icon={<Users className="w-4 h-4" />} label="Agents" /> */}
 
             <div className="mt-8 px-2 py-2 text-xs font-mono text-zinc-500 uppercase tracking-wider">Expansion</div>
             <NavItem href="/dashboard/genesis" icon={<FlaskConical className="w-4 h-4" />} label="Genesis Engine" />
@@ -36,13 +36,17 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             
             <div className="mt-8 px-2 py-2 text-xs font-mono text-zinc-500 uppercase tracking-wider">System</div>
             <NavItem href="/dashboard/chronosphere" icon={<History className="w-4 h-4" />} label="Chronosphere" />
+            {/* 
             <NavItem href="/dashboard/health" icon={<Activity className="w-4 h-4" />} label="Health" />
             <NavItem href="/dashboard/security" icon={<Shield className="w-4 h-4" />} label="Security" />
             <NavItem href="/dashboard/network" icon={<Globe className="w-4 h-4" />} label="Network" />
+            */}
             
+            {/* 
             <div className="mt-8 px-2 py-2 text-xs font-mono text-zinc-500 uppercase tracking-wider">Configuration</div>
             <NavItem href="/dashboard/settings" icon={<Settings className="w-4 h-4" />} label="Settings" />
             <NavItem href="/dashboard/api" icon={<Cpu className="w-4 h-4" />} label="API Keys" />
+            */}
           </nav>
 
           <div className="p-4 border-t border-zinc-800">
