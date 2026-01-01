@@ -55,13 +55,11 @@ function FullSitePreviewFrame({ sections, deviceView }: { sections: { id: string
   useEffect(() => {
     if (!sections || sections.length === 0) {
       setSrcDoc('');
-      return (
-        <div className={`w-full h-full bg-zinc-950 transition-all duration-300 mx-auto ${
-          deviceView === 'mobile' ? 'max-w-[375px] border-x border-zinc-800' :
-          deviceView === 'tablet' ? 'max-w-[768px] border-x border-zinc-800' :
-          'max-w-full'
-        }`}>
-    // 2. Process sections
+      return;
+    }
+
+    // 1. Extract all Lucide imports to ensure they are available
+    const allLucideImports = new Set<string>();
     const processedSections = sections.map((section, index) => {
       let code = section.code;
       
