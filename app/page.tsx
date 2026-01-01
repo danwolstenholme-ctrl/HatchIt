@@ -139,7 +139,7 @@ function SystemStatus() {
               onChange={(e) => setPrompt(e.target.value)}
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
-              placeholder="Describe your dream system..."
+              placeholder="A SaaS landing page with dark theme, animated hero, and pricing..."
               className="w-full bg-transparent text-white placeholder-zinc-600 pl-12 pr-32 py-4 text-lg font-mono focus:outline-none"
               autoFocus
             />

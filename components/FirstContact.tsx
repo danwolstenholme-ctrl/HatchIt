@@ -271,18 +271,21 @@ function LiveDemoPreview({ demo, isActive }: { demo: typeof DEMO_BUILDS[0], isAc
 
 // Quick start prompts for mobile
 const QUICK_STARTS = [
+  { label: '🚀 Show Me', prompt: 'A dark-mode SaaS landing page for an AI code assistant with animated hero, feature grid with icons, pricing table, and testimonials' },
   { label: 'Portfolio', prompt: 'A creative portfolio for a designer with dark theme and project showcase' },
   { label: 'Startup', prompt: 'A modern SaaS startup landing page with pricing and features' },
   { label: 'Restaurant', prompt: 'An elegant restaurant website with menu, reservations, and location' },
-  { label: 'Gym', prompt: 'A high-energy fitness gym with class schedules and membership plans' },
   { label: 'Agency', prompt: 'A professional digital agency website with services and case studies' },
 ]
+
+// Default show-off prompt for new users
+const DEFAULT_PROMPT = 'A dark-mode SaaS landing page for an AI code assistant with animated hero, feature grid with icons, pricing table, and testimonials'
 
 export default function FirstContact({ onComplete }: FirstContactProps) {
   const [phase, setPhase] = useState<'intro' | 'demo' | 'ready'>('intro')
   const [currentDemo, setCurrentDemo] = useState(0)
   const [textPhase, setTextPhase] = useState(0)
-  const [customPrompt, setCustomPrompt] = useState('')
+  const [customPrompt, setCustomPrompt] = useState(DEFAULT_PROMPT)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   
   // Auto-advance through intro phases
