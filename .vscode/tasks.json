@@ -140,6 +140,11 @@
 			"label": "commit_changes",
 			"type": "shell",
 			"command": "git add . && git commit -m \"Phase 1 Complete: First Contact & Trust Upgrade.\n\n- Implemented 'What + Why' logic in System Status (app/page.tsx).\n- Neutralized 'Creepy AI' vibes in Consciousness Engine (lib/consciousness.ts).\n- Grounded Chat & Witness feedback loops (components/Chat.tsx, components/TheWitness.tsx).\n- Upgraded Typography to Inter + JetBrains Mono (app/layout.tsx).\n- Established 'Singularity' Brand Protocols in ai_context/.\""
+		},
+		{
+			"label": "commit-dependency-fix",
+			"type": "shell",
+			"command": "git add package.json package-lock.json && git commit -m \"fix: add @next/third-parties dependency\""
 		}
 	]
 }
