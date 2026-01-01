@@ -48,13 +48,15 @@ export async function GET() {
       
       // Determine tier
       const priceId = sub.items.data[0]?.price?.id
-      let tier: 'pro' | 'agency' = 'pro'
+      let tier: 'lite' | 'pro' | 'agency' = 'pro'
       if (priceId === process.env.STRIPE_AGENCY_PRICE_ID) {
         tier = 'agency'
       } else if (priceId === process.env.STRIPE_PRO_PRICE_ID) {
         tier = 'pro'
+      } else if (priceId === 'price_1SkqTUEZ4zm4PZbKcGNWbftQ' || priceId === process.env.STRIPE_LITE_PRICE_ID) {
+        tier = 'lite'
       } else {
-        tier = (sub.metadata?.tier as 'pro' | 'agency') || 'pro'
+        tier = (sub.metadata?.tier as 'lite' | 'pro' | 'agency') || 'pro'
       }
       
       // Safely get period end - cast to access property (search API types differ)

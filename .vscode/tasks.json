@@ -172,6 +172,15 @@
 			"isBackground": false,
 			"problemMatcher": [],
 			"group": "build"
+		},
+		{
+			"label": "commit-lite-fix",
+			"type": "shell",
+			"command": "git add . && git commit -m \"fix: enable Lite ($9) tier in checkout validation and webhook types\"",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
 		}
 	]
 }

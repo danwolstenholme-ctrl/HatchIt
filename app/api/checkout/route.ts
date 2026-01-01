@@ -15,7 +15,7 @@ const getStripe = () => {
 
 // Price IDs for each tier
 const PRICE_IDS = {
-  lite: process.env.STRIPE_LITE_PRICE_ID,    // $9/mo
+  lite: 'price_1SkqTUEZ4zm4PZbKcGNWbftQ',    // $9/mo
   pro: process.env.STRIPE_PRO_PRICE_ID,      // $29/mo
   agency: process.env.STRIPE_AGENCY_PRICE_ID, // $99/mo
 } as const
@@ -66,8 +66,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Validate tier
-    if (!tier || !['pro', 'agency'].includes(tier)) {
-      return NextResponse.json({ error: 'Invalid tier. Must be "pro" or "agency"' }, { status: 400 })
+    if (!tier || !['lite', 'pro', 'agency'].includes(tier)) {
+      return NextResponse.json({ error: 'Invalid tier. Must be "lite", "pro" or "agency"' }, { status: 400 })
     }
 
     const priceId = PRICE_IDS[tier as PriceTier]

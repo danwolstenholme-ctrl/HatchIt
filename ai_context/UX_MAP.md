@@ -43,7 +43,7 @@
 
 ### A. Navigation Bar (`SectionProgress.tsx`)
 - [x] **Hatch Logo Menu**
-    - [x] `Start Over`: Must clear `localStorage` + Reset State + Redirect to `/builder`.
+    - [x] `Start Over`: Must clear `localStorage` + ReseSt State + Redirect to `/builder`.
     - [x] `Go Home`: Must redirect to `/dashboard`.
     - [x] `View Brand`: Must open Brand Modal (if brand exists).
 - [ ] **Section List (Sidebar)**

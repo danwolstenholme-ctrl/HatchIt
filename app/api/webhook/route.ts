@@ -135,10 +135,10 @@ export async function POST(req: Request) {
     }
 
     // ------------------------------------------------------------------------
-    // ACCOUNT SUBSCRIPTION (Pro or Agency) - NEW!
+    // ACCOUNT SUBSCRIPTION (Lite, Pro or Agency) - NEW!
     // ------------------------------------------------------------------------
     if (metadataType === 'account_subscription' && userId) {
-      const tier = session.metadata?.tier as 'pro' | 'agency'
+      const tier = session.metadata?.tier as 'lite' | 'pro' | 'agency'
       const subscriptionId = session.subscription as string
       const customerId = session.customer as string
 
