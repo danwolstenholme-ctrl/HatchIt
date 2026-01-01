@@ -125,6 +125,11 @@
 			"label": "commit-signup-optimization",
 			"type": "shell",
 			"command": "git add . && git commit -m \"feat: optimize signup flow with tracking, mobile UI, and param preservation\" && git push"
+		},
+		{
+			"label": "commit-auth-fixes",
+			"type": "shell",
+			"command": "git add . && git commit -m \"fix: complete auth flow fixes - CTAs route to signup, outdated copy removed, tracking in place\" && git push"
 		}
 	]
 }
