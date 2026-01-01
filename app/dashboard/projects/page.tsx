@@ -25,10 +25,7 @@ export default function ProjectsPage() {
     e.preventDefault()
     e.stopPropagation()
     if (confirm('Are you sure you want to delete this project? This cannot be undone.')) {
-      // We need to switch to the project to delete it in the current hook implementation
-      // This is a limitation of the hook, but for now we can just warn the user
-      // Ideally we'd have a deleteProjectById method
-      alert('Please open the project to delete it from the settings menu.')
+      deleteProject(id)
     }
   }
 

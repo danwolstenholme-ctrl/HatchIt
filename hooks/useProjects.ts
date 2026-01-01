@@ -47,7 +47,7 @@ interface UseProjectsReturn {
   createProject: () => boolean // returns false if blocked by paywall
   switchProject: (id: string) => void
   renameProject: (newName: string) => void
-  deleteProject: () => void
+  deleteProject: (id?: string) => void
   deleteAllProjects: () => void
   duplicateProject: () => boolean // returns false if blocked by paywall
   
@@ -205,13 +205,20 @@ export function useProjects(): UseProjectsReturn {
     updateCurrentProject({ name: newName.trim() })
   }, [currentProjectId, updateCurrentProject])
   
-  const deleteProjectAction = useCallback(() => {
-    if (!currentProjectId) return
-    const newProjects = projects.filter(p => p.id !== currentProjectId)
-    const remaining = newProjects.length > 0 ? newProjects : [createNewProject()]
-    setProjects(remaining)
-    setCurrentProjectId(remaining[0]?.id || null)
-  }, [currentProjectId, projects])
+  const deleteProjectAction = useCallback((id?: string) => {
+    const targetId = id || currentProjectId
+    if (!targetId) return
+
+    setProjects(prev => {
+      const next = prev.filter(p => p.id !== targetId)
+      // If we deleted the current project, switch to another one or null
+      if (targetId === currentProjectId) {
+        const nextProject = next.length > 0 ? next[0] : null
+        setCurrentProjectId(nextProject ? nextProject.id : null)
+      }
+      return next
+    })
+  }, [currentProjectId])
   
   const deleteAllProjectsAction = useCallback(() => {
     const freshProject = createNewProject()

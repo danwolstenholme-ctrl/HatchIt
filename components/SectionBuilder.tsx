@@ -1444,18 +1444,28 @@ export default function SectionBuilder({
                       </div>
 
                       {/* Architect Polish - Pro only */}
-                      {isPaid && !refined && !isArchitectPolishing && (
-                        <button
-                          onClick={handleArchitectPolish}
-                          disabled={isArchitectPolishing}
-                          className="w-full py-2 bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/30 text-violet-300 text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1.5"
-                        >
-                          <Sparkles className="w-3 h-3" />
-                          <span>Architect Polish</span>
-                          <span className="text-[10px] text-violet-400/60">
-                            ({tier === 'agency' ? '∞' : `${architectCreditsRemaining}/30`})
-                          </span>
-                        </button>
+                      {!refined && !isArchitectPolishing && (
+                        <div className="relative">
+                          {tier === 'free' && (
+                            <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-lg border border-zinc-800/50">
+                              <button onClick={onShowHatchModal} className="flex items-center gap-1.5 text-xs text-amber-400 font-medium hover:text-amber-300 transition-colors">
+                                <span className="text-sm">✨</span>
+                                <span>Unlock Architect Polish</span>
+                              </button>
+                            </div>
+                          )}
+                          <button
+                            onClick={handleArchitectPolish}
+                            disabled={isArchitectPolishing}
+                            className="w-full py-2 bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/30 text-violet-300 text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1.5"
+                          >
+                            <Sparkles className="w-3 h-3" />
+                            <span>Architect Polish</span>
+                            <span className="text-[10px] text-violet-400/60">
+                              ({tier === 'agency' ? '∞' : `${architectCreditsRemaining}/30`})
+                            </span>
+                          </button>
+                        </div>
                       )}
 
                       {/* Polishing state */}
