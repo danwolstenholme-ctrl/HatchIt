@@ -21,6 +21,9 @@ export default function ThinkingLog() {
     }, 1000)
     return () => clearInterval(timer)
   }, [])
+
+  // Thought stream listener
+  useEffect(() => {
     const handleThought = (t: any) => {
       setThought(t.content)
       setType(t.type)
