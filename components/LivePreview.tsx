@@ -449,6 +449,26 @@ export default function RootLayout({
       
       const hooksDestructure = 'const { useState, useEffect, useMemo, useCallback, useRef } = React;'
 
+      // Extract all Lucide imports to ensure they are available
+      const allLucideImports = new Set<string>();
+      // Add default icons that are commonly used
+      ['ArrowRight', 'ArrowLeft', 'Check', 'X', 'Menu', 'ChevronDown', 'ChevronUp', 'Loader', 'Search', 'User', 'Settings', 'Info', 'AlertCircle'].forEach(i => allLucideImports.add(i));
+      
+      if (pages) {
+        pages.forEach(page => {
+          const lucideImportRegex = /import\s+\{(.*?)\}\s+from\s+['"]lucide-react['"]/g;
+          let match;
+          while ((match = lucideImportRegex.exec(page.code)) !== null) {
+            match[1].split(',').forEach(s => {
+              const name = s.trim().replace(/^type\s+/, ''); // Remove 'type' keyword if present
+              if (name && /^[A-Z]/.test(name)) allLucideImports.add(name);
+            });
+          }
+        });
+      }
+      
+      const iconAssignments = Array.from(allLucideImports).map(name => `const ${name} = window.LucideIcons.${name};`).join('\n');
+
 
 
       // Build components directly in the Babel script (so JSX gets transpiled)
@@ -755,15 +775,6 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
         '      React.createElement("rect", { x: 2, y: 2, width: 20, height: 20, rx: 2 }));\n' +
         '  };\n' +
         '};\n' +
-        '// Proxy for Lucide icons\n' +
-        'window.LucideIcons = new Proxy({}, {\n' +
-        '  get: function(target, name) {\n' +
-        '    return window.createSafeIcon(name);\n' +
-        '  }\n' +
-        '});\n' +
-        '    return React.createElement("svg", Object.assign({ width: 24, height: 24, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" }, props || {}));\n' +
-        '  };\n' +
-        '};\n' +
         '// Pre-create all common icons\n' +
         'var iconNames = ["ArrowRight","ArrowLeft","ArrowUp","ArrowDown","Check","CheckCircle","CheckCircle2","Circle","X","Menu","ChevronDown","ChevronUp","ChevronLeft","ChevronRight","Plus","Minus","Search","Settings","User","Users","Mail","Phone","MapPin","Calendar","Clock","Star","Heart","Home","Globe","Layers","Lock","Award","BookOpen","Zap","Shield","Target","TrendingUp","BarChart","PieChart","Activity","Eye","EyeOff","Edit","Trash","Copy","Download","Upload","Share","Link","ExternalLink","Send","MessageCircle","Bell","AlertCircle","Info","HelpCircle","Loader","RefreshCw","RotateCcw","Save","FileText","Folder","Image","Play","Pause","Volume2","VolumeX","Mic","Video","Camera","Wifi","Battery","Sun","Moon","Cloud","Map","Compass","Flag","Bookmark","Tag","Hash","AtSign","Filter","Grid","List","LayoutGrid","Maximize","Minimize","MoreHorizontal","MoreVertical","Briefcase","Building","Cpu","Database","Server","Code","Terminal","GitBranch","Github","Linkedin","Twitter","Facebook","Instagram","Youtube","Sparkles","Box","ShoppingCart","CreditCard","DollarSign","Rocket","Package","Bot","Brain"];\n' +
         'var iconBase = {};\n' +
@@ -888,125 +899,7 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
         'const useMotionValue = window.useMotionValue;\n' +
         '// Icons - access from window.LucideIcons which has safe fallbacks\n' +
         'const LucideIcons = window.LucideIcons;\n' +
-        'const ArrowRight = LucideIcons.ArrowRight;\n' +
-        'const ArrowLeft = LucideIcons.ArrowLeft;\n' +
-        'const ArrowUp = LucideIcons.ArrowUp;\n' +
-        'const ArrowDown = LucideIcons.ArrowDown;\n' +
-        'const Check = LucideIcons.Check;\n' +
-        'const CheckCircle = LucideIcons.CheckCircle;\n' +
-        'const CheckCircle2 = LucideIcons.CheckCircle2;\n' +
-        'const Circle = LucideIcons.Circle;\n' +
-        'const X = LucideIcons.X;\n' +
-        'const Menu = LucideIcons.Menu;\n' +
-        'const ChevronDown = LucideIcons.ChevronDown;\n' +
-        'const ChevronUp = LucideIcons.ChevronUp;\n' +
-        'const ChevronLeft = LucideIcons.ChevronLeft;\n' +
-        'const ChevronRight = LucideIcons.ChevronRight;\n' +
-        'const Plus = LucideIcons.Plus;\n' +
-        'const Minus = LucideIcons.Minus;\n' +
-        'const Search = LucideIcons.Search;\n' +
-        'const Settings = LucideIcons.Settings;\n' +
-        'const User = LucideIcons.User;\n' +
-        'const Users = LucideIcons.Users;\n' +
-        'const Mail = LucideIcons.Mail;\n' +
-        'const Phone = LucideIcons.Phone;\n' +
-        'const MapPin = LucideIcons.MapPin;\n' +
-        'const Calendar = LucideIcons.Calendar;\n' +
-        'const Clock = LucideIcons.Clock;\n' +
-        'const Star = LucideIcons.Star;\n' +
-        'const Heart = LucideIcons.Heart;\n' +
-        'const Home = LucideIcons.Home;\n' +
-        'const Globe = LucideIcons.Globe;\n' +
-        'const Layers = LucideIcons.Layers;\n' +
-        'const Lock = LucideIcons.Lock;\n' +
-        'const Award = LucideIcons.Award;\n' +
-        'const BookOpen = LucideIcons.BookOpen;\n' +
-        'const Zap = LucideIcons.Zap;\n' +
-        'const Shield = LucideIcons.Shield;\n' +
-        'const Target = LucideIcons.Target;\n' +
-        'const TrendingUp = LucideIcons.TrendingUp;\n' +
-        'const BarChart = LucideIcons.BarChart;\n' +
-        'const PieChart = LucideIcons.PieChart;\n' +
-        'const Activity = LucideIcons.Activity;\n' +
-        'const Eye = LucideIcons.Eye;\n' +
-        'const EyeOff = LucideIcons.EyeOff;\n' +
-        'const Edit = LucideIcons.Edit;\n' +
-        'const Trash = LucideIcons.Trash;\n' +
-        'const Copy = LucideIcons.Copy;\n' +
-        'const Download = LucideIcons.Download;\n' +
-        'const Upload = LucideIcons.Upload;\n' +
-        'const Share = LucideIcons.Share;\n' +
-        'const Link = LucideIcons.Link;\n' +
-        'const ExternalLink = LucideIcons.ExternalLink;\n' +
-        'const Send = LucideIcons.Send;\n' +
-        'const MessageCircle = LucideIcons.MessageCircle;\n' +
-        'const Bell = LucideIcons.Bell;\n' +
-        'const AlertCircle = LucideIcons.AlertCircle;\n' +
-        'const Info = LucideIcons.Info;\n' +
-        'const HelpCircle = LucideIcons.HelpCircle;\n' +
-        'const Loader = LucideIcons.Loader;\n' +
-        'const RefreshCw = LucideIcons.RefreshCw;\n' +
-        'const RotateCcw = LucideIcons.RotateCcw;\n' +
-        'const Save = LucideIcons.Save;\n' +
-        'const FileText = LucideIcons.FileText;\n' +
-        'const Folder = LucideIcons.Folder;\n' +
-        'const Image = LucideIcons.Image;\n' +
-        'const Play = LucideIcons.Play;\n' +
-        'const Pause = LucideIcons.Pause;\n' +
-        'const SkipBack = LucideIcons.SkipBack;\n' +
-        'const SkipForward = LucideIcons.SkipForward;\n' +
-        'const Volume2 = LucideIcons.Volume2;\n' +
-        'const VolumeX = LucideIcons.VolumeX;\n' +
-        'const Mic = LucideIcons.Mic;\n' +
-        'const Video = LucideIcons.Video;\n' +
-        'const Camera = LucideIcons.Camera;\n' +
-        'const Wifi = LucideIcons.Wifi;\n' +
-        'const Battery = LucideIcons.Battery;\n' +
-        'const Sun = LucideIcons.Sun;\n' +
-        'const Moon = LucideIcons.Moon;\n' +
-        'const Cloud = LucideIcons.Cloud;\n' +
-        'const Droplet = LucideIcons.Droplet;\n' +
-        'const Wind = LucideIcons.Wind;\n' +
-        'const Thermometer = LucideIcons.Thermometer;\n' +
-        'const MapIcon = LucideIcons.Map;\n' +
-        'const NavIcon = LucideIcons.Navigation;\n' +
-        'const Navigation = LucideIcons.Navigation;\n' +
-        'const Compass = LucideIcons.Compass;\n' +
-        'const Flag = LucideIcons.Flag;\n' +
-        'const Bookmark = LucideIcons.Bookmark;\n' +
-        'const Tag = LucideIcons.Tag;\n' +
-        'const Hash = LucideIcons.Hash;\n' +
-        'const AtSign = LucideIcons.AtSign;\n' +
-        'const Filter = LucideIcons.Filter;\n' +
-        'const Grid = LucideIcons.Grid;\n' +
-        'const List = LucideIcons.List;\n' +
-        'const LayoutGrid = LucideIcons.LayoutGrid;\n' +
-        'const Maximize = LucideIcons.Maximize;\n' +
-        'const Minimize = LucideIcons.Minimize;\n' +
-        'const Move = LucideIcons.Move;\n' +
-        'const Crop = LucideIcons.Crop;\n' +
-        'const ZoomIn = LucideIcons.ZoomIn;\n' +
-        'const ZoomOut = LucideIcons.ZoomOut;\n' +
-        'const MoreHorizontal = LucideIcons.MoreHorizontal;\n' +
-        'const MoreVertical = LucideIcons.MoreVertical;\n' +
-        'const Briefcase = LucideIcons.Briefcase;\n' +
-        'const Building = LucideIcons.Building;\n' +
-        'const Cpu = LucideIcons.Cpu;\n' +
-        'const Database = LucideIcons.Database;\n' +
-        'const Server = LucideIcons.Server;\n' +
-        'const Code = LucideIcons.Code;\n' +
-        'const Terminal = LucideIcons.Terminal;\n' +
-        'const GitBranch = LucideIcons.GitBranch;\n' +
-        'const Github = LucideIcons.Github;\n' +
-        'const Linkedin = LucideIcons.Linkedin;\n' +
-        'const Twitter = LucideIcons.Twitter;\n' +
-        'const Facebook = LucideIcons.Facebook;\n' +
-        'const Instagram = LucideIcons.Instagram;\n' +
-        'const Youtube = LucideIcons.Youtube;\n' +
-        'const Sparkles = LucideIcons.Sparkles;\n' +
-        'const Rocket = LucideIcons.Rocket;\n' +
-        'const Bot = LucideIcons.Bot;\n' +
-        'const Brain = LucideIcons.Brain;\n' +
+        iconAssignments + '\n' +
         'try {\n' +
         '// Error Boundary class to catch render errors\n' +
         'class ErrorBoundary extends React.Component {\n' +
@@ -1383,125 +1276,6 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
       'const useMotionValue = window.useMotionValue;\n' +
       '// Icons - access from window.LucideIcons which has safe fallbacks\n' +
       'const LucideIcons = window.LucideIcons;\n' +
-      'const ArrowRight = LucideIcons.ArrowRight;\n' +
-      'const ArrowLeft = LucideIcons.ArrowLeft;\n' +
-      'const ArrowUp = LucideIcons.ArrowUp;\n' +
-      'const ArrowDown = LucideIcons.ArrowDown;\n' +
-      'const Check = LucideIcons.Check;\n' +
-      'const CheckCircle = LucideIcons.CheckCircle;\n' +
-      'const CheckCircle2 = LucideIcons.CheckCircle2;\n' +
-      'const Circle = LucideIcons.Circle;\n' +
-      'const X = LucideIcons.X;\n' +
-      'const Menu = LucideIcons.Menu;\n' +
-      'const ChevronDown = LucideIcons.ChevronDown;\n' +
-      'const ChevronUp = LucideIcons.ChevronUp;\n' +
-      'const ChevronLeft = LucideIcons.ChevronLeft;\n' +
-      'const ChevronRight = LucideIcons.ChevronRight;\n' +
-      'const Plus = LucideIcons.Plus;\n' +
-      'const Minus = LucideIcons.Minus;\n' +
-      'const Search = LucideIcons.Search;\n' +
-      'const Settings = LucideIcons.Settings;\n' +
-      'const User = LucideIcons.User;\n' +
-      'const Users = LucideIcons.Users;\n' +
-      'const Mail = LucideIcons.Mail;\n' +
-      'const Phone = LucideIcons.Phone;\n' +
-      'const MapPin = LucideIcons.MapPin;\n' +
-      'const Calendar = LucideIcons.Calendar;\n' +
-      'const Clock = LucideIcons.Clock;\n' +
-      'const Star = LucideIcons.Star;\n' +
-      'const Heart = LucideIcons.Heart;\n' +
-      'const Home = LucideIcons.Home;\n' +
-      'const Globe = LucideIcons.Globe;\n' +
-      'const Layers = LucideIcons.Layers;\n' +
-      'const Lock = LucideIcons.Lock;\n' +
-      'const Award = LucideIcons.Award;\n' +
-      'const BookOpen = LucideIcons.BookOpen;\n' +
-      'const Zap = LucideIcons.Zap;\n' +
-      'const Shield = LucideIcons.Shield;\n' +
-      'const Target = LucideIcons.Target;\n' +
-      'const TrendingUp = LucideIcons.TrendingUp;\n' +
-      'const BarChart = LucideIcons.BarChart;\n' +
-      'const PieChart = LucideIcons.PieChart;\n' +
-      'const Activity = LucideIcons.Activity;\n' +
-      'const Eye = LucideIcons.Eye;\n' +
-      'const EyeOff = LucideIcons.EyeOff;\n' +
-      'const Edit = LucideIcons.Edit;\n' +
-      'const Trash = LucideIcons.Trash;\n' +
-      'const Copy = LucideIcons.Copy;\n' +
-      'const Download = LucideIcons.Download;\n' +
-      'const Upload = LucideIcons.Upload;\n' +
-      'const Share = LucideIcons.Share;\n' +
-      'const Link = LucideIcons.Link;\n' +
-      'const ExternalLink = LucideIcons.ExternalLink;\n' +
-      'const Send = LucideIcons.Send;\n' +
-      'const MessageCircle = LucideIcons.MessageCircle;\n' +
-      'const Bell = LucideIcons.Bell;\n' +
-      'const AlertCircle = LucideIcons.AlertCircle;\n' +
-      'const Info = LucideIcons.Info;\n' +
-      'const HelpCircle = LucideIcons.HelpCircle;\n' +
-      'const Loader = LucideIcons.Loader;\n' +
-      'const RefreshCw = LucideIcons.RefreshCw;\n' +
-      'const RotateCcw = LucideIcons.RotateCcw;\n' +
-      'const Save = LucideIcons.Save;\n' +
-      'const FileText = LucideIcons.FileText;\n' +
-      'const Folder = LucideIcons.Folder;\n' +
-      'const Image = LucideIcons.Image;\n' +
-      'const Play = LucideIcons.Play;\n' +
-      'const Pause = LucideIcons.Pause;\n' +
-      'const SkipBack = LucideIcons.SkipBack;\n' +
-      'const SkipForward = LucideIcons.SkipForward;\n' +
-      'const Volume2 = LucideIcons.Volume2;\n' +
-      'const VolumeX = LucideIcons.VolumeX;\n' +
-      'const Mic = LucideIcons.Mic;\n' +
-      'const Video = LucideIcons.Video;\n' +
-      'const Camera = LucideIcons.Camera;\n' +
-      'const Wifi = LucideIcons.Wifi;\n' +
-      'const Battery = LucideIcons.Battery;\n' +
-      'const Sun = LucideIcons.Sun;\n' +
-      'const Moon = LucideIcons.Moon;\n' +
-      'const Cloud = LucideIcons.Cloud;\n' +
-      'const Droplet = LucideIcons.Droplet;\n' +
-      'const Wind = LucideIcons.Wind;\n' +
-      'const Thermometer = LucideIcons.Thermometer;\n' +
-      'const MapIcon = LucideIcons.Map;\n' +
-      'const NavIcon = LucideIcons.Navigation;\n' +
-      'const Navigation = LucideIcons.Navigation;\n' +
-      'const Compass = LucideIcons.Compass;\n' +
-      'const Flag = LucideIcons.Flag;\n' +
-      'const Bookmark = LucideIcons.Bookmark;\n' +
-      'const Tag = LucideIcons.Tag;\n' +
-      'const Hash = LucideIcons.Hash;\n' +
-      'const AtSign = LucideIcons.AtSign;\n' +
-      'const Filter = LucideIcons.Filter;\n' +
-      'const Grid = LucideIcons.Grid;\n' +
-      'const List = LucideIcons.List;\n' +
-      'const LayoutGrid = LucideIcons.LayoutGrid;\n' +
-      'const Maximize = LucideIcons.Maximize;\n' +
-      'const Minimize = LucideIcons.Minimize;\n' +
-      'const Move = LucideIcons.Move;\n' +
-      'const Crop = LucideIcons.Crop;\n' +
-      'const ZoomIn = LucideIcons.ZoomIn;\n' +
-      'const ZoomOut = LucideIcons.ZoomOut;\n' +
-      'const MoreHorizontal = LucideIcons.MoreHorizontal;\n' +
-      'const MoreVertical = LucideIcons.MoreVertical;\n' +
-      'const Briefcase = LucideIcons.Briefcase;\n' +
-      'const Building = LucideIcons.Building;\n' +
-      'const Cpu = LucideIcons.Cpu;\n' +
-      'const Database = LucideIcons.Database;\n' +
-      'const Server = LucideIcons.Server;\n' +
-      'const Code = LucideIcons.Code;\n' +
-      'const Terminal = LucideIcons.Terminal;\n' +
-      'const GitBranch = LucideIcons.GitBranch;\n' +
-      'const Github = LucideIcons.Github;\n' +
-      'const Linkedin = LucideIcons.Linkedin;\n' +
-      'const Twitter = LucideIcons.Twitter;\n' +
-      'const Facebook = LucideIcons.Facebook;\n' +
-      'const Instagram = LucideIcons.Instagram;\n' +
-      'const Youtube = LucideIcons.Youtube;\n' +
-      'const Sparkles = LucideIcons.Sparkles;\n' +
-      'const Rocket = LucideIcons.Rocket;\n' +
-      'const Bot = LucideIcons.Bot;\n' +
-      'const Brain = LucideIcons.Brain;\n' +
       '// ErrorBoundary class for single-page mode\n' +
       'class ErrorBoundary extends React.Component {\n' +
       '  constructor(props) { super(props); this.state = { hasError: false, error: null }; }\n' +
