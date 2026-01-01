@@ -341,9 +341,9 @@ export default function SectionBuilder({
   const [isExplaining, setIsExplaining] = useState(false)
   const [isDreaming, setIsDreaming] = useState(false)
   
-  // Free Tier Limits (reads from env, fallback to 3)
+  // Free Tier Limits: 3 generations to start (shows value, triggers upgrade)
   const [freeGenerationsUsed, setFreeGenerationsUsed] = useState(0)
-  const FREE_GENERATION_LIMIT = parseInt(process.env.NEXT_PUBLIC_FREE_DAILY_LIMIT || '3')
+  const FREE_GENERATION_LIMIT = 3
 
   useEffect(() => {
     const used = parseInt(localStorage.getItem('hatch_free_generations') || '0')

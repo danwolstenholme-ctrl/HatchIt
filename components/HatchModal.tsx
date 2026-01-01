@@ -35,8 +35,8 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
 
   const messages = {
     generation_limit: {
-      title: "You've hit today's limit",
-      description: "Free accounts get 5 generations per day. Upgrade to Pro for unlimited builds.",
+      title: "You've hit your free limit",
+      description: "Free accounts get 3 generations to start. Upgrade to keep building.",
       icon: "⚡"
     },
     running_low: {
@@ -194,8 +194,8 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
               <div className="space-y-2 mb-4">
                 {[
                   'Download your code right now',
-                  '20 AI generations per day',
-                  'Keep building unlimited sections',
+                  'Unlimited AI generations',
+                  '3 complete projects',
                   'Cancel anytime',
                 ].map((feature, i) => (
                   <div key={i} className="flex items-center gap-2 text-sm text-zinc-300">
