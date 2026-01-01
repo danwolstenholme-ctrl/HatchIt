@@ -223,6 +223,20 @@ function FullSitePreviewFrame({ sections, deviceView }: { sections: { id: string
     const { useState, useEffect, useRef, useMemo, useCallback } = React;
     const { motion, AnimatePresence } = window;
     
+    // Next.js Mocks
+    const Image = (props) => {
+      const { src, alt, width, height, className, style, fill, priority, quality, placeholder, blurDataURL, loader, unoptimized, ...rest } = props;
+      const fillStyle = fill ? { position: 'absolute', height: '100%', width: '100%', inset: 0, objectFit: 'cover', ...style } : style;
+      return <img src={src} alt={alt || ''} className={className} style={fillStyle} {...rest} />;
+    };
+    const Link = ({ href, children, ...props }) => <a href={href} {...props}>{children}</a>;
+    const useRouter = () => ({
+      push: (url) => console.log('Navigate to:', url),
+      replace: (url) => console.log('Replace with:', url),
+      prefetch: () => {},
+      back: () => console.log('Go back'),
+    });
+
     // We do NOT use Object.assign for icons anymore, we use destructuring in the generated code.
     
     ${fullScript}
