@@ -33,9 +33,9 @@ export const PRICING_TIERS: Record<string, PricingTier> = {
   free: {
     name: 'free',
     price: 0,
-    generationsPerDay: 10, // Increased from 5 to hook users
+    generationsPerDay: 1, // THE TASTE. Just enough to get hooked.
     architectRefinementsPerMonth: 0,
-    features: ['10 generations per day', 'Live preview', 'Basic templates', 'Community support'],
+    features: ['1 Demo Generation', 'Read-Only Preview', 'Upgrade to Build'],
   },
   lite: {
     name: 'lite',

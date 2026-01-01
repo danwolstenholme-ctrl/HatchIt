@@ -50,9 +50,9 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
       icon: "🐣"
     },
     guest_lock: {
-      title: "Save your progress",
-      description: "You've built 2 sections in Guest Mode. Create a free account to save your work and continue building.",
-      icon: "💾"
+      title: "Trial Simulation Complete",
+      description: "The Architect has paused your session. Initialize full access ($9) to continue building.",
+      icon: "🔒"
     },
     code_access: {
       title: "Unlock your code",

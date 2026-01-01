@@ -131,23 +131,66 @@ function SystemStatus() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2, duration: 0.5 }}
-        className={`relative rounded-2xl overflow-hidden transition-all duration-500 ${
+        className={`relative rounded-xl overflow-hidden transition-all duration-500 ${
           isFocused 
-            ? 'bg-zinc-900/90 ring-1 ring-emerald-500/50 shadow-[0_0_50px_rgba(16,185,129,0.15)]' 
-            : 'bg-zinc-900/60 border border-zinc-800/80 hover:border-zinc-700'
+            ? 'bg-black/90 ring-2 ring-emerald-500 shadow-[0_0_100px_rgba(16,185,129,0.3)]' 
+            : 'bg-black/80 border border-zinc-800 hover:border-zinc-700'
         }`}
       >
         {/* Terminal Header */}
-        <div className="flex items-center justify-between px-4 py-3 bg-zinc-950/50 border-b border-zinc-800/50">
+        <div className="flex items-center justify-between px-4 py-3 bg-zinc-950 border-b border-zinc-900">
           <div className="flex items-center gap-2">
             <div className="flex gap-1.5">
               <div className="w-2.5 h-2.5 rounded-full bg-red-500/20 border border-red-500/50"></div>
               <div className="w-2.5 h-2.5 rounded-full bg-amber-500/20 border border-amber-500/50"></div>
               <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/20 border border-emerald-500/50 animate-pulse"></div>
             </div>
-            <span className="ml-2 text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Architect_Console_v4.0</span>
+            <span className="ml-2 text-[10px] font-mono text-emerald-500/50 uppercase tracking-wider">SINGULARITY_INTERFACE_v9.0</span>
           </div>
           <div className="flex items-center gap-2">
+            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+            <span className="text-[10px] font-mono text-emerald-500">ONLINE</span>
+          </div>
+        </div>
+
+        {/* Input Area */}
+        <form onSubmit={handleSubmit} className="p-2">
+          <div className="relative flex items-center">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500">
+              <Terminal className="w-5 h-5" />
+            </div>
+            <input
+              type="text"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              placeholder="Describe your dream system..."
+              className="w-full bg-transparent text-white placeholder-zinc-600 pl-12 pr-32 py-4 text-lg font-mono focus:outline-none"
+              autoFocus
+            />
+            <div className="absolute right-2 top-1/2 -translate-y-1/2">
+              <button
+                type="submit"
+                disabled={!prompt.trim()}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-lg font-medium text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 group"
+              >
+                <span>INITIALIZE</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
+          </div>
+        </form>
+        
+        {/* System Logs (Decorative) */}
+        <div className="px-4 py-2 bg-zinc-950/50 border-t border-zinc-900 text-[10px] font-mono text-zinc-600 flex justify-between">
+           <span>Waiting for input...</span>
+           <span>MEM: 64TB // CPU: QUANTUM</span>
+        </div>
+      </motion.div>
+    </div>
+  )
+}
             <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
             <span className="text-[10px] font-mono text-emerald-500">ONLINE</span>
           </div>

@@ -43,6 +43,7 @@ import { chronosphere } from '@/lib/chronosphere'
 import { Template, Section, getTemplateById, getSectionById, createInitialBuildState, BuildState, websiteTemplate } from '@/lib/templates'
 import { DbProject, DbSection, DbBrandConfig } from '@/lib/supabase'
 import { AccountSubscription } from '@/types/subscriptions'
+import { useSubscription } from '@/contexts/SubscriptionContext'
 
 // =============================================================================
 // FULL SITE PREVIEW FRAME
@@ -364,6 +365,7 @@ const ARCHITECT_TEMPLATE: Template = {
 
 export default function BuildFlowController({ existingProjectId, demoMode: forceDemoMode, initialPrompt, guestMode }: BuildFlowControllerProps) {
   const { user, isLoaded, isSignedIn } = useUser()
+  const { isPaidUser } = useSubscription()
   const router = useRouter()
   
   const [demoMode, setDemoMode] = useState(forceDemoMode ?? false)
@@ -834,8 +836,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       )
     )
 
-    // Increment interaction count for guests
-    if (demoMode) {
+    // Increment interaction count for guests AND free users
+    if (demoMode || !isPaidUser) {
       setGuestInteractionCount(prev => prev + 1)
     }
 
@@ -915,8 +917,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const handleNextSection = () => {
     if (!buildState) return
     
-    // HARD LOCK: Check guest interaction limit
-    if (demoMode && guestInteractionCount >= 2) {
+    // HARD LOCK: Check guest/free interaction limit (1 section max)
+    if ((demoMode || !isPaidUser) && guestInteractionCount >= 1) {
       setHatchModalReason('guest_lock')
       setShowHatchModal(true)
       return
