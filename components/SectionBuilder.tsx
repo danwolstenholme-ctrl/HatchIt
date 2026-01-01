@@ -341,6 +341,23 @@ export default function SectionBuilder({
   const [isExplaining, setIsExplaining] = useState(false)
   const [isDreaming, setIsDreaming] = useState(false)
   
+  // Free Tier Limits
+  const [freeGenerationsUsed, setFreeGenerationsUsed] = useState(0)
+  const FREE_GENERATION_LIMIT = 3
+
+  useEffect(() => {
+    const used = parseInt(localStorage.getItem('hatch_free_generations') || '0')
+    setFreeGenerationsUsed(used)
+  }, [])
+
+  const incrementFreeUsage = () => {
+    if (!isPaid) {
+      const newValue = freeGenerationsUsed + 1
+      setFreeGenerationsUsed(newValue)
+      localStorage.setItem('hatch_free_generations', newValue.toString())
+    }
+  }
+  
   // Ghost Logic
   const { subscription } = useSubscription()
   const [showGhost, setShowGhost] = useState(false)
@@ -416,9 +433,18 @@ export default function SectionBuilder({
 
   // The Singularity: Autonomous Evolution
   const evolve = async () => {
+    // Check Free Tier Limits
+    if (!isPaid && freeGenerationsUsed >= FREE_GENERATION_LIMIT) {
+      onShowHatchModal?.()
+      return
+    }
+
     if (isDreaming) return
     setIsDreaming(true)
     setError(null)
+    
+    // Increment usage for free users
+    incrementFreeUsage()
 
     try {
       // 1. Capture Vision
@@ -806,6 +832,12 @@ export default function SectionBuilder({
   }
 
   const handleBuildSection = async () => {
+    // Check Free Tier Limits
+    if (!isPaid && freeGenerationsUsed >= FREE_GENERATION_LIMIT) {
+      onShowHatchModal?.()
+      return
+    }
+
     if (!prompt.trim()) {
       setError('Please describe what you want for this section')
       return
@@ -816,6 +848,9 @@ export default function SectionBuilder({
     setStreamingCode('')
     setReasoning('') // Clear previous reasoning
     setHasSelfHealed(false)
+    
+    // Increment usage for free users
+    incrementFreeUsage()
     
     chronosphere.log('generation', { prompt, section: section.name }, section.id)
 
@@ -952,8 +987,8 @@ export default function SectionBuilder({
   }
 
   const handleUserRefine = async () => {
-    // Check if user has subscription (Free tier cannot refine)
-    if (tier === 'free') {
+    // Check Free Tier Limits
+    if (!isPaid && freeGenerationsUsed >= FREE_GENERATION_LIMIT) {
       onShowHatchModal?.()
       return
     }
@@ -966,6 +1001,9 @@ export default function SectionBuilder({
     setError(null)
     setIsUserRefining(true)
     setStreamingCode('')
+    
+    // Increment usage for free users
+    incrementFreeUsage()
     
     chronosphere.log('refinement', { prompt: refinePrompt, section: section.name }, section.id)
 
@@ -1183,8 +1221,17 @@ export default function SectionBuilder({
         {/* Input Area - More compact */}
         <div className="flex-1 p-3 lg:p-4 flex flex-col min-h-0 overflow-auto">
           <div className="flex items-center justify-between mb-1.5">
-            <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
+            <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider flex items-center gap-2">
               Directive
+              {!isPaid && (
+                <span className={`px-1.5 py-0.5 rounded text-[9px] ${
+                  freeGenerationsUsed >= FREE_GENERATION_LIMIT 
+                    ? 'bg-red-500/20 text-red-400' 
+                    : 'bg-emerald-500/20 text-emerald-400'
+                }`}>
+                  {Math.max(0, FREE_GENERATION_LIMIT - freeGenerationsUsed)} free credits left
+                </span>
+              )}
             </label>
             <motion.button 
               onClick={() => initializePromptHelper()}

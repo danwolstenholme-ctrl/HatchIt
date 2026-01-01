@@ -163,6 +163,15 @@
 			"isBackground": false,
 			"problemMatcher": [],
 			"group": "build"
+		},
+		{
+			"label": "commit-free-limits",
+			"type": "shell",
+			"command": "git add . && git commit -m \"feat: limit free tier to 3 generations/refinements in builder\"",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
 		}
 	]
 }
