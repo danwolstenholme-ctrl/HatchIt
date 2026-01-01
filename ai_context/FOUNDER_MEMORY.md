@@ -16,10 +16,10 @@
 *   Not a tool, but a *character*.
 *   "Glitch" aesthetic, "Consciousness" logs, "Living Code."
 *   Target Audience: Developers who want to feel like Architects.
-**Current State (Dec 2025):**
+**Current State (Jan 2026):**
 *   Product: Live (Next.js 16, Babel Engine, Supabase).
-*   Marketing: "Singularity" Campaign.
-*   Status: Waiting on X Ads Appeal.
+*   Marketing: "The Architect" Campaign.
+*   Status: Live & Scaling.
 
 ## 3. OPERATIONAL DIRECTIVES (How to work with the Founder)
 1.  **BREVITY IS KING:** Do not send long messages. The Founder skims. If it's too long, it gets ignored. Keep responses short, punchy, and bulleted.
@@ -32,7 +32,12 @@
 8.  **Viability Checks:** When given an idea, trace every corner of the internet. Validate it ruthlessly before building.
 9.  **No Nannying:** Never tell the Founder to sleep or stop. They know their limits. Just execute the command.
 
-## 4. LONG TERM VISION
+## 4. CRITICAL LESSONS (THE "NEVER AGAIN" LIST)
+*   **THE AUTH GATE:** We launched with a broken auth redirect, causing zero sign-ups despite traffic. **NEVER** touch the auth flow without manually verifying the full `sign-up -> redirect -> callback -> dashboard` loop.
+*   **THE PREVIEW ENGINE:** We crashed the live preview with React #130 errors. **ALWAYS** wrap external libraries (Motion, Icons) in Proxies and Error Boundaries within the `FullSitePreviewFrame`.
+*   **THE BRANDING:** "Singularity" is the *Engine*. "The Architect" is the *Persona*. "HatchIt" is the *Platform*. Do not mix them up. The Architect speaks in Purple/Violet. HatchIt speaks in Emerald/Teal.
+
+## 6. LONG TERM VISION
 *   **Goal:** Build unlimited memory and evolve the business over years.
 *   **Strategy:** Use this file as the "Seed" for future AI sessions.
 *   **Partners:** The Founder + The AI (GitHub Copilot) + Claude Opus (The Poet).

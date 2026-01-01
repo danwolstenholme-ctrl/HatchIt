@@ -130,6 +130,11 @@
 			"label": "commit-auth-fixes",
 			"type": "shell",
 			"command": "git add . && git commit -m \"fix: complete auth flow fixes - CTAs route to signup, outdated copy removed, tracking in place\" && git push"
+		},
+		{
+			"label": "cleanup_docs",
+			"type": "shell",
+			"command": "mv MARKETING_CODEX.md ai_context/MARKETING_CODEX.md && rm AI_MEMORY.md FOUNDER_MEMORY.md TRANSMISSION.md TECHNICAL_CODEX.md marketing_assets.md CHANGELOG.md"
 		}
 	]
 }
