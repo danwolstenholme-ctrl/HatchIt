@@ -897,6 +897,18 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
         'const useTransform = window.useTransform;\n' +
         'const useSpring = window.useSpring;\n' +
         'const useMotionValue = window.useMotionValue;\n' +
+        '// Next.js router stub for preview\n' +
+        'const useRouter = () => {\n' +
+        '  const [currentPath, setCurrentPath] = useState(window.location.hash.slice(1) || "/");\n' +
+        '  useEffect(() => {\n' +
+        '    const handleHashChange = () => setCurrentPath(window.location.hash.slice(1) || "/");\n' +
+        '    window.addEventListener("hashchange", handleHashChange);\n' +
+        '    return () => window.removeEventListener("hashchange", handleHashChange);\n' +
+        '  }, []);\n' +
+        '  return { push: (path) => { window.location.hash = path; }, replace: (path) => { window.location.hash = path; }, pathname: currentPath, query: {}, asPath: currentPath };\n' +
+        '};\n' +
+        'const useSearchParams = () => new URLSearchParams(window.location.search);\n' +
+        'const usePathname = () => window.location.hash.slice(1) || "/";\n' +
         '// Icons - access from window.LucideIcons which has safe fallbacks\n' +
         'const LucideIcons = window.LucideIcons;\n' +
         iconAssignments + '\n' +
@@ -1255,7 +1267,7 @@ const useRouter = () => {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
   const navigate = (path) => { window.location.hash = path; };
-  return { currentPath, navigate };
+  return { push: navigate, replace: navigate, pathname: currentPath, query: {}, asPath: currentPath, currentPath, navigate };
 };
 const Navigation = () => null;
 const Footer = () => null;
@@ -1274,6 +1286,9 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
       'const useTransform = window.useTransform;\n' +
       'const useSpring = window.useSpring;\n' +
       'const useMotionValue = window.useMotionValue;\n' +
+      '// Next.js navigation stubs for single-page mode\n' +
+      'const useSearchParams = () => new URLSearchParams(window.location.search);\n' +
+      'const usePathname = () => window.location.hash.slice(1) || "/";\n' +
       '// Icons - access from window.LucideIcons which has safe fallbacks\n' +
       'const LucideIcons = window.LucideIcons;\n' +
       '// ErrorBoundary class for single-page mode\n' +

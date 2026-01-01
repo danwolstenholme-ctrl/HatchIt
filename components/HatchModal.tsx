@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { track } from '@vercel/analytics'
 import { useUser, useClerk } from '@clerk/nextjs'
+import { useRouter } from 'next/navigation'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 
 interface HatchModalProps {
   isOpen: boolean
   onClose: () => void
-  reason: 'generation_limit' | 'code_access' | 'deploy' | 'download' | 'proactive' | 'running_low'
+  reason: 'generation_limit' | 'code_access' | 'deploy' | 'download' | 'proactive' | 'running_low' | 'guest_lock'
   projectSlug?: string
   projectName?: string
   generationsRemaining?: number
@@ -20,7 +21,8 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
   const [error, setError] = useState<string | null>(null)
   const { isPaidUser, tier, syncSubscription, isSyncing } = useSubscription()
   const { isSignedIn } = useUser()
-  const { openSignIn } = useClerk()
+  const { openSignIn, openSignUp } = useClerk()
+  const router = useRouter()
 
   // Track when modal is shown
   useEffect(() => {
@@ -46,6 +48,11 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
       title: "Ready to go Pro?",
       description: "Unlock unlimited generations, deploy all your projects, and get full code access.",
       icon: "🐣"
+    },
+    guest_lock: {
+      title: "Save your progress",
+      description: "You've built 2 sections in Guest Mode. Create a free account to save your work and continue building.",
+      icon: "💾"
     },
     code_access: {
       title: "Unlock your code",
@@ -167,35 +174,54 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
         </p>
 
         {/* What's included */}
-        <div className="bg-gradient-to-br from-zinc-800/50 to-zinc-900 border border-teal-500/30 rounded-xl p-6 mb-6 ring-1 ring-teal-500/20 relative overflow-hidden">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <span className="text-2xl">💠</span>
-            <span className="text-xl font-bold bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">Pro Account</span>
+        {reason === 'guest_lock' ? (
+          <div className="bg-zinc-800/30 border border-zinc-700 rounded-xl p-6 mb-6">
+            <h3 className="text-sm font-semibold text-zinc-300 mb-3 text-center">Create a free account to:</h3>
+            <div className="space-y-2">
+              {[
+                'Save your project permanently',
+                'Continue building more sections',
+                'Access your dashboard',
+                'Deploy your site'
+              ].map((feature, i) => (
+                <div key={i} className="flex items-center gap-2 text-sm text-zinc-400">
+                  <span className="text-emerald-500">✓</span>
+                  {feature}
+                </div>
+              ))}
+            </div>
           </div>
-          
-          {/* Price */}
-          <div className="flex items-baseline justify-center gap-2 mb-1">
-            <span className="text-4xl font-bold text-white">$19</span>
-            <span className="text-zinc-400">/month</span>
+        ) : (
+          <div className="bg-gradient-to-br from-zinc-800/50 to-zinc-900 border border-teal-500/30 rounded-xl p-6 mb-6 ring-1 ring-teal-500/20 relative overflow-hidden">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <span className="text-2xl">💠</span>
+              <span className="text-xl font-bold bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">Pro Account</span>
+            </div>
+            
+            {/* Price */}
+            <div className="flex items-baseline justify-center gap-2 mb-1">
+              <span className="text-4xl font-bold text-white">$19</span>
+              <span className="text-zinc-400">/month</span>
+            </div>
+            <p className="text-zinc-400 text-sm text-center mb-4">Unlock everything for all your projects</p>
+            
+            <div className="space-y-2">
+              {[
+                'Unlimited AI builds',
+                '30 AI refinements/mo',
+                'Deploy to hatchitsites.dev',
+                'Download clean code',
+                'Version history',
+                'Cloud sync',
+              ].map((feature, i) => (
+                <div key={i} className="flex items-center gap-2 text-sm text-zinc-300">
+                  <span className="text-teal-400">✓</span>
+                  {feature}
+                </div>
+              ))}
+            </div>
           </div>
-          <p className="text-zinc-400 text-sm text-center mb-4">Unlock everything for all your projects</p>
-          
-          <div className="space-y-2">
-            {[
-              'Unlimited AI builds',
-              '30 AI refinements/mo',
-              'Deploy to hatchitsites.dev',
-              'Download clean code',
-              'Version history',
-              'Cloud sync',
-            ].map((feature, i) => (
-              <div key={i} className="flex items-center gap-2 text-sm text-zinc-300">
-                <span className="text-teal-400">✓</span>
-                {feature}
-              </div>
-            ))}
-          </div>
-        </div>
+        )}
 
         {/* Error message */}
         {error && (
@@ -229,13 +255,31 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
         {!isPaidUser && (
           <>
             <motion.button
-              onClick={handleHatch}
+              onClick={() => {
+                if (reason === 'guest_lock') {
+                  // Redirect to sign up with return URL
+                  const currentParams = window.location.search
+                  const returnUrl = '/builder' + currentParams
+                  router.push(`/sign-up?redirect_url=${encodeURIComponent(returnUrl)}`)
+                } else {
+                  handleHatch()
+                }
+              }}
               disabled={isLoading || isSyncing}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full py-4 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500 disabled:opacity-50 text-white rounded-xl font-semibold transition-all flex items-center justify-center gap-2 shadow-lg shadow-teal-500/25 hover:shadow-teal-500/40"
+              className={`w-full py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 shadow-lg ${
+                reason === 'guest_lock'
+                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-emerald-500/25 hover:shadow-emerald-500/40'
+                  : 'bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500 shadow-teal-500/25 hover:shadow-teal-500/40'
+              } disabled:opacity-50 text-white`}
             >
-              {isLoading ? 'Loading...' : isSyncing ? 'Syncing...' : (
+              {isLoading ? 'Loading...' : isSyncing ? 'Syncing...' : reason === 'guest_lock' ? (
+                <>
+                  <span>💾</span>
+                  <span>Create Free Account</span>
+                </>
+              ) : (
                 <>
                   <span>💠</span>
                   <span>Get Pro — $19/mo</span>
@@ -244,7 +288,7 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
             </motion.button>
 
             <p className="text-zinc-600 text-xs text-center mt-4">
-              Cancel anytime. Your code is always yours.
+              {reason === 'guest_lock' ? 'Save your progress and continue building.' : 'Cancel anytime. Your code is always yours.'}
             </p>
           </>
         )}

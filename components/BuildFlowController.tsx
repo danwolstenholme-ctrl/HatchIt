@@ -300,6 +300,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const [brandConfig, setBrandConfig] = useState<any>(null) // Brand config is now implicit or AI-driven
   const [buildState, setBuildState] = useState<BuildState | null>(null)
   const [project, setProject] = useState<DbProject | null>(null)
+  const [guestInteractionCount, setGuestInteractionCount] = useState(0)
+  const [hatchModalReason, setHatchModalReason] = useState<'generation_limit' | 'code_access' | 'deploy' | 'download' | 'proactive' | 'running_low' | 'guest_lock'>('proactive')
   
   // Handle Guest Mode & Initial Prompt
   useEffect(() => {
@@ -755,6 +757,11 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       )
     )
 
+    // Increment interaction count for guests
+    if (demoMode) {
+      setGuestInteractionCount(prev => prev + 1)
+    }
+
     setBuildState(newState)
     // No auto-advance to review - user clicks "Finish & Review" button
   }
@@ -830,6 +837,13 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
   const handleNextSection = () => {
     if (!buildState) return
+    
+    // HARD LOCK: Check guest interaction limit
+    if (demoMode && guestInteractionCount >= 2) {
+      setHatchModalReason('guest_lock')
+      setShowHatchModal(true)
+      return
+    }
     
     const nextIndex = buildState.currentSectionIndex + 1
     
@@ -1606,7 +1620,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       <HatchModal
         isOpen={showHatchModal}
         onClose={() => setShowHatchModal(false)}
-        reason="deploy"
+        reason={hatchModalReason}
       />
 
       <TheWitness
