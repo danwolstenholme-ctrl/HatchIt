@@ -26,7 +26,7 @@ export default function Footer() {
               </span>
             </Link>
             <p className="text-sm text-zinc-500 leading-relaxed mb-6">
-              Build real websites with AI. <span className="text-violet-400">The Architect</span> creates production-ready code you own.
+              Build real websites with AI. <span className="text-white">The Architect</span> creates production-ready code you own.
             </p>
             <div className="flex items-center gap-3">
               <a href="https://x.com/HatchItD" target="_blank" rel="noopener noreferrer" className="p-2 bg-zinc-900 border border-zinc-800 hover:border-emerald-500/30 hover:bg-zinc-800 rounded-lg transition-all group" aria-label="Twitter">
