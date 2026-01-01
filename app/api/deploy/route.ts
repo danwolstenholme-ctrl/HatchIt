@@ -143,9 +143,9 @@ export async function POST(req: NextRequest) {
             start: 'next start'
           },
           dependencies: {
-            next: '^14.0.0',
-            react: '^18.2.0',
-            'react-dom': '^18.2.0',
+            next: '14.1.0',
+            react: '18.2.0',
+            'react-dom': '18.2.0',
             'framer-motion': '^11.0.0',
             'lucide-react': '^0.300.0'
           },
