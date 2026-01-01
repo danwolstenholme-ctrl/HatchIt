@@ -12,6 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.1] - 2026-01-01
+### The Infrastructure Update
+- **Preview Engine Hardening**: Injected mock `Next.js` components (`<Image>`, `<Link>`) into the preview iframe to prevent crashes when AI generates production-ready code.
+- **User Synchronization**: Implemented `app/api/webhook/clerk/route.ts` to sync Clerk users to Supabase immediately upon creation, fixing "ghost user" issues.
+- **Environment Audit**: Conducted a full codebase scan to identify all required environment variables for Vercel deployment.
+
 ## [1.3.0] - 2025-12-31
 ### The Engineer's Update
 - **Core User Journey Audit**: Fixed critical breaks in onboarding, dashboard, and builder initialization.
