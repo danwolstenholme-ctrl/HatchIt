@@ -55,35 +55,73 @@ function FullSitePreviewFrame({ sections, deviceView }: { sections: { id: string
   useEffect(() => {
     if (!sections || sections.length === 0) {
       setSrcDoc('');
-      return;
-    }
-
-    // Prepare the code for each section
+      return (
+        <div className={`w-full h-full bg-zinc-950 transition-all duration-300 mx-auto ${
+          deviceView === 'mobile' ? 'max-w-[375px] border-x border-zinc-800' :
+          deviceView === 'tablet' ? 'max-w-[768px] border-x border-zinc-800' :
+          'max-w-full'
+        }`}>
+    // 2. Process sections
     const processedSections = sections.map((section, index) => {
-      // We need to turn "export default function Name() {...}" into "const Section_Index = function Name() {...}"
-      // And strip imports
-      let code = section.code
+      let code = section.code;
+      
+      // Extract imports
+      const lucideImportRegex = /import\s+\{(.*?)\}\s+from\s+['"]lucide-react['"]/g;
+      let match;
+      while ((match = lucideImportRegex.exec(code)) !== null) {
+        match[1].split(',').forEach(s => allLucideImports.add(s.trim()));
+      }
+
+      // Strip imports
+      code = code
         .replace(/'use client';?/g, '')
         .replace(/"use client";?/g, '')
         .replace(/import\s+.*?from\s+['"][^'"]+['"];?\s*/g, '');
 
-      // Replace export default function with a variable assignment
-      // Regex to find "export default function [Name](...)"
+      // Transform exports
+      // Replace "export default function Name" -> "const Section_i = function Name"
       code = code.replace(/export\s+default\s+function\s+(\w+)?/g, (match, name) => {
         return `const Section_${index} = function ${name || ''}`;
       });
-      
-      // If it was just "export default () =>", handle that too
+      // Replace "export default" -> "const Section_i ="
       code = code.replace(/export\s+default\s+/g, `const Section_${index} = `);
 
       return code;
     });
 
+    // 3. Create the App component with Error Boundary wrapper
     const appComponent = `
+      // Safe Component Wrapper to catch "got: object" errors
+      function SafeSection({ component: Component }) {
+        if (!Component) return null;
+        try {
+          // If it's a function (component), render it
+          if (typeof Component === 'function') {
+            return <Component />;
+          }
+          // If it's already an element (object), return it
+          if (React.isValidElement(Component)) {
+            return Component;
+          }
+          // If it's an object but not an element (likely a module export or mistake), log and skip
+          console.warn('Invalid section export type:', typeof Component, Component);
+          return <div className="p-4 text-red-500 border border-red-500 rounded bg-red-950/50">
+            <p className="font-bold">Section Error</p>
+            <p className="text-sm opacity-75">Invalid export type: {typeof Component}</p>
+          </div>;
+        } catch (err) {
+          console.error('Section render error:', err);
+          return <div className="p-4 text-red-500 border border-red-500 rounded bg-red-950/50">
+            <p className="font-bold">Render Error</p>
+            <p className="text-sm opacity-75">{err.message}</p>
+          </div>;
+        }
+      }
+
       function App() {
         return (
           <div className="min-h-screen bg-zinc-950 text-white">
-            ${sections.map((_, i) => `<Section_${i} />`).join('\n            ')}
+            ${sections.map((_, i) => `<SafeSection component={Section_${i}} />`).join('\n            ')}
           </div>
         );
       }
@@ -92,9 +130,15 @@ function FullSitePreviewFrame({ sections, deviceView }: { sections: { id: string
       root.render(<App />);
     `;
 
+    // 4. Construct the script
+    // We explicitly destructure the used icons from window.LucideIcons
+    const lucideDestructuring = allLucideImports.size > 0 
+      ? `const { ${Array.from(allLucideImports).join(', ')} } = window.LucideIcons;` 
+      : '';
+
     const fullScript = `
+      ${lucideDestructuring}
       ${processedSections.join('\n\n')}
-      
       ${appComponent}
     `;
 
@@ -110,7 +154,8 @@ function FullSitePreviewFrame({ sections, deviceView }: { sections: { id: string
     window.react = window.React;
     window['react-dom'] = window.ReactDOM;
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js" crossorigin></script>
+  <!-- Use specific UMD versions -->
+  <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js" crossorigin></script>
   <script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script>
@@ -125,39 +170,63 @@ function FullSitePreviewFrame({ sections, deviceView }: { sections: { id: string
       }
     }
     
-    // Robust Proxies
-    window.motion = window.Motion?.motion || new Proxy({}, { get: (t, p) => p });
-    window.AnimatePresence = window.Motion?.AnimatePresence || function(p) { return p.children; };
+    // --- ROBUST PROXY SHIMS ---
     
-    window.LucideIcons = window.lucideReact || {};
-    window.LucideIcons = new Proxy(window.LucideIcons, {
+    // 1. Motion Proxy
+    // If framer-motion fails to load, or loads weirdly, we fallback to a Proxy.
+    // The Proxy is a FUNCTION so that <motion /> doesn't crash (returns null).
+    // The Proxy's 'get' trap returns the property name (e.g. 'div') so <motion.div> works.
+    
+    const motionProxy = new Proxy(function() { return null; }, {
       get: (target, prop) => {
-        if (prop in target) return target[prop];
-        return function DummyIcon(props) { return null; };
+        // If accessing a property like motion.div, return the tag name 'div'
+        if (typeof prop === 'string') return prop;
+        return 'div';
       }
     });
     
-    // Inject globals
+    // Try to find the real motion object
+    // framer-motion UMD usually exposes 'Motion' global
+    window.motion = (window.Motion && window.Motion.motion) || motionProxy;
+    window.AnimatePresence = (window.Motion && window.Motion.AnimatePresence) || function({ children }) { return children; };
+
+    // 2. Lucide Proxy
+    // If lucide-react fails, we provide a Proxy that returns a DummyIcon component.
+    // The DummyIcon is a function, so <Icon /> works.
+    
+    const dummyIcon = function(props) { return null; };
+    const lucideProxy = new Proxy({}, {
+      get: (target, prop) => {
+        // If the icon exists in the real library, return it
+        if (window.lucideReact && window.lucideReact[prop]) {
+          return window.lucideReact[prop];
+        }
+        // Otherwise return dummy
+        return dummyIcon;
+      }
+    });
+    
+    window.LucideIcons = window.lucideReact || lucideProxy;
+    
+    // Inject globals for the eval context
     window.React = React;
     window.ReactDOM = ReactDOM;
   </script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #09090b; color: #fff; }
-    /* Hide scrollbar for cleaner preview */
     ::-webkit-scrollbar { width: 0px; background: transparent; }
   </style>
 </head>
 <body>
   <div id="root"></div>
   <script type="text/babel" data-presets="react">
-    // Global imports for the eval'd code
+    // Global imports
     const { useState, useEffect, useRef, useMemo, useCallback } = React;
     const { motion, AnimatePresence } = window;
     
-    // Inject all Lucide icons
-    Object.assign(window, window.LucideIcons);
-
+    // We do NOT use Object.assign for icons anymore, we use destructuring in the generated code.
+    
     ${fullScript}
   </script>
 </body>
@@ -167,11 +236,11 @@ function FullSitePreviewFrame({ sections, deviceView }: { sections: { id: string
   }, [sections])
 
   return (
-    <div className={\`w-full h-full bg-zinc-950 transition-all duration-300 mx-auto \${
-      deviceView === 'mobile' ? 'max-w-[375px] border-x border-zinc-800' : 
-      deviceView === 'tablet' ? 'max-w-[768px] border-x border-zinc-800' : 
+    <div className={`w-full h-full bg-zinc-950 transition-all duration-300 mx-auto ${
+      deviceView === 'mobile' ? 'max-w-[375px] border-x border-zinc-800' :
+      deviceView === 'tablet' ? 'max-w-[768px] border-x border-zinc-800' :
       'max-w-full'
-    }\`}>
+    }`}>
       <iframe
         title="Preview"
         srcDoc={srcDoc}
