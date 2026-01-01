@@ -493,6 +493,12 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
 
 
+  // Can deploy: Any paid tier (lite, pro, agency)
+  const canDeploy = useMemo(() => {
+    return accountSubscription?.status === 'active' && ['lite', 'pro', 'agency'].includes(accountSubscription.tier)
+  }, [accountSubscription])
+  
+  // Pro features: Custom domain, remove branding (pro/agency only)
   const isProUser = useMemo(() => {
     return accountSubscription?.status === 'active' && (accountSubscription.tier === 'pro' || accountSubscription.tier === 'agency')
   }, [accountSubscription])
@@ -992,8 +998,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const handleDeploy = async () => {
     if (!project || !assembledCode || isDeploying) return
     
-    // Check if user has subscription (Must be Pro or Agency to deploy)
-    if (!isProUser) {
+    // Check if user has any paid subscription (Lite, Pro, or Agency can deploy)
+    if (!canDeploy) {
       setHatchModalReason('deploy')
       setShowHatchModal(true)
       return

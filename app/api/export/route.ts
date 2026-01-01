@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
     
     if (!accountSubscription || accountSubscription.status !== 'active') {
       return NextResponse.json({ 
-        error: 'Pro subscription required to download projects',
+        error: 'Starter subscription ($9/mo) required to download projects',
         requiresUpgrade: true 
       }, { status: 403 })
     }
