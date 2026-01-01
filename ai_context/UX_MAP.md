@@ -6,6 +6,39 @@
 
 ---
 
+## 0. The Homepage (`/`)
+
+### A. Hero Section
+- [x] **System Status**: Interactive terminal-style input.
+- [x] **Trust Badges**: "Sovereign Code", "Neural Speed", "Architect Control".
+- [x] **CTA**: "Initialize Architect" (Routes to `/builder` or `/sign-up`).
+
+### B. The Stack (Value Prop)
+- [x] **Positioning**: Moved to top (immediately after Hero).
+- [x] **Content**: Emphasizes "Real Code" and "Ownership" (React, Tailwind, TS).
+- [x] **Animation**: Staggered fade-in for tech stack cards.
+
+### C. Feature Breakdown
+- [x] **Cards**: "Unified Intelligence", "The Architect", "Section-by-Section".
+- [x] **Link**: "View System Capabilities" -> `/features`.
+
+### D. Pricing Section
+- [x] **Starter ($9)**:
+    - [x] Replaces "Free" card.
+    - [x] Includes: 20 gens/day, Download only.
+    - [x] Button: "Initialize Starter" (Triggers Stripe `lite` tier).
+- [x] **Pro ($29)**:
+    - [x] Visuals: "Architect Choice" badge, glowing border.
+    - [x] Includes: Unlimited, Deploy, No Branding.
+- [x] **Agency ($99)**:
+    - [x] Includes: Commercial License, Priority Support.
+
+### E. Final CTA
+- [x] **Copy**: "Ready to initialize?" (Removed "No credit card").
+- [x] **Button**: "Initialize Architect".
+
+---
+
 ## 1. The Builder Core (`/builder`)
 
 ### A. Navigation Bar (`SectionProgress.tsx`)

@@ -510,21 +510,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SOCIAL PROOF */}
-      <Section className="px-6 py-16 bg-zinc-900/30 border-y border-zinc-800/50">
-        <div className="max-w-4xl mx-auto">
-          <div className="relative">
-            <div className="absolute -left-4 top-0 text-6xl text-emerald-500/20 font-serif">{"\""}</div>
-            <blockquote className="text-xl sm:text-2xl md:text-3xl text-center font-medium text-zinc-200 leading-relaxed pl-8">
-              I rebuilt HatchIt with a unified AI pipeline. <span className="text-emerald-400">The Architect builds, refines, and audits.</span> Section by section, with full architectural control.
-            </blockquote>
-            <div className="mt-6 text-center">
-              <div className="text-zinc-400 font-medium">Dan</div>
-              <div className="text-sm text-zinc-600 font-mono">Lead Architect, HatchIt.dev</div>
-            </div>
-          </div>
-        </div>
-      </Section>
+
 
       {/* THE STACK */}
       <Section className="px-6 py-24">
@@ -760,26 +746,7 @@ export default function Home() {
 
 
 
-      {/* STATS */}
-      <Section className="px-6 py-16 bg-zinc-900/30 border-y border-zinc-800/50">
-        <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            {[
-              { value: 30, suffix: 's', label: 'Avg. generation' },
-              { value: 100, suffix: '%', label: 'Code ownership' },
-              { value: 10, suffix: '', label: 'Days to build V3' },
-              { value: 1, suffix: '', label: 'Person team' },
-            ].map((stat, i) => (
-              <div key={i}>
-                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-2 font-mono">
-                  <AnimatedCounter value={stat.value} suffix={stat.suffix} />
-                </div>
-                <div className="text-sm text-zinc-500 font-mono">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </Section>
+
 
       {/* PRICING */}
       <Section id="pricing" className="px-6 py-24">
