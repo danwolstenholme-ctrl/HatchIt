@@ -60,11 +60,15 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const { user, isLoaded } = useUser()
   const [isSyncing, setIsSyncing] = useState(false)
   const [hasSynced, setHasSynced] = useState(false)
+  const [localSubscription, setLocalSubscription] = useState<AccountSubscription | null>(null)
 
+  // Read subscription from user metadata, but also check local override
   const subscription = useMemo(() => {
+    // Prefer local state if we just synced (more up-to-date)
+    if (localSubscription) return localSubscription
     if (!user) return null
     return (user.publicMetadata?.accountSubscription as AccountSubscription) || null
-  }, [user])
+  }, [user, localSubscription])
 
   const tier = useMemo(() => {
     if (!subscription || subscription.status !== 'active') return 'free'
@@ -102,7 +106,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       const data = await response.json()
       
       if (data.synced && data.subscription) {
-        // Force a user refresh to pick up new metadata
+        // Update local state immediately for faster UI update
+        setLocalSubscription(data.subscription)
+        // Also force a user refresh to update Clerk's cache
         await user.reload()
       }
     } catch (error) {
@@ -112,17 +118,18 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     }
   }, [user, isSyncing])
 
-  // Auto-sync on mount if user is loaded but no subscription (might be webhook delay)
+  // Auto-sync on mount for ALL users (not just those without subscription)
+  // This ensures paid users get the latest subscription status
   useEffect(() => {
-    if (isLoaded && user && !subscription && !hasSynced) {
-      // Small delay to let webhook process first
+    if (isLoaded && user && !hasSynced) {
+      // Small delay to let initial render complete
       const timer = setTimeout(() => {
         syncSubscription()
         setHasSynced(true)
-      }, 2000)
+      }, 500)
       return () => clearTimeout(timer)
     }
-  }, [isLoaded, user, subscription, hasSynced, syncSubscription])
+  }, [isLoaded, user, hasSynced, syncSubscription])
 
   const value: SubscriptionContextValue = {
     subscription,
