@@ -524,26 +524,21 @@ export default function RootLayout({
 const PageComponent${idx} = (() => {
   try {
     ${page.cleanedCode}
-    // Return the component
-    // Check for function components
+    // Return the component - ONLY accept functions to avoid React #130
     if (typeof ${page.componentName} === "function") return ${page.componentName};
-    
-    // Check for memo/forwardRef components (objects with $$typeof)
-    if (typeof ${page.componentName} === "object" && ${page.componentName} !== null && (${page.componentName}.$$typeof || ${page.componentName}.type)) return ${page.componentName};
-
-    // Fallbacks
     if (typeof Component === "function") return Component;
-    if (typeof Component === "object" && Component !== null && (Component.$$typeof || Component.type)) return Component;
-    
     if (typeof App === "function") return App;
     if (typeof Page === "function") return Page;
     if (typeof Home === "function") return Home;
     if (typeof Main === "function") return Main;
+    if (typeof Index === "function") return Index;
+    if (typeof Default === "function") return Default;
     
-    return () => <div className="p-8 text-center text-zinc-500">No component found</div>;
+    // Safe fallback
+    return function FallbackComponent() { return React.createElement("div", { className: "p-8 text-center text-zinc-500" }, "Component loading..."); };
   } catch (e) {
     console.error("Error in page ${page.path}:", e);
-    return () => <div className="p-8 text-zinc-500">Error: {e.message}</div>;
+    return function ErrorComponent() { return React.createElement("div", { className: "p-8 text-zinc-500" }, "Error: " + e.message); };
   }
 })();
 `).join('\n')
@@ -570,11 +565,9 @@ ${pageRegistry}
         // Find the component for this path
         const PageComponent = pageRegistry[currentPath] || pageRegistry['${currentPage.path}'] || pageRegistry['/'];
         
-        // Safety check: Ensure PageComponent is actually renderable
-        const isValidComponent = PageComponent && (
-          typeof PageComponent === 'function' ||
-          (typeof PageComponent === 'object' && PageComponent !== null && (PageComponent.$$typeof || PageComponent.type))
-        );
+        // Strict safety check: ONLY render if it's a function
+        // Objects with $$typeof are handled by React.createElement internally
+        const isValidComponent = typeof PageComponent === 'function';
         
         if (isValidComponent) {
           try {
@@ -693,15 +686,51 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
         '<script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin onload="window.DEPS_LOADED.babel=true;" onerror="showFallback()"></script>' +
         '<script>' +
         '// Setup globals with fallbacks\n' +
-        'window.motion = window.Motion?.motion || { div: "div", button: "button", a: "a", span: "span", p: "p", h1: "h1", h2: "h2", h3: "h3", section: "section", main: "main", nav: "nav", ul: "ul", li: "li", img: "img", input: "input", form: "form", label: "label", textarea: "textarea", header: "header", footer: "footer", article: "article", aside: "aside" };\n' +
-        'window.AnimatePresence = window.Motion?.AnimatePresence || function(props) { return props.children; };\n' +
-        'window.useAnimation = window.Motion?.useAnimation || function() { return { start: function(){}, stop: function(){} }; };\n' +
-        'window.useInView = window.Motion?.useInView || function() { return true; };\n' +
-        'window.useScroll = window.Motion?.useScroll || function() { return { scrollY: { get: function(){ return 0; } }, scrollYProgress: { get: function(){ return 0; } } }; };\n' +
-        'window.useTransform = window.Motion?.useTransform || function(v, i, o) { return typeof v === "number" ? v : 0; };\n' +
-        'window.useSpring = window.Motion?.useSpring || function(v) { return typeof v === "number" ? v : 0; };\n' +
-        'window.useMotionValue = window.Motion?.useMotionValue || function(v) { return { get: function() { return v; }, set: function() {}, onChange: function(){} }; };\n' +
-        '// Create a safe icon getter that ALWAYS returns a valid component\n' +
+        '// FRAMER MOTION: ALWAYS use Proxy to ensure safe access\n' +
+        'window.motion = new Proxy({}, {\n' +
+        '  get: function(target, tag) {\n' +
+        '    // Try to get real framer-motion component\n' +
+        '    if (window.Motion && window.Motion.motion && window.Motion.motion[tag]) {\n' +
+        '      var realComponent = window.Motion.motion[tag];\n' +
+        '      if (typeof realComponent === "function" || (typeof realComponent === "object" && realComponent && realComponent.$$typeof)) {\n' +
+        '        return realComponent;\n' +
+        '      }\n' +
+        '    }\n' +
+        '    // Fallback: return the HTML tag name as a string (React accepts strings for native elements)\n' +
+        '    return tag;\n' +
+        '  }\n' +
+        '});\n' +
+        'window.AnimatePresence = function AnimatePresenceFallback(props) {\n' +
+        '  if (window.Motion && typeof window.Motion.AnimatePresence === "function") {\n' +
+        '    return React.createElement(window.Motion.AnimatePresence, props);\n' +
+        '  }\n' +
+        '  return props.children || null;\n' +
+        '};\n' +
+        'window.useAnimation = function() {\n' +
+        '  if (window.Motion && typeof window.Motion.useAnimation === "function") return window.Motion.useAnimation();\n' +
+        '  return { start: function(){}, stop: function(){} };\n' +
+        '};\n' +
+        'window.useInView = function(ref, opts) {\n' +
+        '  if (window.Motion && typeof window.Motion.useInView === "function") return window.Motion.useInView(ref, opts);\n' +
+        '  return true;\n' +
+        '};\n' +
+        'window.useScroll = function(opts) {\n' +
+        '  if (window.Motion && typeof window.Motion.useScroll === "function") return window.Motion.useScroll(opts);\n' +
+        '  return { scrollY: { get: function(){ return 0; } }, scrollYProgress: { get: function(){ return 0; } } };\n' +
+        '};\n' +
+        'window.useTransform = function(v, i, o) {\n' +
+        '  if (window.Motion && typeof window.Motion.useTransform === "function") return window.Motion.useTransform(v, i, o);\n' +
+        '  return typeof v === "number" ? v : 0;\n' +
+        '};\n' +
+        'window.useSpring = function(v, opts) {\n' +
+        '  if (window.Motion && typeof window.Motion.useSpring === "function") return window.Motion.useSpring(v, opts);\n' +
+        '  return typeof v === "number" ? v : 0;\n' +
+        '};\n' +
+        'window.useMotionValue = function(v) {\n' +
+        '  if (window.Motion && typeof window.Motion.useMotionValue === "function") return window.Motion.useMotionValue(v);\n' +
+        '  return { get: function() { return v; }, set: function() {}, onChange: function(){} };\n' +
+        '};\n' +
+        '// LUCIDE ICONS: Create safe icon factory that ALWAYS returns a function\n' +
         'window.createSafeIcon = function(name) {\n' +
         '  return function SafeIcon(props) {\n' +
         '    var icons = window.lucideReact || window.lucide || {};\n' +
@@ -709,24 +738,21 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
         '    if (typeof Icon === "function") {\n' +
         '      try { return Icon(props); } catch(e) { /* fall through */ }\n' +
         '    }\n' +
-        '    // Fallback: render empty SVG placeholder\n' +
-        '    return React.createElement("svg", Object.assign({ width: 24, height: 24, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" }, props));\n' +
+        '    return React.createElement("svg", Object.assign({ width: 24, height: 24, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" }, props || {}));\n' +
         '  };\n' +
         '};\n' +
-        '// Pre-create all common icons as safe components\n' +
-        'window.LucideIcons = {};\n' +
-        '["ArrowRight","ArrowLeft","ArrowUp","ArrowDown","Check","CheckCircle","CheckCircle2","Circle","X","Menu","ChevronDown","ChevronUp","ChevronLeft","ChevronRight","Plus","Minus","Search","Settings","User","Users","Mail","Phone","MapPin","Calendar","Clock","Star","Heart","Home","Globe","Layers","Lock","Award","BookOpen","Zap","Shield","Target","TrendingUp","BarChart","PieChart","Activity","Eye","EyeOff","Edit","Trash","Copy","Download","Upload","Share","Link","ExternalLink","Send","MessageCircle","Bell","AlertCircle","Info","HelpCircle","Loader","RefreshCw","RotateCcw","Save","FileText","Folder","Image","Play","Pause","SkipBack","SkipForward","Volume2","VolumeX","Mic","Video","Camera","Wifi","Battery","Sun","Moon","Cloud","Droplet","Wind","Thermometer","Map","Navigation","Compass","Flag","Bookmark","Tag","Hash","AtSign","Filter","Grid","List","LayoutGrid","Maximize","Minimize","Move","Crop","ZoomIn","ZoomOut","MoreHorizontal","MoreVertical","Briefcase","Building","Cpu","Database","Server","Code","Terminal","GitBranch","Github","Linkedin","Twitter","Facebook","Instagram","Youtube","Sparkles","Bot","Brain","Rocket","Package","Box","Gift","ShoppingCart","CreditCard","DollarSign","Percent","TrendingDown","LineChart","Gauge","Timer","Hourglass","Repeat","Shuffle","SkipForward","FastForward","Rewind","Square","Circle","Triangle","Hexagon","Octagon","Pentagon","Diamond","Gem","Crown","Medal","Trophy","Flame","Lightbulb","Lamp","Flashlight","Power","PlugZap","Unplug","Cable","Bluetooth","Cast","Airplay","Monitor","Tv","Smartphone","Tablet","Laptop","Watch","Headphones","Speaker","Radio","Antenna","Signal","Rss","Podcast","Music","Music2","Music3","Music4","Mic2","MicOff","AudioWaveform","Piano","Guitar","Drum"].forEach(function(name) {\n' +
-        '  window.LucideIcons[name] = window.createSafeIcon(name);\n' +
-        '});\n' +
-        '// Also create a Proxy for any icons not in the list\n' +
-        'window.LucideIcons = new Proxy(window.LucideIcons, {\n' +
+        '// Pre-create all common icons\n' +
+        'var iconNames = ["ArrowRight","ArrowLeft","ArrowUp","ArrowDown","Check","CheckCircle","CheckCircle2","Circle","X","Menu","ChevronDown","ChevronUp","ChevronLeft","ChevronRight","Plus","Minus","Search","Settings","User","Users","Mail","Phone","MapPin","Calendar","Clock","Star","Heart","Home","Globe","Layers","Lock","Award","BookOpen","Zap","Shield","Target","TrendingUp","BarChart","PieChart","Activity","Eye","EyeOff","Edit","Trash","Copy","Download","Upload","Share","Link","ExternalLink","Send","MessageCircle","Bell","AlertCircle","Info","HelpCircle","Loader","RefreshCw","RotateCcw","Save","FileText","Folder","Image","Play","Pause","Volume2","VolumeX","Mic","Video","Camera","Wifi","Battery","Sun","Moon","Cloud","Map","Compass","Flag","Bookmark","Tag","Hash","AtSign","Filter","Grid","List","LayoutGrid","Maximize","Minimize","MoreHorizontal","MoreVertical","Briefcase","Building","Cpu","Database","Server","Code","Terminal","GitBranch","Github","Linkedin","Twitter","Facebook","Instagram","Youtube","Sparkles","Box","ShoppingCart","CreditCard","DollarSign","Rocket","Package","Bot","Brain"];\n' +
+        'var iconBase = {};\n' +
+        'iconNames.forEach(function(name) { iconBase[name] = window.createSafeIcon(name); });\n' +
+        '// Proxy for any icons (ensures we ALWAYS return a function, never undefined/object)\n' +
+        'window.LucideIcons = new Proxy(iconBase, {\n' +
         '  get: function(target, prop) {\n' +
+        '    if (typeof prop !== "string") return function() { return null; };\n' +
         '    if (prop in target) return target[prop];\n' +
-        '    if (typeof prop === "string" && prop[0] === prop[0].toUpperCase()) {\n' +
-        '      target[prop] = window.createSafeIcon(prop);\n' +
-        '      return target[prop];\n' +
-        '    }\n' +
-        '    return undefined;\n' +
+        '    // Create new safe icon for unknown icon names\n' +
+        '    target[prop] = window.createSafeIcon(prop);\n' +
+        '    return target[prop];\n' +
         '  }\n' +
         '});\n' +
         '</script>' +
@@ -959,10 +985,29 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
         'const Bot = LucideIcons.Bot;\n' +
         'const Brain = LucideIcons.Brain;\n' +
         'try {\n' +
+        '// Error Boundary class to catch render errors\n' +
+        'class ErrorBoundary extends React.Component {\n' +
+        '  constructor(props) { super(props); this.state = { hasError: false, error: null }; }\n' +
+        '  static getDerivedStateFromError(error) { return { hasError: true, error }; }\n' +
+        '  componentDidCatch(error, info) {\n' +
+        '    console.error("ErrorBoundary caught:", error, info);\n' +
+        '    window.parent.postMessage({ type: "preview-error", errorType: "Render Error", message: error.message }, "*");\n' +
+        '  }\n' +
+        '  render() {\n' +
+        '    if (this.state.hasError) {\n' +
+        '      return React.createElement("div", { style: { minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)", padding: "2rem", textAlign: "center", fontFamily: "system-ui" } },\n' +
+        '        React.createElement("div", { style: { fontSize: "4rem", marginBottom: "1rem" } }, "⚠️"),\n' +
+        '        React.createElement("h2", { style: { color: "#fff", fontSize: "1.5rem", fontWeight: 600, marginBottom: "0.5rem" } }, "Preview Error"),\n' +
+        '        React.createElement("p", { style: { color: "#f87171", maxWidth: "400px", fontFamily: "monospace", fontSize: "0.875rem", background: "rgba(0,0,0,0.3)", padding: "1rem", borderRadius: "0.5rem" } }, this.state.error?.message || "Unknown error")\n' +
+        '      );\n' +
+        '    }\n' +
+        '    return this.props.children;\n' +
+        '  }\n' +
+        '}\n' +
         pageDefinitions + '\n' +
         routerCode + '\n' +
         '  const root = ReactDOM.createRoot(document.getElementById("root"));\n' +
-        '  root.render(<Router />);\n' +
+        '  root.render(React.createElement(ErrorBoundary, null, React.createElement(Router)));\n' +
         '} catch (err) {\n' +
         '  console.error("Render catch:", err);\n' +
         '  window.parent.postMessage({ type: "preview-error", errorType: "Render Error", message: err.message }, "*");\n' +
@@ -1434,13 +1479,38 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
       'const Rocket = LucideIcons.Rocket;\n' +
       'const Bot = LucideIcons.Bot;\n' +
       'const Brain = LucideIcons.Brain;\n' +
+      '// ErrorBoundary class for single-page mode\n' +
+      'class ErrorBoundary extends React.Component {\n' +
+      '  constructor(props) { super(props); this.state = { hasError: false, error: null }; }\n' +
+      '  static getDerivedStateFromError(error) { return { hasError: true, error: error }; }\n' +
+      '  componentDidCatch(error, info) {\n' +
+      '    console.error("[ErrorBoundary]", error, info);\n' +
+      '    window.parent.postMessage({ type: "preview-error", errorType: "Component Error", message: error.message }, "*");\n' +
+      '  }\n' +
+      '  render() {\n' +
+      '    if (this.state.hasError) {\n' +
+      '      return React.createElement("div", { className: "preview-fallback" },\n' +
+      '        React.createElement("div", { className: "preview-fallback-badge" },\n' +
+      '          React.createElement("div", { className: "preview-fallback-badge-dot" }),\n' +
+      '          React.createElement("span", { className: "preview-fallback-badge-text" }, "Error Caught")\n' +
+      '        ),\n' +
+      '        React.createElement("h2", { className: "preview-fallback-title" }, "Preview Error"),\n' +
+      '        React.createElement("p", { className: "preview-fallback-desc" }, this.state.error?.message || "Something went wrong"),\n' +
+      '        React.createElement("div", { className: "preview-fallback-hint" },\n' +
+      '          React.createElement("span", { className: "preview-fallback-hint-text" }, "Your code is available in the Code tab")\n' +
+      '        )\n' +
+      '      );\n' +
+      '    }\n' +
+      '    return this.props.children;\n' +
+      '  }\n' +
+      '}\n' +
       'try {\n' +
       cleanedCode + '\n' +
       '  const root = ReactDOM.createRoot(document.getElementById("root"));\n' +
       '  if (typeof ' + componentName + ' === "function") {\n' +
-      '    root.render(React.createElement(' + componentName + '));\n' +
+      '    root.render(React.createElement(ErrorBoundary, null, React.createElement(' + componentName + ')));\n' +
       '  } else if (typeof Component === "function") {\n' +
-      '    root.render(React.createElement(Component));\n' +
+      '    root.render(React.createElement(ErrorBoundary, null, React.createElement(Component)));\n' +
       '  } else {\n' +
       '    document.getElementById("root").innerHTML = "<div class=\'error\'><h2>Component Not Found</h2><p>Make sure your code exports a function component.</p></div>";\n' +
       '  }\n' +
