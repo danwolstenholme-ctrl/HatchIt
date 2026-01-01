@@ -201,7 +201,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
         const replicationData = JSON.parse(decodeURIComponent(data))
         // Transform replication data into a template
         const replicatedTemplate: Template = {
-          ...SINGULARITY_TEMPLATE,
+          ...ARCHITECT_TEMPLATE,
           name: replicationData.projectName || 'Replicated Project',
           description: replicationData.description || 'Imported from URL',
           sections: replicationData.sections.map((s: any, i: number) => ({
