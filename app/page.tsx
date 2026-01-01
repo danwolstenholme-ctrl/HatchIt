@@ -315,6 +315,7 @@ function FloatingNodes() {
 }
 
 export default function Home() {
+  const { isSignedIn } = useUser()
   const reducedMotion = useReducedMotion()
   
   // Animation config - standardized for consistency
@@ -442,7 +443,7 @@ export default function Home() {
               whileTap={{ scale: 0.98 }}
               transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
-              <Link href="/builder" className="px-8 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-colors text-white shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+              <Link href="/builder" className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-colors text-white shadow-[0_0_20px_rgba(16,185,129,0.2)]">
                 <Terminal className="w-5 h-5" />
                 <span>Initialize Project</span>
                 <ArrowRight className="w-4 h-4" />
@@ -454,7 +455,7 @@ export default function Home() {
               whileTap={{ scale: 0.98 }}
               transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
-              <Link href="/how-it-works" className="px-8 py-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl font-semibold text-lg transition-colors flex items-center justify-center gap-2">
+              <Link href="/how-it-works" className="w-full sm:w-auto px-8 py-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl font-semibold text-lg transition-colors flex items-center justify-center gap-2">
                 <Layers className="w-5 h-5 text-zinc-400" />
                 <span>System Architecture</span>
               </Link>
@@ -529,8 +530,8 @@ export default function Home() {
                     <div className="text-3xl sm:text-4xl font-bold text-white mb-3 sm:mb-4 tracking-tight">Build Something Amazing</div>
                     <p className="text-sm sm:text-lg text-zinc-400 mb-4 sm:mb-6">Your vision, brought to life with AI.</p>
                     <div>
-                      <Link href="/builder" className="relative inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-semibold text-sm sm:text-base transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] hover:-translate-y-0.5 group">
-                        <span>Initialize Sequence</span>
+                      <Link href={isSignedIn ? "/builder" : "/sign-up"} className="relative inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-semibold text-sm sm:text-base transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] hover:-translate-y-0.5 group">
+                        <span>{isSignedIn ? "Initialize Sequence" : "Sign Up to Build"}</span>
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                       </Link>
                     </div>

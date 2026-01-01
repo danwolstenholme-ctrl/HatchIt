@@ -115,6 +115,16 @@
 			"command": "rm app/campaign/page.tsx app/brand/page.tsx",
 			"isBackground": false,
 			"group": "clean"
+		},
+		{
+			"label": "commit-fix-loophole",
+			"type": "shell",
+			"command": "git add . && git commit -m \"fix: close demo mode loophole - force signup to build\" && git push"
+		},
+		{
+			"label": "commit-signup-optimization",
+			"type": "shell",
+			"command": "git add . && git commit -m \"feat: optimize signup flow with tracking, mobile UI, and param preservation\" && git push"
 		}
 	]
 }

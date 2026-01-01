@@ -32,6 +32,7 @@ import {
   Copy,
   Sparkles
 } from 'lucide-react'
+import { track } from '@vercel/analytics'
 // TemplateSelector and BrandingStep removed - The Architect decides now.
 import SectionProgress from './SectionProgress'
 import SectionBuilder from './SectionBuilder'
@@ -410,10 +411,23 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       setIsLoading(false)
     }
 
-    // If user is not signed in, use demo mode
+    // If user is not signed in, redirect to sign up - NO MORE DEMO MODE LOOPHOLE
     if (!isSignedIn || !user) {
+      // Track the gate hit
+      track('Sign Up Gate Hit', { source: 'builder_init' })
+      
+      // Redirect to sign up page instead of entering demo mode
+      // Preserving intent to return to builder AND keeping any replication/template params
+      const currentParams = window.location.search
+      const returnUrl = '/builder' + currentParams
+      router.push(`/sign-up?redirect_url=${encodeURIComponent(returnUrl)}`)
+      
+      // ROLLBACK PLAN: Uncomment this block to restore Demo Mode
+      /*
       // Small delay for effect
       setTimeout(setupDemoMode, 1500)
+      return
+      */
       return
     }
 

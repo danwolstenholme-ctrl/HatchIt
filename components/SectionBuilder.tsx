@@ -1236,7 +1236,7 @@ export default function SectionBuilder({
 
           {/* Smart Suggestions - scrollable row */}
           {stage === 'input' && (
-            <div className="mt-2 flex flex-nowrap gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+            <div className="mt-2 flex flex-nowrap gap-1.5 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
               {getSuggestions(section.id).slice(0, 4).map((suggestion) => (
                 <button
                   key={suggestion}
@@ -1473,6 +1473,17 @@ export default function SectionBuilder({
             </AnimatePresence>
           </div>
         </div>
+
+        {/* Minimal AI Pipeline Info - only show during input stage */}
+        {stage === 'input' && (
+          <div className="hidden md:block px-4 py-3 bg-zinc-900/30 border-t border-zinc-800 flex-shrink-0">
+            <div className="flex items-center gap-4 text-xs text-zinc-500 font-mono">
+              <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Architect builds</span>
+              <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-teal-500"></span> Architect polishes</span>
+              <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-violet-500"></span> Architect audits</span>
+            </div>
+          </div>
+        )}
 
         {/* Prompt Helper Mini-Chat Modal */}
         <AnimatePresence>
