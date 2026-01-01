@@ -111,7 +111,9 @@ export async function POST(req: NextRequest) {
       dependencies: {
         next: '16.1.1',
         react: '19.2.3',
-        'react-dom': '19.2.3'
+        'react-dom': '19.2.3',
+        'framer-motion': '^11.0.0',
+        'lucide-react': '^0.300.0'
       },
       devDependencies: {
         '@tailwindcss/postcss': '^4',
@@ -203,13 +205,32 @@ Push to GitHub and connect to [Vercel](https://vercel.com) for instant deploymen
 `
   }
 
+  // Helper: Extract Lucide icon names from code
+  const extractLucideIcons = (codeStr: string): string[] => {
+    const lucideIconRegex = /<([A-Z][a-zA-Z0-9]*)\s/g
+    const icons = new Set<string>()
+    let match
+    while ((match = lucideIconRegex.exec(codeStr)) !== null) {
+      const name = match[1]
+      // Exclude React/framer components
+      if (!['AnimatePresence', 'Component', 'Fragment', 'Suspense'].includes(name)) {
+        icons.add(name)
+      }
+    }
+    return Array.from(icons)
+  }
+
   // Add page files
   if (pages && pages.length > 0) {
     // Multi-page project
     pages.forEach((page: { path: string; code: string }) => {
+      const icons = extractLucideIcons(page.code)
+      const lucideImport = icons.length > 0 ? `import { ${icons.join(', ')} } from 'lucide-react'\n` : ''
+      
       const pageCode = `'use client'
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-
+import { motion, AnimatePresence } from 'framer-motion'
+${lucideImport}
 ${page.code}`
       
       if (page.path === '/') {
@@ -221,9 +242,13 @@ ${page.code}`
     })
   } else {
     // Single-page project
+    const icons = extractLucideIcons(code)
+    const lucideImport = icons.length > 0 ? `import { ${icons.join(', ')} } from 'lucide-react'\n` : ''
+    
     files['app/page.tsx'] = `'use client'
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-import Component from '@/components/Generated'
+import { motion, AnimatePresence } from 'framer-motion'
+${lucideImport}import Component from '@/components/Generated'
 
 export default function Home() {
   return <Component />
@@ -231,7 +256,8 @@ export default function Home() {
     
     files['components/Generated.tsx'] = `'use client'
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-
+import { motion, AnimatePresence } from 'framer-motion'
+${lucideImport}
 ${code}`
   }
 
