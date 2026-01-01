@@ -71,6 +71,26 @@
 			"label": "force_commit_push",
 			"type": "shell",
 			"command": "git add . && git commit -m \"chore: save point - final context organization\" && git push"
+		},
+		{
+			"label": "install_next_third_parties",
+			"type": "shell",
+			"command": "npm install @next/third-parties"
+		},
+		{
+			"label": "commit_dependency",
+			"type": "shell",
+			"command": "git add package.json package-lock.json && git commit -m \"fix: add @next/third-parties dependency\" && git push"
+		},
+		{
+			"label": "install_package_retry",
+			"type": "shell",
+			"command": "npm install @next/third-parties"
+		},
+		{
+			"label": "manual_fix_push",
+			"type": "shell",
+			"command": "git add package.json && git commit -m \"fix: manually add @next/third-parties to package.json\" && git push"
 		}
 	]
 }
