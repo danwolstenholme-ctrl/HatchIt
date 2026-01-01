@@ -669,9 +669,9 @@ export default function SectionBuilder({
     // Reset height to recalculate
     textarea.style.height = 'auto'
     // Set to scroll height but cap at max for very long content
-    const maxHeight = 400
+    const maxHeight = 280
     const newHeight = Math.min(textarea.scrollHeight, maxHeight)
-    textarea.style.height = `${Math.max(newHeight, 200)}px`
+    textarea.style.height = `${Math.max(newHeight, 120)}px`
     // Show scrollbar if content exceeds max
     textarea.style.overflowY = textarea.scrollHeight > maxHeight ? 'auto' : 'hidden'
   }, [prompt])
@@ -1154,54 +1154,43 @@ export default function SectionBuilder({
       {/* Left: Input Panel - Full width on mobile when active, collapsible on desktop */}
       <div className={`
         ${mobileTab === 'input' ? 'flex' : 'hidden'} md:flex
-        ${expandedPreview ? 'md:w-80 md:min-w-80' : 'md:w-[40%] md:min-w-[350px]'} 
+        ${expandedPreview ? 'md:w-80 md:min-w-80' : 'md:w-[40%] md:min-w-[320px]'} 
         flex-col min-h-0 max-h-full overflow-hidden relative transition-all duration-300 
         border-r-0 md:border-r border-zinc-800/50 bg-zinc-950
       `}>
-        {/* Section Header */}
-        <div className="p-4 lg:p-6 border-b border-zinc-800/50 flex-shrink-0 bg-zinc-950">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.1)]">
-                <Terminal className="w-5 h-5 text-emerald-400" />
+        {/* Section Header - Compact */}
+        <div className="p-3 lg:p-4 border-b border-zinc-800/50 flex-shrink-0 bg-zinc-950">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                <Terminal className="w-4 h-4 text-emerald-400" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-white tracking-tight">{section.name}</h2>
-                <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <p className="text-xs text-emerald-400/70 font-mono">The Architect is ready</p>
-                </div>
+                <h2 className="text-base font-bold text-white tracking-tight">{section.name}</h2>
+                <p className="text-[10px] text-emerald-400/70 font-mono">The Architect is ready</p>
               </div>
             </div>
-            <div className="px-2 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-xs text-zinc-500 font-mono">
+            <div className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-[10px] text-zinc-500 font-mono">
               {section.estimatedTime}
             </div>
           </div>
           
-          <p className="text-sm text-zinc-400 leading-relaxed">{section.description}</p>
-          
-          {/* Brand Quick Reference - Collapsible */}
-          {brandConfig && (
-            <BrandQuickReference brandConfig={brandConfig} />
-          )}
+          <p className="text-xs text-zinc-500 leading-relaxed line-clamp-2">{section.description}</p>
         </div>
 
-        {/* Input Area */}
-        <div className="flex-1 p-4 lg:p-6 flex flex-col min-h-0 overflow-auto">
-          <div className="flex items-center justify-between mb-2">
-            <label className="text-xs font-mono text-zinc-500 uppercase tracking-wider">
+        {/* Input Area - More compact */}
+        <div className="flex-1 p-3 lg:p-4 flex flex-col min-h-0 overflow-auto">
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
               Directive
             </label>
             <motion.button 
               onClick={() => initializePromptHelper()}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="group relative px-3 py-1.5 rounded-lg bg-zinc-900 border border-emerald-500/30 hover:border-emerald-500/60 flex items-center gap-2 transition-all shadow-[0_0_10px_rgba(16,185,129,0.1)] hover:shadow-[0_0_15px_rgba(16,185,129,0.2)]"
+              className="group relative px-2 py-1 rounded-lg bg-zinc-900 border border-emerald-500/30 hover:border-emerald-500/60 flex items-center gap-1.5 transition-all text-xs"
             >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
               <span className="text-xs font-medium text-emerald-400 group-hover:text-emerald-300">Ask The Architect</span>
             </motion.button>
           </div>
@@ -1220,7 +1209,7 @@ export default function SectionBuilder({
               }}
               disabled={stage !== 'input'}
               placeholder={placeholderText}
-              className="relative w-full min-h-[180px] bg-zinc-900/80 border border-zinc-800 rounded-xl p-4 text-sm font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none focus:ring-0 focus:border-purple-500/50 disabled:opacity-50 resize-none transition-all"
+              className="relative w-full min-h-[120px] bg-zinc-900/80 border border-zinc-800 rounded-xl p-3 text-sm font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none focus:ring-0 focus:border-purple-500/50 disabled:opacity-50 resize-none transition-all"
             />
             {/* Voice Input Button */}
             <div className="absolute bottom-3 right-3 z-10">
@@ -1245,14 +1234,14 @@ export default function SectionBuilder({
             </div>
           </div>
 
-          {/* Smart Suggestions */}
+          {/* Smart Suggestions - scrollable row */}
           {stage === 'input' && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {getSuggestions(section.id).map((suggestion) => (
+            <div className="mt-2 flex flex-nowrap gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+              {getSuggestions(section.id).slice(0, 4).map((suggestion) => (
                 <button
                   key={suggestion}
                   onClick={() => setPrompt(prev => prev ? `${prev} ${suggestion}` : suggestion)}
-                  className="px-3 py-1.5 rounded-full bg-zinc-800/50 border border-zinc-700/50 text-xs text-zinc-400 hover:text-white hover:bg-zinc-700 hover:border-zinc-600 transition-all"
+                  className="px-2.5 py-1 rounded-full bg-zinc-800/50 border border-zinc-700/50 text-[10px] text-zinc-400 hover:text-white hover:bg-zinc-700 hover:border-zinc-600 transition-all whitespace-nowrap flex-shrink-0"
                 >
                   + {suggestion}
                 </button>
@@ -1265,15 +1254,15 @@ export default function SectionBuilder({
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-3 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2 flex items-center gap-2"
+              className="mt-2 text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 flex items-center gap-2"
             >
               <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
               {error}
             </motion.div>
           )}
 
-          {/* Action Button */}
-          <div className="mt-6">
+          {/* Action Button - tighter */}
+          <div className="mt-4">
             <AnimatePresence mode="wait">
               {stage === 'input' && (
                 <motion.button
@@ -1283,9 +1272,9 @@ export default function SectionBuilder({
                   exit={{ opacity: 0 }}
                   onClick={handleBuildSection}
                   disabled={!prompt.trim()}
-                  className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-[0.98] transition-all min-h-[52px] flex items-center justify-center gap-2 group"
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group text-sm"
                 >
-                  <Terminal className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                  <Terminal className="w-4 h-4 group-hover:rotate-12 transition-transform" />
                   <span>Build with The Architect</span>
                 </motion.button>
               )}
@@ -1328,31 +1317,30 @@ export default function SectionBuilder({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="space-y-4"
+                  className="space-y-3"
                 >
-                  {/* The Architect Success Message */}
+                  {/* The Architect Success Message - Compact */}
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="p-5 bg-gradient-to-br from-emerald-500/10 to-teal-500/5 border border-emerald-500/30 rounded-xl"
+                    className="p-3 bg-gradient-to-br from-emerald-500/10 to-teal-500/5 border border-emerald-500/30 rounded-xl"
                   >
-                    <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
-                        <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-base font-semibold text-emerald-300 mb-1">
+                        <h3 className="text-sm font-semibold text-emerald-300 mb-0.5">
                           {section.name} constructed.
                         </h3>
-                        <p className="text-sm text-zinc-400 font-mono">
-                          {reasoning || "The Architect has materialized your vision. Review the preview and continue when ready."}
+                        <p className="text-xs text-zinc-400 font-mono line-clamp-2">
+                          {reasoning || "Review the preview and continue when ready."}
                         </p>
                         {refined && refinementChanges.length > 0 && (
-                          <div className="mt-3 pt-3 border-t border-emerald-500/20">
-                            <p className="text-xs text-emerald-400/70 font-mono mb-1">Architect optimizations applied:</p>
-                            <ul className="text-xs text-zinc-500 space-y-0.5">
+                          <div className="mt-2 pt-2 border-t border-emerald-500/20">
+                            <ul className="text-[10px] text-zinc-500 space-y-0.5">
                               {refinementChanges.slice(0, 2).map((change, i) => (
-                                <li key={i} className="flex items-center gap-1.5">
+                                <li key={i} className="flex items-center gap-1">
                                   <span className="text-emerald-500">✓</span> {change}
                                 </li>
                               ))}
@@ -1366,20 +1354,20 @@ export default function SectionBuilder({
                   {/* Contact Form Instructions - keep but simplify */}
                   {isContactSection && <ContactFormInstructions />}
 
-                  {/* PRIMARY ACTION: Continue or Deploy */}
-                  <div className="pt-2">
+                  {/* PRIMARY ACTION: Continue or Deploy - Compact */}
+                  <div className="pt-1">
                     {!isLastSection ? (
                       <>
                         <button
                           onClick={() => setMobileTab('preview')}
-                          className="w-full py-3 rounded-xl border border-zinc-700 text-zinc-300 font-medium md:hidden hover:bg-zinc-800 active:bg-zinc-700 transition-colors mb-2 flex items-center justify-center gap-2"
+                          className="w-full py-2.5 rounded-xl border border-zinc-700 text-zinc-300 font-medium md:hidden hover:bg-zinc-800 active:bg-zinc-700 transition-colors mb-2 flex items-center justify-center gap-2 text-sm"
                         >
                           <Eye className="w-4 h-4" />
                           <span>View Preview</span>
                         </button>
                         <button
                           onClick={handleNextSection}
-                          className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-lg hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group"
+                          className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group"
                         >
                           <span>Continue</span>
                           <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -1389,14 +1377,14 @@ export default function SectionBuilder({
                       <>
                         <button
                           onClick={() => setMobileTab('preview')}
-                          className="w-full py-3 rounded-xl border border-zinc-700 text-zinc-300 font-medium md:hidden hover:bg-zinc-800 active:bg-zinc-700 transition-colors mb-2 flex items-center justify-center gap-2"
+                          className="w-full py-2.5 rounded-xl border border-zinc-700 text-zinc-300 font-medium md:hidden hover:bg-zinc-800 active:bg-zinc-700 transition-colors mb-2 flex items-center justify-center gap-2 text-sm"
                         >
                           <Eye className="w-4 h-4" />
                           <span>View Preview</span>
                         </button>
                         <button
                           onClick={onNextSection}
-                          className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-lg hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group"
+                          className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group"
                         >
                           <CheckCircle2 className="w-5 h-5" />
                           <span>Review & Deploy</span>
@@ -1405,17 +1393,17 @@ export default function SectionBuilder({
                     )}
                   </div>
 
-                  {/* COLLAPSIBLE: Refine Options */}
-                  <details className="group mt-4">
-                    <summary className="flex items-center justify-center gap-2 py-2 text-sm text-zinc-500 hover:text-zinc-300 cursor-pointer transition-colors">
-                      <Edit3 className="w-4 h-4" />
+                  {/* COLLAPSIBLE: Refine Options - More compact */}
+                  <details className="group mt-2">
+                    <summary className="flex items-center justify-center gap-2 py-1.5 text-xs text-zinc-500 hover:text-zinc-300 cursor-pointer transition-colors">
+                      <Edit3 className="w-3 h-3" />
                       <span>Want to refine?</span>
-                      <ChevronRight className="w-4 h-4 group-open:rotate-90 transition-transform" />
+                      <ChevronRight className="w-3 h-3 group-open:rotate-90 transition-transform" />
                     </summary>
                     
-                    <div className="mt-3 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="mt-2 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
                       {/* Quick Refine Input */}
-                      <div className="flex gap-2">
+                      <div className="flex gap-1.5">
                         <input
                           type="text"
                           value={refinePrompt}
@@ -1423,15 +1411,15 @@ export default function SectionBuilder({
                           onKeyDown={(e) => e.key === 'Enter' && refinePrompt.trim() && handleUserRefine()}
                           disabled={isUserRefining}
                           placeholder="Describe what to change..."
-                          className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 focus:border-emerald-500/50 disabled:opacity-50 font-mono"
+                          className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 focus:border-emerald-500/50 disabled:opacity-50 font-mono"
                         />
                         <button
                           onClick={handleUserRefine}
                           disabled={!refinePrompt.trim() || isUserRefining}
-                          className="px-4 py-2.5 rounded-lg bg-zinc-800 border border-zinc-700 text-white text-sm font-medium hover:bg-zinc-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                          className="px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white text-xs font-medium hover:bg-zinc-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
                         >
                           {isUserRefining ? (
-                            <RefreshCw className="w-4 h-4 animate-spin" />
+                            <RefreshCw className="w-3 h-3 animate-spin" />
                           ) : (
                             <span>Refine</span>
                           )}
@@ -1443,11 +1431,11 @@ export default function SectionBuilder({
                         <button
                           onClick={handleArchitectPolish}
                           disabled={isArchitectPolishing}
-                          className="w-full py-2.5 bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/30 text-violet-300 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-2"
+                          className="w-full py-2 bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/30 text-violet-300 text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1.5"
                         >
-                          <Sparkles className="w-4 h-4" />
+                          <Sparkles className="w-3 h-3" />
                           <span>Architect Polish</span>
-                          <span className="text-xs text-violet-400/60">
+                          <span className="text-[10px] text-violet-400/60">
                             ({tier === 'agency' ? '∞' : `${architectCreditsRemaining}/30`})
                           </span>
                         </button>
@@ -1455,24 +1443,24 @@ export default function SectionBuilder({
 
                       {/* Polishing state */}
                       {isArchitectPolishing && (
-                        <div className="py-3 bg-violet-500/10 border border-violet-500/20 rounded-lg flex items-center justify-center gap-2">
-                          <RefreshCw className="w-4 h-4 text-violet-400 animate-spin" />
-                          <span className="text-sm text-violet-300 font-mono">Architect polishing...</span>
+                        <div className="py-2 bg-violet-500/10 border border-violet-500/20 rounded-lg flex items-center justify-center gap-2">
+                          <RefreshCw className="w-3 h-3 text-violet-400 animate-spin" />
+                          <span className="text-xs text-violet-300 font-mono">Architect polishing...</span>
                         </div>
                       )}
 
                       {/* Remix & Reset */}
-                      <div className="flex gap-2 pt-2 border-t border-zinc-800">
+                      <div className="flex gap-2 pt-1 border-t border-zinc-800">
                         <button
                           onClick={handleRemix}
-                          className="flex-1 py-2 text-xs text-zinc-500 hover:text-purple-400 transition-colors font-mono flex items-center justify-center gap-1"
+                          className="flex-1 py-1.5 text-[10px] text-zinc-500 hover:text-purple-400 transition-colors font-mono flex items-center justify-center gap-1"
                         >
                           <Wand2 className="w-3 h-3" />
                           <span>Remix</span>
                         </button>
                         <button
                           onClick={handleRebuild}
-                          className="flex-1 py-2 text-xs text-zinc-500 hover:text-red-400 transition-colors font-mono flex items-center justify-center gap-1"
+                          className="flex-1 py-1.5 text-[10px] text-zinc-500 hover:text-red-400 transition-colors font-mono flex items-center justify-center gap-1"
                         >
                           <RefreshCw className="w-3 h-3" />
                           <span>Start Over</span>
@@ -1485,17 +1473,6 @@ export default function SectionBuilder({
             </AnimatePresence>
           </div>
         </div>
-
-        {/* Minimal AI Pipeline Info - only show during input stage */}
-        {stage === 'input' && (
-          <div className="px-4 py-3 bg-zinc-900/30 border-t border-zinc-800 flex-shrink-0">
-            <div className="flex items-center gap-4 text-xs text-zinc-500 font-mono">
-              <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Architect builds</span>
-              <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-teal-500"></span> Architect polishes</span>
-              <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-violet-500"></span> Architect audits</span>
-            </div>
-          </div>
-        )}
 
         {/* Prompt Helper Mini-Chat Modal */}
         <AnimatePresence>

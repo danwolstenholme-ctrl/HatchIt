@@ -45,45 +45,39 @@ import { AccountSubscription } from '@/types/subscriptions'
 
 // =============================================================================
 // FULL SITE PREVIEW FRAME
-// Renders all assembled sections in an iframe
+// Renders all assembled sections in an iframe - simplified for reliability
 // =============================================================================
 
 function FullSitePreviewFrame({ code, deviceView }: { code: string; deviceView: 'mobile' | 'tablet' | 'desktop' }) {
   const [srcDoc, setSrcDoc] = useState('')
 
   useEffect(() => {
-    const generate = async () => {
-      if (!code) {
-        setSrcDoc('');
-        return;
-      }
+    if (!code) {
+      setSrcDoc('');
+      return;
+    }
 
-      try {
-        // Use Babel to transform the code safely
-        const Babel = await import('@babel/standalone');
-        const transformed = Babel.transform(code, {
-          presets: ['react'],
-          filename: 'preview.tsx',
-        }).code || ''
+    // Wrap the raw JSX sections in a simple page structure
+    // No Babel transformation - just render as static HTML with Tailwind
+    const wrappedCode = code
+      // Remove any 'use client' directives
+      .replace(/'use client'/g, '')
+      .replace(/"use client"/g, '')
+      // Remove import statements
+      .replace(/import\s+.*?from\s+['"][^'"]+['"];?\s*/g, '')
+      // Remove export statements but keep the content
+      .replace(/export\s+default\s+function\s+\w+\s*\([^)]*\)\s*{/g, '')
+      // Clean up function wrappers - just get the JSX
+      .replace(/^\s*function\s+\w+\s*\([^)]*\)\s*{\s*return\s*\(/gm, '')
+      .replace(/^\s*\);\s*}\s*$/gm, '')
+      .replace(/^\s*}\s*$/gm, '')
 
-      // Extract the component name (assuming it's the default export or the last function)
-      // For now, we wrap it to ensure it renders
-      
-      const html = `<!DOCTYPE html>
-<html>
+    const html = `<!DOCTYPE html>
+<html class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script>
-    // Shim for UMD modules that expect lowercase 'react'
-    window.react = window.React;
-    window['react-dom'] = window.ReactDOM;
-  </script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://unpkg.com/lucide-react@latest"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -107,88 +101,21 @@ function FullSitePreviewFrame({ code, deviceView }: { code: string; deviceView: 
       }
     }
   </script>
-  <script>
-    window.onerror = function(message, source, lineno, colno, error) {
-      console.error('Preview Error:', message);
-      const root = document.getElementById('root');
-      if (root) {
-        root.innerHTML = '<div style="color: #ef4444; padding: 20px; font-family: monospace; background: #18181b; border-radius: 8px; margin: 20px; border: 1px solid #3f3f46;">' +
-          '<h3 style="font-weight: bold; margin-bottom: 10px;">Runtime Error</h3>' +
-          '<div style="margin-bottom: 10px;">' + message + '</div>' +
-          '<div style="opacity: 0.7; font-size: 0.9em;">Line: ' + lineno + '</div>' +
-          '</div>';
-      }
-    };
-  </script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    html, body, #root { min-height: 100%; width: 100%; }
-    body { background: #09090b; color: #ffffff; }
-    .error-display { color: #f87171; padding: 2rem; font-family: ui-monospace, monospace; font-size: 0.75rem; white-space: pre-wrap; background: #18181b; border-radius: 0.5rem; margin: 1rem; }
+    html, body { min-height: 100%; width: 100%; background: #09090b; color: #fff; font-family: system-ui, -apple-system, sans-serif; }
+    /* Basic icon placeholder */
+    [data-icon] { display: inline-flex; align-items: center; justify-content: center; width: 1.5em; height: 1.5em; background: rgba(255,255,255,0.1); border-radius: 4px; }
   </style>
 </head>
-<body class="dark">
-  <div id="root"></div>
-  
-  <script>
-    // Mock Lucide Icons to prevent crashes if CDN fails
-    window.LucideIcons = new Proxy({}, {
-      get: (target, prop) => {
-        return function DummyIcon(props) { 
-          // Render SVG placeholder if needed, or just null
-          return React.createElement('span', { ...props, style: { display: 'inline-block', width: 24, height: 24, background: 'rgba(255,255,255,0.1)', borderRadius: 4 } }); 
-        };
-      }
-    });
-  </script>
-  
-  <script type="text/javascript">
-    try {
-      const { useState, useEffect, useMemo, useCallback, useRef, Fragment } = React;
-      const { createRoot } = ReactDOM;
-      
-      // Inject the transformed code here
-      ${transformed}
-
-      // Mount the app
-      const root = createRoot(document.getElementById('root'));
-      
-      // Check if GeneratedPage exists, otherwise try to find the default export
-      // Babel transforms "export default function X" to "var X = ...; exports.default = X;"
-      // But in standalone script tag without modules, it might just be global
-      
-      let App = typeof GeneratedPage !== 'undefined' ? GeneratedPage : null;
-      
-      // If we can't find GeneratedPage, look for the first function that looks like a component
-      if (!App) {
-         // This is a heuristic for when the AI names it something else
-         const potentialComponents = Object.keys(window).filter(k => /^[A-Z]/.test(k) && typeof window[k] === 'function');
-         if (potentialComponents.length > 0) {
-            App = window[potentialComponents[potentialComponents.length - 1]];
-         }
-      }
-
-      if (App) {
-        root.render(React.createElement(App));
-      } else {
-        // If we can't find the component, wrap the raw code in a div (fallback)
-        root.render(React.createElement('div', { className: "p-8 text-red-400" }, "Could not find main component. Ensure you export a component named GeneratedPage or default export."));
-      }
-
-    } catch (err) {
-      console.error('Eval Error:', err);
-      document.getElementById('root').innerHTML = '<div class="error-display">Build Error: ' + err.message + '</div>';
-    }
-  </script>
+<body>
+  <main class="min-h-screen bg-zinc-950 text-white">
+    ${wrappedCode}
+  </main>
 </body>
 </html>`
-      setSrcDoc(html);
-    } catch (err: any) {
-      setSrcDoc(`<html><body><pre style="color: red; padding: 20px;">Transpilation Error: ${err.message}</pre></body></html>`);
-    }
-  };
-  generate();
+
+    setSrcDoc(html);
   }, [code])
 
   return (
@@ -201,7 +128,7 @@ function FullSitePreviewFrame({ code, deviceView }: { code: string; deviceView: 
         title="Preview"
         srcDoc={srcDoc}
         className="w-full h-full border-0 bg-zinc-950"
-        sandbox="allow-scripts allow-same-origin"
+        sandbox="allow-scripts"
       />
     </div>
   )
