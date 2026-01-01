@@ -991,7 +991,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   }, [buildState, sectionsForBuild])
 
   const handleDeploy = async () => {
-    if (!project || !assembledCode || isDeploying) return
+    if (!project || !assembledCode || isDeploying || !buildState) return
     
     // Check if user has any paid subscription (Lite, Pro, or Agency can deploy)
     if (!canDeploy) {
@@ -1004,14 +1004,41 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     setError(null)
     
     try {
-      // Extract Lucide icon names used in the code
+      // Process sections to create a valid single-file component
+      const processedSections = sectionsForBuild
+        .filter(s => buildState.sectionCode[s.id])
+        .map((section, index) => {
+          let code = buildState.sectionCode[section.id]
+          
+          // Strip directives and imports
+          code = code
+            .replace(/'use client';?/g, '')
+            .replace(/"use client";?/g, '')
+            .replace(/import\s+.*?from\s+['"][^'"]+['"];?\s*/g, '')
+
+          // Transform export default function to a local const
+          if (code.includes('export default function')) {
+             code = code.replace(/export\s+default\s+function\s+(\w+)?/, (match, name) => {
+               return `const Section_${index} = function ${name || 'Component'}`
+             })
+          } else if (code.includes('export default')) {
+             code = code.replace(/export\s+default\s+/, `const Section_${index} = `)
+          }
+          
+          return { code, index }
+        })
+
+      // Extract Lucide icon names from ALL sections
       const lucideIconRegex = /<([A-Z][a-zA-Z0-9]*)\s/g
       const potentialIcons = new Set<string>()
+      
+      // Scan original code for icons
+      const fullSource = sectionsForBuild.map(s => buildState.sectionCode[s.id] || '').join('\n')
       let match
-      while ((match = lucideIconRegex.exec(assembledCode)) !== null) {
-        // Common Lucide icons - filter out React/motion components
+      while ((match = lucideIconRegex.exec(fullSource)) !== null) {
         const name = match[1]
-        if (!['AnimatePresence', 'Component', 'Fragment'].includes(name)) {
+        // Filter out known non-icon components
+        if (!['AnimatePresence', 'Image', 'Link', 'Component', 'Fragment'].includes(name)) {
           potentialIcons.add(name)
         }
       }
@@ -1025,11 +1052,18 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import Image from 'next/image'
+import Link from 'next/link'
 ${lucideImports}
+
+// --- SECTIONS ---
+${processedSections.map(s => s.code).join('\n\n')}
+
+// --- MAIN PAGE ---
 export default function GeneratedPage() {
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
-${assembledCode}
+      ${processedSections.map(s => `<Section_${s.index} />`).join('\n      ')}
     </main>
   )
 }`
@@ -1091,6 +1125,111 @@ ${assembledCode}
       setError('Deploy failed. Please try again.')
     } finally {
       setIsDeploying(false)
+    }
+  }
+
+  const handleDownload = async () => {
+    if (!project || !assembledCode || !buildState) return
+    
+    // Check if user has any paid subscription (Lite, Pro, or Agency can download)
+    if (!canDeploy) {
+      setHatchModalReason('download')
+      setShowHatchModal(true)
+      return
+    }
+    
+    try {
+      // Process sections to create a valid single-file component
+      const processedSections = sectionsForBuild
+        .filter(s => buildState.sectionCode[s.id])
+        .map((section, index) => {
+          let code = buildState.sectionCode[section.id]
+          
+          // Strip directives and imports
+          code = code
+            .replace(/'use client';?/g, '')
+            .replace(/"use client";?/g, '')
+            .replace(/import\s+.*?from\s+['"][^'"]+['"];?\s*/g, '')
+
+          // Transform export default function to a local const
+          if (code.includes('export default function')) {
+             code = code.replace(/export\s+default\s+function\s+(\w+)?/, (match, name) => {
+               return `const Section_${index} = function ${name || 'Component'}`
+             })
+          } else if (code.includes('export default')) {
+             code = code.replace(/export\s+default\s+/, `const Section_${index} = `)
+          }
+          
+          return { code, index }
+        })
+
+      // Extract Lucide icon names from ALL sections
+      const lucideIconRegex = /<([A-Z][a-zA-Z0-9]*)\s/g
+      const potentialIcons = new Set<string>()
+      
+      // Scan original code for icons
+      const fullSource = sectionsForBuild.map(s => buildState.sectionCode[s.id] || '').join('\n')
+      let match
+      while ((match = lucideIconRegex.exec(fullSource)) !== null) {
+        const name = match[1]
+        // Filter out known non-icon components
+        if (!['AnimatePresence', 'Image', 'Link', 'Component', 'Fragment'].includes(name)) {
+          potentialIcons.add(name)
+        }
+      }
+      
+      // Build the imports string
+      const lucideImports = potentialIcons.size > 0 
+        ? `import { ${Array.from(potentialIcons).join(', ')} } from 'lucide-react'\n`
+        : ''
+      
+      const wrappedCode = `'use client'
+
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import Image from 'next/image'
+import Link from 'next/link'
+${lucideImports}
+
+// --- SECTIONS ---
+${processedSections.map(s => s.code).join('\n\n')}
+
+// --- MAIN PAGE ---
+export default function GeneratedPage() {
+  return (
+    <main className="min-h-screen bg-zinc-950 text-white">
+      ${processedSections.map(s => `<Section_${s.index} />`).join('\n      ')}
+    </main>
+  )
+}`
+
+      const response = await fetch('/api/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: wrappedCode,
+          projectSlug: project.slug || project.id,
+          assets: [] // TODO: Add assets if needed
+        }),
+      })
+
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${project.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.zip`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+      } else {
+        const data = await response.json()
+        setError(data.error || 'Download failed')
+      }
+    } catch (err) {
+      console.error('Download failed:', err)
+      setError('Download failed. Please try again.')
     }
   }
 
@@ -1421,6 +1560,14 @@ ${assembledCode}
                     className="px-3 py-2 text-sm text-zinc-400 hover:text-white transition-colors font-mono"
                   >
                     New Project
+                  </button>
+                  <button
+                    onClick={handleDownload}
+                    disabled={!assembledCode}
+                    className="px-3 py-2 text-sm text-zinc-400 hover:text-white transition-colors font-mono flex items-center gap-2"
+                  >
+                    <Copy className="w-4 h-4" />
+                    <span>Download Code</span>
                   </button>
                   {deployedUrl ? (
                     <a

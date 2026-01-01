@@ -291,9 +291,10 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
               
               <div className="space-y-1.5 mb-4">
                 {[
-                  '1 Active Project',
-                  'Basic Code Download',
-                  'No Custom Domain',
+                  'Unlimited AI generations',
+                  '3 Active Projects',
+                  'Full Code Download',
+                  'Deploy to Web',
                 ].map((feature, i) => (
                   <div key={i} className="flex items-center gap-2 text-xs text-zinc-400">
                     <span className="text-zinc-500">✓</span>
