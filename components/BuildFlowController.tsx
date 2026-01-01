@@ -39,6 +39,7 @@ import SectionBuilder from './SectionBuilder'
 import HatchModal from './HatchModal'
 import Scorecard from './Scorecard'
 import TheWitness from './TheWitness'
+import FirstContact from './FirstContact'
 import { chronosphere } from '@/lib/chronosphere'
 import { Template, Section, getTemplateById, getSectionById, createInitialBuildState, BuildState, websiteTemplate } from '@/lib/templates'
 import { DbProject, DbSection, DbBrandConfig } from '@/lib/supabase'
@@ -378,6 +379,10 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const [guestInteractionCount, setGuestInteractionCount] = useState(0)
   const [hatchModalReason, setHatchModalReason] = useState<'generation_limit' | 'code_access' | 'deploy' | 'download' | 'proactive' | 'running_low' | 'guest_lock'>('proactive')
   
+  // First Contact experience for new users
+  const [showFirstContact, setShowFirstContact] = useState(false)
+  const [firstContactPrompt, setFirstContactPrompt] = useState<string | undefined>(undefined)
+  
   // Handle Guest Mode & Initial Prompt
   useEffect(() => {
     if (initialPrompt && phase === 'initializing') {
@@ -564,6 +569,17 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       return
     }
 
+    // Check if user has seen First Contact (or has an initial prompt)
+    const hasSeenFirstContact = localStorage.getItem('hatch_first_contact_seen')
+    const shouldShowFirstContact = !hasSeenFirstContact && !initialPrompt && !existingProjectId
+    
+    if (shouldShowFirstContact) {
+      console.log('BuildFlowController: Showing First Contact experience')
+      setShowFirstContact(true)
+      setIsLoading(false)
+      return
+    }
+
     // Otherwise, INITIALIZE A NEW PROJECT IMMEDIATELY
     console.log('BuildFlowController: Initializing new project')
     initializeProject()
@@ -571,8 +587,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existingProjectId, justCreatedProjectId, isCreatingProject, isLoaded, isReplicationReady])
 
-  const initializeProject = async () => {
-    console.log('BuildFlowController: initializeProject started')
+  const initializeProject = async (firstContactPrompt?: string) => {
+    console.log('BuildFlowController: initializeProject started', { firstContactPrompt })
     setIsCreatingProject(true)
     setIsLoading(true)
     
@@ -580,6 +596,9 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     const template = selectedTemplate
     // Use customized sections (which might be replicated)
     const sections = customizedSections.length > 0 ? customizedSections : template.sections
+    
+    // Use the prompt from First Contact if available
+    const projectPrompt = firstContactPrompt || initialPrompt
     
     const brand: DbBrandConfig = {
       brandName: brandConfig?.brandName || (template.name === 'The Singularity' ? 'Untitled Project' : template.name),
@@ -611,7 +630,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
         project_id: mockProjectId,
         section_id: s.id,
         code: null,
-        user_prompt: (index === 0 && initialPrompt) ? initialPrompt : null,
+        user_prompt: (index === 0 && projectPrompt) ? projectPrompt : null,
         refined: false,
         refinement_changes: null,
         status: 'pending' as const,
@@ -668,6 +687,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
           name: brand.brandName,
           sections: sections,
           brand: brand,
+          initialPrompt: projectPrompt, // Pass the prompt from First Contact
         }),
         signal: controller.signal
       })
@@ -1104,6 +1124,21 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     // Branding is now handled via chat or settings, not a separate phase
     // setPhase('branding')
     alert("Brand settings are now managed by The Architect. Just ask to change colors or fonts.")
+  }
+
+  // Handle First Contact completion
+  const handleFirstContactComplete = (prompt?: string) => {
+    localStorage.setItem('hatch_first_contact_seen', 'true')
+    setShowFirstContact(false)
+    setFirstContactPrompt(prompt)
+    setIsLoading(true)
+    // Initialize project with the prompt from First Contact
+    initializeProject(prompt)
+  }
+
+  // FIRST CONTACT - Theatrical onboarding for new users
+  if (showFirstContact) {
+    return <FirstContact onComplete={handleFirstContactComplete} />
   }
 
   if (isLoading) {

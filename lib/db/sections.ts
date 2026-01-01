@@ -8,10 +8,12 @@ import { Section } from '../templates'
 /**
  * Create sections for a project from template
  * Called when a project is first created
+ * @param initialPrompt - Optional prompt to set on the first section (from First Contact)
  */
 export async function createSectionsFromTemplate(
   projectId: string,
-  sections: Section[]
+  sections: Section[],
+  initialPrompt?: string
 ): Promise<DbSection[]> {
   if (!supabaseAdmin) {
     console.error('Supabase admin client not configured')
@@ -24,7 +26,8 @@ export async function createSectionsFromTemplate(
     order_index: index,
     status: 'pending' as const,
     code: null,
-    user_prompt: null,
+    // Set the initial prompt on the first section only
+    user_prompt: (index === 0 && initialPrompt) ? initialPrompt : null,
     refined: false,
     refinement_changes: null,
   }))

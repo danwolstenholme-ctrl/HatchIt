@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { templateId, name, sections: customSections, brand } = body
+    const { templateId, name, sections: customSections, brand, initialPrompt } = body
 
     if (!templateId || !name) {
       return NextResponse.json(
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     // Create sections from template (or custom sections if provided)
     const sectionsToCreate: Section[] = customSections || template.sections
-    const dbSections = await createSectionsFromTemplate(project.id, sectionsToCreate)
+    const dbSections = await createSectionsFromTemplate(project.id, sectionsToCreate, initialPrompt)
 
     return NextResponse.json({
       project,
