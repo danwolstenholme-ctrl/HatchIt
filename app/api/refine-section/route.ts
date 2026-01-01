@@ -120,20 +120,21 @@ export async function POST(request: NextRequest) {
     const user = await client.users.getUser(userId)
     const accountSub = user.publicMetadata?.accountSubscription as { 
       status?: string
-      tier?: 'pro' | 'agency'
+      tier?: 'lite' | 'pro' | 'agency'
     } | undefined
     
     // Only paid users can use Architect refinements (unless self-healing)
     if (!isSelfHealing && (!accountSub || accountSub.status !== 'active')) {
       return NextResponse.json({ 
-        error: 'Architect refinements require Pro or Agency subscription',
+        error: 'Starter subscription ($9/mo) required for AI refinements',
         upgradeRequired: true 
       }, { status: 403 })
     }
 
-    // Check Architect usage for Pro tier (Agency is unlimited)
+    // Check Architect usage for Lite and Pro tiers (Agency is unlimited)
     // Skip check if self-healing
-    if (!isSelfHealing && accountSub?.tier === 'pro') {
+    const LITE_ARCHITECT_LIMIT = 5 // Lite tier gets 5 refinements/month
+    if (!isSelfHealing && (accountSub?.tier === 'pro' || accountSub?.tier === 'lite')) {
       const architectUsed = (user.publicMetadata?.architectRefinementsUsed as number) || 0
       const resetDate = user.publicMetadata?.architectRefinementsResetDate as string | undefined
       const today = new Date().toISOString().split('T')[0]
@@ -142,12 +143,14 @@ export async function POST(request: NextRequest) {
       const shouldReset = !resetDate || new Date(resetDate) <= new Date(today)
       const currentUsage = shouldReset ? 0 : architectUsed
       
-      if (currentUsage >= PRO_ARCHITECT_MONTHLY_LIMIT) {
+      const limit = accountSub?.tier === 'lite' ? LITE_ARCHITECT_LIMIT : PRO_ARCHITECT_MONTHLY_LIMIT
+      
+      if (currentUsage >= limit) {
         return NextResponse.json({ 
-          error: `Monthly Architect limit reached (${PRO_ARCHITECT_MONTHLY_LIMIT}/month). Upgrade to Agency for unlimited refinements.`,
+          error: `Monthly refinement limit reached (${limit}/month). ${accountSub?.tier === 'lite' ? 'Upgrade to Pro for 30/month.' : 'Upgrade to Agency for unlimited.'}`,
           limitReached: true,
           used: currentUsage,
-          limit: PRO_ARCHITECT_MONTHLY_LIMIT
+          limit: limit
         }, { status: 429 })
       }
     }

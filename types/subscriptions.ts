@@ -33,16 +33,16 @@ export const PRICING_TIERS: Record<string, PricingTier> = {
   free: {
     name: 'free',
     price: 0,
-    generationsPerDay: 1, // THE TASTE. Just enough to get hooked.
+    generationsPerDay: 3, // THE TASTE. Just enough to get hooked.
     architectRefinementsPerMonth: 0,
-    features: ['1 Demo Generation', 'Read-Only Preview', 'Upgrade to Build'],
+    features: ['3 Demo Generations', 'Live Preview', 'Upgrade to Build'],
   },
   lite: {
     name: 'lite',
     price: 9,
-    generationsPerDay: 20,
+    generationsPerDay: -1, // Unlimited
     architectRefinementsPerMonth: 5,
-    features: ['20 generations per day', '1 Active Project', 'Basic Code Download', 'No Custom Domain'],
+    features: ['Unlimited Generations', '3 Active Projects', 'Code Download', 'Deploy to hatchitsites.dev'],
   },
   pro: {
     name: 'pro',

@@ -41,11 +41,11 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
     },
     running_low: {
       title: `${generationsRemaining} generations left today`,
-      description: "Running low! Upgrade to Pro for unlimited generations.",
+      description: "Running low! Upgrade for unlimited generations.",
       icon: "⏳"
     },
     proactive: {
-      title: "Ready to go Pro?",
+      title: "Ready to build more?",
       description: "Unlock unlimited generations, deploy all your projects, and get full code access.",
       icon: "🐣"
     },
@@ -56,17 +56,17 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
     },
     code_access: {
       title: "Unlock your code",
-      description: "Upgrade to Pro to view, copy, and download your full source code.",
+      description: "Upgrade to view, copy, and download your full source code.",
       icon: "🔓"
     },
     deploy: {
       title: "Ready to go live?",
-      description: "Upgrade to Pro to deploy your projects with a custom domain.",
+      description: "Upgrade to deploy your projects to hatchitsites.dev.",
       icon: "🚀"
     },
     download: {
       title: "Download your project",
-      description: "Upgrade to Pro to download your projects as clean, production-ready code.",
+      description: "Upgrade to download your projects as clean, production-ready code.",
       icon: "📦"
     }
   }
