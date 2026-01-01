@@ -505,12 +505,21 @@ const PageComponent${idx} = (() => {
   try {
     ${page.cleanedCode}
     // Return the component
+    // Check for function components
     if (typeof ${page.componentName} === "function") return ${page.componentName};
+    
+    // Check for memo/forwardRef components (objects with $$typeof)
+    if (typeof ${page.componentName} === "object" && ${page.componentName} !== null && (${page.componentName}.$$typeof || ${page.componentName}.type)) return ${page.componentName};
+
+    // Fallbacks
     if (typeof Component === "function") return Component;
+    if (typeof Component === "object" && Component !== null && (Component.$$typeof || Component.type)) return Component;
+    
     if (typeof App === "function") return App;
     if (typeof Page === "function") return Page;
     if (typeof Home === "function") return Home;
     if (typeof Main === "function") return Main;
+    
     return () => <div className="p-8 text-center text-zinc-500">No component found</div>;
   } catch (e) {
     console.error("Error in page ${page.path}:", e);
@@ -663,8 +672,8 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
         'window.useTransform = window.Motion?.useTransform || function(v, i, o) { return typeof v === "number" ? v : 0; };\n' +
         'window.useSpring = window.Motion?.useSpring || function(v) { return typeof v === "number" ? v : 0; };\n' +
         'window.useMotionValue = window.Motion?.useMotionValue || function(v) { return { get: function() { return v; }, set: function() {}, onChange: function(){} }; };\n' +
-        'window.LucideIcons = window.lucideReact || {};\n' +
-        'window.LucideIcons = new Proxy(window.LucideIcons, { get: function(target, prop) { if (prop in target) return target[prop]; return function() { return null; }; } });\n' +
+        'window.LucideIcons = window.lucideReact || window.lucide || {};\n' +
+        'window.LucideIcons = new Proxy(window.LucideIcons, { get: function(target, prop) { if (prop in target) return target[prop]; return function(props) { return React.createElement("svg", Object.assign({ width: 24, height: 24, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" }, props)); }; } });\n' +
         '</script>' +
         // Inspector script - handles element selection when inspector mode is enabled
         '<script>' +
