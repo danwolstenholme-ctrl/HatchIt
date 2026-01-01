@@ -1009,11 +1009,41 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     setError(null)
     
     try {
+      // Extract Lucide icon names used in the code
+      const lucideIconRegex = /<([A-Z][a-zA-Z0-9]*)\s/g
+      const potentialIcons = new Set<string>()
+      let match
+      while ((match = lucideIconRegex.exec(assembledCode)) !== null) {
+        // Common Lucide icons - filter out React/motion components
+        const name = match[1]
+        if (!['AnimatePresence', 'Component', 'Fragment'].includes(name)) {
+          potentialIcons.add(name)
+        }
+      }
+      
+      // Build the imports string
+      const lucideImports = potentialIcons.size > 0 
+        ? `import { ${Array.from(potentialIcons).join(', ')} } from 'lucide-react'\n`
+        : ''
+      
+      const wrappedCode = `'use client'
+
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+${lucideImports}
+export default function GeneratedPage() {
+  return (
+    <main className="min-h-screen bg-zinc-950 text-white">
+${assembledCode}
+    </main>
+  )
+}`
+      
       const response = await fetch('/api/deploy', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          code: `'use client'\n\nimport { motion } from 'framer-motion'\n\nexport default function GeneratedPage() {\n  return (\n    <main className="min-h-screen bg-zinc-950 text-white">\n${assembledCode}\n    </main>\n  )\n}`,
+          code: wrappedCode,
           projectName: project.name,
         }),
       })
