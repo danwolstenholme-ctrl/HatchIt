@@ -102,7 +102,7 @@ function BuilderContent() {
     }
   }, [isLoaded, isSignedIn, upgrade])
 
-  // Always return V3 Structured Build Flow
+  // Always return V3 Structured Build Flow - LIVE
   return (
     <div className="relative min-h-screen">
       <BuildFlowController 
