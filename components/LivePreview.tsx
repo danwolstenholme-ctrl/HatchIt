@@ -453,10 +453,30 @@ export default function RootLayout({
 
       // Build components directly in the Babel script (so JSX gets transpiled)
       const pageComponents = pages.map((page, idx) => {
-        const regex = /(?:function|const|let|var)\s+([A-Z][a-zA-Z0-9]*)(?:\s*[=:(]|\s*:)/g
-        const matches = Array.from(page.code.matchAll(regex))
-        // Use FIRST match (the main component) not last (which catches inline helpers)
-        const componentName = matches.length > 0 ? matches[0][1] : `Page${idx}`
+        // Look for actual function components (arrow functions or function declarations that return JSX)
+        // Priority 1: Arrow function components: const Name = () => { or const Name = () => (
+        const arrowFnRegex = /(?:const|let|var)\s+([A-Z][a-zA-Z0-9]*)\s*=\s*(?:\([^)]*\)|[a-zA-Z_][a-zA-Z0-9_]*)\s*=>/g
+        // Priority 2: Function declarations: function Name(
+        const funcDeclRegex = /function\s+([A-Z][a-zA-Z0-9]*)\s*\(/g
+        // Priority 3: Fallback - any capitalized const/let/var (less reliable)
+        const fallbackRegex = /(?:const|let|var)\s+([A-Z][a-zA-Z0-9]*)(?:\s*[=:(])/g
+        
+        const arrowMatches = Array.from(page.code.matchAll(arrowFnRegex))
+        const funcMatches = Array.from(page.code.matchAll(funcDeclRegex))
+        const fallbackMatches = Array.from(page.code.matchAll(fallbackRegex))
+        
+        // Prefer arrow functions, then function declarations, then fallback
+        let componentName = `Page${idx}`
+        if (arrowMatches.length > 0) {
+          componentName = arrowMatches[0][1]
+        } else if (funcMatches.length > 0) {
+          componentName = funcMatches[0][1]
+        } else if (fallbackMatches.length > 0) {
+          // Filter out common non-component names
+          const nonComponents = ['Theme', 'Config', 'Settings', 'Options', 'Data', 'Props', 'State', 'Context', 'Provider', 'Store', 'Schema', 'Type', 'Interface', 'Const', 'Enum']
+          const validMatch = fallbackMatches.find(m => !nonComponents.includes(m[1]))
+          if (validMatch) componentName = validMatch[1]
+        }
 
         const cleanedCode = page.code
           // Remove all import statements (default, named, side-effect, multi-line)
@@ -550,11 +570,18 @@ ${pageRegistry}
         // Find the component for this path
         const PageComponent = pageRegistry[currentPath] || pageRegistry['${currentPage.path}'] || pageRegistry['/'];
         
-        if (PageComponent) {
+        // Safety check: Ensure PageComponent is actually renderable
+        const isValidComponent = PageComponent && (
+          typeof PageComponent === 'function' ||
+          (typeof PageComponent === 'object' && PageComponent !== null && (PageComponent.$$typeof || PageComponent.type))
+        );
+        
+        if (isValidComponent) {
           try {
             return <PageComponent />;
           } catch (err) {
             console.error('[Preview] Render error:', err);
+            window.parent.postMessage({ type: 'preview-error', errorType: 'Render Error', message: err.message }, '*');
             return (
               <div style={{ 
                 background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', 
@@ -575,6 +602,8 @@ ${pageRegistry}
           }
         }
 
+        // Invalid component - show helpful message instead of crashing
+        console.warn('[Preview] Invalid component type:', typeof PageComponent, PageComponent);
         return (
           <div style={{ 
             background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', 
@@ -834,10 +863,30 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
 
     const hooksDestructure = 'const { useState, useEffect, useMemo, useCallback, useRef } = React;'
 
-    const regex = /(?:function|const|let|var)\s+([A-Z][a-zA-Z0-9]*)(?:\s*[=:(]|\s*:)/g
-    const matches = Array.from(code.matchAll(regex))
-    // Use FIRST match (the main component) not last (which catches inline helpers)
-    const componentName = matches.length > 0 ? matches[0][1] : 'Component'
+    // Look for actual function components (arrow functions or function declarations)
+    // Priority 1: Arrow function components: const Name = () => { or const Name = () => (
+    const arrowFnRegex = /(?:const|let|var)\s+([A-Z][a-zA-Z0-9]*)\s*=\s*(?:\([^)]*\)|[a-zA-Z_][a-zA-Z0-9_]*)\s*=>/g
+    // Priority 2: Function declarations: function Name(
+    const funcDeclRegex = /function\s+([A-Z][a-zA-Z0-9]*)\s*\(/g
+    // Priority 3: Fallback - any capitalized const/let/var (less reliable)
+    const fallbackRegex = /(?:const|let|var)\s+([A-Z][a-zA-Z0-9]*)(?:\s*[=:(])/g
+    
+    const arrowMatches = Array.from(code.matchAll(arrowFnRegex))
+    const funcMatches = Array.from(code.matchAll(funcDeclRegex))
+    const fallbackMatches = Array.from(code.matchAll(fallbackRegex))
+    
+    // Prefer arrow functions, then function declarations, then fallback
+    let componentName = 'Component'
+    if (arrowMatches.length > 0) {
+      componentName = arrowMatches[0][1]
+    } else if (funcMatches.length > 0) {
+      componentName = funcMatches[0][1]
+    } else if (fallbackMatches.length > 0) {
+      // Filter out common non-component names
+      const nonComponents = ['Theme', 'Config', 'Settings', 'Options', 'Data', 'Props', 'State', 'Context', 'Provider', 'Store', 'Schema', 'Type', 'Interface', 'Const', 'Enum']
+      const validMatch = fallbackMatches.find(m => !nonComponents.includes(m[1]))
+      if (validMatch) componentName = validMatch[1]
+    }
 
     const cleanedCode = code
       // Remove import statements for motion, lucide, and react
