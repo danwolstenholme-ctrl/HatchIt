@@ -46,10 +46,10 @@ export const PRICING_TIERS: Record<string, PricingTier> = {
   },
   demiurge: {
     name: 'agency',
-    price: 199,
+    price: 49,
     generationsPerDay: -1,
     architectRefinementsPerMonth: -1,
-    features: ['Everything in Architect', 'White-label client portal', 'The Replicator (Clone any site)', 'API Access', 'Priority 24/7 Support'],
+    features: ['Everything in Pro', 'Unlimited AI refinements', 'Custom domains', 'Priority support', 'Early access to features'],
   },
 }
 

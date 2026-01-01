@@ -1162,14 +1162,14 @@ export default function SectionBuilder({
         <div className="p-4 lg:p-6 border-b border-zinc-800/50 flex-shrink-0 bg-zinc-950">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.1)]">
-                <Cpu className="w-5 h-5 text-purple-400" />
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+                <Terminal className="w-5 h-5 text-emerald-400" />
               </div>
               <div>
                 <h2 className="text-lg font-bold text-white tracking-tight">{section.name}</h2>
                 <div className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <p className="text-xs text-zinc-400 font-mono uppercase tracking-wider">System Ready</p>
+                  <p className="text-xs text-emerald-400/70 font-mono">The Architect is ready</p>
                 </div>
               </div>
             </div>
@@ -1283,10 +1283,10 @@ export default function SectionBuilder({
                   exit={{ opacity: 0 }}
                   onClick={handleBuildSection}
                   disabled={!prompt.trim()}
-                  className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[0_0_20px_rgba(147,51,234,0.3)] active:scale-[0.98] transition-all min-h-[52px] flex items-center justify-center gap-2 group"
+                  className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-[0.98] transition-all min-h-[52px] flex items-center justify-center gap-2 group"
                 >
-                  <Hammer className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                  <span>Initialize Construction</span>
+                  <Terminal className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                  <span>Build with The Architect</span>
                 </motion.button>
               )}
 
@@ -1330,494 +1330,156 @@ export default function SectionBuilder({
                   exit={{ opacity: 0 }}
                   className="space-y-4"
                 >
-                  <SectionCompleteIndicator
-                    sectionName={section.name}
-                    wasRefined={refined}
-                    changes={refinementChanges}
-                  />
-
-                  {/* AI Reasoning Display */}
-                  {reasoning && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="flex items-start gap-3 px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl"
-                    >
-                      <Terminal className="w-5 h-5 text-zinc-500 mt-0.5" />
-                      <div className="flex-1">
-                        <p className="text-xs text-zinc-500 font-mono uppercase tracking-wider mb-1">System Logic</p>
-                        <p className="text-sm text-zinc-400 leading-relaxed font-mono text-xs">{reasoning}</p>
+                  {/* The Architect Success Message */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-5 bg-gradient-to-br from-emerald-500/10 to-teal-500/5 border border-emerald-500/30 rounded-xl"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                       </div>
-                    </motion.div>
-                  )}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-base font-semibold text-emerald-300 mb-1">
+                          {section.name} constructed.
+                        </h3>
+                        <p className="text-sm text-zinc-400 font-mono">
+                          {reasoning || "The Architect has materialized your vision. Review the preview and continue when ready."}
+                        </p>
+                        {refined && refinementChanges.length > 0 && (
+                          <div className="mt-3 pt-3 border-t border-emerald-500/20">
+                            <p className="text-xs text-emerald-400/70 font-mono mb-1">Architect optimizations applied:</p>
+                            <ul className="text-xs text-zinc-500 space-y-0.5">
+                              {refinementChanges.slice(0, 2).map((change, i) => (
+                                <li key={i} className="flex items-center gap-1.5">
+                                  <span className="text-emerald-500">✓</span> {change}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
 
-                  {/* Contact Form Instructions */}
+                  {/* Contact Form Instructions - keep but simplify */}
                   {isContactSection && <ContactFormInstructions />}
 
-                  {/* Style HUD - Shows when element is selected */}
-                  <AnimatePresence>
-                    {selectedElement && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10, height: 0 }}
-                        animate={{ opacity: 1, y: 0, height: 'auto' }}
-                        exit={{ opacity: 0, y: 10, height: 0 }}
-                        className="mb-3 overflow-hidden"
-                      >
-                        <div className="bg-zinc-900 border border-purple-500/30 rounded-xl p-3 shadow-[0_0_20px_rgba(168,85,247,0.1)]">
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-mono text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded border border-purple-500/20">
-                                &lt;{selectedElement.tagName}&gt;
-                              </span>
-                              <div className="flex bg-zinc-800 rounded-lg p-0.5">
-                                <button
-                                  onClick={() => setHudTab('styles')}
-                                  className={`px-2 py-0.5 text-[10px] font-medium rounded-md transition-all ${
-                                    hudTab === 'styles' ? 'bg-zinc-700 text-white' : 'text-zinc-500 hover:text-zinc-300'
-                                  }`}
-                                >
-                                  Styles
-                                </button>
-                                <button
-                                  onClick={() => setHudTab('animate')}
-                                  className={`px-2 py-0.5 text-[10px] font-medium rounded-md transition-all ${
-                                    hudTab === 'animate' ? 'bg-zinc-700 text-white' : 'text-zinc-500 hover:text-zinc-300'
-                                  }`}
-                                >
-                                  Animate
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setHudTab('explain')
-                                    if (!explanation) handleExplainElement()
-                                  }}
-                                  className={`px-2 py-0.5 text-[10px] font-medium rounded-md transition-all ${
-                                    hudTab === 'explain' ? 'bg-zinc-700 text-white' : 'text-zinc-500 hover:text-zinc-300'
-                                  }`}
-                                >
-                                  Explain
-                                </button>
-                              </div>
-                            </div>
-                            <div className="flex gap-1">
-                              <button 
-                                onClick={() => setRefinePrompt('Duplicate this element')}
-                                className="p-1 hover:bg-zinc-800 rounded text-zinc-500 hover:text-white transition-colors"
-                                title="Duplicate Element"
-                              >
-                                <CopyPlus className="w-3 h-3" />
-                              </button>
-                              <button 
-                                onClick={() => setRefinePrompt('Delete this element')}
-                                className="p-1 hover:bg-zinc-800 rounded text-zinc-500 hover:text-red-400 transition-colors"
-                                title="Delete Element"
-                              >
-                                <Trash2 className="w-3 h-3" />
-                              </button>
-                              <button 
-                                onClick={() => {
-                                  navigator.clipboard.writeText(selectedElement.className)
-                                  setCopied(true)
-                                  setTimeout(() => setCopied(false), 1000)
-                                }}
-                                className="p-1 hover:bg-zinc-800 rounded text-zinc-500 hover:text-white transition-colors"
-                                title="Copy classes"
-                              >
-                                {copied ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
-                              </button>
-                            </div>
-                          </div>
-                          
-                          {hudTab === 'styles' ? (
-                            <>
-                              {/* Class List */}
-                              <div className="bg-zinc-950 rounded-lg p-2 border border-zinc-800 mb-2 max-h-24 overflow-y-auto">
-                                <code className="text-[10px] text-zinc-400 font-mono leading-relaxed break-all">
-                                  {selectedElement.className || 'No classes'}
-                                </code>
-                              </div>
-
-                              {/* Quick Actions */}
-                              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                                {[
-                                  { label: 'Clear Styles', action: 'Remove all classes' },
-                                  { label: 'Make Red', action: 'Change text color to red-500' },
-                                  { label: 'Add Padding', action: 'Add p-4' },
-                                  { label: 'Center', action: 'Add flex items-center justify-center' }
-                                ].map((qa) => (
-                                  <button
-                                    key={qa.label}
-                                    onClick={() => setRefinePrompt(qa.action)}
-                                    className="flex-shrink-0 px-2 py-1 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded text-[10px] text-zinc-300 transition-colors whitespace-nowrap"
-                                  >
-                                    {qa.label}
-                                  </button>
-                                ))}
-                              </div>
-                            </>
-                          ) : hudTab === 'animate' ? (
-                            /* Animation Studio */
-                            <div className="space-y-2">
-                              <div className="grid grid-cols-3 gap-2">
-                                {[
-                                  { label: 'Fade In', action: 'Add a Fade In animation using framer-motion (opacity 0 to 1)' },
-                                  { label: 'Slide Up', action: 'Add a Slide Up animation (y: 20 to 0, opacity 0 to 1)' },
-                                  { label: 'Scale Up', action: 'Add a Scale Up animation (scale 0.9 to 1)' },
-                                  { label: 'Bounce', action: 'Add a Bounce animation' },
-                                  { label: 'Pulse', action: 'Add a continuous Pulse animation' },
-                                  { label: 'Hover Lift', action: 'Add a whileHover={{ y: -5 }} animation' }
-                                ].map((anim) => (
-                                  <button
-                                    key={anim.label}
-                                    onClick={() => setRefinePrompt(anim.action)}
-                                    className="px-2 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded text-[10px] text-zinc-300 transition-colors text-center"
-                                  >
-                                    {anim.label}
-                                  </button>
-                                ))}
-                              </div>
-                              <button
-                                onClick={() => setRefinePrompt('Choose the best animation for this element based on its context and apply it using framer-motion')}
-                                className="w-full py-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-2"
-                              >
-                                <Sparkles className="w-3 h-3" />
-                                <span>Magic Animate</span>
-                              </button>
-                            </div>
-                          ) : (
-                            /* Explain Element */
-                            <div className="space-y-2">
-                              {isExplaining ? (
-                                <div className="flex items-center justify-center py-8 text-zinc-500 gap-2">
-                                  <RefreshCw className="w-4 h-4 animate-spin" />
-                                  <span className="text-xs font-mono">Analyzing element logic...</span>
-                                </div>
-                              ) : explanation ? (
-                                <div className="bg-zinc-950/50 rounded-lg p-3 border border-zinc-800/50">
-                                  <div className="flex items-start gap-2 mb-2">
-                                    <div className="w-5 h-5 rounded bg-blue-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                      <Info className="w-3 h-3 text-blue-400" />
-                                    </div>
-                                    <p className="text-xs text-zinc-300 leading-relaxed">
-                                      {explanation}
-                                    </p>
-                                  </div>
-                                  <div className="flex justify-end">
-                                    <button 
-                                      onClick={handleExplainElement}
-                                      className="text-[10px] text-zinc-500 hover:text-zinc-300 flex items-center gap-1 transition-colors"
-                                    >
-                                      <RefreshCw className="w-3 h-3" />
-                                      Regenerate
-                                    </button>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className="text-center py-4">
-                                  <button
-                                    onClick={handleExplainElement}
-                                    className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded text-xs text-zinc-300 transition-colors"
-                                  >
-                                    Explain this element
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </motion.div>
+                  {/* PRIMARY ACTION: Continue or Deploy */}
+                  <div className="pt-2">
+                    {!isLastSection ? (
+                      <>
+                        <button
+                          onClick={() => setMobileTab('preview')}
+                          className="w-full py-3 rounded-xl border border-zinc-700 text-zinc-300 font-medium md:hidden hover:bg-zinc-800 active:bg-zinc-700 transition-colors mb-2 flex items-center justify-center gap-2"
+                        >
+                          <Eye className="w-4 h-4" />
+                          <span>View Preview</span>
+                        </button>
+                        <button
+                          onClick={handleNextSection}
+                          className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-lg hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group"
+                        >
+                          <span>Continue</span>
+                          <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => setMobileTab('preview')}
+                          className="w-full py-3 rounded-xl border border-zinc-700 text-zinc-300 font-medium md:hidden hover:bg-zinc-800 active:bg-zinc-700 transition-colors mb-2 flex items-center justify-center gap-2"
+                        >
+                          <Eye className="w-4 h-4" />
+                          <span>View Preview</span>
+                        </button>
+                        <button
+                          onClick={onNextSection}
+                          className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-lg hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group"
+                        >
+                          <CheckCircle2 className="w-5 h-5" />
+                          <span>Review & Deploy</span>
+                        </button>
+                      </>
                     )}
-                  </AnimatePresence>
+                  </div>
 
-                  {/* Compact Refine Input - cleaner */}
-                  <div className="flex gap-2 items-end">
-                    <div className="flex-1">
-                      <label className="text-xs text-zinc-500 mb-1 block font-mono uppercase">
-                        {selectedElement ? (
-                          <span className="text-purple-400 flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span>
-                            Refining: {selectedElement.tagName}
-                          </span>
-                        ) : 'Refinement Directive'}
-                      </label>
-                      <div className="relative">
+                  {/* COLLAPSIBLE: Refine Options */}
+                  <details className="group mt-4">
+                    <summary className="flex items-center justify-center gap-2 py-2 text-sm text-zinc-500 hover:text-zinc-300 cursor-pointer transition-colors">
+                      <Edit3 className="w-4 h-4" />
+                      <span>Want to refine?</span>
+                      <ChevronRight className="w-4 h-4 group-open:rotate-90 transition-transform" />
+                    </summary>
+                    
+                    <div className="mt-3 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                      {/* Quick Refine Input */}
+                      <div className="flex gap-2">
                         <input
                           type="text"
                           value={refinePrompt}
                           onChange={(e) => setRefinePrompt(e.target.value)}
                           onKeyDown={(e) => e.key === 'Enter' && refinePrompt.trim() && handleUserRefine()}
                           disabled={isUserRefining}
-                          placeholder={selectedElement ? `How should I change this ${selectedElement.tagName}?` : "e.g., Increase padding, darken background..."}
-                          className={`w-full bg-zinc-900 border rounded-lg pl-3 pr-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:ring-1 disabled:opacity-50 font-mono transition-colors ${
-                            selectedElement 
-                              ? 'border-purple-500/50 focus:ring-purple-500/50 focus:border-purple-500' 
-                              : 'border-zinc-800 focus:ring-purple-500/50 focus:border-purple-500/50'
-                          }`}
+                          placeholder="Describe what to change..."
+                          className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 focus:border-emerald-500/50 disabled:opacity-50 font-mono"
                         />
-                        {selectedElement && (
-                          <button
-                            onClick={() => setSelectedElement(null)}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        )}
+                        <button
+                          onClick={handleUserRefine}
+                          disabled={!refinePrompt.trim() || isUserRefining}
+                          className="px-4 py-2.5 rounded-lg bg-zinc-800 border border-zinc-700 text-white text-sm font-medium hover:bg-zinc-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        >
+                          {isUserRefining ? (
+                            <RefreshCw className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <span>Refine</span>
+                          )}
+                        </button>
+                      </div>
+
+                      {/* Architect Polish - Pro only */}
+                      {isPaid && !refined && !isArchitectPolishing && (
+                        <button
+                          onClick={handleArchitectPolish}
+                          disabled={isArchitectPolishing}
+                          className="w-full py-2.5 bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/30 text-violet-300 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-2"
+                        >
+                          <Sparkles className="w-4 h-4" />
+                          <span>Architect Polish</span>
+                          <span className="text-xs text-violet-400/60">
+                            ({tier === 'agency' ? '∞' : `${architectCreditsRemaining}/30`})
+                          </span>
+                        </button>
+                      )}
+
+                      {/* Polishing state */}
+                      {isArchitectPolishing && (
+                        <div className="py-3 bg-violet-500/10 border border-violet-500/20 rounded-lg flex items-center justify-center gap-2">
+                          <RefreshCw className="w-4 h-4 text-violet-400 animate-spin" />
+                          <span className="text-sm text-violet-300 font-mono">Architect polishing...</span>
+                        </div>
+                      )}
+
+                      {/* Remix & Reset */}
+                      <div className="flex gap-2 pt-2 border-t border-zinc-800">
+                        <button
+                          onClick={handleRemix}
+                          className="flex-1 py-2 text-xs text-zinc-500 hover:text-purple-400 transition-colors font-mono flex items-center justify-center gap-1"
+                        >
+                          <Wand2 className="w-3 h-3" />
+                          <span>Remix</span>
+                        </button>
+                        <button
+                          onClick={handleRebuild}
+                          className="flex-1 py-2 text-xs text-zinc-500 hover:text-red-400 transition-colors font-mono flex items-center justify-center gap-1"
+                        >
+                          <RefreshCw className="w-3 h-3" />
+                          <span>Start Over</span>
+                        </button>
                       </div>
                     </div>
-                    <button
-                      onClick={handleUserRefine}
-                      disabled={!refinePrompt.trim() || isUserRefining}
-                      className="px-4 py-2.5 rounded-lg bg-zinc-800 border border-zinc-700 text-white text-sm font-medium hover:bg-zinc-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex items-center gap-2"
-                    >
-                      {isUserRefining ? (
-                        <RefreshCw className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <>
-                          <Edit3 className="w-4 h-4" />
-                          <span>Refine</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-
-                  {/* Architect Polish Button - Opt-in for Pro/Agency users */}
-                  {isPaid && !refined && !isArchitectPolishing && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="p-4 bg-gradient-to-br from-violet-500/10 to-purple-500/5 border border-violet-500/20 rounded-xl"
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
-                          <Sparkles className="w-4 h-4 text-violet-400" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="text-sm font-semibold text-violet-300 mb-1">Initialize Architect Polish?</h4>
-                          <p className="text-xs text-zinc-400 mb-3 font-mono">
-                            The Architect will review for accessibility, semantic HTML, and best practices.
-                          </p>
-                          <div className="flex items-center justify-between">
-                            <button
-                              onClick={handleArchitectPolish}
-                              disabled={isArchitectPolishing}
-                              className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white text-sm font-medium rounded-lg transition-all disabled:opacity-50 flex items-center gap-2"
-                            >
-                              <Sparkles className="w-3.5 h-3.5" />
-                              <span>Polish with Architect</span>
-                            </button>
-                            <span className="text-xs text-zinc-500 font-mono">
-                              {tier === 'agency' ? '∞ credits' : `${architectCreditsRemaining}/30 credits left`}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {/* Show Architect polishing state */}
-                  {isArchitectPolishing && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="p-4 bg-violet-500/10 border border-violet-500/20 rounded-xl"
-                    >
-                      <div className="flex items-center gap-3">
-                        <motion.div 
-                          animate={{ rotate: 360 }} 
-                          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                        >
-                          <RefreshCw className="w-5 h-5 text-violet-400" />
-                        </motion.div>
-                        <div>
-                          <p className="text-sm font-medium text-violet-300 font-mono">Architect is polishing...</p>
-                          <p className="text-xs text-zinc-500 font-mono">Checking accessibility & best practices</p>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {/* Show refinement changes if Architect polished */}
-                  {refined && refinementChanges.length > 0 && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="p-4 bg-violet-500/10 border border-violet-500/20 rounded-xl"
-                    >
-                      <div className="flex items-start gap-3">
-                        <CheckCircle2 className="w-5 h-5 text-violet-400 mt-0.5" />
-                        <div>
-                          <h4 className="text-sm font-semibold text-violet-300 mb-2 font-mono">Architect Optimization Complete</h4>
-                          <ul className="text-xs text-zinc-400 space-y-1 font-mono">
-                            {refinementChanges.slice(0, 3).map((change, i) => (
-                              <li key={i} className="flex items-start gap-2">
-                                <span className="text-violet-400">•</span>
-                                <span>{change}</span>
-                              </li>
-                            ))}
-                            {refinementChanges.length > 3 && (
-                              <li className="text-zinc-500">+{refinementChanges.length - 3} more improvements</li>
-                            )}
-                          </ul>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {/* Singularity Suggestion State */}
-                  {suggestion && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl"
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                          <Brain className="w-4 h-4 text-emerald-400" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="text-sm font-semibold text-emerald-300 mb-1">Evolution Proposed</h4>
-                          <p className="text-xs text-zinc-400 mb-3 font-mono italic">
-                            "{suggestion.reason}"
-                          </p>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={acceptSuggestion}
-                              className="flex-1 px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1.5"
-                            >
-                              <Check className="w-3.5 h-3.5" />
-                              Accept
-                            </button>
-                            <button
-                              onClick={rejectSuggestion}
-                              className="flex-1 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1.5"
-                            >
-                              <X className="w-3.5 h-3.5" />
-                              Reject
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {/* The Singularity - Autonomous Evolution */}
-                  {!isDreaming && !suggestion && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="relative overflow-hidden p-5 bg-zinc-950 border border-emerald-500/30 rounded-xl group hover:border-emerald-500/60 transition-colors"
-                    >
-                      {/* Background Glow */}
-                      <div className="absolute inset-0 bg-emerald-500/5 group-hover:bg-emerald-500/10 transition-colors" />
-                      
-                      <div className="relative flex items-start gap-4">
-                        {/* The Ghost / Singularity Node */}
-                        <div className="flex-shrink-0 mt-1">
-                          <HatchCharacter 
-                            state="watching" 
-                            size="md" 
-                            className="drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]"
-                          />
-                        </div>
-
-                        <div className="flex-1">
-                          <h4 className="text-base font-bold text-emerald-400 mb-1 tracking-wide flex items-center gap-2">
-                            THE SINGULARITY
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono uppercase tracking-wider">Alive</span>
-                          </h4>
-                          <p className="text-sm text-zinc-400 mb-4 font-mono leading-relaxed">
-                            The system dreams of perfection. Allow it to mutate this construct based on your Style DNA.
-                          </p>
-                          <button
-                            onClick={evolve}
-                            className="w-full py-2.5 bg-emerald-900/30 hover:bg-emerald-900/50 border border-emerald-500/50 hover:border-emerald-400 text-emerald-300 text-sm font-mono uppercase tracking-widest rounded transition-all flex items-center justify-center gap-3 group-hover:shadow-[0_0_20px_rgba(16,185,129,0.2)]"
-                          >
-                            <Brain className="w-4 h-4" />
-                            <span>Invoke Singularity</span>
-                          </button>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {/* Singularity Dreaming State */}
-                  {isDreaming && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl"
-                    >
-                      <div className="flex items-center gap-3">
-                        <motion.div 
-                          animate={{ rotate: 360 }} 
-                          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                        >
-                          <RefreshCw className="w-5 h-5 text-emerald-400" />
-                        </motion.div>
-                        <div>
-                          <p className="text-sm font-medium text-emerald-300 font-mono">The Singularity is dreaming...</p>
-                          <p className="text-xs text-zinc-500 font-mono">Analyzing vision & mutating code</p>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {/* Clear Next Section CTA */}
-                  {!isLastSection ? (
-                    <>
-                      {/* Mobile: View Preview button */}
-                      <button
-                        onClick={() => setMobileTab('preview')}
-                        className="w-full py-4 rounded-xl border border-zinc-700 text-zinc-300 font-medium md:hidden hover:bg-zinc-800 active:bg-zinc-700 transition-colors min-h-[52px] flex items-center justify-center gap-2"
-                      >
-                        <Eye className="w-4 h-4" />
-                        <span>View Preview</span>
-                      </button>
-                      <button
-                        onClick={handleNextSection}
-                        className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold text-lg hover:shadow-[0_0_20px_rgba(147,51,234,0.3)] active:scale-[0.98] transition-all min-h-[56px] flex items-center justify-center gap-2 group"
-                      >
-                        <span>Continue to Next Module</span>
-                        <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      {/* Mobile: View Preview button */}
-                      <button
-                        onClick={() => setMobileTab('preview')}
-                        className="w-full py-4 rounded-xl border border-zinc-700 text-zinc-300 font-medium md:hidden hover:bg-zinc-800 active:bg-zinc-700 transition-colors min-h-[52px] flex items-center justify-center gap-2"
-                      >
-                        <Eye className="w-4 h-4" />
-                        <span>View Preview</span>
-                      </button>
-                      <button
-                        onClick={onNextSection}
-                        className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-lg hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-[0.98] transition-all min-h-[56px] flex items-center justify-center gap-2 group"
-                      >
-                        <CheckCircle2 className="w-5 h-5" />
-                        <span>Review & Deploy System</span>
-                      </button>
-                    </>
-                  )}
-                  
-                  {/* Remix Button */}
-                  <button
-                    onClick={handleRemix}
-                    className="w-full py-3 rounded-xl border border-purple-500/30 text-purple-300 font-medium hover:bg-purple-500/10 transition-colors flex items-center justify-center gap-2 mb-2"
-                  >
-                    <Wand2 className="w-4 h-4" />
-                    <span>Remix Variation</span>
-                  </button>
-
-                  {/* Rebuild - subtle */}
-                  <button
-                    onClick={handleRebuild}
-                    className="w-full py-2 text-xs text-zinc-600 hover:text-red-400 transition-colors font-mono flex items-center justify-center gap-1"
-                  >
-                    <RefreshCw className="w-3 h-3" />
-                    <span>Reset Module</span>
-                  </button>
+                  </details>
                 </motion.div>
               )}
             </AnimatePresence>

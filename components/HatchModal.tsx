@@ -182,13 +182,12 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
           
           <div className="space-y-2">
             {[
-              'Unlimited AI generations',
-              'Deploy all projects',
-              'Custom domains',
+              'Unlimited AI builds',
+              '30 AI refinements/mo',
+              'Deploy to hatchitsites.dev',
               'Download clean code',
               'Version history',
               'Cloud sync',
-              'Priority support',
             ].map((feature, i) => (
               <div key={i} className="flex items-center gap-2 text-sm text-zinc-300">
                 <span className="text-teal-400">✓</span>
