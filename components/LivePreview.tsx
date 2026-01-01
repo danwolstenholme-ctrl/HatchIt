@@ -698,7 +698,8 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
         '<script>' +
         '// Setup globals with fallbacks\n' +
         '// FRAMER MOTION: ALWAYS use Proxy to ensure safe access\n' +
-        'window.motion = new Proxy({}, {\n' +
+        '// Target must be a function to support motion(Component) usage\n' +
+        'window.motion = new Proxy(function() {}, {\n' +
         '  get: function(target, tag) {\n' +
         '    // Try to get real framer-motion component\n' +
         '    if (window.Motion && window.Motion.motion && window.Motion.motion[tag]) {\n' +
