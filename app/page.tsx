@@ -82,13 +82,20 @@ function TypewriterCode({ code, speed = 30 }: { code: string; speed?: number }) 
   )
 }
 
-// System Status - shows technical initialization messages
+// Quick-start example prompts
+const EXAMPLE_PROMPTS = [
+  { label: "SaaS Landing", prompt: "A modern SaaS landing page with pricing, features grid, and testimonials" },
+  { label: "Portfolio", prompt: "A developer portfolio with project showcase, about section, and contact form" },
+  { label: "Startup", prompt: "An AI startup homepage with hero animation, how it works section, and CTA" },
+  { label: "Agency", prompt: "A creative agency site with case studies, team section, and services" },
+]
+
+// System Status - the main builder input
 function SystemStatus() {
   const [prompt, setPrompt] = useState('')
   const [isFocused, setIsFocused] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-  const { isSignedIn } = useUser()
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -96,80 +103,143 @@ function SystemStatus() {
     
     setIsLoading(true)
     const encodedPrompt = encodeURIComponent(prompt)
-    // Direct to builder in guest mode - BuildFlowController handles the gate
     router.push(`/builder?mode=guest&prompt=${encodedPrompt}`)
+  }
+
+  const handleExampleClick = (examplePrompt: string) => {
+    setPrompt(examplePrompt)
   }
 
   return (
     <div className="w-full relative z-20">
+      {/* Outer glow ring */}
+      <div className={`absolute -inset-[2px] rounded-2xl bg-gradient-to-r from-emerald-500/60 via-teal-500/60 to-emerald-500/60 opacity-0 blur-md transition-opacity duration-500 ${isFocused ? 'opacity-100' : 'opacity-30'}`} />
+      
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2, duration: 0.5 }}
-        className={`relative rounded-xl overflow-hidden transition-all duration-500 ${
+        className={`relative rounded-2xl overflow-hidden transition-all duration-300 ${
           isFocused 
-            ? 'bg-black/90 ring-1 ring-emerald-500 shadow-neon-strong' 
-            : 'bg-black/80 border border-zinc-800 hover:border-emerald-500/30 hover:shadow-neon'
+            ? 'bg-zinc-950 ring-2 ring-emerald-500/50 shadow-[0_0_60px_rgba(16,185,129,0.2)]' 
+            : 'bg-zinc-950 border border-zinc-800 hover:border-emerald-500/40'
         }`}
       >
-        {/* Terminal Header */}
-        <div className="flex items-center justify-between px-4 py-3 bg-zinc-950 border-b border-zinc-900">
-          <div className="flex items-center gap-2">
+        {/* Header Bar - IDE style */}
+        <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/80 border-b border-zinc-800">
+          <div className="flex items-center gap-3">
             <div className="flex gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-500/20 border border-red-500/50"></div>
-              <div className="w-2.5 h-2.5 rounded-full bg-amber-500/20 border border-amber-500/50"></div>
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/20 border border-emerald-500/50 animate-pulse"></div>
+              <div className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-400 transition-colors cursor-pointer"></div>
+              <div className="w-3 h-3 rounded-full bg-amber-500 hover:bg-amber-400 transition-colors cursor-pointer"></div>
+              <div className="w-3 h-3 rounded-full bg-emerald-500 hover:bg-emerald-400 transition-colors cursor-pointer shadow-[0_0_8px_rgba(16,185,129,0.6)]"></div>
             </div>
-            <span className="ml-2 text-[10px] font-mono text-emerald-500/50 uppercase tracking-wider">SINGULARITY_INTERFACE_v9.0</span>
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-zinc-800/50 rounded-md">
+              <Code2 className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-xs font-mono text-zinc-400">new-project.tsx</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-            <span className="text-[10px] font-mono text-emerald-500">ONLINE</span>
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-mono text-zinc-500 hidden sm:inline">FREE TRIAL</span>
+            <div className="flex items-center gap-1.5">
+              <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
+              <span className="text-xs font-mono text-emerald-400">ONLINE</span>
+            </div>
           </div>
         </div>
 
-        {/* Input Area */}
-        <form onSubmit={handleSubmit} className="p-2">
-          <div className="relative flex items-center">
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500">
-              <Terminal className="w-5 h-5" />
+        {/* Main Input Section */}
+        <div className="p-4 sm:p-5">
+          {/* Label */}
+          <label className="block text-sm text-zinc-400 mb-3 font-medium">
+            Describe your website <span className="text-zinc-600">— be specific for better results</span>
+          </label>
+          
+          {/* Input Area */}
+          <form onSubmit={handleSubmit}>
+            <div className={`relative rounded-xl border transition-all duration-200 ${
+              isFocused 
+                ? 'border-emerald-500/50 bg-zinc-900/50' 
+                : 'border-zinc-800 bg-zinc-900/30 hover:border-zinc-700'
+            }`}>
+              <div className="flex items-start gap-3 p-3 sm:p-4">
+                <div className="flex-shrink-0 mt-0.5 text-emerald-500">
+                  <Terminal className="w-5 h-5" />
+                </div>
+                
+                <textarea
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  onFocus={() => setIsFocused(true)}
+                  onBlur={() => setIsFocused(false)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault()
+                      handleSubmit(e)
+                    }
+                  }}
+                  placeholder="A modern SaaS landing page with dark theme, animated hero section, feature grid with icons, pricing table, and testimonials carousel..."
+                  className="flex-1 bg-transparent text-white text-base font-mono focus:outline-none resize-none min-h-[80px] placeholder-zinc-600"
+                  autoFocus
+                />
+              </div>
+              
+              {/* Bottom bar with button */}
+              <div className="flex items-center justify-between px-3 sm:px-4 py-3 border-t border-zinc-800/50 bg-zinc-900/30">
+                <div className="flex items-center gap-2 text-xs text-zinc-500">
+                  <Zap className="w-3.5 h-3.5 text-emerald-500" />
+                  <span className="hidden sm:inline">~30s build time</span>
+                  <span className="sm:hidden">~30s</span>
+                </div>
+                
+                <button
+                  type="submit"
+                  disabled={!prompt.trim() || isLoading}
+                  className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-zinc-800 disabled:text-zinc-500 text-white px-5 sm:px-6 py-2.5 rounded-lg font-semibold text-sm transition-all disabled:cursor-not-allowed flex items-center gap-2 group shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] disabled:shadow-none"
+                >
+                  {isLoading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Building...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4" />
+                      <span>Generate Site</span>
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
-            <input
-              type="text"
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              placeholder="A SaaS landing page with dark theme, animated hero, and pricing..."
-              className="w-full bg-transparent text-white placeholder-zinc-600 pl-12 pr-32 py-4 text-lg font-mono focus:outline-none"
-              autoFocus
-            />
-            <div className="absolute right-2 top-1/2 -translate-y-1/2">
-              <button
-                type="submit"
-                disabled={!prompt.trim() || isLoading}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 sm:px-6 py-2 rounded-lg font-medium text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 group min-w-[100px] justify-center"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span className="hidden sm:inline">LOADING</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="hidden sm:inline">INITIALIZE</span>
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </>
-                )}
-              </button>
+          </form>
+          
+          {/* Quick Examples */}
+          <div className="mt-4">
+            <div className="flex items-center gap-2 mb-2.5">
+              <span className="text-xs text-zinc-500 font-medium">Quick start:</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {EXAMPLE_PROMPTS.map((example, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleExampleClick(example.prompt)}
+                  className="px-3 py-1.5 text-xs font-medium bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700/50 hover:border-emerald-500/30 rounded-lg text-zinc-400 hover:text-emerald-400 transition-all"
+                >
+                  {example.label}
+                </button>
+              ))}
             </div>
           </div>
-        </form>
+        </div>
         
-        {/* System Logs (Decorative) */}
-        <div className="px-4 py-2 bg-zinc-950/50 border-t border-zinc-900 text-[10px] font-mono text-zinc-600 flex justify-between">
-           <span>Waiting for input...</span>
-           <span>MEM: 64TB // CPU: QUANTUM</span>
+        {/* Footer - What you get */}
+        <div className="px-4 sm:px-5 py-3 bg-zinc-900/50 border-t border-zinc-800/50">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-zinc-500">
+            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-emerald-500/70" />React + Tailwind</span>
+            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-emerald-500/70" />Fully Responsive</span>
+            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-emerald-500/70" />Export Code</span>
+            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-emerald-500/70" />No Account Needed</span>
+          </div>
         </div>
       </motion.div>
     </div>

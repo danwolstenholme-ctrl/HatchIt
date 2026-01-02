@@ -40,6 +40,7 @@ import HatchModal from './HatchModal'
 import Scorecard from './Scorecard'
 import TheWitness from './TheWitness'
 import FirstContact from './FirstContact'
+import WelcomeModal, { useFirstTimeWelcome } from './WelcomeModal'
 import { chronosphere } from '@/lib/chronosphere'
 import { Template, Section, getTemplateById, getSectionById, createInitialBuildState, BuildState, websiteTemplate } from '@/lib/templates'
 import { DbProject, DbSection, DbBrandConfig } from '@/lib/supabase'
@@ -412,6 +413,9 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
   const [showReset, setShowReset] = useState(false)
   const [isReplicationReady, setIsReplicationReady] = useState(false)
+  
+  // First-time welcome modal (post-demo)
+  const { showWelcome, triggerWelcome, closeWelcome } = useFirstTimeWelcome()
 
   // Handle Replicator Mode & Onboarding Mode
   useEffect(() => {
@@ -908,6 +912,10 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     if (newState.currentSectionIndex >= sectionsForBuild.length) {
       setPhase('review')
       localStorage.removeItem('hatch_current_project')
+      
+      // Show welcome modal for first-time users who just completed their build
+      triggerWelcome()
+      
       if (!demoMode && project) {
         try {
           const response = await fetch(`/api/project/${project.id}/build`, { method: 'POST' })
@@ -1919,6 +1927,13 @@ export default function GeneratedPage() {
         onClose={() => setShowWitness(false)}
         note={witnessNote}
         isLoading={isWitnessLoading}
+      />
+
+      {/* First-time welcome modal after completing a build */}
+      <WelcomeModal 
+        trigger="post-demo"
+        isOpen={showWelcome}
+        onClose={closeWelcome}
       />
     </div>
   )
