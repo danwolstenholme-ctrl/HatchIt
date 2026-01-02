@@ -143,7 +143,7 @@ function checkRateLimit(userId: string): boolean {
 
 // Daily generation tracking
 const dailyGenerations = new Map<string, { count: number; date: string }>()
-const FREE_DAILY_LIMIT = 5  // Matches pricing page: 5 free generations per day
+const FREE_DAILY_LIMIT = parseInt(process.env.FREE_TOTAL_CREDITS || '9', 10)  // Unified free credit pool
 
 function checkAndRecordGeneration(userId: string, isPaid: boolean): { allowed: boolean } {
   if (isPaid) return { allowed: true }

@@ -122,6 +122,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.5.0] - 2026-01-01
 ### The Singularity Brand & Freemium Pivot
+-   **Credits:** Unified free usage pool to 9 total actions (build/refine/ghost) via `FREE_TOTAL_CREDITS` / `NEXT_PUBLIC_FREE_TOTAL_CREDITS` with server-side tracking.
 -   **Brand Unification:** Established "The Definitive HatchIt" (Emerald Egg) as the primary logo and "The Architect" (Violet Cube) as the AI persona.
 -   **Visual Identity:** Updated all site headers, favicons, and social assets to match the new V3 "Hatching" aesthetic.
 -   **Business Model:** Pivoted to **Freemium**. Free users can build/preview; Paid users (Pro/Agency) can export/deploy.

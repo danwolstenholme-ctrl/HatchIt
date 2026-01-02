@@ -334,12 +334,15 @@ export default function SectionBuilder({
   const [isExplaining, setIsExplaining] = useState(false)
   const [isDreaming, setIsDreaming] = useState(false)
   
-  // Guest trial limits (align with global guest policy)
+<<<<<<< HEAD
+  // Guest trial limits (align with global guest policy) + pooled credits
   const GUEST_GENERATION_LIMIT = GUEST_TRIAL_LIMITS.generationsPerSession || 5
   const GUEST_REFINEMENT_LIMIT = GUEST_TRIAL_LIMITS.refinementsAllowed ?? 0
   const GUEST_DREAM_LIMIT = GUEST_TRIAL_LIMITS.dreamsPerSession ?? 3
+  const FREE_TOTAL_CREDITS = parseInt(process.env.NEXT_PUBLIC_FREE_TOTAL_CREDITS || '9', 10)
   const [guestGenerationsUsed, setGuestGenerationsUsed] = useState(0)
   const [guestRefinementsUsed, setGuestRefinementsUsed] = useState(0)
+  const [guestCreditsUsed, setGuestCreditsUsed] = useState(0)
   const [dreamsUsed, setDreamsUsed] = useState(0)
   const [guestLocked, setGuestLocked] = useState(false)
   const [guestLockReason, setGuestLockReason] = useState<string | null>(null)
@@ -355,6 +358,7 @@ export default function SectionBuilder({
     const currentUrl = window.location.href
     router.push(`/sign-up?upgrade=${tier}&redirect_url=${encodeURIComponent(currentUrl)}`)
   }
+>>>>>>> 933336d (chore: unify free credits to pooled 9 and track usage)
 
   useEffect(() => {
     const used = parseInt(localStorage.getItem('hatch_guest_generations') || '0')
@@ -369,6 +373,11 @@ export default function SectionBuilder({
   useEffect(() => {
     const used = parseInt(localStorage.getItem('hatch_guest_dreams') || '0')
     setDreamsUsed(Number.isFinite(used) ? used : 0)
+  }, [])
+
+  useEffect(() => {
+    const used = parseInt(localStorage.getItem('hatch_guest_total') || '0')
+    setGuestCreditsUsed(Number.isFinite(used) ? used : 0)
   }, [])
 
   // Auto-start generation if prompt is pre-filled (e.g. from homepage)
@@ -386,22 +395,31 @@ export default function SectionBuilder({
   }, []) // Run once on mount
 
 
+  const incrementGuestCredits = () => {
+    const total = guestCreditsUsed + 1
+    setGuestCreditsUsed(total)
+    localStorage.setItem('hatch_guest_total', total.toString())
+  }
+
   const incrementGuestUsage = () => {
     const newValue = guestGenerationsUsed + 1
     setGuestGenerationsUsed(newValue)
     localStorage.setItem('hatch_guest_generations', newValue.toString())
+    incrementGuestCredits()
   }
 
   const incrementGuestRefinements = () => {
     const newValue = guestRefinementsUsed + 1
     setGuestRefinementsUsed(newValue)
     localStorage.setItem('hatch_guest_refinements', newValue.toString())
+    incrementGuestCredits()
   }
 
   const incrementGuestDreams = () => {
     const newValue = dreamsUsed + 1
     setDreamsUsed(newValue)
     localStorage.setItem('hatch_guest_dreams', newValue.toString())
+    incrementGuestCredits()
   }
 
   const triggerGuestLock = (reason: string) => {
@@ -472,6 +490,10 @@ export default function SectionBuilder({
   const evolve = async () => {
     if (guestLocked) {
       setMobileTab('preview')
+      return
+    }
+    if (isGuest && guestCreditsUsed >= FREE_TOTAL_CREDITS) {
+      triggerGuestLock('Free credits exhausted. Sign up to keep evolving.')
       return
     }
     // Limit dream/evolution attempts for guests and Lite; Pro/Agency are unlimited
@@ -838,10 +860,16 @@ export default function SectionBuilder({
       setMobileTab('preview')
       return
     }
-    // Guest trial limit gate
-    if (isGuest && !skipGuestCredit && guestGenerationsUsed >= GUEST_GENERATION_LIMIT) {
-      triggerGuestLock('Guest limit reached: 3 builds / 3 polishes / 3 dreams. Unlock to keep creating.')
-      return
+    // Guest trial + pooled credit gate
+    if (isGuest && !skipGuestCredit) {
+      if (guestCreditsUsed >= FREE_TOTAL_CREDITS) {
+        triggerGuestLock('Free credits exhausted. Sign up to keep creating.')
+        return
+      }
+      if (guestGenerationsUsed >= GUEST_GENERATION_LIMIT) {
+        triggerGuestLock('Guest limit reached: 3 builds / 3 polishes / 3 dreams. Unlock to keep creating.')
+        return
+      }
     }
 
     if (!prompt.trim()) {
@@ -858,7 +886,9 @@ export default function SectionBuilder({
     // Increment usage for free users
     if (isGuest && !skipGuestCredit) {
       incrementGuestUsage()
-      if (guestGenerationsUsed + 1 >= GUEST_GENERATION_LIMIT) {
+      if (guestCreditsUsed + 1 >= FREE_TOTAL_CREDITS) {
+        triggerGuestLock('Free credits exhausted. Sign up to keep creating.')
+      } else if (guestGenerationsUsed + 1 >= GUEST_GENERATION_LIMIT) {
         triggerGuestLock('Guest limit reached: unlock the builder to keep shipping.')
       }
     }
@@ -1002,9 +1032,15 @@ export default function SectionBuilder({
       setMobileTab('preview')
       return
     }
-    if (isGuest && GUEST_REFINEMENT_LIMIT >= 0 && guestRefinementsUsed >= GUEST_REFINEMENT_LIMIT) {
-      triggerGuestLock('Polish limit reached: upgrade to keep refining and export code.')
-      return
+    if (isGuest) {
+      if (guestCreditsUsed >= FREE_TOTAL_CREDITS) {
+        triggerGuestLock('Free credits exhausted. Sign up to keep refining.')
+        return
+      }
+      if (GUEST_REFINEMENT_LIMIT >= 0 && guestRefinementsUsed >= GUEST_REFINEMENT_LIMIT) {
+        triggerGuestLock('Polish limit reached: upgrade to keep refining and export code.')
+        return
+      }
     }
 
     if (!refinePrompt.trim() || !generatedCode) {
@@ -1038,7 +1074,9 @@ export default function SectionBuilder({
       setIsUserRefining(false)
       if (isGuest) {
         incrementGuestRefinements()
-        if (guestRefinementsUsed + 1 >= GUEST_REFINEMENT_LIMIT && GUEST_REFINEMENT_LIMIT >= 0) {
+        if (guestCreditsUsed + 1 >= FREE_TOTAL_CREDITS) {
+          triggerGuestLock('Free credits exhausted. Sign up to keep refining.')
+        } else if (guestRefinementsUsed + 1 >= GUEST_REFINEMENT_LIMIT && GUEST_REFINEMENT_LIMIT >= 0) {
           triggerGuestLock('Polish limit reached: upgrade to keep refining and export code.')
         }
       }
