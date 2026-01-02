@@ -116,11 +116,12 @@ function SystemStatus() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (isLoading) return
-    
     setIsLoading(true)
-
-    // Everyone goes through the Singularity loading sequence
-    router.push('/launch')
+    const params = new URLSearchParams()
+    const nextPrompt = prompt || currentSample || ''
+    if (nextPrompt) params.set('prompt', nextPrompt)
+    params.set('mode', 'demo')
+    router.push(`/launch?${params.toString()}`)
   }
 
   const handleExampleClick = (examplePrompt: string) => {
@@ -174,7 +175,7 @@ function SystemStatus() {
               <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80"></div>
               <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
             </div>
-            <div className="ml-3 text-[10px] text-zinc-500">architect_v4.exe</div>
+            <div className="ml-3 text-[10px] text-zinc-500">builder.exe</div>
           </div>
           <div className="flex items-center gap-2">
              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
@@ -197,7 +198,7 @@ function SystemStatus() {
           {/* Input Area */}
           <form onSubmit={handleSubmit} className="flex-1 flex flex-col relative z-10 scroll-m-16" aria-busy={isBooting}>
             <div className="flex gap-2 flex-1">
-              <span className="text-emerald-500 shrink-0 mt-[2px]">user@hatchit:~$</span>
+              <span className="text-emerald-500 shrink-0 mt-[2px]">&gt;</span>
               <textarea
                 ref={inputRef}
                 value={prompt}
@@ -273,42 +274,12 @@ function PricingButton({ tier, className, children }: { tier: 'lite' | 'pro' | '
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   
-  const handleClick = async (e: React.MouseEvent) => {
+  const handleClick = (e: React.MouseEvent) => {
     e.preventDefault()
-    
-    if (!isSignedIn) {
-      // Route guests through the launch flow with the intended tier
-      router.push(`/launch?upgrade=${tier}`)
-      return
-    }
-    
-    setIsLoading(true)
-    
-    try {
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tier })
-      })
-      
-      if (res.status === 401) {
-        router.push(`/builder?upgrade=${tier}`)
-        return
-      }
-
-      const data = await res.json()
-      
-      if (data.url) {
-        window.location.href = data.url
-      } else {
-        alert(data.error || 'Failed to start checkout')
-        setIsLoading(false)
-      }
-    } catch (err) {
-      console.error('Checkout error:', err)
-      alert('Failed to start checkout')
-      setIsLoading(false)
-    }
+    const params = new URLSearchParams()
+    params.set('upgrade', tier)
+    if (!isSignedIn) params.set('mode', 'demo')
+    router.push(`/launch?${params.toString()}`)
   }
   
   return (
@@ -387,7 +358,7 @@ export default function Home() {
   }
   
   return (
-    <div className="min-h-screen bg-zinc-950 text-white relative selection:bg-emerald-500/30 overflow-x-hidden">
+    <div className="min-h-screen bg-zinc-950 text-white relative selection:bg-emerald-500/30 overflow-x-hidden pt-16 sm:pt-20">
       {/* Background matched to Features page */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -447,10 +418,10 @@ export default function Home() {
       `}</style>
 
       {/* HERO - The main event */}
-      <section className="relative px-4 sm:px-6 pt-14 pb-24 sm:pt-16 sm:pb-32 md:pt-18 md:pb-32">
+      <section className="relative px-4 sm:px-6 pt-8 pb-16 sm:pt-14 sm:pb-24 md:pt-16 md:pb-32">
         <div className="max-w-6xl mx-auto">
           
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center justify-items-center lg:justify-items-stretch">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center justify-items-start">
             {/* LEFT COLUMN: Copy & Value Prop */}
             <div className="text-left relative z-10 w-full">
               {/* System Badge */}
@@ -504,23 +475,23 @@ export default function Home() {
 
               {/* Trust badges */}
               <motion.div
-                className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 text-sm"
+                className="flex flex-wrap gap-2 sm:gap-3"
                 {...getAnimation(0.4, 10)}
               >
-                <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 rounded-full border border-emerald-500/20">
-                  <span className="text-emerald-400 font-semibold">100% Yours</span>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 rounded-full border border-emerald-500/20 text-sm">
+                  <span className="text-emerald-400 font-medium">100% Yours</span>
                   <span className="text-zinc-500">— export anytime</span>
                 </div>
-                <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500/10 to-amber-500/5 rounded-full border border-amber-500/20">
-                  <Zap className="w-4 h-4 text-amber-400" />
-                  <span className="text-amber-400 font-semibold">30 Seconds</span>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-500/10 rounded-full border border-violet-500/20 text-sm">
+                  <Zap className="w-3.5 h-3.5 text-violet-400" />
+                  <span className="text-violet-400 font-medium">30 Seconds</span>
                   <span className="text-zinc-500">to first build</span>
                 </div>
               </motion.div>
             </div>
 
             {/* RIGHT COLUMN: Interactive Input */}
-            <div className="relative z-20 flex justify-center lg:justify-start">
+            <div className="relative z-20 flex justify-start">
               <div className="relative w-full max-w-full sm:max-w-[680px] md:max-w-[780px] lg:max-w-[700px]">
                 {/* Decorative background glow */}
                 <div className="absolute -inset-4 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 rounded-3xl blur-2xl opacity-50 pointer-events-none"></div>

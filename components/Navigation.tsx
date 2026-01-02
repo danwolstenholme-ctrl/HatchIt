@@ -5,21 +5,14 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { SubscriptionBadge } from './SubscriptionIndicator'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 
 export default function Navigation() {
   const pathname = usePathname()
-  const [scrolled, setScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { isPaidUser, tier, tierColor } = useSubscription()
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20)
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   const navLinks = [
     { href: '/features', label: 'Features' },
@@ -32,16 +25,12 @@ export default function Navigation() {
   return (
     <>
       <motion.nav 
-        className={`relative w-full px-4 sm:px-6 transition-all duration-300 ${
-          scrolled 
-            ? 'py-3 bg-zinc-950 backdrop-blur-lg border-b border-zinc-800/50 shadow-lg' 
-            : 'py-3 sm:py-5 bg-zinc-950'
-        }`}
+        className="fixed top-0 left-0 right-0 z-50 w-full px-4 sm:px-6 py-3 sm:py-5 bg-transparent pointer-events-none"
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
       >
-        <div className="max-w-7xl mx-auto flex justify-between items-center gap-3">
+        <div className="max-w-7xl mx-auto flex justify-between items-center gap-3 pointer-events-auto">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
             <motion.div

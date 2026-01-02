@@ -56,8 +56,8 @@ export const PRICING_TIERS: Record<string, PricingTier> = {
 // Limits (can be overridden via env vars)
 // Guest (unauthenticated) trial limits before forcing signup
 export const GUEST_TRIAL_LIMITS = {
-  generationsPerSession: parseInt(process.env.GUEST_GENERATION_LIMIT || '3', 10),
-  refinementsAllowed: 3,
-  dreamsPerSession: 3,
-  features: ['3 trial generations', '3 trial polishes', '3 trial dreams', 'Live preview in builder', 'Signup required to save/export/deploy'],
+  generationsPerSession: parseInt(process.env.GUEST_GENERATION_LIMIT || '9', 10),
+  refinementsAllowed: 50,
+  dreamsPerSession: 50,
+  features: ['9 trial generations', 'Full feature access in demo', 'Signup required to save/export/deploy'],
 }

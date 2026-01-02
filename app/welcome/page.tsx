@@ -19,7 +19,7 @@ import { useSubscription } from '@/contexts/SubscriptionContext'
 
 type WelcomeTier = 'lite' | 'pro' | 'agency'
 
-// Tier-specific content and theming
+  ? (urlTier as WelcomeTier)
 const tierConfig = {
   lite: {
     emoji: '🌱',
@@ -64,165 +64,19 @@ const tierConfig = {
     title: 'Protocol: DEMIURGE',
     subtitle: 'Reality distortion field active.',
     description: "You build worlds for others. White-label the Architect and deploy fleets of sites. You are the system administrator.",
-    price: '$99 / mo',
-    ctaText: 'Access Control Plane',
-    ctaUrl: '/builder',
-    gradient: 'from-amber-400 to-orange-500',
-    accentColor: 'amber',
-    features: [
-      { icon: '👑', text: 'All Architect Privileges' },
-      { icon: '🏢', text: 'Unlimited Client Instances' },
-      { icon: '🏷️', text: 'White-Label Interface' },
-      { icon: '📊', text: 'Priority Support Line' },
-      { icon: '🔑', text: 'API Key Provisioning' },
-      { icon: '💼', text: 'Commercial Rights' },
-    ],
-  },
-}
-
-// Agency Node
 function AgencyNode() {
-  return (
-    <motion.div
-      initial={{ scale: 0 }}
-      animate={{ scale: 1 }}
-      transition={{ type: 'spring', bounce: 0.5, delay: 0.3 }}
-      className="relative w-48 h-48 flex items-center justify-center"
-    >
-      {/* Subtle glow effect */}
-      <div className="absolute inset-0 blur-3xl bg-amber-500/20 rounded-full scale-150" />
-      
-      {/* Rotating Rings */}
-      <motion.div 
-        className="absolute inset-0 border-2 border-amber-500/30 rounded-full"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-      />
-      <motion.div 
         className="absolute inset-4 border-2 border-amber-500/50 rounded-full border-dashed"
-        animate={{ rotate: -360 }}
-        transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-      />
-
-      {/* Core */}
-      <motion.div
-        animate={{ scale: [1, 1.1, 1], opacity: [0.8, 1, 0.8] }}
-        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-        className="relative z-10 w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center border border-amber-500/50"
       >
-        <div className="w-8 h-8 bg-amber-400 rounded-full shadow-[0_0_20px_rgba(251,191,36,0.5)]" />
-      </motion.div>
-      
-      {/* Orbiting Particles */}
-      {[...Array(6)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-2 h-2 bg-amber-400 rounded-full"
-          animate={{ rotate: 360 }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            delay: i * 0.5,
-            ease: "linear"
-          }}
-          style={{
-            transformOrigin: "center center",
-            top: "50%",
             left: "50%",
-            marginTop: "-1px",
-            marginLeft: "-1px",
-            transform: `rotate(${i * 60}deg) translateX(60px)`
-          }}
-        />
-      ))}
-    </motion.div>
-  )
-}
 
-// Pro Node
-function ProNode() {
-  return (
-    <motion.div
-      initial={{ scale: 0 }}
-      animate={{ scale: 1 }}
-      transition={{ type: 'spring', bounce: 0.5, delay: 0.3 }}
-      className="relative w-48 h-48 flex items-center justify-center"
-    >
       {/* Subtle glow */}
-      <div className="absolute inset-0 blur-3xl bg-emerald-500/20 rounded-full scale-150" />
-      
-      {/* Rotating Rings */}
-      <motion.div 
-        className="absolute inset-0 border border-emerald-500/30 rounded-full"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-      />
-      
-      <motion.div
-        animate={{ scale: [1, 1.1, 1] }}
-        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-        className="relative z-10 w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center border border-emerald-500/50"
-      >
-        <div className="w-8 h-8 bg-emerald-400 rounded-full shadow-[0_0_20px_rgba(52,211,153,0.5)]" />
-      </motion.div>
-    </motion.div>
-  )
-}
-
-// Lite Node (Seedling)
-function LiteNode() {
-  return (
-    <motion.div
-      initial={{ scale: 0 }}
-      animate={{ scale: 1 }}
-      transition={{ type: 'spring', bounce: 0.5, delay: 0.3 }}
       className="relative w-40 h-40 flex items-center justify-center"
-    >
-      {/* Subtle glow */}
-      <div className="absolute inset-0 blur-3xl bg-lime-500/15 rounded-full scale-150" />
-      
-      {/* Single gentle ring */}
-      <motion.div 
-        className="absolute inset-0 border border-lime-500/30 rounded-full"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-      />
-      
-      <motion.div
-        animate={{ scale: [1, 1.08, 1] }}
-        transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-        className="relative z-10 w-14 h-14 bg-lime-500/20 rounded-full flex items-center justify-center border border-lime-500/50"
-      >
-        <div className="w-7 h-7 bg-lime-400 rounded-full shadow-[0_0_15px_rgba(163,230,53,0.4)]" />
-      </motion.div>
-    </motion.div>
-  )
 }
-
-function WelcomeContent() {
-  const { user, isLoaded } = useUser()
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const hasTriggeredSyncRef = useRef(false)
-  const { syncSubscription } = useSubscription()
-
-  const urlTier = searchParams.get('tier') as WelcomeTier | null
-  const hasValidUrlTier = !!urlTier && (urlTier === 'lite' || urlTier === 'pro' || urlTier === 'agency')
-
-  const accountSub = user?.publicMetadata?.accountSubscription as AccountSubscription | null
   const derivedTier: WelcomeTier = hasValidUrlTier
-    ? (urlTier as WelcomeTier)
-    : (accountSub?.status === 'active' ? (accountSub.tier as WelcomeTier) : 'lite')
-
-  const tier = derivedTier
-
-  // Trigger a sync when returning from checkout with a tier param.
-  useEffect(() => {
-    if (!isLoaded) return
-    if (!hasValidUrlTier) return
-    if (hasTriggeredSyncRef.current) return
-    syncSubscription()
-    hasTriggeredSyncRef.current = true
+  return (
+    <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+      // Removed
+    </div>
   }, [hasValidUrlTier, isLoaded, syncSubscription])
 
   // Track new user sign-up completion
@@ -354,81 +208,9 @@ function WelcomeContent() {
           } rounded-2xl p-6 mb-10`}
         >
           <div className="grid grid-cols-2 gap-4">
-            {config.features.map((feature, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
+            import { redirect } from 'next/navigation'
+
+            export default function WelcomePage() {
+              redirect('/builder?mode=guest')
+            }
                 transition={{ delay: 0.6 + i * 0.1 }}
-                className="flex items-center gap-3 text-left"
-              >
-                <span className="text-xl">{feature.icon}</span>
-                <span className="text-sm text-zinc-300">{feature.text}</span>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* CTA Button */}
-        <motion.button
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.8, type: 'spring', bounce: 0.4 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => router.push(config.ctaUrl)}
-          className={`px-8 py-4 ${
-            tier === 'agency' 
-              ? 'bg-gradient-to-r from-amber-500 to-orange-500 shadow-amber-500/25' 
-              : tier === 'pro'
-              ? 'bg-gradient-to-r from-emerald-500 to-teal-500 shadow-emerald-500/25'
-              : tier === 'lite'
-              ? 'bg-gradient-to-r from-lime-500 to-emerald-500 shadow-lime-500/25'
-              : 'bg-gradient-to-r from-zinc-600 to-zinc-500 shadow-zinc-500/25'
-          } text-white font-semibold rounded-xl shadow-lg transition-all text-lg`}
-        >
-          {config.ctaText} →
-        </motion.button>
-
-        {/* User greeting */}
-        {user && (
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
-            className="mt-8 text-zinc-500 text-sm"
-          >
-            Signed in as <span className="text-zinc-400">{user.emailAddresses[0]?.emailAddress}</span>
-          </motion.p>
-        )}
-      </motion.div>
-
-      {/* Skip link */}
-      <motion.button
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.2 }}
-        onClick={() => router.push('/builder')}
-        className="absolute bottom-8 text-zinc-500 hover:text-zinc-300 text-sm transition-colors"
-      >
-        Skip to builder →
-      </motion.button>
-    </div>
-  )
-}
-
-export default function WelcomePage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full"
-        />
-      </div>
-    }>
-      <WelcomeContent />
-    </Suspense>
-  )
-}

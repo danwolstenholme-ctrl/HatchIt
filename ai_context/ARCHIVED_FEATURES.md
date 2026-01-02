@@ -33,8 +33,8 @@ When users go idle for 3 seconds, a ghost AI cursor takes over the screen, scann
 ---
 
 ## HATCH CHARACTER (The Architect's Avatar)
-**Status:** ✅ RESTORED 2 Jan 2026
-**Location:** `components/HatchCharacter.tsx`
+**Status:** ❌ REMOVED (2 Jan 2026 per latest UX direction)
+**Location:** `components/HatchCharacter.tsx` (deleted)
 
 ### Concept
 Visual avatar for The Architect - abstract, geometric, pulsing orb with animated states.

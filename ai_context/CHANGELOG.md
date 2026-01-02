@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replaced First Contact intro with a concise welcome/support screen that surfaces Reddit/email/bug links before the builder loads.
 - Contact Support floating button now collapses on mobile with tighter padding/icon and hidden label until `sm`.
 
+### Removed
+- Removed `components/HatchCharacter.tsx` (avatar not part of current UX stack).
+- Deleted legacy welcome UX at `app/welcome/page.tsx`.
+
 ### ⚠️ BREAKING CHANGES
 - **NO FREE TIER:** Completely removed. All users must pay before accessing the builder.
 - **Demo Mode Eliminated:** No guest access, no preview mode, no exceptions.

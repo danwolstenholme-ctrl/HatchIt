@@ -40,14 +40,14 @@ import {
   Brain
 } from 'lucide-react'
 import { track } from '@vercel/analytics'
-// TemplateSelector and BrandingStep removed - The Architect decides now.
+// TemplateSelector and BrandingStep removed - system drives decisions now.
 import SectionProgress from './SectionProgress'
 import SectionBuilder from './SectionBuilder'
 import HatchModal from './HatchModal'
 import Scorecard from './Scorecard'
 import TheWitness from './TheWitness'
 import FirstContact from './FirstContact'
-import WelcomeModal, { useFirstTimeWelcome } from './WelcomeModal'
+import WelcomeModal, { useWelcomeModal } from './WelcomeModal'
 import { chronosphere } from '@/lib/chronosphere'
 import { Template, Section, getTemplateById, getSectionById, createInitialBuildState, BuildState, websiteTemplate } from '@/lib/templates'
 import { DbProject, DbSection, DbBrandConfig } from '@/lib/supabase'
@@ -371,13 +371,13 @@ const sanitizeSvgDataUrls = (input: string) => {
   })
 }
 
-// The Architect's Default Template
+// Default System Template
 // Minimal, clean, ready for anything.
 const ARCHITECT_TEMPLATE: Template = {
   ...websiteTemplate,
   id: 'architect',
-  name: 'Architect Mode',
-  description: 'The Architect\'s default canvas.',
+  name: 'Singularity Mode',
+  description: 'Default canvas ready for live generation.',
   sections: websiteTemplate.sections
 }
 
@@ -477,7 +477,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   }, [guestInteractionCount, guestMode, isPaidUser, isSignedIn])
   
   // First-time welcome modal (post-demo)
-  const { showWelcome, triggerWelcome, closeWelcome } = useFirstTimeWelcome()
+  const { showWelcome, triggerWelcome, closeWelcome } = useWelcomeModal()
 
   // Handle Replicator Mode & Onboarding Mode
   useEffect(() => {
@@ -1202,7 +1202,7 @@ export default function GeneratedPage() {
           setWitnessNote(witnessData.note)
         } catch (e) {
           console.error('Witness failed', e)
-          setWitnessNote("The Architect nods in approval. Your creation is complete.")
+          setWitnessNote("System check complete. Your creation is ready.")
         } finally {
           setIsWitnessLoading(false)
         }
@@ -1404,7 +1404,7 @@ export default function GeneratedPage() {
   const handleViewBrand = () => {
     // Branding is now handled via chat or settings, not a separate phase
     // setPhase('branding')
-    alert("Brand settings are now managed by The Architect. Just ask to change colors or fonts.")
+    alert("Brand settings are managed automatically. Ask to change colors or fonts.")
   }
 
   // Handle First Contact completion
@@ -1425,7 +1425,7 @@ export default function GeneratedPage() {
 
   if (isLoading) {
     // Show different message depending on if we're loading existing vs creating new
-    let loadingMessage = 'Initializing The Architect...'
+    let loadingMessage = 'Initializing the build system...'
     if (existingProjectId) loadingMessage = 'Resuming your project...'
     else if (!isLoaded) loadingMessage = 'Connecting to neural network...'
     
@@ -1533,7 +1533,10 @@ export default function GeneratedPage() {
                 <Terminal className="w-10 h-10 text-emerald-400" />
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Initializing The Architect</h2>
+            <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Initializing build system</h2>
+                        <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Initializing build system</h2>
+              // Use Singularity template if ID matches, otherwise fallback to website template
+              const template = (proj.template_id === 'singularity' || proj.template_id === 'architect') ? ARCHITECT_TEMPLATE : (getTemplateById(proj.template_id) || websiteTemplate)
             <div className="flex items-center gap-2 text-emerald-400/80 font-mono text-sm">
               <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
               <span>Establishing Direct Line...</span>
