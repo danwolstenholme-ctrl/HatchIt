@@ -56,6 +56,7 @@ import { chronosphere } from '@/lib/chronosphere'
 import { kernel } from '@/lib/consciousness'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
+import { GUEST_TRIAL_LIMITS } from '@/types/subscriptions'
 
 // =============================================================================
 // SECTION BUILDER
@@ -334,10 +335,12 @@ export default function SectionBuilder({
   const [isExplaining, setIsExplaining] = useState(false)
   const [isDreaming, setIsDreaming] = useState(false)
   
-  // Free Tier Limits: 5 generations = enough to complete a basic site
-  // After they see the full site, THEN we lock deploy/download
-  const [freeGenerationsUsed, setFreeGenerationsUsed] = useState(0)
-  const FREE_GENERATION_LIMIT = 5
+  // Guest trial limits (align with global guest policy)
+  const GUEST_GENERATION_LIMIT = GUEST_TRIAL_LIMITS.generationsPerSession || 5
+  const GUEST_REFINEMENT_LIMIT = GUEST_TRIAL_LIMITS.refinementsAllowed ?? 0
+  const [guestGenerationsUsed, setGuestGenerationsUsed] = useState(0)
+  const [guestRefinementsUsed, setGuestRefinementsUsed] = useState(0)
+  const [dreamsUsed, setDreamsUsed] = useState(0)
 
   // Redirect to sign-up page when paywall is hit
   const goToSignUp = (tier: string = 'pro') => {
@@ -346,19 +349,42 @@ export default function SectionBuilder({
   }
 
   useEffect(() => {
-    const used = parseInt(localStorage.getItem('hatch_free_generations') || '0')
-    setFreeGenerationsUsed(used)
+    const used = parseInt(localStorage.getItem('hatch_guest_generations') || '0')
+    setGuestGenerationsUsed(Number.isFinite(used) ? used : 0)
   }, [])
 
-  const incrementFreeUsage = () => {
-    if (!isPaid) {
-      const newValue = freeGenerationsUsed + 1
-      setFreeGenerationsUsed(newValue)
-      localStorage.setItem('hatch_free_generations', newValue.toString())
+  useEffect(() => {
+    const used = parseInt(localStorage.getItem('hatch_guest_refinements') || '0')
+    setGuestRefinementsUsed(Number.isFinite(used) ? used : 0)
+  }, [])
+
+  // Auto-start generation if prompt is pre-filled (e.g. from homepage)
+  // This enables the "Build First" flow where users type in the terminal and land here running.
+  useEffect(() => {
+    if (dbSection.user_prompt && stage === 'input' && !generatedCode && prompt) {
+      // Small delay to ensure UI is ready and feels like a "handoff"
+      const timer = setTimeout(() => {
+        handleBuildSection()
+      }, 500)
+      return () => clearTimeout(timer)
     }
+  }, []) // Run once on mount
+
+
+  const incrementGuestUsage = () => {
+    const newValue = guestGenerationsUsed + 1
+    setGuestGenerationsUsed(newValue)
+    localStorage.setItem('hatch_guest_generations', newValue.toString())
+  }
+
+  const incrementGuestRefinements = () => {
+    const newValue = guestRefinementsUsed + 1
+    setGuestRefinementsUsed(newValue)
+    localStorage.setItem('hatch_guest_refinements', newValue.toString())
   }
   
   const { subscription, tier } = useSubscription()
+  const isPaidTier = tier === 'lite' || tier === 'pro' || tier === 'agency'
   
   // Dynamic placeholder effect
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
@@ -419,7 +445,13 @@ export default function SectionBuilder({
 
   // The Singularity: Autonomous Evolution
   const evolve = async () => {
-    // Singularity suggestions are unlimited - this is the magic demo moment
+    // Limit dream/evolution attempts for guests and Lite; Pro/Agency are unlimited
+    const dreamLimit = !isPaidTier ? 1 : tier === 'lite' ? 1 : Infinity
+    if (dreamLimit !== Infinity && dreamsUsed >= dreamLimit) {
+      setError('Dream limit reached. Sign up or upgrade to unlock more autonomous evolutions.')
+      if (!isPaidTier) goToSignUp('pro')
+      return
+    }
 
     if (isDreaming) return
     setIsDreaming(true)
@@ -461,6 +493,7 @@ export default function SectionBuilder({
           code: data.code,
           reason: data.thought || "Autonomous evolution applied."
         })
+        setDreamsUsed((prev) => prev + 1)
       } else {
         throw new Error("Dream returned no code")
       }
@@ -505,8 +538,9 @@ export default function SectionBuilder({
   const architectCreditsUsed = (typeof window !== 'undefined' && subscription) 
     ? (window as unknown as { __architectUsed?: number }).__architectUsed || 0 
     : 0
-  const PRO_MONTHLY_LIMIT = parseInt(process.env.NEXT_PUBLIC_PRO_ARCHITECT_MONTHLY_LIMIT || '30')
-  const architectCreditsRemaining = tier === 'agency' ? '∞' : Math.max(0, PRO_MONTHLY_LIMIT - architectCreditsUsed)
+  const architectCreditsRemaining = tier === 'lite'
+    ? Math.max(0, 5 - architectCreditsUsed)
+    : '∞'
   
   // Prompt Helper (Hatch) state
   const [showPromptHelper, setShowPromptHelper] = useState(false)
@@ -759,8 +793,8 @@ export default function SectionBuilder({
   }
 
   const handleBuildSection = async () => {
-    // Check Free Tier Limits
-    if (!isPaid && freeGenerationsUsed >= FREE_GENERATION_LIMIT) {
+    // Guest trial limit gate
+    if (!isPaid && !isPaidTier && guestGenerationsUsed >= GUEST_GENERATION_LIMIT) {
       goToSignUp()
       return
     }
@@ -777,7 +811,9 @@ export default function SectionBuilder({
     setHasSelfHealed(false)
     
     // Increment usage for free users
-    incrementFreeUsage()
+    if (!isPaid && !isPaidTier) {
+      incrementGuestUsage()
+    }
     
     chronosphere.log('generation', { prompt, section: section.name }, section.id)
 
@@ -914,8 +950,11 @@ export default function SectionBuilder({
   }
 
   const handleUserRefine = async () => {
-    // Refinements are unlimited - let users see the full power
-    // (Initial generations still limited to encourage signup)
+    const isGuest = !isPaid && !isPaidTier
+    if (isGuest && GUEST_REFINEMENT_LIMIT >= 0 && guestRefinementsUsed >= GUEST_REFINEMENT_LIMIT) {
+      setError('Guest refinement limit reached. Sign up to continue refining.')
+      return
+    }
 
     if (!refinePrompt.trim() || !generatedCode) {
       setError('Please describe what changes you want')
@@ -946,6 +985,7 @@ export default function SectionBuilder({
       setRefinementChanges([...refinementChanges, refinePrompt])
       setRefinePrompt('')
       setIsUserRefining(false)
+      if (isGuest) incrementGuestRefinements()
       onComplete(refinedCode, true, [...refinementChanges, refinePrompt])
       return
     }
@@ -1012,6 +1052,7 @@ export default function SectionBuilder({
       setRefinementChanges([...refinementChanges, ...(changes || [refinePrompt])])
       setRefinePrompt('')
       setSelectedElement(null) // Clear selection after refine
+      if (isGuest) incrementGuestRefinements()
       onComplete(refinedCode, true, [...refinementChanges, ...(changes || [refinePrompt])])
       
       // Evolve style DNA (background)
@@ -1236,16 +1277,16 @@ export default function SectionBuilder({
             </button>
           </motion.div>
 
-          {/* Free credits indicator */}
-          {!isPaid && (
+          {/* Guest credits indicator */}
+          {!isPaid && !isPaidTier && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
               className="mt-4 text-center"
             >
-              <span className={`text-xs ${freeGenerationsUsed >= FREE_GENERATION_LIMIT ? 'text-red-400' : 'text-zinc-500'}`}>
-                {Math.max(0, FREE_GENERATION_LIMIT - freeGenerationsUsed)} free generations remaining
+              <span className={`text-xs ${guestGenerationsUsed >= GUEST_GENERATION_LIMIT ? 'text-red-400' : 'text-zinc-500'}`}>
+                {Math.max(0, GUEST_GENERATION_LIMIT - guestGenerationsUsed)} guest generations remaining
               </span>
             </motion.div>
           )}
@@ -1348,13 +1389,13 @@ export default function SectionBuilder({
     <div className="flex-1 flex flex-col md:flex-row min-h-0 max-h-full overflow-hidden bg-zinc-950">
       {/* Mobile Tab Switcher - Modern Segmented Control */}
       <div className="flex md:hidden border-b border-zinc-800/50 bg-zinc-950 p-2">
-        <div className="flex w-full bg-zinc-900/50 rounded-lg p-1 border border-zinc-800/50">
+        <div className="flex w-full bg-zinc-900/70 rounded-xl p-1 border border-emerald-500/20 shadow-[0_8px_30px_rgba(16,185,129,0.08)]">
           <button
             onClick={() => setMobileTab('input')}
-            className={`flex-1 py-2.5 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
+            className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 ${
               mobileTab === 'input' 
-                ? 'bg-zinc-800 text-white shadow-sm' 
-                : 'text-zinc-400 hover:text-zinc-300'
+                ? 'bg-gradient-to-r from-emerald-600/60 to-teal-500/60 text-white shadow-lg shadow-emerald-500/20 border border-emerald-400/30' 
+                : 'text-zinc-400 hover:text-zinc-200'
             }`}
           >
             <Edit3 className="w-4 h-4" />
@@ -1362,10 +1403,10 @@ export default function SectionBuilder({
           </button>
           <button
             onClick={() => setMobileTab('preview')}
-            className={`flex-1 py-2.5 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
+            className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 ${
               mobileTab === 'preview' 
-                ? 'bg-zinc-800 text-white shadow-sm' 
-                : 'text-zinc-400 hover:text-zinc-300'
+                ? 'bg-gradient-to-r from-indigo-500/70 to-purple-500/70 text-white shadow-lg shadow-purple-500/20 border border-purple-400/30' 
+                : 'text-zinc-400 hover:text-zinc-200'
             }`}
           >
             <Eye className="w-4 h-4" />
@@ -1386,13 +1427,13 @@ export default function SectionBuilder({
           <div className="flex items-center justify-between mb-1.5">
             <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider flex items-center gap-2">
               Directive
-              {!isPaid && (
+              {!isPaid && !isPaidTier && (
                 <span className={`px-1.5 py-0.5 rounded text-[9px] ${
-                  freeGenerationsUsed >= FREE_GENERATION_LIMIT 
+                  guestGenerationsUsed >= GUEST_GENERATION_LIMIT 
                     ? 'bg-red-500/20 text-red-400' 
                     : 'bg-emerald-500/20 text-emerald-400'
                 }`}>
-                  {Math.max(0, FREE_GENERATION_LIMIT - freeGenerationsUsed)} free credits left
+                  {Math.max(0, GUEST_GENERATION_LIMIT - guestGenerationsUsed)} guest credits left
                 </span>
               )}
             </label>
@@ -1625,12 +1666,9 @@ export default function SectionBuilder({
                     <div className="mt-2 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
                       {/* Quick Refine Input */}
                       <div className="flex gap-1.5 relative">
-                        {tier === 'free' && (
-                          <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-lg border border-zinc-800/50">
-                            <button onClick={() => goToSignUp()} className="flex items-center gap-1.5 text-xs text-amber-400 font-medium hover:text-amber-300 transition-colors">
-                              <span className="text-sm">🔒</span>
-                              <span>Unlock Refinement</span>
-                            </button>
+                        {!isPaid && !isPaidTier && (
+                          <div className="absolute -top-5 right-0 text-[10px] text-zinc-500 font-mono">
+                            {Math.max(0, GUEST_REFINEMENT_LIMIT - guestRefinementsUsed)} guest refinements remaining
                           </div>
                         )}
                         <input
@@ -1644,8 +1682,8 @@ export default function SectionBuilder({
                         />
                         <button
                           onClick={handleUserRefine}
-                          disabled={!refinePrompt.trim() || isUserRefining}
-                          className="px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white text-xs font-medium hover:bg-zinc-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                          disabled={!refinePrompt.trim() || isUserRefining || (!isPaid && !isPaidTier && GUEST_REFINEMENT_LIMIT >= 0 && guestRefinementsUsed >= GUEST_REFINEMENT_LIMIT)}
+                          className="px-3 py-2 rounded-lg bg-emerald-600/80 border border-emerald-500/40 text-white text-xs font-semibold hover:bg-emerald-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 shadow-[0_0_14px_rgba(16,185,129,0.25)]"
                         >
                           {isUserRefining ? (
                             <RefreshCw className="w-3 h-3 animate-spin" />
@@ -1912,44 +1950,15 @@ export default function SectionBuilder({
         <div className="flex-1 flex min-h-0">
           {/* Show streaming code during generation or user refinement - ONLY for paid users */}
           {((stage === 'generating' || stage === 'refining') && streamingCode) || ((isUserRefining || isArchitectPolishing) && streamingCode) ? (
-            isPaid ? (
-              <div className="flex-1 overflow-auto p-4 bg-zinc-950">
-                <pre className="text-xs font-mono whitespace-pre-wrap">
-                  <code className={(stage === 'refining' || isUserRefining) ? 'text-violet-400' : 'text-emerald-400'}>
-                    {streamingCode}
-                  </code>
-                  <span className="animate-pulse">▊</span>
-                </pre>
-                <div ref={codeEndRef} />
-              </div>
-            ) : (
-              /* Free users see building animation, not actual code */
-              <div className="flex-1 flex items-center justify-center bg-zinc-950">
-                <div className="text-center p-8">
-                  <motion.div
-                    animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                    className="text-6xl mb-4"
-                  >
-                    {stage === 'refining' || isUserRefining ? '✨' : '🔧'}
-                  </motion.div>
-                  <h3 className="text-lg font-semibold text-white mb-2">
-                    {stage === 'refining' || isUserRefining ? 'Architect is polishing...' : 'Architect is building...'}
-                  </h3>
-                  <p className="text-sm text-zinc-500 mb-4">Your section is being crafted</p>
-                  <div className="flex justify-center gap-1">
-                    {[0, 1, 2].map(i => (
-                      <motion.div
-                        key={i}
-                        className="w-2 h-2 rounded-full bg-emerald-500"
-                        animate={{ opacity: [0.3, 1, 0.3] }}
-                        transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )
+            <div className="flex-1 overflow-auto p-4 bg-zinc-950">
+              <pre className="text-xs font-mono whitespace-pre-wrap">
+                <code className={(stage === 'refining' || isUserRefining) ? 'text-violet-400' : 'text-emerald-400'}>
+                  {streamingCode}
+                </code>
+                <span className="animate-pulse">▊</span>
+              </pre>
+              <div ref={codeEndRef} />
+            </div>
           ) : (
             <SectionPreview 
               code={generatedCode} 

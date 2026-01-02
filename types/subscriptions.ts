@@ -19,7 +19,7 @@ export interface AccountSubscription {
  * Pricing tier configuration
  */
 export interface PricingTier {
-  name: 'free' | 'lite' | 'pro' | 'agency'
+  name: 'lite' | 'pro' | 'agency'
   price: number // USD per month
   generationsPerDay: number // -1 for unlimited
   architectRefinementsPerMonth: number // -1 for unlimited
@@ -30,13 +30,6 @@ export interface PricingTier {
  * Current pricing configuration
  */
 export const PRICING_TIERS: Record<string, PricingTier> = {
-  free: {
-    name: 'free',
-    price: 0,
-    generationsPerDay: 3, // THE TASTE. Just enough to get hooked.
-    architectRefinementsPerMonth: 0,
-    features: ['3 Demo Generations', 'Live Preview', 'Upgrade to Build'],
-  },
   lite: {
     name: 'lite',
     price: 9,
@@ -61,5 +54,9 @@ export const PRICING_TIERS: Record<string, PricingTier> = {
 }
 
 // Limits (can be overridden via env vars)
-export const FREE_DAILY_LIMIT = parseInt(process.env.FREE_DAILY_LIMIT || '5', 10)
-export const PRO_ARCHITECT_MONTHLY_LIMIT = parseInt(process.env.PRO_ARCHITECT_MONTHLY_LIMIT || '30', 10)
+// Guest (unauthenticated) trial limits before forcing signup
+export const GUEST_TRIAL_LIMITS = {
+  generationsPerSession: parseInt(process.env.GUEST_GENERATION_LIMIT || '3', 10),
+  refinementsAllowed: 3,
+  features: ['3 trial generations', '3 trial refinements', 'Live preview in builder', 'Signup required to save/export/deploy'],
+}
