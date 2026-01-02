@@ -34,6 +34,12 @@ Use this SVG for your website header, social profiles, and favicon. It is the "C
 *   **Overlay Text:** "Stop Prompting. Start Manifesting."
 *   **Call to Action:** "HatchIt.dev - The First Recursive AI Builder."
 
+### Reddit Banners (Generated Jan 2026)
+*   **Desktop (1072x128):** `public/assets/banners/reddit_desktop_1072x128.svg`
+    *   *Vibe:* Wide, dark grid, "THE NEURAL STUDIO", Emerald/Violet accents.
+*   **Mobile (1080x128):** `public/assets/banners/reddit_mobile_1080x128.svg`
+    *   *Vibe:* Centered "HATCHIT", "ONLINE" status, optimized for mobile width.
+
 ## 3. The "Unhinged" Tweet Storm
 *Thread these together for maximum impact.*
 
