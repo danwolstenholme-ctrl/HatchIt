@@ -67,7 +67,7 @@ function LaunchContent() {
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
         <div className="flex items-center gap-3 text-sm text-emerald-300/80 mb-6 font-mono">
           <Shield className="w-4 h-4" />
-          <span>Guest flow • Guided</span>
+          <span>Guest flow • Launch fast</span>
         </div>
 
         <div className="grid md:grid-cols-[1.4fr_1fr] gap-10 md:gap-14 items-start">
@@ -78,7 +78,7 @@ function LaunchContent() {
               transition={{ duration: 0.5 }}
               className="text-4xl sm:text-5xl font-bold leading-tight mb-4"
             >
-              Lead guests through the Architect before they build
+              Drop into the builder with your prompt.
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 12 }}
@@ -86,29 +86,29 @@ function LaunchContent() {
               transition={{ duration: 0.6, delay: 0.05 }}
               className="text-lg text-zinc-400 max-w-2xl mb-8"
             >
-              This path warms them up with a cinematic intro, showcases the V2 surface, then drops them into the builder with their prompt and 9 pooled credits intact.
+              We’ll carry your prompt and guest credits straight into the build. You can preview V2, or skip and start generating immediately.
             </motion.p>
 
             <div className="flex flex-col sm:flex-row gap-3 sm:items-center mb-8">
               <button
-                onClick={goToV2}
+                onClick={startBuilder}
                 className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-emerald-500 text-black rounded-lg font-semibold shadow-[0_0_24px_rgba(16,185,129,0.35)] hover:bg-emerald-400 transition"
               >
-                <Sparkles className="w-4 h-4" />
-                Step into V2
+                <Wand2 className="w-4 h-4" />
+                Go to builder
                 <ArrowRight className="w-4 h-4" />
               </button>
               <button
-                onClick={startBuilder}
+                onClick={goToV2}
                 className="inline-flex items-center justify-center gap-2 px-5 py-3 border border-zinc-800 bg-zinc-900/60 rounded-lg text-sm text-zinc-200 hover:border-emerald-500/60 transition"
               >
-                <Wand2 className="w-4 h-4" />
-                Skip to builder
+                <Sparkles className="w-4 h-4" />
+                Preview V2 first
               </button>
             </div>
 
             <div className="grid sm:grid-cols-2 gap-3 text-sm">
-              {steps.map((step) => (
+              {['Drop prompt into builder', 'Use 9 guest credits', 'Preview optional V2 intro', 'Upgrade when credits are done'].map((step) => (
                 <div key={step} className="flex items-center gap-2 px-3 py-2 rounded-lg border border-zinc-800 bg-zinc-900/70">
                   <Compass className="w-4 h-4 text-emerald-400" />
                   <span className="text-zinc-200">{step}</span>
@@ -118,7 +118,11 @@ function LaunchContent() {
           </div>
 
           <div className="space-y-4">
-            {highlightPillars.map((pillar, i) => (
+            {[ 
+              { title: 'Start fast', body: 'We carry your prompt and credits straight into the builder.' },
+              { title: 'Optional preview', body: 'See the V2 intro if you want context before you build.' },
+              { title: 'Credit guardrails', body: '9 guest credits tracked; upgrade prompt when they run out.' }
+            ].map((pillar, i) => (
               <motion.div
                 key={pillar.title}
                 initial={{ opacity: 0, y: 12 }}
@@ -128,7 +132,7 @@ function LaunchContent() {
               >
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-300">
-                    <pillar.icon className="w-5 h-5" />
+                    <Compass className="w-5 h-5" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold">{pillar.title}</h3>
@@ -141,9 +145,9 @@ function LaunchContent() {
             <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-sm text-emerald-50">
               <div className="flex items-center gap-2 font-semibold">
                 <Zap className="w-4 h-4" />
-                9 pooled credits for guests
+                9 guest credits included
               </div>
-              <p className="text-emerald-100/80 mt-1">Carry this into V2 and the builder. We lock to review the moment they are gone.</p>
+              <p className="text-emerald-100/80 mt-1">We’ll move them with your prompt into the builder. Upgrade when they run out.</p>
             </div>
           </div>
         </div>

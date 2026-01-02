@@ -33,16 +33,13 @@ html {
 }
 
 html, body {
-  height: 100%;
+  min-height: 100%;
   width: 100%;
   margin: 0;
   background-color: #09090b;
   /* Prevent browser swipe-back/forward gestures on horizontal swipe */
   overscroll-behavior-x: none;
-  /* Keep vertical scrolling responsive on mobile (prevents occasional stickiness on Safari) */
-  touch-action: pan-y;
-  /* Force vertical scrolling to stay enabled and smooth on mobile */
-  overflow-y: auto;
+  /* Simple scroll setup - let content dictate height */
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
 }

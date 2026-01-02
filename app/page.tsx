@@ -374,53 +374,7 @@ function AnimatedCard({ children, delay = 0, className = '' }: { children: React
 
 
 
-// Floating background elements
-function FloatingNodes() {
-  const isClient = useIsClient()
-  
-  const nodes = useMemo(() => {
-    // Minimal count for performance (5 nodes, CSS-only feel)
-    return [...Array(5)].map((_, i) => ({
-      id: i,
-      initialX: (i * 20 + 10) + '%',
-      initialY: (i * 15 + 10) + '%',
-      duration: 25 + i * 5, // Staggered, slow drift
-      delay: i * 2,
-      size: 32 + i * 12
-    }))
-  }, [])
-
-  if (!isClient) return null
-
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none select-none z-0">
-      {nodes.map((node) => (
-        <motion.div
-          key={node.id}
-          className="absolute text-emerald-500/10"
-          style={{ willChange: 'transform, opacity' }}
-          initial={{ 
-            x: node.initialX, 
-            y: node.initialY 
-          }}
-          animate={{ 
-            y: [0, -30, 0], // Reduced movement
-            opacity: [0.1, 0.2, 0.1], // Reduced opacity flux
-            scale: [1, 1.1, 1] // Reduced scale flux
-          }}
-          transition={{ 
-            duration: node.duration,
-            repeat: Infinity,
-            delay: node.delay,
-            ease: "easeInOut"
-          }}
-        >
-          <Code2 size={node.size} />
-        </motion.div>
-      ))}
-    </div>
-  )
-}
+// FloatingNodes removed to reduce background layering and potential scroll jank
 
 export default function Home() {
   const { isSignedIn } = useUser()
@@ -443,18 +397,16 @@ export default function Home() {
   
   return (
     <div className="min-h-screen bg-zinc-950 text-white relative selection:bg-emerald-500/30 overflow-x-hidden">
-      {/* GRID BACKGROUND - The Foundation */}
-      <div className="absolute inset-0 bg-grid-white/[0.01] bg-[size:50px_50px] pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-transparent to-[#050505] pointer-events-none" />
-      {/* Orb gradient layer borrowed from First Contact */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,0.06),transparent_42%),radial-gradient(circle_at_80%_0%,rgba(124,58,237,0.08),transparent_37%),radial-gradient(circle_at_50%_80%,rgba(6,182,212,0.06),transparent_47%)] pointer-events-none" />
-      
-      <FloatingNodes />
-      
-      {/* GLOW ORBS - The Atmosphere */}
+      {/* Background matched to Features page */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-500/20 rounded-full blur-[128px] opacity-50 md:opacity-70 animate-pulse-slow" />
-        <div className="absolute top-1/3 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-[128px] opacity-30 md:opacity-50 animate-pulse-slow" />
+        <div className="absolute -top-40 -left-40 w-80 h-80 bg-emerald-500/10 rounded-full blur-[100px] opacity-50 md:opacity-100" />
+        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-teal-500/10 rounded-full blur-[100px] opacity-50 md:opacity-100" />
+        <div className="absolute -bottom-40 left-1/3 w-80 h-80 bg-emerald-900/20 rounded-full blur-[100px] opacity-50 md:opacity-100" />
+        {/* Brand orbs: Singularity Emerald + System Cyan */}
+        <div className="absolute top-[18%] left-[12%] w-[420px] h-[420px] bg-[#10b981]/10 blur-[140px] rounded-full opacity-60 md:opacity-80 mix-blend-screen" />
+        <div className="absolute bottom-[12%] right-[14%] w-[520px] h-[520px] bg-[#06b6d4]/12 blur-[160px] rounded-full opacity-60 md:opacity-80 mix-blend-screen" />
+        <div className="absolute top-[55%] left-[40%] w-[360px] h-[360px] bg-emerald-500/10 blur-[130px] rounded-full opacity-50 md:opacity-70 mix-blend-screen" />
       </div>
       
       {/* GPU-accelerated animations */}
@@ -578,7 +530,7 @@ export default function Home() {
 
             {/* RIGHT COLUMN: Interactive Input */}
             <div className="relative z-20 flex justify-center lg:justify-start">
-              <div className="relative w-full max-w-[520px] sm:max-w-[620px] lg:max-w-[700px]">
+              <div className="relative w-full max-w-full sm:max-w-[680px] md:max-w-[780px] lg:max-w-[700px]">
                 {/* Decorative background glow */}
                 <div className="absolute -inset-4 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 rounded-3xl blur-2xl opacity-50 pointer-events-none"></div>
                 
@@ -611,31 +563,25 @@ export default function Home() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { name: 'React 19', icon: <Code2 className="w-5 h-5" />, desc: 'Latest', color: 'from-cyan-500/20 to-cyan-500/5 border-cyan-500/20 hover:border-cyan-500/40' },
-              { name: 'Tailwind', icon: <Layout className="w-5 h-5" />, desc: 'Utility-first', color: 'from-sky-500/20 to-sky-500/5 border-sky-500/20 hover:border-sky-500/40' },
-              { name: 'TypeScript', icon: <Terminal className="w-5 h-5" />, desc: 'Type-safe', color: 'from-blue-500/20 to-blue-500/5 border-blue-500/20 hover:border-blue-500/40' },
-              { name: 'Responsive', icon: <Smartphone className="w-5 h-5" />, desc: 'Mobile-first', color: 'from-violet-500/20 to-violet-500/5 border-violet-500/20 hover:border-violet-500/40' },
-              { name: 'Accessible', icon: <CheckCircle2 className="w-5 h-5" />, desc: 'WCAG', color: 'from-emerald-500/20 to-emerald-500/5 border-emerald-500/20 hover:border-emerald-500/40' },
-              { name: 'SEO Ready', icon: <Globe className="w-5 h-5" />, desc: 'Optimized', color: 'from-teal-500/20 to-teal-500/5 border-teal-500/20 hover:border-teal-500/40' },
-              { name: 'Fast', icon: <Zap className="w-5 h-5" />, desc: '90+ Lighthouse', color: 'from-amber-500/20 to-amber-500/5 border-amber-500/20 hover:border-amber-500/40' },
-              { name: 'Yours', icon: <Shield className="w-5 h-5" />, desc: '100%', color: 'from-emerald-500/20 to-emerald-500/5 border-emerald-500/20 hover:border-emerald-500/40' },
+              { name: 'React 19', icon: <Code2 className="w-5 h-5" />, desc: 'Latest', color: 'from-cyan-500/20 to-cyan-500/5 border-cyan-500/20' },
+              { name: 'Tailwind', icon: <Layout className="w-5 h-5" />, desc: 'Utility-first', color: 'from-sky-500/20 to-sky-500/5 border-sky-500/20' },
+              { name: 'TypeScript', icon: <Terminal className="w-5 h-5" />, desc: 'Type-safe', color: 'from-blue-500/20 to-blue-500/5 border-blue-500/20' },
+              { name: 'Responsive', icon: <Smartphone className="w-5 h-5" />, desc: 'Mobile-first', color: 'from-violet-500/20 to-violet-500/5 border-violet-500/20' },
+              { name: 'Accessible', icon: <CheckCircle2 className="w-5 h-5" />, desc: 'WCAG', color: 'from-emerald-500/20 to-emerald-500/5 border-emerald-500/20' },
+              { name: 'SEO Ready', icon: <Globe className="w-5 h-5" />, desc: 'Optimized', color: 'from-teal-500/20 to-teal-500/5 border-teal-500/20' },
+              { name: 'Fast', icon: <Zap className="w-5 h-5" />, desc: '90+ Lighthouse', color: 'from-amber-500/20 to-amber-500/5 border-amber-500/20' },
+              { name: 'Yours', icon: <Shield className="w-5 h-5" />, desc: '100%', color: 'from-emerald-500/20 to-emerald-500/5 border-emerald-500/20' },
             ].map((tech, i) => (
-              <motion.div 
+              <div 
                 key={i} 
-                className={`p-4 bg-gradient-to-br ${tech.color} border rounded-xl text-center transition-all gpu-accelerate`}
-                style={{ willChange: 'transform, opacity' }}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.3, delay: i * 0.05 }}
-                whileHover={{ scale: 1.03, y: -2 }}
+                className={`p-4 bg-gradient-to-br ${tech.color} border rounded-xl text-center transition-all`}
               >
                 <div className="w-10 h-10 mx-auto bg-zinc-900/80 rounded-lg flex items-center justify-center mb-2 text-zinc-300">
                   {tech.icon}
                 </div>
                 <div className="font-semibold text-sm text-white">{tech.name}</div>
                 <div className="text-xs text-zinc-500 mt-0.5">{tech.desc}</div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
