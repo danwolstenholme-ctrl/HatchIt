@@ -21,7 +21,7 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
   const [error, setError] = useState<string | null>(null)
   const { isPaidUser, tier, syncSubscription, isSyncing } = useSubscription()
   const { isSignedIn } = useUser()
-  const { openSignIn } = useClerk()
+  const { openSignIn, openSignUp } = useClerk()
   const router = useRouter()
 
   // Track when modal is shown
@@ -67,12 +67,14 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
   const { title, description } = messages[reason]
 
   const handleHatch = async (selectedTier: 'pro' | 'lite' | 'agency' = 'pro') => {
-    // If not signed in, redirect to sign-up with upgrade param so checkout happens after
+    // If not signed in, open sign-up modal (stays in context, no redirect)
     if (!isSignedIn) {
-      onClose()
       const currentUrl = new URL(window.location.href)
       currentUrl.searchParams.set('upgrade', selectedTier)
-      router.push(`/sign-up?redirect_url=${encodeURIComponent(currentUrl.toString())}`)
+      openSignUp({
+        afterSignInUrl: currentUrl.toString(),
+        afterSignUpUrl: currentUrl.toString(),
+      })
       return
     }
 
