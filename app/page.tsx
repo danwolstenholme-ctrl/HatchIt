@@ -119,12 +119,8 @@ function SystemStatus() {
     
     setIsLoading(true)
 
-    if (!isSignedIn) {
-      router.push('/launch')
-      return
-    }
-
-    router.push('/builder')
+    // Everyone goes through the Singularity loading sequence
+    router.push('/launch')
   }
 
   const handleExampleClick = (examplePrompt: string) => {
