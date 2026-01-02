@@ -167,17 +167,12 @@ export default function Navigation() {
               className="absolute right-0 top-0 h-full w-80 bg-gradient-to-b from-zinc-950 via-zinc-900 to-zinc-950 border-l border-emerald-500/20 shadow-[0_20px_70px_rgba(0,0,0,0.45)] overflow-y-auto"
               style={{ willChange: 'transform', backfaceVisibility: 'hidden', touchAction: 'pan-y' }}
             >
-              <div className="p-5 border-b border-emerald-500/10 flex justify-between items-center bg-zinc-900/70">
-                <div className="flex flex-col">
-                  <span className="font-bold text-white flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <Image src="/assets/hatchit_definitive.svg" alt="HatchIt" width={24} height={24} className="w-6 h-6" />
-                  </span>
-                  <span className="text-[10px] text-zinc-500 ml-4">Powered by <span className="text-violet-400">The Architect</span></span>
-                </div>
+              <div className="p-4 border-b border-zinc-800 flex items-center justify-between bg-zinc-900/80">
+                <Image src="/assets/hatchit_definitive.svg" alt="HatchIt" width={28} height={28} className="w-7 h-7" />
                 <button
                   onClick={() => setMobileMenuOpen(false)}
-                  className="p-2 text-zinc-400 hover:text-white bg-zinc-900 rounded-lg transition-colors"
+                  className="p-2 text-zinc-400 hover:text-white rounded-lg transition-colors"
+                  aria-label="Close menu"
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

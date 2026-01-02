@@ -9,7 +9,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
 import { motion, useInView } from 'framer-motion'
-import { Cpu, Terminal, Layers, Shield, Zap, Code2, Globe, ArrowRight, CheckCircle2, Layout, Sparkles, Smartphone } from 'lucide-react'
+import { Cpu, Terminal, Layers, Shield, Zap, Code2, Globe, ArrowRight, CheckCircle2, Layout, Sparkles, Smartphone, Wand2 } from 'lucide-react'
 
 // Client-side check to prevent hydration mismatch - uses useSyncExternalStore for proper SSR handling
 const emptySubscribe = () => () => {}
@@ -76,14 +76,13 @@ function SystemStatus() {
 
   // Boot sequence effect
   useEffect(() => {
-    // Check if we've already booted this session
     const hasBooted = typeof window !== 'undefined' && sessionStorage.getItem('hatch_terminal_booted')
     const sequence = [
-      { text: '> INITIALIZING NEURAL LINK...', delay: 100 },
-      { text: '> CONNECTING TO ARCHITECT CORE...', delay: 400 },
-      { text: '> ESTABLISHING SECURE HANDSHAKE...', delay: 800 },
-      { text: '> SYSTEM ONLINE.', delay: 1200 },
-      { text: '> WAITING FOR INPUT...', delay: 1500 },
+      { text: '> REAL CODE. React + Tailwind. Yours to keep.', delay: 100 },
+      { text: '> FIRST BUILD IN ~30 SECONDS.', delay: 400 },
+      { text: '> NO SIGNUP TO TRY.', delay: 800 },
+      { text: '> DEPLOY TO YOUR OWN DOMAIN.', delay: 1200 },
+      { text: '> READY.', delay: 1500 },
     ]
 
     if (hasBooted) {
@@ -93,7 +92,6 @@ function SystemStatus() {
     }
 
     let timeouts: NodeJS.Timeout[] = []
-
     const earlyReveal = setTimeout(() => setIsBooting(false), 900)
 
     sequence.forEach(({ text, delay }, index) => {
@@ -117,19 +115,16 @@ function SystemStatus() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!prompt.trim() || isLoading) return
+    if (isLoading) return
     
     setIsLoading(true)
-    const params = new URLSearchParams()
-    params.set('prompt', prompt)
 
     if (!isSignedIn) {
-      params.set('mode', 'guest')
-      router.push(`/launch?${params.toString()}`)
+      router.push('/launch')
       return
     }
 
-    router.push(`/builder?${params.toString()}`)
+    router.push('/builder')
   }
 
   const handleExampleClick = (examplePrompt: string) => {
@@ -203,7 +198,7 @@ function SystemStatus() {
             ))}
           </div>
 
-          {/* Input Area - always visible; boot runs in background */}
+          {/* Input Area */}
           <form onSubmit={handleSubmit} className="flex-1 flex flex-col relative z-10 scroll-m-16" aria-busy={isBooting}>
             <div className="flex gap-2 flex-1">
               <span className="text-emerald-500 shrink-0 mt-[2px]">user@hatchit:~$</span>
@@ -253,7 +248,7 @@ function SystemStatus() {
                
                <button
                 type="submit"
-                disabled={!prompt.trim() || isLoading || isBooting}
+                disabled={isLoading || isBooting}
                 className="w-full sm:w-auto bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/50 px-4 py-2 rounded text-xs font-mono transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
               >
                 {isLoading ? (
@@ -456,7 +451,7 @@ export default function Home() {
       `}</style>
 
       {/* HERO - The main event */}
-      <section className="relative px-4 sm:px-6 pt-10 pb-18 md:pt-16 md:pb-28">
+      <section className="relative px-4 sm:px-6 pt-14 pb-24 sm:pt-16 sm:pb-32 md:pt-18 md:pb-32">
         <div className="max-w-6xl mx-auto">
           
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center justify-items-center lg:justify-items-stretch">
@@ -479,7 +474,7 @@ export default function Home() {
 
               {/* Main headline */}
               <div className="mb-8">
-                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-[0.95] tracking-tighter mb-6 font-mono">
+                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-[1.08] sm:leading-[1.02] md:leading-[0.95] tracking-tighter mb-6 font-mono">
                   <motion.span 
                     className="block text-zinc-100"
                     style={{ willChange: 'transform, opacity' }}

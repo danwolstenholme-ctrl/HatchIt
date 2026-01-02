@@ -1,54 +1,161 @@
 'use client'
 
-import { Suspense, useMemo } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
-import { motion } from 'framer-motion'
-import { ArrowRight, Sparkles, Shield, Compass, Zap, LayoutDashboard, Wand2 } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ArrowRight, Sparkles, Wand2, Brain, Terminal, Zap, Network } from 'lucide-react'
 
-const highlightPillars = [
-  {
-    title: 'Immersive intro',
-    body: 'Set context, show the machine, and pull them into the build without immediate friction.',
-    icon: Sparkles
-  },
-  {
-    title: 'V2 deep dive',
-    body: 'Preview the evolved builder, the 9 pooled credits, and the upgrade paths at a glance.',
-    icon: LayoutDashboard
-  },
-  {
-    title: 'Credit-aware handoff',
-    body: 'Carry their prompt, guardrail the 9 credits, and funnel to signup the moment they run out.',
-    icon: Shield
-  }
-]
+// Singularity Loading Sequence
+function SingularityLoading({ onComplete }: { onComplete: () => void }) {
+  const [phase, setPhase] = useState(0)
+  const [thought, setThought] = useState("Initializing neural pathways...")
+  
+  const thoughts = [
+    "Initializing neural pathways...",
+    "Connecting to The Architect...",
+    "Loading design systems...",
+    "Calibrating visual cortex...",
+    "Ready to create."
+  ]
 
-const steps = [
-  'Step 1: Dramatic arrival',
-  'Step 2: V2 walkthrough',
-  'Step 3: Build with 9 credits',
-  'Step 4: Review lock → signup'
-]
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPhase(prev => {
+        const next = prev + 1
+        if (next < thoughts.length) {
+          setThought(thoughts[next])
+          return next
+        } else {
+          clearInterval(interval)
+          setTimeout(onComplete, 400)
+          return prev
+        }
+      })
+    }, 600)
+    return () => clearInterval(interval)
+  }, [onComplete])
 
-function LaunchContent() {
+  const icons = [Brain, Terminal, Zap, Network, Sparkles]
+  const Icon = icons[phase] || Brain
+
+  return (
+    <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center">
+      {/* Background orbs */}
+      <div className="absolute inset-0 overflow-hidden">
+        <motion.div 
+          className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px]"
+          animate={{ 
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.5, 0.3],
+          }}
+          transition={{ duration: 3, repeat: Infinity }}
+        />
+        <motion.div 
+          className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-cyan-500/10 rounded-full blur-[100px]"
+          animate={{ 
+            scale: [1.2, 1, 1.2],
+            opacity: [0.2, 0.4, 0.2],
+          }}
+          transition={{ duration: 4, repeat: Infinity }}
+        />
+      </div>
+
+      <div className="relative z-10 flex flex-col items-center">
+        {/* Neural Core */}
+        <div className="relative w-32 h-32 mb-8">
+          {/* Outer rings */}
+          <motion.div 
+            className="absolute inset-0 rounded-full border border-emerald-500/30"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+          />
+          <motion.div 
+            className="absolute inset-3 rounded-full border border-emerald-500/40 border-dashed"
+            animate={{ rotate: -360 }}
+            transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+          />
+          <motion.div 
+            className="absolute inset-6 rounded-full border border-cyan-500/30"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+          />
+          
+          {/* Pulsing glow */}
+          <motion.div 
+            className="absolute inset-0 rounded-full bg-emerald-500/20 blur-2xl"
+            animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+          
+          {/* Core icon */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <motion.div 
+              className="w-16 h-16 rounded-full bg-zinc-900 border border-emerald-500/50 flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.4)]"
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            >
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={phase}
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  exit={{ scale: 0, rotate: 180 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Icon className="w-8 h-8 text-emerald-400" />
+                </motion.div>
+              </AnimatePresence>
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Thought stream */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={thought}
+            initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: -10, filter: 'blur(4px)' }}
+            className="text-center"
+          >
+            <p className="text-lg text-emerald-400 font-mono">{thought}</p>
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Progress dots */}
+        <div className="flex gap-2 mt-8">
+          {thoughts.map((_, i) => (
+            <motion.div
+              key={i}
+              className={`w-2 h-2 rounded-full ${i <= phase ? 'bg-emerald-500' : 'bg-zinc-700'}`}
+              animate={i === phase ? { scale: [1, 1.3, 1] } : {}}
+              transition={{ duration: 0.5, repeat: i === phase ? Infinity : 0 }}
+            />
+          ))}
+        </div>
+
+        {/* Console log */}
+        <motion.div 
+          className="mt-8 px-4 py-2 bg-zinc-900/80 border border-zinc-800 rounded-lg font-mono text-xs text-zinc-500"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
+          <span className="text-emerald-500">▸</span> kernel.singularity.init()
+        </motion.div>
+      </div>
+    </div>
+  )
+}
+
+// Ready to Build Screen
+function ReadyToBuild() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { isSignedIn } = useUser()
   const prompt = searchParams.get('prompt') || ''
   const upgrade = searchParams.get('upgrade') || ''
-
-  const queryString = useMemo(() => {
-    const params = new URLSearchParams()
-    if (prompt) params.set('prompt', prompt)
-    if (upgrade) params.set('upgrade', upgrade)
-    return params.toString()
-  }, [prompt, upgrade])
-
-  const goToV2 = () => {
-    const path = queryString ? `/launch/v2?${queryString}` : '/launch/v2'
-    router.push(path)
-  }
 
   const startBuilder = () => {
     const params = new URLSearchParams()
@@ -60,99 +167,75 @@ function LaunchContent() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,0.08),transparent_45%),radial-gradient(circle_at_80%_0%,rgba(99,102,241,0.08),transparent_40%),radial-gradient(circle_at_50%_80%,rgba(6,182,212,0.08),transparent_45%)]" />
-      <div className="absolute inset-0 bg-grid-white/[0.03] bg-[size:50px_50px] opacity-40" />
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen bg-zinc-950 text-white relative overflow-hidden flex items-center justify-center"
+    >
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,0.08),transparent_45%),radial-gradient(circle_at_80%_0%,rgba(99,102,241,0.08),transparent_40%)]" />
 
-      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
-        <div className="flex items-center gap-3 text-sm text-emerald-300/80 mb-6 font-mono">
-          <Shield className="w-4 h-4" />
-          <span>Guest flow • Launch fast</span>
-        </div>
+      <div className="relative z-10 max-w-xl mx-auto px-6 py-20 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <motion.div 
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-medium mb-6"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", delay: 0.2 }}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            System ready
+          </motion.div>
 
-        <div className="grid md:grid-cols-[1.4fr_1fr] gap-10 md:gap-14 items-start">
-          <div>
-            <motion.h1
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="text-4xl sm:text-5xl font-bold leading-tight mb-4"
-            >
-              Drop into the builder with your prompt.
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.05 }}
-              className="text-lg text-zinc-400 max-w-2xl mb-8"
-            >
-              We’ll carry your prompt and guest credits straight into the build. You can preview V2, or skip and start generating immediately.
-            </motion.p>
+          <h1 className="text-4xl sm:text-5xl font-bold leading-tight mb-4">
+            Ready to build.
+          </h1>
 
-            <div className="flex flex-col sm:flex-row gap-3 sm:items-center mb-8">
-              <button
-                onClick={startBuilder}
-                className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-emerald-500 text-black rounded-lg font-semibold shadow-[0_0_24px_rgba(16,185,129,0.35)] hover:bg-emerald-400 transition"
-              >
-                <Wand2 className="w-4 h-4" />
-                Go to builder
-                <ArrowRight className="w-4 h-4" />
-              </button>
-              <button
-                onClick={goToV2}
-                className="inline-flex items-center justify-center gap-2 px-5 py-3 border border-zinc-800 bg-zinc-900/60 rounded-lg text-sm text-zinc-200 hover:border-emerald-500/60 transition"
-              >
-                <Sparkles className="w-4 h-4" />
-                Preview V2 first
-              </button>
-            </div>
+          <p className="text-lg text-zinc-400 mb-8 max-w-md mx-auto">
+            {prompt 
+              ? `Your prompt is locked. Hit start and watch it manifest.`
+              : `The Architect is standing by. Describe your vision.`
+            }
+          </p>
 
-            <div className="grid sm:grid-cols-2 gap-3 text-sm">
-              {['Drop prompt into builder', 'Use 9 guest credits', 'Preview optional V2 intro', 'Upgrade when credits are done'].map((step) => (
-                <div key={step} className="flex items-center gap-2 px-3 py-2 rounded-lg border border-zinc-800 bg-zinc-900/70">
-                  <Compass className="w-4 h-4 text-emerald-400" />
-                  <span className="text-zinc-200">{step}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+          <motion.button
+            onClick={startBuilder}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-emerald-500 text-black rounded-lg font-semibold text-lg shadow-[0_0_30px_rgba(16,185,129,0.4)] hover:bg-emerald-400 transition"
+          >
+            <Wand2 className="w-5 h-5" />
+            Start building
+            <ArrowRight className="w-5 h-5" />
+          </motion.button>
 
-          <div className="space-y-4">
-            {[ 
-              { title: 'Start fast', body: 'We carry your prompt and credits straight into the builder.' },
-              { title: 'Optional preview', body: 'See the V2 intro if you want context before you build.' },
-              { title: 'Credit guardrails', body: '9 guest credits tracked; upgrade prompt when they run out.' }
-            ].map((pillar, i) => (
-              <motion.div
-                key={pillar.title}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.05 * i }}
-                className="p-5 rounded-xl border border-zinc-800 bg-zinc-900/60 backdrop-blur"
-              >
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-300">
-                    <Compass className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold">{pillar.title}</h3>
-                    <p className="text-sm text-zinc-400">{pillar.body}</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-
-            <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-sm text-emerald-50">
-              <div className="flex items-center gap-2 font-semibold">
-                <Zap className="w-4 h-4" />
-                9 guest credits included
-              </div>
-              <p className="text-emerald-100/80 mt-1">We’ll move them with your prompt into the builder. Upgrade when they run out.</p>
-            </div>
-          </div>
-        </div>
+          <p className="text-sm text-zinc-500 mt-6">
+            Free to try • Sign up when you're ready to save
+          </p>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
+  )
+}
+
+function LaunchContent() {
+  const [showLoading, setShowLoading] = useState(true)
+
+  return (
+    <AnimatePresence mode="wait">
+      {showLoading ? (
+        <motion.div key="loading" exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+          <SingularityLoading onComplete={() => setShowLoading(false)} />
+        </motion.div>
+      ) : (
+        <motion.div key="ready" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <ReadyToBuild />
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }
 
