@@ -30,7 +30,12 @@ import {
   Terminal,
   ArrowRight,
   Copy,
-  Sparkles
+  Sparkles,
+  Crown,
+  Zap,
+  Star,
+  Download,
+  ExternalLink
 } from 'lucide-react'
 import { track } from '@vercel/analytics'
 // TemplateSelector and BrandingStep removed - The Architect decides now.
@@ -506,6 +511,36 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const isProUser = useMemo(() => {
     return accountSubscription?.status === 'active' && (accountSubscription.tier === 'pro' || accountSubscription.tier === 'agency')
   }, [accountSubscription])
+
+  // Tier display config for badges and features
+  const tierConfig = useMemo(() => {
+    const tier = accountSubscription?.tier
+    if (tier === 'agency') return {
+      name: 'Agency',
+      color: 'amber',
+      icon: Crown,
+      projectLimit: Infinity,
+      features: ['Unlimited Projects', 'Custom Domains', 'Remove Branding', 'Commercial License', 'Priority Support'],
+      gradient: 'from-amber-500 to-orange-500'
+    }
+    if (tier === 'pro') return {
+      name: 'Pro',
+      color: 'emerald',
+      icon: Zap,
+      projectLimit: Infinity,
+      features: ['Unlimited Projects', 'Custom Domains', 'Remove Branding', 'Evolution Engine'],
+      gradient: 'from-emerald-500 to-teal-500'
+    }
+    if (tier === 'lite') return {
+      name: 'Lite',
+      color: 'lime',
+      icon: Star,
+      projectLimit: 3,
+      features: ['3 Active Projects', 'Deploy to hatchitsites.dev', 'Code Download'],
+      gradient: 'from-lime-500 to-green-500'
+    }
+    return null
+  }, [accountSubscription?.tier])
 
   // Check if project is paid (hatched) - now based on account subscription
   const isPaid = isPaidUser
@@ -1552,10 +1587,21 @@ export default function GeneratedPage() {
                     </div>
                     <h1 className="text-lg font-bold text-white tracking-tight">{project?.name || 'Untitled Project'}</h1>
                   </div>
-                  <div className="flex items-center gap-2 px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span className="text-xs font-mono text-emerald-400 uppercase tracking-wider">System Online</span>
-                  </div>
+                  
+                  {/* Tier Badge */}
+                  {tierConfig && (
+                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r ${tierConfig.gradient} bg-opacity-10 border border-${tierConfig.color}-500/30`}
+                         style={{ background: `linear-gradient(135deg, var(--tw-gradient-stops))`, 
+                                  '--tw-gradient-from': `rgb(var(--${tierConfig.color}-500) / 0.1)`, 
+                                  '--tw-gradient-to': `rgb(var(--${tierConfig.color}-600) / 0.05)` } as React.CSSProperties}>
+                      <tierConfig.icon className={`w-3.5 h-3.5 text-${tierConfig.color}-400`} 
+                                       style={{ color: tierConfig.color === 'amber' ? '#fbbf24' : tierConfig.color === 'emerald' ? '#34d399' : '#a3e635' }} />
+                      <span className="text-xs font-bold uppercase tracking-wider"
+                            style={{ color: tierConfig.color === 'amber' ? '#fbbf24' : tierConfig.color === 'emerald' ? '#34d399' : '#a3e635' }}>
+                        {tierConfig.name}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center gap-3">
                   <button
@@ -1569,8 +1615,8 @@ export default function GeneratedPage() {
                     disabled={!assembledCode}
                     className="px-3 py-2 text-sm text-zinc-400 hover:text-white transition-colors font-mono flex items-center gap-2"
                   >
-                    <Copy className="w-4 h-4" />
-                    <span>Download Code</span>
+                    <Download className="w-4 h-4" />
+                    <span>Export Code</span>
                   </button>
                   {deployedUrl ? (
                     <a
@@ -1581,22 +1627,29 @@ export default function GeneratedPage() {
                     >
                       <Globe className="w-4 h-4" />
                       <span>View Live Site</span>
+                      <ExternalLink className="w-3 h-3" />
                     </a>
                   ) : (
                     <button
                       onClick={handleDeploy}
                       disabled={isDeploying || !assembledCode}
-                      className="px-6 py-2.5 text-sm bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold rounded-lg hover:shadow-[0_0_25px_rgba(16,185,129,0.4)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 group shadow-[0_0_15px_rgba(16,185,129,0.2)]"
+                      className={`px-6 py-2.5 text-sm font-bold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 group ${
+                        tierConfig?.color === 'amber' 
+                          ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-black shadow-[0_0_15px_rgba(245,158,11,0.3)] hover:shadow-[0_0_25px_rgba(245,158,11,0.5)]'
+                          : tierConfig?.color === 'lime'
+                          ? 'bg-gradient-to-r from-lime-500 to-green-500 text-black shadow-[0_0_15px_rgba(132,204,22,0.3)] hover:shadow-[0_0_25px_rgba(132,204,22,0.5)]'
+                          : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:shadow-[0_0_25px_rgba(16,185,129,0.4)]'
+                      }`}
                     >
                       {isDeploying ? (
                         <>
                           <RefreshCw className="w-4 h-4 animate-spin" />
-                          <span>Deploying System...</span>
+                          <span>Deploying...</span>
                         </>
                       ) : (
                         <>
                           <Rocket className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />
-                          <span>{isPaidUser ? 'Launch to Production' : 'Initialize Deployment'}</span>
+                          <span>Deploy to Production</span>
                         </>
                       )}
                     </button>
@@ -1697,6 +1750,35 @@ export default function GeneratedPage() {
                 flex-1 flex-col bg-zinc-950 min-h-0 relative
               `}
                 </div>
+                
+                {/* Tier Features Panel */}
+                {tierConfig && (
+                  <div className="p-4 border-t border-zinc-800/50 bg-zinc-900/20">
+                    <div className="flex items-center gap-2 mb-3">
+                      <tierConfig.icon className="w-4 h-4" style={{ color: tierConfig.color === 'amber' ? '#fbbf24' : tierConfig.color === 'emerald' ? '#34d399' : '#a3e635' }} />
+                      <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider">Your Plan Features</span>
+                    </div>
+                    <div className="space-y-1.5">
+                      {tierConfig.features.map((feature, idx) => (
+                        <div key={idx} className="flex items-center gap-2 text-xs text-zinc-400">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-500 flex-shrink-0" />
+                          <span>{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Upgrade prompt for Lite users */}
+                    {accountSubscription?.tier === 'lite' && (
+                      <button 
+                        onClick={() => window.location.href = '/sign-up?upgrade=pro'}
+                        className="mt-4 w-full py-2 text-xs font-medium bg-gradient-to-r from-emerald-600/20 to-teal-600/20 border border-emerald-500/30 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <Zap className="w-3.5 h-3.5" />
+                        Upgrade to Pro for Unlimited
+                      </button>
+                    )}
+                  </div>
+                )}
                 
                 {/* Run Audit Button */}
                 <div className="p-4 border-t border-zinc-800/50 bg-zinc-900/30">
@@ -1872,9 +1954,9 @@ export default function GeneratedPage() {
                       </div>
                     </div>
 
-                    {/* Next Steps */}
+                    {/* Next Steps - Tier-aware */}
                     <div className="mt-8 pt-6 border-t border-zinc-800 relative z-10">
-                      <h3 className="text-xs font-mono text-zinc-500 uppercase tracking-wider mb-4">Next Actions</h3>
+                      <h3 className="text-xs font-mono text-zinc-500 uppercase tracking-wider mb-4">What's Next</h3>
                       <div className="space-y-2">
                         <button
                           onClick={() => setDeployedUrl(null)}
@@ -1884,10 +1966,39 @@ export default function GeneratedPage() {
                             <Edit3 className="w-4 h-4 text-purple-400" />
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-white group-hover:text-purple-300 transition-colors">Continue Development</p>
-                            <p className="text-xs text-zinc-500">Refine and update your architecture</p>
+                            <p className="text-sm font-medium text-white group-hover:text-purple-300 transition-colors">Continue Building</p>
+                            <p className="text-xs text-zinc-500">Refine sections and add new modules</p>
                           </div>
                         </button>
+                        
+                        {/* Pro Feature: Custom Domain */}
+                        {isProUser ? (
+                          <button
+                            onClick={() => {/* TODO: Open domain settings */}}
+                            className="w-full flex items-center gap-3 p-3 bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/20 rounded-lg transition-colors text-left group"
+                          >
+                            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                              <Globe className="w-4 h-4 text-emerald-400" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-white group-hover:text-emerald-300 transition-colors">Connect Custom Domain</p>
+                              <p className="text-xs text-zinc-500">Use your own domain name</p>
+                            </div>
+                            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">PRO</span>
+                          </button>
+                        ) : (
+                          <div className="w-full flex items-center gap-3 p-3 bg-zinc-900/50 border border-zinc-800 rounded-lg opacity-50 cursor-not-allowed">
+                            <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
+                              <Globe className="w-4 h-4 text-zinc-500" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-zinc-500">Custom Domain</p>
+                              <p className="text-xs text-zinc-600">Upgrade to Pro to unlock</p>
+                            </div>
+                            <span className="text-[10px] font-mono text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded">PRO</span>
+                          </div>
+                        )}
+                        
                         <button
                           onClick={handleStartFresh}
                           className="w-full flex items-center gap-3 p-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg transition-colors text-left group"
@@ -1896,8 +2007,12 @@ export default function GeneratedPage() {
                             <Plus className="w-4 h-4 text-blue-400" />
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-white group-hover:text-blue-300 transition-colors">Initialize New Project</p>
-                            <p className="text-xs text-zinc-500">Start a fresh build sequence</p>
+                            <p className="text-sm font-medium text-white group-hover:text-blue-300 transition-colors">Start New Project</p>
+                            <p className="text-xs text-zinc-500">
+                              {tierConfig?.projectLimit === Infinity 
+                                ? 'Unlimited projects on your plan' 
+                                : `${tierConfig?.projectLimit || 3} projects on your plan`}
+                            </p>
                           </div>
                         </button>
                       </div>
