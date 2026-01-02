@@ -67,14 +67,12 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
   const { title, description } = messages[reason]
 
   const handleHatch = async (selectedTier: 'pro' | 'lite' | 'agency' = 'pro') => {
-    // If not signed in, open sign-up modal (stays in context, no redirect)
+    // If not signed in, go to split-screen sign-up page with tier pre-selected
     if (!isSignedIn) {
+      onClose()
       const currentUrl = new URL(window.location.href)
       currentUrl.searchParams.set('upgrade', selectedTier)
-      openSignUp({
-        afterSignInUrl: currentUrl.toString(),
-        afterSignUpUrl: currentUrl.toString(),
-      })
+      router.push(`/sign-up?upgrade=${selectedTier}&redirect_url=${encodeURIComponent(currentUrl.toString())}`)
       return
     }
 
