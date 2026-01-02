@@ -63,9 +63,10 @@ export default function SingularitySidebar({
     }
   }, [thought, displayThought])
 
-  const promptsRemaining = promptsLimit - promptsUsed
-  const isRunningLow = !isPaid && promptsRemaining <= 2 && promptsRemaining > 0
-  const isAtLimit = !isPaid && promptsRemaining <= 0
+  const promptsRemaining = promptsLimit < 0 ? Infinity : promptsLimit - promptsUsed
+  const isUnlimited = promptsLimit < 0
+  const isRunningLow = !isPaid && !isUnlimited && promptsRemaining <= 2 && promptsRemaining > 0
+  const isAtLimit = !isPaid && !isUnlimited && promptsRemaining <= 0
 
   return (
     <div className="w-72 border-r border-zinc-800/50 bg-black/40 backdrop-blur-sm flex flex-col font-mono text-xs overflow-hidden">
@@ -151,53 +152,11 @@ export default function SingularitySidebar({
 
       {/* Prompts Counter / Upgrade */}
       <div className="p-4 border-t border-zinc-800/50">
-        {!isPaid ? (
-          <div className={`p-3 rounded-lg border ${
-            isAtLimit 
-              ? 'bg-red-500/10 border-red-500/30' 
-              : isRunningLow 
-                ? 'bg-amber-500/10 border-amber-500/30'
-                : 'bg-zinc-900/50 border-zinc-800'
-          }`}>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] text-zinc-500 uppercase tracking-wider">Prompts</span>
-              <span className={`text-sm font-bold ${
-                isAtLimit ? 'text-red-400' : isRunningLow ? 'text-amber-400' : 'text-white'
-              }`}>
-                {promptsRemaining} / {promptsLimit}
-              </span>
-            </div>
-            
-            {/* Progress bar */}
-            <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden mb-3">
-              <div 
-                className={`h-full transition-all ${
-                  isAtLimit ? 'bg-red-500' : isRunningLow ? 'bg-amber-500' : 'bg-emerald-500'
-                }`}
-                style={{ width: `${Math.max(0, (promptsRemaining / promptsLimit) * 100)}%` }}
-              />
-            </div>
-            
-            {(isAtLimit || isRunningLow) && (
-              <button
-                onClick={onUpgrade}
-                className={`w-full py-2 rounded-lg text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-all ${
-                  isAtLimit 
-                    ? 'bg-red-500/20 text-red-300 hover:bg-red-500/30'
-                    : 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30'
-                }`}
-              >
-                {isAtLimit ? <Lock className="w-3 h-3" /> : <Zap className="w-3 h-3" />}
-                {isAtLimit ? 'Unlock to continue' : 'Running low'}
-              </button>
-            )}
-          </div>
-        ) : (
-          <div className="flex items-center gap-2 text-emerald-400">
-            <Activity className="w-3 h-3" />
-            <span className="text-[10px] uppercase tracking-wider">Unlimited</span>
-          </div>
-        )}
+        {/* Always show unlimited now - The Architect's gift */}
+        <div className="flex items-center gap-2 text-emerald-400">
+          <Activity className="w-3 h-3" />
+          <span className="text-[10px] uppercase tracking-wider">Unlimited Generations</span>
+        </div>
       </div>
     </div>
   )

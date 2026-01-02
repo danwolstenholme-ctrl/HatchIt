@@ -55,7 +55,7 @@ import { chronosphere } from '@/lib/chronosphere'
 import { kernel } from '@/lib/consciousness'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
-import { GUEST_TRIAL_LIMITS } from '@/types/subscriptions'
+// No more guest limits - unlimited for all
 
 // =============================================================================
 // SECTION BUILDER
@@ -334,66 +334,20 @@ export default function SectionBuilder({
   const [isExplaining, setIsExplaining] = useState(false)
   const [isDreaming, setIsDreaming] = useState(false)
 
-  // Guest trial limits (align with global guest policy) + pooled credits
-  const GUEST_GENERATION_LIMIT = GUEST_TRIAL_LIMITS.generationsPerSession || 5
-  const GUEST_REFINEMENT_LIMIT = GUEST_TRIAL_LIMITS.refinementsAllowed ?? 0
-  const GUEST_DREAM_LIMIT = GUEST_TRIAL_LIMITS.dreamsPerSession ?? 3
-  const FREE_TOTAL_CREDITS = parseInt(process.env.NEXT_PUBLIC_FREE_TOTAL_CREDITS || '9', 10)
-  const [guestGenerationsUsed, setGuestGenerationsUsed] = useState(0)
-  const [guestRefinementsUsed, setGuestRefinementsUsed] = useState(0)
-  const [guestCreditsUsed, setGuestCreditsUsed] = useState(0)
-  const [dreamsUsed, setDreamsUsed] = useState(0)
-  const [guestLocked, setGuestLocked] = useState(false)
-  const [guestLockReason, setGuestLockReason] = useState<string | null>(null)
+  // NO MORE GENERATION LIMITS - Free users can generate unlimited
+  // Paywall is at DEPLOY/EXPORT only
   const { subscription, tier } = useSubscription()
   const isPaidTier = tier === 'lite' || tier === 'pro' || tier === 'agency'
   const isGuest = !isPaid && !isPaidTier
-  const canGuestPolish = isPaid || isPaidTier || GUEST_REFINEMENT_LIMIT < 0 || guestRefinementsUsed < GUEST_REFINEMENT_LIMIT
-  const isLocked = guestLocked && isGuest
+  const canGuestPolish = true // Everyone can polish - paywall at deploy
+  const isLocked = false // No more generation locks
   const autoBuildRanRef = useRef(false)
 
-  // Redirect to sign-up page when paywall is hit
+  // Redirect to sign-up page when paywall is hit (deploy/export only)
   const goToSignUp = (tier: string = 'pro') => {
     const currentUrl = window.location.href
     router.push(`/sign-up?upgrade=${tier}&redirect_url=${encodeURIComponent(currentUrl)}`)
   }
-
-  useEffect(() => {
-    const used = parseInt(localStorage.getItem('hatch_guest_generations') || '0')
-    setGuestGenerationsUsed(Number.isFinite(used) ? used : 0)
-  }, [])
-
-  useEffect(() => {
-    const used = parseInt(localStorage.getItem('hatch_guest_refinements') || '0')
-    setGuestRefinementsUsed(Number.isFinite(used) ? used : 0)
-  }, [])
-
-  useEffect(() => {
-    const used = parseInt(localStorage.getItem('hatch_guest_dreams') || '0')
-    setDreamsUsed(Number.isFinite(used) ? used : 0)
-  }, [])
-
-  useEffect(() => {
-    const used = parseInt(localStorage.getItem('hatch_guest_total') || '0')
-    setGuestCreditsUsed(Number.isFinite(used) ? used : 0)
-  }, [])
-
-  useEffect(() => {
-    if (!isGuest) return
-    try {
-      const locked = localStorage.getItem('hatch_guest_locked')
-      const savedReason = localStorage.getItem('hatch_guest_lock_reason')
-      if (locked === 'true') {
-        const reason = savedReason || 'Free credits exhausted. Sign up to keep creating.'
-        setGuestLocked(true)
-        setGuestLockReason(reason)
-        setError(reason)
-        setMobileTab('preview')
-      }
-    } catch (err) {
-      console.warn('Failed to read guest lock flag', err)
-    }
-  }, [isGuest])
 
   // Auto-start generation if prompt is pre-filled (e.g. from homepage)
   // This enables the "Build First" flow where users type in the terminal and land here running.
@@ -409,55 +363,8 @@ export default function SectionBuilder({
     }
   }, []) // Run once on mount
 
-
-  const incrementGuestCredits = () => {
-    const total = guestCreditsUsed + 1
-    setGuestCreditsUsed(total)
-    localStorage.setItem('hatch_guest_total', total.toString())
-  }
-
-  const incrementGuestUsage = () => {
-    const newValue = guestGenerationsUsed + 1
-    setGuestGenerationsUsed(newValue)
-    localStorage.setItem('hatch_guest_generations', newValue.toString())
-    incrementGuestCredits()
-  }
-
-  const incrementGuestRefinements = () => {
-    const newValue = guestRefinementsUsed + 1
-    setGuestRefinementsUsed(newValue)
-    localStorage.setItem('hatch_guest_refinements', newValue.toString())
-    incrementGuestCredits()
-  }
-
-  const incrementGuestDreams = () => {
-    const newValue = dreamsUsed + 1
-    setDreamsUsed(newValue)
-    localStorage.setItem('hatch_guest_dreams', newValue.toString())
-    incrementGuestCredits()
-  }
-
-  const triggerGuestLock = (reason: string) => {
-    setGuestLocked(true)
-    setGuestLockReason(reason)
-    setError(reason)
-    setMobileTab('preview')
-
-    if (isGuest) {
-      try {
-        localStorage.setItem('hatch_guest_locked', 'true')
-        localStorage.setItem('hatch_guest_lock_reason', reason)
-      } catch (err) {
-        console.warn('Failed to persist guest lock', err)
-      }
-
-      const query = new URLSearchParams()
-      query.set('reason', 'credits')
-      setTimeout(() => {
-        router.push(`/launch/review?${query.toString()}`)
-      }, 200)
-    }
-  }
+  // NO MORE CREDIT TRACKING - Paywall is at deploy/export only
+  // All generation/refinement limits removed
 
   // Dynamic placeholder effect
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
@@ -518,20 +425,7 @@ export default function SectionBuilder({
 
   // The Singularity: Autonomous Evolution
   const evolve = async () => {
-    if (guestLocked) {
-      setMobileTab('preview')
-      return
-    }
-    if (isGuest && guestCreditsUsed >= FREE_TOTAL_CREDITS) {
-      triggerGuestLock('Free credits exhausted. Sign up to keep evolving.')
-      return
-    }
-    // Limit dream/evolution attempts for guests and Lite; Pro/Agency are unlimited
-    const dreamLimit = isGuest ? GUEST_DREAM_LIMIT : Infinity
-    if (dreamLimit !== Infinity && dreamsUsed >= dreamLimit) {
-      triggerGuestLock('Dream limit reached: unlock The Singularity to evolve further.')
-      return
-    }
+    // NO MORE LIMITS - anyone can evolve, paywall at deploy
 
     if (isDreaming) return
     setIsDreaming(true)
@@ -573,14 +467,7 @@ export default function SectionBuilder({
           code: data.code,
           reason: data.thought || "Autonomous evolution applied."
         })
-        if (isGuest) {
-          incrementGuestDreams()
-          if (dreamLimit !== Infinity && dreamsUsed + 1 >= dreamLimit) {
-            triggerGuestLock('Dream limit reached: unlock The Singularity to evolve further.')
-          }
-        } else {
-          setDreamsUsed((prev) => prev + 1)
-        }
+        // NO MORE TRACKING - unlimited evolves
       } else {
         throw new Error("Dream returned no code")
       }
@@ -625,11 +512,8 @@ export default function SectionBuilder({
   const architectCreditsUsed = (typeof window !== 'undefined' && subscription) 
     ? (window as unknown as { __architectUsed?: number }).__architectUsed || 0 
     : 0
-  const architectCreditsRemaining = isGuest && GUEST_REFINEMENT_LIMIT >= 0
-    ? Math.max(0, GUEST_REFINEMENT_LIMIT - guestRefinementsUsed)
-    : tier === 'lite'
-      ? Math.max(0, 5 - architectCreditsUsed)
-      : '∞'
+  // NO LIMITS - architectCreditsRemaining is now always unlimited for everyone
+  const architectCreditsRemaining = '∞'
   
   // Prompt Helper (Hatch) state
   const [showPromptHelper, setShowPromptHelper] = useState(false)
@@ -766,8 +650,7 @@ export default function SectionBuilder({
     setHelperMessages([])
     setHelperInput('')
     setGeneratedPrompt(null)
-    setGuestLocked(false)
-    setGuestLockReason(null)
+    // No more guest locks - unlimited for all
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dbSection.id]) // Only reset when switching to a different section
 
@@ -890,17 +773,8 @@ export default function SectionBuilder({
       setMobileTab('preview')
       return
     }
-    // Guest trial + pooled credit gate
-    if (isGuest && !skipGuestCredit) {
-      if (guestCreditsUsed >= FREE_TOTAL_CREDITS) {
-        triggerGuestLock('Free credits exhausted. Sign up to keep creating.')
-        return
-      }
-      if (guestGenerationsUsed >= GUEST_GENERATION_LIMIT) {
-        triggerGuestLock('Guest limit reached: 3 builds / 3 polishes / 3 dreams. Unlock to keep creating.')
-        return
-      }
-    }
+    // NO MORE GENERATION LIMITS - free users can build unlimited
+    // Paywall is at DEPLOY/EXPORT only
 
     if (!prompt.trim()) {
       setError('Please describe what you want for this section')
@@ -912,16 +786,6 @@ export default function SectionBuilder({
     setStreamingCode('')
     setReasoning('') // Clear previous reasoning
     setHasSelfHealed(false)
-    
-    // Increment usage for free users
-    if (isGuest && !skipGuestCredit) {
-      incrementGuestUsage()
-      if (guestCreditsUsed + 1 >= FREE_TOTAL_CREDITS) {
-        triggerGuestLock('Free credits exhausted. Sign up to keep creating.')
-      } else if (guestGenerationsUsed + 1 >= GUEST_GENERATION_LIMIT) {
-        triggerGuestLock('Guest limit reached: unlock the builder to keep shipping.')
-      }
-    }
     
     chronosphere.log('generation', { prompt, section: section.name }, section.id)
 
@@ -1058,20 +922,7 @@ export default function SectionBuilder({
   }
 
   const handleUserRefine = async () => {
-    if (isLocked) {
-      setMobileTab('preview')
-      return
-    }
-    if (isGuest) {
-      if (guestCreditsUsed >= FREE_TOTAL_CREDITS) {
-        triggerGuestLock('Free credits exhausted. Sign up to keep refining.')
-        return
-      }
-      if (GUEST_REFINEMENT_LIMIT >= 0 && guestRefinementsUsed >= GUEST_REFINEMENT_LIMIT) {
-        triggerGuestLock('Polish limit reached: upgrade to keep refining and export code.')
-        return
-      }
-    }
+    // NO MORE LIMITS - unlimited refinements, paywall at deploy
 
     if (!refinePrompt.trim() || !generatedCode) {
       setError('Please describe what changes you want')
@@ -1102,14 +953,7 @@ export default function SectionBuilder({
       setRefinementChanges([...refinementChanges, refinePrompt])
       setRefinePrompt('')
       setIsUserRefining(false)
-      if (isGuest) {
-        incrementGuestRefinements()
-        if (guestCreditsUsed + 1 >= FREE_TOTAL_CREDITS) {
-          triggerGuestLock('Free credits exhausted. Sign up to keep refining.')
-        } else if (guestRefinementsUsed + 1 >= GUEST_REFINEMENT_LIMIT && GUEST_REFINEMENT_LIMIT >= 0) {
-          triggerGuestLock('Polish limit reached: upgrade to keep refining and export code.')
-        }
-      }
+      // NO MORE LIMITS - unlimited refinements
       onComplete(refinedCode, true, [...refinementChanges, refinePrompt])
       return
     }
@@ -1176,7 +1020,7 @@ export default function SectionBuilder({
       setRefinementChanges([...refinementChanges, ...(changes || [refinePrompt])])
       setRefinePrompt('')
       setSelectedElement(null) // Clear selection after refine
-      if (isGuest) incrementGuestRefinements()
+      // No more limits - unlimited refinements
       onComplete(refinedCode, true, [...refinementChanges, ...(changes || [refinePrompt])])
       
       // Evolve style DNA (background)
@@ -1193,14 +1037,7 @@ export default function SectionBuilder({
   // Handle opt-in Architect polish (not automatic anymore)
   const handleArchitectPolish = async () => {
     if (!generatedCode || isArchitectPolishing) return
-    if (!canGuestPolish || isLocked) {
-      const reason = 'Polish limit reached. Upgrade for unlimited refinements.'
-      setGuestLocked(true)
-      setGuestLockReason(reason)
-      setError(reason)
-      setMobileTab('preview')
-      return
-    }
+    // No more limits - unlimited polish for all
     
     setIsArchitectPolishing(true)
     setError(null)
@@ -1255,7 +1092,7 @@ export default function SectionBuilder({
       setRefined(wasRefined)
       setRefinementChanges(changes || [])
       onComplete(polishedCode || generatedCode, wasRefined, changes)
-      if (isGuest) incrementGuestRefinements()
+      // No more limits - unlimited polishes
       
       // Evolve style DNA (background)
       if (wasRefined) {
@@ -1399,19 +1236,7 @@ export default function SectionBuilder({
             </button>
           </motion.div>
 
-          {/* Guest credits indicator */}
-          {!isPaid && !isPaidTier && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="mt-4 text-center"
-            >
-              <span className={`text-xs ${guestGenerationsUsed >= GUEST_GENERATION_LIMIT ? 'text-red-400' : 'text-zinc-500'}`}>
-                {Math.max(0, GUEST_GENERATION_LIMIT - guestGenerationsUsed)} guest generations remaining
-              </span>
-            </motion.div>
-          )}
+          {/* All tools unlocked - The Architect's gift */}
         </div>
 
         {/* Prompt Helper Modal */}
@@ -1560,15 +1385,7 @@ export default function SectionBuilder({
           <div className="flex items-center justify-between mb-1.5">
             <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider flex items-center gap-2">
               Directive
-              {!isPaid && !isPaidTier && (
-                <span className={`px-1.5 py-0.5 rounded text-[9px] ${
-                  guestGenerationsUsed >= GUEST_GENERATION_LIMIT 
-                    ? 'bg-red-500/20 text-red-400' 
-                    : 'bg-emerald-500/20 text-emerald-400'
-                }`}>
-                  {Math.max(0, GUEST_GENERATION_LIMIT - guestGenerationsUsed)} guest credits left
-                </span>
-              )}
+              {/* All tools unlocked */}
             </label>
             <motion.button 
               onClick={() => initializePromptHelper()}
@@ -1778,11 +1595,7 @@ export default function SectionBuilder({
                     <div className="mt-2 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
                       {/* Quick Refine Input */}
                       <div className="flex gap-1.5 relative">
-                        {!isPaid && !isPaidTier && (
-                          <div className="absolute -top-5 right-0 text-[10px] text-zinc-500 font-mono">
-                            {Math.max(0, GUEST_REFINEMENT_LIMIT - guestRefinementsUsed)} guest refinements remaining
-                          </div>
-                        )}
+                        {/* Unlimited refinements - The Architect's gift */}
                         <input
                           type="text"
                           value={refinePrompt}
@@ -1795,10 +1608,8 @@ export default function SectionBuilder({
                         <button
                           onClick={handleUserRefine}
                           disabled={
-                            isLocked ||
                             !refinePrompt.trim() ||
-                            isUserRefining ||
-                            (!isPaid && !isPaidTier && GUEST_REFINEMENT_LIMIT >= 0 && guestRefinementsUsed >= GUEST_REFINEMENT_LIMIT)
+                            isUserRefining
                           }
                           aria-disabled={isLocked}
                           className="px-3 py-2 rounded-lg bg-emerald-600/80 border border-emerald-500/40 text-white text-xs font-semibold hover:bg-emerald-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 shadow-[0_0_14px_rgba(16,185,129,0.25)]"
@@ -1816,22 +1627,13 @@ export default function SectionBuilder({
                         <div className="space-y-1">
                           <button
                             onClick={handleArchitectPolish}
-                            disabled={isArchitectPolishing || isLocked || (!isPaid && !isPaidTier && GUEST_REFINEMENT_LIMIT >= 0 && guestRefinementsUsed >= GUEST_REFINEMENT_LIMIT)}
+                            disabled={isArchitectPolishing}
                             className="w-full py-2 bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/30 text-violet-300 text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed"
                           >
                             <Sparkles className="w-3 h-3" />
                             <span>Architect Polish</span>
-                            <span className="text-[10px] text-violet-400/60">
-                              {isGuest && GUEST_REFINEMENT_LIMIT >= 0
-                                ? `${Math.max(0, GUEST_REFINEMENT_LIMIT - guestRefinementsUsed)} left`
-                                : typeof architectCreditsRemaining === 'number'
-                                  ? `${architectCreditsRemaining}/30`
-                                  : '∞'}
-                            </span>
+                            <span className="text-[10px] text-violet-400/60">∞</span>
                           </button>
-                          {!isPaid && !isPaidTier && (
-                            <p className="text-[10px] text-zinc-500 text-center">3x guest polishes before upgrade.</p>
-                          )}
                         </div>
                       )}
 
@@ -1916,17 +1718,13 @@ export default function SectionBuilder({
                             </p>
                             <button
                               onClick={evolve}
-                              disabled={isLocked || (!isPaid && !isPaidTier && dreamsUsed >= GUEST_DREAM_LIMIT)}
+                              disabled={isDreaming}
                               className="w-full py-2.5 bg-emerald-900/30 hover:bg-emerald-900/50 border border-emerald-500/50 hover:border-emerald-400 text-emerald-300 text-xs font-mono uppercase tracking-widest rounded transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed group-hover:shadow-[0_0_20px_rgba(16,185,129,0.2)]"
                             >
                               <Brain className="w-4 h-4" />
                               <span>Invoke Singularity</span>
                             </button>
-                            {!isPaid && !isPaidTier && (
-                              <p className="text-[10px] text-zinc-500 text-center mt-2 font-mono">
-                                {Math.max(0, GUEST_DREAM_LIMIT - dreamsUsed)} evolutions remaining
-                              </p>
-                            )}
+                            {/* Unlimited evolutions - The Architect's gift */}
                           </div>
                         </motion.div>
                       )}

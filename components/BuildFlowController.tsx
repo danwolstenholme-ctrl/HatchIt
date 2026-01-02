@@ -52,7 +52,7 @@ import FirstContact from './FirstContact'
 import { chronosphere } from '@/lib/chronosphere'
 import { Template, Section, getTemplateById, getSectionById, createInitialBuildState, BuildState, websiteTemplate } from '@/lib/templates'
 import { DbProject, DbSection, DbBrandConfig } from '@/lib/supabase'
-import { AccountSubscription, GUEST_TRIAL_LIMITS } from '@/types/subscriptions'
+import { AccountSubscription } from '@/types/subscriptions'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 
 // =============================================================================
@@ -394,7 +394,12 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const [brandConfig, setBrandConfig] = useState<any>(null) // Brand config is now implicit or AI-driven
   const [buildState, setBuildState] = useState<BuildState | null>(null)
   const [project, setProject] = useState<DbProject | null>(null)
-  const [guestInteractionCount, setGuestInteractionCount] = useState(0)
+  // Initialize guest count from localStorage to stay in sync with SectionBuilder
+  const [guestInteractionCount, setGuestInteractionCount] = useState(() => {
+    if (typeof window === 'undefined') return 0
+    const stored = localStorage.getItem('hatch_guest_generations')
+    return stored ? parseInt(stored, 10) || 0 : 0
+  })
   const [hatchModalReason, setHatchModalReason] = useState<'generation_limit' | 'code_access' | 'deploy' | 'download' | 'proactive' | 'running_low' | 'guest_lock'>('proactive')
   const [showPaywallTransition, setShowPaywallTransition] = useState(false)
   const [paywallReason, setPaywallReason] = useState<'limit_reached' | 'site_complete'>('limit_reached')
@@ -468,17 +473,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     }
   }, [guestMode, selectedTemplate?.id, brandConfig, dbSections, buildState])
 
-  // Enforce guest trial limits before requiring signup + paid plan
-  useEffect(() => {
-    const limit = GUEST_TRIAL_LIMITS.generationsPerSession
-    if (!limit || limit < 0) return
-    const isGuest = guestMode || (!isPaidUser && !isSignedIn)
-    if (isGuest && guestInteractionCount >= limit) {
-      // Show immersive paywall transition instead of modal
-      setPaywallReason('limit_reached')
-      setShowPaywallTransition(true)
-    }
-  }, [guestInteractionCount, guestMode, isPaidUser, isSignedIn])
+  // NO MORE GENERATION LIMITS - Paywall is at DEPLOY/EXPORT only
+  // Free users can generate unlimited, they pay to ship
 
   // Handle Replicator Mode & Onboarding Mode
   useEffect(() => {
@@ -944,14 +940,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       })
     }
 
-    // Increment interaction count for guests AND free users
-    if (demoMode || !isPaidUser) {
-      const shouldSkipGuestCredit = skipFirstGuestCreditRef.current && (guestMode || !isPaidUser)
-      if (!shouldSkipGuestCredit) {
-        setGuestInteractionCount(prev => prev + 1)
-      }
-      skipFirstGuestCreditRef.current = false
-    }
+    // NO MORE GENERATION COUNTING - users can generate freely
+    // Paywall is at deploy/export only
 
     setBuildState(newState)
     // No auto-advance to review - user clicks "Finish & Review" button
@@ -1585,8 +1575,8 @@ export default function GeneratedPage() {
                 totalSections={sectionsForBuild.length}
                 isGenerating={false}
                 thought={getCurrentSection()?.name ? `Building ${getCurrentSection()?.name}...` : 'Analyzing...'}
-                promptsUsed={guestInteractionCount}
-                promptsLimit={GUEST_TRIAL_LIMITS.generationsPerSession}
+                promptsUsed={0}
+                promptsLimit={-1}
                 isPaid={isPaid}
                 onUpgrade={() => {
                   setHatchModalReason('generation_limit')
