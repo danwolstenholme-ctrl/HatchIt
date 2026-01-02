@@ -12,32 +12,15 @@ import { useSubscription } from '@/contexts/SubscriptionContext'
 // WELCOME PAGE
 // A creative, animated welcome experience for all user types
 // Free: Grey theme, friendly intro
-// Lite: Green theme, starter tier
-// Pro: Purple theme with Hatch character
+// Lite: Lime/green theme, starter tier
+// Pro: Emerald/teal theme with Hatch character
 // Agency: Gold/amber theme with Agency Node
 // =============================================================================
 
-type WelcomeTier = 'free' | 'lite' | 'pro' | 'agency'
+type WelcomeTier = 'lite' | 'pro' | 'agency'
 
 // Tier-specific content and theming
 const tierConfig = {
-  free: {
-    emoji: '⚡',
-    title: 'Protocol: INITIATE',
-    subtitle: "Access granted. System resources allocated.",
-    description: "You have been granted basic access to the Architect's tools. Prove your worth to unlock higher functions.",
-    price: '$0 / mo',
-    ctaText: 'Initialize Builder',
-    ctaUrl: '/builder',
-    gradient: 'from-zinc-600 to-zinc-400',
-    accentColor: 'zinc',
-    features: [
-      { icon: '👁️', text: '5 Free Generations' },
-      { icon: '🖥️', text: 'Live DOM Manipulation' },
-      { icon: '🧩', text: 'Component Assembly' },
-      { icon: '🤖', text: 'Basic Architect Guidance' },
-    ],
-  },
   lite: {
     emoji: '🌱',
     title: 'Protocol: SEEDLING',
@@ -61,7 +44,7 @@ const tierConfig = {
     subtitle: 'Full neural link established.',
     description: "You are now one with the system. Create, deploy, and manifest without limits. The code obeys your thought.",
     price: '$29 / mo',
-    ctaText: 'Enter the Matrix',
+    ctaText: 'Start Building',
     ctaUrl: '/builder',
     gradient: 'from-emerald-500 to-teal-500',
     accentColor: 'emerald',
@@ -214,26 +197,6 @@ function LiteNode() {
   )
 }
 
-// Free Node
-function FreeNode() {
-  return (
-    <motion.div
-      initial={{ scale: 0 }}
-      animate={{ scale: 1 }}
-      transition={{ type: 'spring', bounce: 0.4, delay: 0.3 }}
-      className="relative w-32 h-32 flex items-center justify-center"
-    >
-      <motion.div
-        animate={{ scale: [1, 1.05, 1] }}
-        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-        className="w-12 h-12 bg-zinc-500/20 rounded-full flex items-center justify-center border border-zinc-500/50"
-      >
-        <div className="w-6 h-6 bg-zinc-400 rounded-full" />
-      </motion.div>
-    </motion.div>
-  )
-}
-
 function WelcomeContent() {
   const { user, isLoaded } = useUser()
   const router = useRouter()
@@ -247,7 +210,7 @@ function WelcomeContent() {
   const accountSub = user?.publicMetadata?.accountSubscription as AccountSubscription | null
   const derivedTier: WelcomeTier = hasValidUrlTier
     ? (urlTier as WelcomeTier)
-    : (accountSub?.status === 'active' ? (accountSub.tier as WelcomeTier) : 'free')
+    : (accountSub?.status === 'active' ? (accountSub.tier as WelcomeTier) : 'lite')
 
   const tier = derivedTier
 
@@ -297,13 +260,13 @@ function WelcomeContent() {
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className={`absolute -top-40 -left-40 w-80 h-80 ${
           tier === 'agency' ? 'bg-orange-500/10' :
-          tier === 'pro' ? 'bg-purple-500/10' :
+          tier === 'pro' ? 'bg-emerald-500/10' :
           tier === 'lite' ? 'bg-lime-500/10' :
           'bg-zinc-500/5'
         } rounded-full blur-[100px]`} />
         <div className={`absolute top-1/3 -right-40 w-96 h-96 ${
           tier === 'agency' ? 'bg-amber-500/10' :
-          tier === 'pro' ? 'bg-pink-500/10' :
+          tier === 'pro' ? 'bg-teal-500/10' :
           tier === 'lite' ? 'bg-emerald-500/10' :
           'bg-zinc-500/5'
         } rounded-full blur-[100px]`} />
@@ -322,10 +285,8 @@ function WelcomeContent() {
             <AgencyNode />
           ) : tier === 'pro' ? (
             <ProNode />
-          ) : tier === 'lite' ? (
-            <LiteNode />
           ) : (
-            <FreeNode />
+            <LiteNode />
           )}
         </div>
 
@@ -385,7 +346,7 @@ function WelcomeContent() {
           transition={{ delay: 0.5 }}
           className={`bg-zinc-900/80 backdrop-blur-sm border ${
             tier === 'agency' ? 'border-orange-500/30' :
-            tier === 'pro' ? 'border-purple-500/30' :
+            tier === 'pro' ? 'border-emerald-500/30' :
             tier === 'lite' ? 'border-lime-500/30' :
             'border-zinc-800'
           } rounded-2xl p-6 mb-10`}
@@ -418,7 +379,9 @@ function WelcomeContent() {
             tier === 'agency' 
               ? 'bg-gradient-to-r from-amber-500 to-orange-500 shadow-amber-500/25' 
               : tier === 'pro'
-              ? 'bg-gradient-to-r from-purple-600 to-pink-600 shadow-purple-500/25'
+              ? 'bg-gradient-to-r from-emerald-500 to-teal-500 shadow-emerald-500/25'
+              : tier === 'lite'
+              ? 'bg-gradient-to-r from-lime-500 to-emerald-500 shadow-lime-500/25'
               : 'bg-gradient-to-r from-zinc-600 to-zinc-500 shadow-zinc-500/25'
           } text-white font-semibold rounded-xl shadow-lg transition-all text-lg`}
         >
