@@ -65,7 +65,7 @@ function SystemStatus() {
       '> FIRST BUILD IN ~30 SECONDS.',
       '> NO SIGNUP TO TRY.',
       '> DEPLOY TO YOUR OWN DOMAIN.',
-      '> READY.',
+      '> READY. // The Architect watches.',
     ]
     setBootLines(sequence)
     setIsBooting(false)

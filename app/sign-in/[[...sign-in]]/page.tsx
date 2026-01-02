@@ -1,13 +1,23 @@
 'use client'
 
-import { SignIn } from '@clerk/nextjs'
-import { useSearchParams } from 'next/navigation'
+// import { SignIn } from '@clerk/nextjs' // DEV BYPASS
+import { useSearchParams, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Sparkles } from 'lucide-react'
+import { Sparkles, ArrowRight } from 'lucide-react'
+
+// =============================================================================
+// DEV BYPASS MODE - Remove this block and restore Clerk imports for production
+// =============================================================================
+const DEV_BYPASS = true
 
 export default function SignInPage() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const redirectUrl = searchParams.get('redirect_url') || '/builder'
+  
+  const handleBypass = () => {
+    router.push(redirectUrl)
+  }
   
   return (
     <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center relative overflow-hidden p-4">
@@ -30,54 +40,38 @@ export default function SignInPage() {
             Welcome Back
           </h1>
           <p className="text-zinc-400 text-sm">
-            Resume your architectural session.
+            Resume your session
           </p>
         </div>
 
-        {/* Card */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-1 shadow-2xl shadow-black/50 ring-1 ring-white/5">
-          <div className="bg-zinc-950/50 rounded-xl p-6 sm:p-8">
-            <SignIn 
-              forceRedirectUrl={redirectUrl} 
-              appearance={{
-                elements: {
-                  rootBox: 'w-full',
-                  card: 'bg-transparent shadow-none p-0 w-full',
-                  headerTitle: 'hidden',
-                  headerSubtitle: 'hidden',
-                  
-                  // Primary Button
-                  formButtonPrimary: 'bg-emerald-600 hover:bg-emerald-500 text-white w-full py-3 rounded-lg font-medium transition-all shadow-[0_0_20px_rgba(16,185,129,0.1)] hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] text-sm',
-                  
-                  // Inputs
-                  formFieldInput: 'bg-zinc-900/50 border-zinc-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 text-white rounded-lg py-3 text-sm transition-all',
-                  formFieldLabel: 'text-zinc-400 text-xs font-medium mb-1.5',
-                  
-                  // Social Buttons (Apple, Google, etc)
-                  socialButtonsBlockButton: 'bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700 text-zinc-300 h-10 rounded-lg transition-all',
-                  socialButtonsBlockButtonText: 'font-medium text-sm',
-                  socialButtonsBlockButtonArrow: 'hidden',
-                  
-                  // Links & Text
-                  footerActionLink: 'text-emerald-500 hover:text-emerald-400 font-medium',
-                  identityPreviewText: 'text-zinc-300',
-                  formFieldInputShowPasswordButton: 'text-zinc-500 hover:text-zinc-300',
-                  dividerLine: 'bg-zinc-800',
-                  dividerText: 'text-zinc-500 bg-zinc-950 px-2',
-                  
-                  // Alerts
-                  alertText: 'text-red-400 text-sm',
-                  alert: 'bg-red-950/30 border border-red-900/50 text-red-400 rounded-lg',
-                  formFieldAction: 'text-emerald-500 hover:text-emerald-400 text-xs',
-                },
-                layout: {
-                  socialButtonsPlacement: 'top',
-                  showOptionalFields: false,
-                }
-              }} 
-            />
+        {/* DEV BYPASS Card */}
+        {DEV_BYPASS ? (
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl">
+            <div className="text-center space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-mono">
+                DEV BYPASS ACTIVE
+              </div>
+              <p className="text-zinc-400 text-sm">
+                Auth bypassed for development. Click below to continue.
+              </p>
+              <button
+                onClick={handleBypass}
+                className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2"
+              >
+                Continue to {redirectUrl}
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
-        </div>
+        ) : (
+          /* Original Clerk Card - uncomment for production */
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-1 shadow-2xl shadow-black/50 ring-1 ring-white/5">
+            <div className="bg-zinc-950/50 rounded-xl p-6 sm:p-8">
+              {/* <SignIn forceRedirectUrl={redirectUrl} ... /> */}
+              <p className="text-zinc-500 text-center">Clerk SignIn disabled</p>
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="mt-8 text-center">

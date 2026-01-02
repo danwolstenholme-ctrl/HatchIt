@@ -1,11 +1,16 @@
 'use client'
 
 import { useSearchParams, useRouter } from 'next/navigation'
-import { useClerk, useUser } from '@clerk/nextjs'
+// import { useClerk, useUser } from '@clerk/nextjs' // DEV BYPASS
 import { motion } from 'framer-motion'
 import { Check, Zap, Building2, ArrowLeft, Sparkles } from 'lucide-react'
 import Image from 'next/image'
-import { Suspense, useEffect } from 'react'
+import { Suspense } from 'react'
+
+// =============================================================================
+// DEV BYPASS MODE - Remove this block and restore Clerk imports for production
+// =============================================================================
+const DEV_BYPASS = true
 
 const tiers = [
   {
@@ -40,25 +45,32 @@ const tiers = [
 function SignUpContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const { openSignUp } = useClerk()
-  const { isSignedIn } = useUser()
+  // const { openSignUp } = useClerk() // DEV BYPASS
+  // const { isSignedIn } = useUser() // DEV BYPASS
   const selectedTier = searchParams.get('upgrade')
 
-  useEffect(() => {
-    if (isSignedIn) {
-      router.push('/builder')
-    }
-  }, [isSignedIn, router])
+  // DEV BYPASS - Skip auth check
+  // useEffect(() => {
+  //   if (isSignedIn) {
+  //     router.push('/builder')
+  //   }
+  // }, [isSignedIn, router])
 
   const handleSelectTier = (tierName: string) => {
     // Store tier in localStorage as backup (OAuth sometimes drops URL params)
     localStorage.setItem('pendingUpgradeTier', tierName.toLowerCase())
     
+    if (DEV_BYPASS) {
+      // DEV BYPASS - Go straight to builder
+      router.push(`/builder?upgrade=${tierName.toLowerCase()}`)
+      return
+    }
+    
     // All tiers go to checkout after sign-up
-    openSignUp({
-      afterSignUpUrl: `/builder?upgrade=${tierName.toLowerCase()}`,
-      afterSignInUrl: `/builder?upgrade=${tierName.toLowerCase()}`,
-    })
+    // openSignUp({
+    //   afterSignUpUrl: `/builder?upgrade=${tierName.toLowerCase()}`,
+    //   afterSignInUrl: `/builder?upgrade=${tierName.toLowerCase()}`,
+    // })
   }
 
   return (

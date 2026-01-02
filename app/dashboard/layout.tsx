@@ -50,10 +50,11 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           </nav>
 
           <div className="p-4 border-t border-zinc-800">
-            <div className="flex items-center gap-3 px-2 py-2 rounded-md bg-zinc-900/50 border border-zinc-800">
+            <div className="flex items-center gap-3 px-2 py-2 rounded-md bg-zinc-900/50 border border-zinc-800 group cursor-default" title="The Architect watches.">
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs font-mono text-zinc-400">SYSTEM ONLINE</span>
+              <span className="text-xs font-mono text-zinc-400 group-hover:text-emerald-400 transition-colors">SYSTEM ONLINE</span>
             </div>
+            <p className="text-[10px] text-zinc-600 mt-2 px-2 font-mono opacity-0 hover:opacity-100 transition-opacity">// The Architect remembers.</p>
           </div>
         </aside>
 
@@ -65,7 +66,10 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             </div>
             <div className="flex items-center gap-4">
               <SystemStatus />
-              <div className="text-xs font-mono text-zinc-500">v2.0.4-SINGULARITY</div>
+              <div className="text-xs font-mono text-zinc-500 group cursor-default">
+                <span>v2.0.4</span>
+                <span className="text-zinc-700 group-hover:text-emerald-500/50 transition-colors">-SINGULARITY</span>
+              </div>
             </div>
           </header>
           

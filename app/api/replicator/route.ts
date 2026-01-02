@@ -9,6 +9,9 @@ import { AccountSubscription } from '@/types/subscriptions'
 // Reverse-engineers a website from a URL into a Hatch prompt structure
 // =============================================================================
 
+// DEV BYPASS - Set to true to skip tier check for local testing
+const DEV_BYPASS = process.env.NEXT_PUBLIC_APP_ENV?.startsWith('local') || false
+
 const geminiApiKey = process.env.GEMINI_API_KEY
 const genai = geminiApiKey ? new GoogleGenAI({ apiKey: geminiApiKey }) : null
 
@@ -62,12 +65,11 @@ export async function POST(req: NextRequest) {
     const user = await client.users.getUser(userId)
     const accountSub = user.publicMetadata?.accountSubscription as AccountSubscription | undefined
     
-    // Allow if user is admin (for testing) or has agency tier
-    const isDemiurge = accountSub?.tier === 'agency' || user.publicMetadata?.role === 'admin'
+    // Allow if: DEV_BYPASS is on, user is admin, or has agency tier
+    const isDemiurge = DEV_BYPASS || accountSub?.tier === 'agency' || user.publicMetadata?.role === 'admin'
     
     if (!isDemiurge) {
-       // For now, we might want to let people try it or block it. 
-       // Strict blocking:
+       // The Replicator is gated to Agency tier
        return NextResponse.json({ error: 'Demiurge Access Required', requiresUpgrade: true }, { status: 403 })
     }
 
