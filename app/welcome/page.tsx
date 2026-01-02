@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useRef } from "react"
+import { Suspense, useEffect, useMemo, useRef } from "react"
 import { useUser } from "@clerk/nextjs"
 import { useRouter, useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
@@ -44,13 +44,33 @@ const TIER_CONFIG: Record<WelcomeTier, {
 }
 
 export default function WelcomePage() {
+  return (
+    <Suspense fallback={<WelcomeSkeleton />}>
+      <WelcomePageInner />
+    </Suspense>
+  )
+}
+
+function WelcomeSkeleton() {
+  return (
+    <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  )
+}
+
+function WelcomePageInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user, isLoaded } = useUser()
   const { syncSubscription } = useSubscription()
 
   const urlTier = (searchParams.get("tier") || "pro").toLowerCase()
-  const tier: WelcomeTier = ["lite", "pro", "agency"].includes(urlTier) ? (urlTier as WelcomeTier) : "pro"
+  // Normalize tier safely to avoid parser edge cases with multiline ternaries
+  const tier: WelcomeTier = ((): WelcomeTier => {
+    if (urlTier === "lite" || urlTier === "pro" || urlTier === "agency") return urlTier as WelcomeTier
+    return "pro"
+  })()
 
   // Sync subscription once on mount
   useEffect(() => {

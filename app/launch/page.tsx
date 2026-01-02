@@ -1,10 +1,18 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function LaunchPage() {
+  return (
+    <Suspense fallback={<LaunchSkeleton />}> 
+      <LaunchPageInner />
+    </Suspense>
+  )
+}
+
+function LaunchPageInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [phase, setPhase] = useState<'init' | 'handoff'>('init')
@@ -58,6 +66,14 @@ export default function LaunchPage() {
           </motion.div>
         </AnimatePresence>
       </div>
+    </div>
+  )
+}
+
+function LaunchSkeleton() {
+  return (
+    <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center">
+      <div className="w-10 h-10 rounded-full border-2 border-emerald-500/50 border-t-transparent animate-spin" />
     </div>
   )
 }
