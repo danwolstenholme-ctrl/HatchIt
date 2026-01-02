@@ -333,8 +333,7 @@ export default function SectionBuilder({
   const [explanation, setExplanation] = useState<string | null>(null)
   const [isExplaining, setIsExplaining] = useState(false)
   const [isDreaming, setIsDreaming] = useState(false)
-  
-<<<<<<< HEAD
+
   // Guest trial limits (align with global guest policy) + pooled credits
   const GUEST_GENERATION_LIMIT = GUEST_TRIAL_LIMITS.generationsPerSession || 5
   const GUEST_REFINEMENT_LIMIT = GUEST_TRIAL_LIMITS.refinementsAllowed ?? 0
@@ -358,7 +357,6 @@ export default function SectionBuilder({
     const currentUrl = window.location.href
     router.push(`/sign-up?upgrade=${tier}&redirect_url=${encodeURIComponent(currentUrl)}`)
   }
->>>>>>> 933336d (chore: unify free credits to pooled 9 and track usage)
 
   useEffect(() => {
     const used = parseInt(localStorage.getItem('hatch_guest_generations') || '0')
@@ -379,6 +377,23 @@ export default function SectionBuilder({
     const used = parseInt(localStorage.getItem('hatch_guest_total') || '0')
     setGuestCreditsUsed(Number.isFinite(used) ? used : 0)
   }, [])
+
+  useEffect(() => {
+    if (!isGuest) return
+    try {
+      const locked = localStorage.getItem('hatch_guest_locked')
+      const savedReason = localStorage.getItem('hatch_guest_lock_reason')
+      if (locked === 'true') {
+        const reason = savedReason || 'Free credits exhausted. Sign up to keep creating.'
+        setGuestLocked(true)
+        setGuestLockReason(reason)
+        setError(reason)
+        setMobileTab('preview')
+      }
+    } catch (err) {
+      console.warn('Failed to read guest lock flag', err)
+    }
+  }, [isGuest])
 
   // Auto-start generation if prompt is pre-filled (e.g. from homepage)
   // This enables the "Build First" flow where users type in the terminal and land here running.
@@ -427,6 +442,21 @@ export default function SectionBuilder({
     setGuestLockReason(reason)
     setError(reason)
     setMobileTab('preview')
+
+    if (isGuest) {
+      try {
+        localStorage.setItem('hatch_guest_locked', 'true')
+        localStorage.setItem('hatch_guest_lock_reason', reason)
+      } catch (err) {
+        console.warn('Failed to persist guest lock', err)
+      }
+
+      const query = new URLSearchParams()
+      query.set('reason', 'credits')
+      setTimeout(() => {
+        router.push(`/launch/review?${query.toString()}`)
+      }, 200)
+    }
   }
 
   // Dynamic placeholder effect

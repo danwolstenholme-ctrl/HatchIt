@@ -60,6 +60,7 @@ function SystemStatus() {
   const [userTouched, setUserTouched] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const router = useRouter()
+  const { isSignedIn } = useUser()
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
   // Detect mobile viewport
@@ -119,8 +120,16 @@ function SystemStatus() {
     if (!prompt.trim() || isLoading) return
     
     setIsLoading(true)
-    const encodedPrompt = encodeURIComponent(prompt)
-    router.push(`/builder?mode=guest&prompt=${encodedPrompt}`)
+    const params = new URLSearchParams()
+    params.set('prompt', prompt)
+
+    if (!isSignedIn) {
+      params.set('mode', 'guest')
+      router.push(`/launch?${params.toString()}`)
+      return
+    }
+
+    router.push(`/builder?${params.toString()}`)
   }
 
   const handleExampleClick = (examplePrompt: string) => {
@@ -277,8 +286,8 @@ function PricingButton({ tier, className, children }: { tier: 'lite' | 'pro' | '
     e.preventDefault()
     
     if (!isSignedIn) {
-      // Go to builder with upgrade param - let them try first, then prompt signup
-      router.push(`/builder?mode=guest&upgrade=${tier}`)
+      // Route guests through the launch flow with the intended tier
+      router.push(`/launch?upgrade=${tier}`)
       return
     }
     
@@ -416,6 +425,7 @@ function FloatingNodes() {
 export default function Home() {
   const { isSignedIn } = useUser()
   const reducedMotion = useReducedMotion()
+  const router = useRouter()
   
   // Animation config - standardized for consistency
   const getAnimation = (delay = 0, yOffset = 20) => {
@@ -951,10 +961,16 @@ export default function Home() {
             <div className="relative z-10">
               <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6">Ready to initialize?</h2>
               <p className="text-xl text-zinc-300 mb-8 max-w-2xl mx-auto">Your next project is one prompt away. Initialize the system.</p>
-              <Link href="/builder?mode=guest" className="inline-flex items-center gap-2 px-8 sm:px-10 py-4 sm:py-5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-lg font-bold text-lg sm:text-xl transition-all md:hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+              <button
+                onClick={() => {
+                  const destination = isSignedIn ? '/builder' : '/launch'
+                  router.push(destination)
+                }}
+                className="inline-flex items-center gap-2 px-8 sm:px-10 py-4 sm:py-5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-lg font-bold text-lg sm:text-xl transition-all md:hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(16,185,129,0.3)]"
+              >
                 <Terminal className="w-6 h-6" />
                 {isSignedIn ? 'Initialize System' : 'Initialize Architect'}
-              </Link>
+              </button>
               <p className="text-sm text-zinc-500 mt-4 font-mono">System Online • v9.0 • Ready</p>
             </div>
           </div>
