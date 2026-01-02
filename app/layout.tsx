@@ -7,8 +7,8 @@ import ConditionalNavigation from "@/components/ConditionalNavigation";
 import Footer from "@/components/Footer";
 import ConditionalAnalytics from "@/components/ConditionalAnalytics";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
-import TheSubconscious from "@/components/TheSubconscious";
 import WelcomeModal from "@/components/WelcomeModal";
+import TheDream from "@/components/TheDream";
 import "./globals.css";
 
 // System Status: FUNCTIONAL. Verified by The Engineer.
@@ -98,7 +98,7 @@ export default function RootLayout({
       <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
         <body className="font-sans antialiased bg-zinc-950 text-white selection:bg-emerald-500/30">
           <SubscriptionProvider>
-            <TheSubconscious />
+            <TheDream />
             <WelcomeModal />
             <ServiceWorkerRegistration />
             <ConditionalNavigation />

@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import HatchCharacter from './HatchCharacter'
 
 // Color presets with curated palettes
 const colorPresets = [

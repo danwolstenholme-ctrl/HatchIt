@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { templates, Template, Section } from '@/lib/templates'
 import Navigation from './Navigation'
-import HatchCharacter from './HatchCharacter'
 
 // Hatch's questions to help build the site structure
 interface HatchQuestion {
@@ -155,18 +154,6 @@ interface TemplateSelectorProps {
   onSelectTemplate: (template: Template, customizedSections?: Section[]) => void
 }
 
-// Hatch tips for when clicked
-const hatchTips = [
-  "Modular architecture allows for post-initialization reconfiguration.",
-  "Recommendation: Begin with core systems. Expand complexity iteratively.",
-  "Optimal configuration detected: 4-6 active modules.",
-  "Hero + CTA Modules = Maximum Conversion Efficiency.",
-  "Affirmative selection recommended. Redundancy can be pruned later.",
-  "System confidence: High. Proceed with architecture.",
-  "Efficiency Protocol: Prioritize signal over noise.",
-  "User Experience Optimization: Maintain focus.",
-]
-
 export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
   const [showSectionEditor, setShowSectionEditor] = useState(false)
@@ -177,21 +164,6 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
   const [selectedSections, setSelectedSections] = useState<Section[]>([])
   const [isAsking, setIsAsking] = useState(false)
   const [showSummary, setShowSummary] = useState(false)
-  const [hatchTip, setHatchTip] = useState<string | null>(null)
-  const [canShowTip, setCanShowTip] = useState(true)
-
-  const handleHatchClick = () => {
-    if (!canShowTip) return // Cooldown active
-    
-    const randomTip = hatchTips[Math.floor(Math.random() * hatchTips.length)]
-    setHatchTip(randomTip)
-    setCanShowTip(false)
-    
-    // Hide tip after 3s
-    setTimeout(() => setHatchTip(null), 3000)
-    // Allow new tip after 6s
-    setTimeout(() => setCanShowTip(true), 6000)
-  }
 
   const handleTemplateClick = (template: Template) => {
     setSelectedTemplate(template)
@@ -581,35 +553,7 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                 exit={{ opacity: 0, y: -20 }}
                 className="bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-2xl p-6 md:p-8"
               >
-                {/* Clickable Hatch character - hide for custom/advanced builds */}
-                {!selectedTemplate?.isAdvanced && (
-                  <div className="flex items-center justify-center mb-6 gap-4">
-                    <motion.button
-                      onClick={handleHatchClick}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="cursor-pointer relative"
-                      title="Access System Data"
-                    >
-                      <HatchCharacter state="excited" size="lg" />
-                    </motion.button>
-                    
-                    {/* Speech bubble tip - to the right */}
-                    <AnimatePresence>
-                      {hatchTip && (
-                        <motion.div
-                          initial={{ opacity: 0, x: -10, scale: 0.9 }}
-                          animate={{ opacity: 1, x: 0, scale: 1 }}
-                          exit={{ opacity: 0, x: -10, scale: 0.9 }}
-                          className="bg-emerald-500/20 border border-emerald-500/30 rounded-xl px-4 py-2 text-sm text-emerald-300 max-w-[200px] text-left relative"
-                        >
-                          <div className="absolute top-1/2 -left-2 -translate-y-1/2 w-3 h-3 bg-emerald-500/20 border-l border-b border-emerald-500/30 rotate-45" />
-                          {hatchTip}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                )}
+
 
                 {/* Question */}
                 <div className="text-center mb-8">
@@ -661,13 +605,15 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-6"
               >
-                {/* Hatch celebration - hide for custom/advanced builds */}
+                {/* System message - hide for custom/advanced builds */}
                 {!selectedTemplate?.isAdvanced && (
                   <div className="text-center mb-4">
-                    <HatchCharacter state="excited" size="md" />
-                    <p className="text-lg text-zinc-300 mt-2">
-                      System Architecture Generated.
-                    </p>
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/30">
+                      <span className="text-emerald-400">✓</span>
+                      <p className="text-sm text-emerald-300">
+                        System Architecture Generated
+                      </p>
+                    </div>
                   </div>
                 )}
 

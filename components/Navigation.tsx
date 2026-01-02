@@ -8,8 +8,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { SubscriptionBadge } from './SubscriptionIndicator'
 import { useSubscription } from '@/contexts/SubscriptionContext'
-import HatchLogo from './HatchLogo'
-import ArchitectLogo from './ArchitectLogo'
 
 export default function Navigation() {
   const pathname = usePathname()
@@ -52,11 +50,7 @@ export default function Navigation() {
               whileHover={{ scale: 1.1, rotate: 15 }}
               transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
-              {pathname === '/builder' ? (
-                <ArchitectLogo className="w-9 h-9" />
-              ) : (
-                <HatchLogo className="w-9 h-9" />
-              )}
+              <Image src="/assets/hatchit_definitive.svg" alt="HatchIt" width={36} height={36} className="w-9 h-9" />
             </motion.div>
           </Link>
           
@@ -175,7 +169,7 @@ export default function Navigation() {
                 <div className="flex flex-col">
                   <span className="font-bold text-white flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <HatchLogo className="w-6 h-6" />
+                    <Image src="/assets/hatchit_definitive.svg" alt="HatchIt" width={24} height={24} className="w-6 h-6" />
                   </span>
                   <span className="text-[10px] text-zinc-500 ml-4">Powered by <span className="text-violet-400">The Architect</span></span>
                 </div>

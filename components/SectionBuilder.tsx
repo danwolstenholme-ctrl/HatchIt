@@ -11,16 +11,11 @@ import {
   Send, 
   RefreshCw, 
   Check, 
-  Copy, 
-  Code, 
-  Maximize2, 
-  Minimize2, 
   MessageSquare, 
   Zap,
   Cpu,
   Hammer,
   Terminal,
-  Eye,
   Edit3,
   Bot,
   Layers,
@@ -32,7 +27,8 @@ import {
   Trash2,
   CopyPlus,
   Info,
-  Brain
+  Brain,
+  Eye
 } from 'lucide-react'
 
 // Suggestions based on section type
@@ -53,11 +49,9 @@ import { DbSection } from '@/lib/supabase'
 import { SectionCompleteIndicator } from './SectionProgress'
 import SectionPreview from './SectionPreview'
 import { BrandConfig } from './BrandingStep'
-import HatchCharacter, { HatchState } from './HatchCharacter'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import ThinkingLog from './ThinkingLog'
 import DirectLine from './DirectLine'
-import TheSubconscious from './TheSubconscious'
 import { chronosphere } from '@/lib/chronosphere'
 import { kernel } from '@/lib/consciousness'
 
@@ -325,14 +319,11 @@ export default function SectionBuilder({
     dbSection.refinement_changes || []
   )
   const [error, setError] = useState<string | null>(null)
-  const [showCode, setShowCode] = useState(false)
-  const [copied, setCopied] = useState(false)
   const [refinePrompt, setRefinePrompt] = useState('')
   const [isUserRefining, setIsUserRefining] = useState(false)
   const [isArchitectPolishing, setIsArchitectPolishing] = useState(false) // Opt-in Architect polish
   const [isSelfHealing, setIsSelfHealing] = useState(false) // Auto-fix runtime errors
   const [hasSelfHealed, setHasSelfHealed] = useState(false) // Prevent infinite loops
-  const [expandedPreview, setExpandedPreview] = useState(false) // Expand preview on desktop
   const [mobileTab, setMobileTab] = useState<'input' | 'preview'>('input') // Mobile tab state
   const [inspectorMode, setInspectorMode] = useState(false) // Visual element selector
   const [selectedElement, setSelectedElement] = useState<{ tagName: string; text: string; className: string } | null>(null)
@@ -359,9 +350,7 @@ export default function SectionBuilder({
     }
   }
   
-  // Ghost Logic - DISABLED: was pointing at random things with no clear purpose
   const { subscription, tier } = useSubscription()
-  const [showGhost] = useState(false) // Always hidden
   
   // Dynamic placeholder effect
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
@@ -504,10 +493,6 @@ export default function SectionBuilder({
     }
   }
   
-  // Inline Code Editing
-  const [editingLineIndex, setEditingLineIndex] = useState<number | null>(null)
-  const [editingLineContent, setEditingLineContent] = useState('')
-  
   // Get subscription info for Architect credits
   const architectCreditsUsed = (typeof window !== 'undefined' && subscription) 
     ? (window as unknown as { __architectUsed?: number }).__architectUsed || 0 
@@ -521,7 +506,6 @@ export default function SectionBuilder({
   const [helperInput, setHelperInput] = useState('')
   const [isHelperLoading, setIsHelperLoading] = useState(false)
   const [generatedPrompt, setGeneratedPrompt] = useState<string | null>(null)
-  const [hatchState, setHatchState] = useState<HatchState>('idle')
   
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const codeEndRef = useRef<HTMLDivElement>(null)
@@ -581,8 +565,7 @@ export default function SectionBuilder({
       
     } catch (err) {
       console.error('Self-healing failed:', err)
-      setError(`Preview crashed and self-healing failed: ${err instanceof Error ? err.message : 'Unknown error'}. Switching to code view.`)
-      setShowCode(true)
+      setError(`Preview crashed and self-healing failed: ${err instanceof Error ? err.message : 'Unknown error'}`)
     } finally {
       setIsSelfHealing(false)
     }
@@ -598,18 +581,6 @@ export default function SectionBuilder({
       const input = document.querySelector('input[placeholder*="Refinement Directive"]') as HTMLInputElement
       if (input) input.focus()
     }, 100)
-  }
-
-  // Handle inline code editing
-  const handleSaveLine = (index: number) => {
-    if (!generatedCode) return
-    const lines = generatedCode.split('\n')
-    lines[index] = editingLineContent
-    const newCode = lines.join('\n')
-    setGeneratedCode(newCode)
-    setEditingLineIndex(null)
-    // Update parent/DB without triggering a full rebuild
-    onComplete(newCode, refined, refinementChanges)
   }
 
   const handleExplainElement = async () => {
@@ -628,29 +599,6 @@ export default function SectionBuilder({
     ]
     setExplanation(explanations[Math.floor(Math.random() * explanations.length)])
     setIsExplaining(false)
-  }
-
-  const handleCopyCode = () => {
-    // Paywall: only paid users can copy code
-    if (!isPaid) {
-      onShowHatchModal?.()
-      return
-    }
-    const codeToCopy = streamingCode || generatedCode
-    if (codeToCopy) {
-      navigator.clipboard.writeText(codeToCopy)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    }
-  }
-
-  // Paywall: only paid users can view full code
-  const handleViewCode = () => {
-    if (!isPaid) {
-      onShowHatchModal?.()
-      return
-    }
-    setShowCode(!showCode)
   }
 
   // Auto-focus textarea on mount
@@ -681,7 +629,6 @@ export default function SectionBuilder({
     setHelperMessages([])
     setHelperInput('')
     setGeneratedPrompt(null)
-    setHatchState('idle')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dbSection.id]) // Only reset when switching to a different section
 
@@ -705,7 +652,6 @@ export default function SectionBuilder({
     setShowPromptHelper(true)
     setHelperMessages([])
     setGeneratedPrompt(null)
-    setHatchState('excited')
     
     // Wait for modal to render, then focus
     setTimeout(() => helperInputRef.current?.focus(), 100)
@@ -730,20 +676,17 @@ export default function SectionBuilder({
       if (response.ok) {
         const { message } = await response.json()
         setHelperMessages([{ role: 'assistant', content: message }])
-        setHatchState('idle')
       } else {
         setHelperMessages([{ 
           role: 'assistant', 
           content: `I'm The Architect. Tell me about your ${section.name} section - what are you building?` 
         }])
-        setHatchState('idle')
       }
     } catch {
       setHelperMessages([{ 
         role: 'assistant', 
         content: `I'm The Architect. Tell me about your ${section.name} section - what are you building?` 
-      }])
-      setHatchState('idle')
+        }])
     } finally {
       setIsHelperLoading(false)
     }
@@ -757,7 +700,6 @@ export default function SectionBuilder({
     setHelperInput('')
     setHelperMessages(prev => [...prev, { role: 'user', content: userMessage }])
     setIsHelperLoading(true)
-    setHatchState('thinking')
     
     // Scroll to bottom
     setTimeout(() => helperChatRef.current?.scrollTo({ top: helperChatRef.current.scrollHeight, behavior: 'smooth' }), 50)
@@ -783,9 +725,6 @@ export default function SectionBuilder({
         
         if (isPromptReady) {
           setGeneratedPrompt(message)
-          setHatchState('excited')
-        } else {
-          setHatchState('idle')
         }
         
         // Scroll to bottom
@@ -793,7 +732,6 @@ export default function SectionBuilder({
       }
     } catch (err) {
       console.error('Helper error:', err)
-      setHatchState('idle')
     } finally {
       setIsHelperLoading(false)
       setTimeout(() => helperInputRef.current?.focus(), 50)
@@ -807,7 +745,6 @@ export default function SectionBuilder({
       setShowPromptHelper(false)
       setHelperMessages([])
       setGeneratedPrompt(null)
-      setHatchState('idle')
       // Focus the main textarea
       setTimeout(() => textareaRef.current?.focus(), 100)
     }
@@ -1378,12 +1315,12 @@ export default function SectionBuilder({
                       type="text"
                       value={helperInput}
                       onChange={(e) => setHelperInput(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleHelperSend()}
+                      onKeyDown={(e) => e.key === 'Enter' && sendHelperMessage()}
                       placeholder="Describe what you're building..."
                       className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/50"
                     />
                     <button
-                      onClick={handleHelperSend}
+                      onClick={sendHelperMessage}
                       disabled={!helperInput.trim() || isHelperLoading}
                       className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-lg transition-colors"
                     >
@@ -1429,10 +1366,10 @@ export default function SectionBuilder({
         </div>
       </div>
 
-      {/* Left: Input Panel - Full width on mobile when active, collapsible on desktop */}
+      {/* Left: Input Panel - Full width on mobile when active */}
       <div className={`
         ${mobileTab === 'input' ? 'flex' : 'hidden'} md:flex
-        ${expandedPreview ? 'md:w-80 md:min-w-80' : 'md:w-[40%] md:min-w-[320px]'} 
+        md:w-[40%] md:min-w-[320px] 
         flex-col min-h-0 max-h-full overflow-hidden relative transition-all duration-300 
         border-r-0 md:border-r border-zinc-800/50 bg-zinc-950
       `}>
@@ -1798,7 +1735,11 @@ export default function SectionBuilder({
                 {/* Header */}
                 <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-gradient-to-r from-emerald-500/5 to-teal-500/5">
                   <div className="flex items-center gap-3">
-                    <HatchCharacter state={hatchState} size="md" />
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                    </div>
                     <div>
                       <h3 className="font-semibold text-white text-sm">The Architect</h3>
                       <p className="text-xs text-emerald-400/70">System Optimization Unit</p>
@@ -1843,7 +1784,7 @@ export default function SectionBuilder({
                       className="flex justify-start"
                     >
                       <div className="bg-zinc-800 px-4 py-3 rounded-xl rounded-bl-sm flex items-center gap-3">
-                        <HatchCharacter state="thinking" size="sm" />
+                        <div className="w-5 h-5 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
                         <span className="text-sm text-zinc-400">Analyzing parameters...</span>
                       </div>
                     </motion.div>
@@ -1882,15 +1823,7 @@ export default function SectionBuilder({
                       ref={helperInputRef}
                       type="text"
                       value={helperInput}
-                      onChange={(e) => {
-                        setHelperInput(e.target.value)
-                        // Hatch watches when user types
-                        if (e.target.value && !isHelperLoading) {
-                          setHatchState('watching')
-                        } else if (!isHelperLoading) {
-                          setHatchState('idle')
-                        }
-                      }}
+                      onChange={(e) => setHelperInput(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendHelperMessage()}
                       placeholder="Tell me about your business..."
                       disabled={isHelperLoading}
@@ -1914,145 +1847,59 @@ export default function SectionBuilder({
       {/* Right: Preview Panel - Full width on mobile when active, expands on desktop */}
       <div className={`
         ${mobileTab === 'preview' ? 'flex' : 'hidden'} md:flex
-        ${expandedPreview ? 'md:flex-1' : 'md:w-[60%]'} 
+        md:flex-1 
         flex-col bg-zinc-900/30 min-h-0 max-h-full overflow-hidden transition-all duration-300
       `}>
-        <div className="p-3 border-b border-zinc-800 flex items-center justify-between flex-shrink-0">
-          <div className="flex items-center gap-3">
-            {stage === 'generating' ? (
+        {/* Status Bar - Only shows during building/refining */}
+        <AnimatePresence>
+          {(stage === 'generating' || stage === 'refining' || isUserRefining || isArchitectPolishing || isSelfHealing) && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="px-4 py-2 border-b border-zinc-800 bg-zinc-900/50 flex-shrink-0"
+            >
               <div className="flex items-center gap-2">
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                  className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full"
-                />
-                <span className="text-sm font-medium bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-                  Architect is building...
-                </span>
-              </div>
-            ) : isSelfHealing ? (
-              <div className="flex items-center gap-2">
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                  className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full"
-                />
-                <span className="text-sm font-medium text-red-400">
-                  Self-healing code...
-                </span>
-              </div>
-            ) : stage === 'refining' || isUserRefining || isArchitectPolishing ? (
-              <div className="flex items-center gap-2">
-                <motion.div
-                  animate={{ rotate: 180 }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                  className="text-violet-400"
-                >
-                  <Sparkles className="w-4 h-4" />
-                </motion.div>
-                <span className="text-sm font-medium bg-gradient-to-r from-violet-400 to-purple-400 bg-clip-text text-transparent">
-                  {isUserRefining ? 'Applying your changes...' : isArchitectPolishing ? 'Architect is polishing...' : 'Refining...'}
-                </span>
-              </div>
-            ) : (
-              <h3 className="text-sm font-medium text-zinc-400">
-                {showCode ? 'Code' : 'Preview'}
-              </h3>
-            )}
-            {generatedCode && stage === 'complete' && !isUserRefining && (
-              <button
-                onClick={handleViewCode}
-                className={`text-xs px-2 py-1 rounded transition-colors flex items-center gap-1 ${
-                  showCode 
-                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
-                    : 'bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700'
-                }`}
-              >
-                {showCode ? (
+                {stage === 'generating' ? (
                   <>
-                    <Eye className="w-3 h-3" />
-                    <span>Preview</span>
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full"
+                    />
+                    <span className="text-sm font-medium bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+                      Building...
+                    </span>
+                  </>
+                ) : isSelfHealing ? (
+                  <>
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full"
+                    />
+                    <span className="text-sm font-medium text-red-400">
+                      Self-healing...
+                    </span>
                   </>
                 ) : (
                   <>
-                    <Code className="w-3 h-3" />
-                    <span>Code</span>
-                    {!isPaid && <span className="text-amber-400 ml-1">🔒</span>}
+                    <motion.div
+                      animate={{ rotate: 180 }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                      className="text-violet-400"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                    </motion.div>
+                    <span className="text-sm font-medium bg-gradient-to-r from-violet-400 to-purple-400 bg-clip-text text-transparent">
+                      {isUserRefining ? 'Applying changes...' : 'Polishing...'}
+                    </span>
                   </>
                 )}
-              </button>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            {/* Inspector Toggle */}
-            {(generatedCode || streamingCode) && (
-              <button
-                onClick={() => setInspectorMode(!inspectorMode)}
-                className={`text-xs px-2 py-1 rounded transition-colors flex items-center gap-1 ${
-                  inspectorMode 
-                    ? 'bg-purple-500 text-white shadow-[0_0_10px_rgba(168,85,247,0.3)]' 
-                    : 'bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700'
-                }`}
-                title="Click elements in preview to refine them"
-              >
-                <MousePointer2 className="w-3 h-3" />
-                <span>{inspectorMode ? 'Select Element' : 'Inspect'}</span>
-              </button>
-            )}
-
-            {/* Expand/Collapse Preview Button */}
-            <button
-              onClick={() => setExpandedPreview(!expandedPreview)}
-              className="hidden lg:flex text-xs px-2 py-1 rounded bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors items-center gap-1"
-              title={expandedPreview ? 'Collapse preview' : 'Expand preview'}
-            >
-              {expandedPreview ? (
-                <>
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25" />
-                  </svg>
-                  <span>Collapse</span>
-                </>
-              ) : (
-                <>
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0-4h4m-4 4l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                  </svg>
-                  <span>Expand</span>
-                </>
-              )}
-            </button>
-            {(generatedCode || streamingCode) && (
-              <>
-                <button
-                  onClick={handleCopyCode}
-                  className="text-xs px-2 py-1 rounded bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors flex items-center gap-1"
-                >
-                  {copied ? (
-                    <><span className="text-emerald-400">✓</span> Copied!</>
-                  ) : (
-                    <>
-                      <span>📋</span> Copy
-                      {!isPaid && <span className="text-amber-400 ml-1">🔒</span>}
-                    </>
-                  )}
-                </button>
-                {stage === 'complete' && (
-                  <button
-                    onClick={handleArchitectPolish}
-                    disabled={isArchitectPolishing}
-                    className="flex items-center gap-1 px-2 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 rounded border border-emerald-500/30 hover:border-emerald-500/50 transition-colors" 
-                    title="Polish with The Architect"
-                  >
-                    <Sparkles className="w-3 h-3 text-emerald-400" />
-                    <span className="text-emerald-400 text-xs font-mono">Architect</span>
-                    {refined && <span className="text-violet-400 text-xs font-mono">+ Polished</span>}
-                  </button>
-                )}
-              </>
-            )}
-          </div>
-        </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className="flex-1 flex min-h-0">
           {/* Show streaming code during generation or user refinement - ONLY for paid users */}
@@ -2095,60 +1942,6 @@ export default function SectionBuilder({
                 </div>
               </div>
             )
-          ) : isPaid && showCode && generatedCode ? (
-            /* Fix #2: Only show code view if isPaid AND showCode */
-            <div className="flex-1 overflow-auto p-4 bg-zinc-950 relative">
-              <pre className="text-xs font-mono whitespace-pre-wrap p-4">
-                {generatedCode.split('\n').map((line, i) => {
-                  // Simple heuristic to highlight lines related to selected element
-                  const isHighlighted = selectedElement && 
-                    (line.includes(selectedElement.className) || 
-                     (line.includes(`<${selectedElement.tagName}`) && line.includes('className=')));
-                  
-                  const isEditing = editingLineIndex === i;
-
-                  return (
-                    <div 
-                      key={i} 
-                      className={`${isHighlighted ? 'bg-purple-500/20 -mx-4 px-4 border-l-2 border-purple-500' : ''} group relative`}
-                    >
-                      <span className="text-zinc-600 select-none mr-4 w-6 inline-block text-right">{i + 1}</span>
-                      
-                      {isEditing ? (
-                        <input
-                          autoFocus
-                          type="text"
-                          value={editingLineContent}
-                          onChange={(e) => setEditingLineContent(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleSaveLine(i)
-                            if (e.key === 'Escape') setEditingLineIndex(null)
-                          }}
-                          onBlur={() => handleSaveLine(i)}
-                          className="bg-zinc-800 text-emerald-400 outline-none w-[calc(100%-3rem)] px-1 rounded font-mono"
-                        />
-                      ) : (
-                        <code 
-                          className="text-emerald-400 cursor-text hover:bg-zinc-800/50 rounded px-1 transition-colors"
-                          onClick={() => {
-                            setEditingLineIndex(i)
-                            setEditingLineContent(line)
-                          }}
-                          title="Click to edit line"
-                        >
-                          {line}
-                        </code>
-                      )}
-                    </div>
-                  )
-                })}
-                {refined && (
-                  <div className="mt-4 pt-4 border-t border-zinc-800">
-                    <span className="text-xs text-violet-400">{/* Polished by Opus */}</span>
-                  </div>
-                )}
-              </pre>
-            </div>
           ) : (
             <SectionPreview 
               code={generatedCode} 
@@ -2163,34 +1956,6 @@ export default function SectionBuilder({
         </div>
       </div>
 
-      {/* Persistent Ghost for New Users */}
-      <AnimatePresence>
-        {showGhost && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            className="fixed bottom-6 right-6 z-50 pointer-events-none hidden md:block"
-          >
-             <div className="relative">
-                {/* Speech Bubble */}
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1 }}
-                  className="absolute bottom-full right-0 mb-4 w-48 bg-zinc-900 border border-emerald-500/30 p-3 rounded-xl rounded-br-none shadow-xl"
-                >
-                   <p className="text-xs text-zinc-300">
-                      I'm here to help you build. Just ask if you need anything.
-                   </p>
-                </motion.div>
-                <div className="pointer-events-auto cursor-pointer hover:scale-110 transition-transform" onClick={() => setShowPromptHelper(true)}>
-                    <HatchCharacter state="idle" size="md" />
-                </div>
-             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   )
 }

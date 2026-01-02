@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import HatchLogo from './HatchLogo'
 
 export default function Footer() {
   const pathname = usePathname()
@@ -20,7 +19,7 @@ export default function Footer() {
         <div className="grid md:grid-cols-4 gap-12 mb-16">
           <div className="col-span-1 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-6 group">
-              <HatchLogo className="w-8 h-8 group-hover:rotate-12 transition-transform duration-300" />
+              <Image src="/assets/hatchit_definitive.svg" alt="HatchIt" width={32} height={32} className="w-8 h-8 group-hover:rotate-12 transition-transform duration-300" />
             </Link>
             <p className="text-sm text-zinc-500 leading-relaxed mb-6">
               Build real websites with AI. <span className="text-white">The Architect</span> creates production-ready code you own.

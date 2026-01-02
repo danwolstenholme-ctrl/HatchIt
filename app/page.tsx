@@ -254,7 +254,7 @@ function SystemStatus() {
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-zinc-500">
             <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-emerald-500/70" />React + Tailwind</span>
             <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-emerald-500/70" />Fully Responsive</span>
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-emerald-500/70" />Export Code</span>
+            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-emerald-500/70" />Live Preview</span>
             <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-emerald-500/70" />No Account Needed</span>
           </div>
         </div>
@@ -568,20 +568,17 @@ export default function Home() {
 
               {/* Trust badges */}
               <motion.div
-                className="flex flex-wrap gap-4 sm:gap-6 text-sm text-zinc-500 font-mono"
+                className="flex flex-wrap gap-3 sm:gap-4 text-sm"
                 {...getAnimation(0.4, 10)}
               >
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/50 rounded-lg border border-zinc-800">
-                  <Shield className="w-4 h-4 text-emerald-500" />
-                  <span>Your Code</span>
+                <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 rounded-full border border-emerald-500/20">
+                  <span className="text-emerald-400 font-semibold">100% Yours</span>
+                  <span className="text-zinc-500">— export anytime</span>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/50 rounded-lg border border-zinc-800">
-                  <Zap className="w-4 h-4 text-amber-500" />
-                  <span>30s Builds</span>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/50 rounded-lg border border-zinc-800">
-                  <Globe className="w-4 h-4 text-cyan-500" />
-                  <span>Free to Try</span>
+                <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500/10 to-amber-500/5 rounded-full border border-amber-500/20">
+                  <Zap className="w-4 h-4 text-amber-400" />
+                  <span className="text-amber-400 font-semibold">30 Seconds</span>
+                  <span className="text-zinc-500">to first build</span>
                 </div>
               </motion.div>
             </div>
@@ -598,47 +595,51 @@ export default function Home() {
         </div>
       </section>
 
-
-
-      {/* THE STACK */}
-      <Section className="px-6 py-24">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl sm:text-5xl font-bold mb-4">Real code. Real ownership.</h2>
-            <p className="text-xl text-zinc-400 max-w-2xl mx-auto">Not proprietary lock-in. Standard React + Tailwind you can take anywhere.</p>
+      {/* THE STACK - Flows from hero into CTA */}
+      <Section className="px-6 py-20 relative overflow-hidden">
+        {/* Background effects - softer gradients */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-emerald-950/10 to-transparent pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[600px] bg-radial-gradient rounded-full opacity-30 pointer-events-none" style={{ background: 'radial-gradient(ellipse at center, rgba(16,185,129,0.08) 0%, rgba(20,184,166,0.04) 40%, transparent 70%)' }} />
+        
+        <div className="max-w-6xl mx-auto relative z-10">
+          <div className="text-center mb-12">
+            <motion.h2 
+              className="text-3xl sm:text-4xl font-bold mb-3"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              Real code. <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">Real ownership.</span>
+            </motion.h2>
+            <p className="text-lg text-zinc-500 max-w-xl mx-auto">Standard React + Tailwind. No lock-in. Take it anywhere.</p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { name: 'React 19', icon: <Code2 className="w-6 h-6" />, desc: 'Latest React' },
-              { name: 'Tailwind CSS', icon: <Layout className="w-6 h-6" />, desc: 'Utility-first' },
-              { name: 'TypeScript', icon: <Terminal className="w-6 h-6" />, desc: 'Type-safe' },
-              { name: 'Responsive', icon: <Smartphone className="w-6 h-6" />, desc: 'Mobile-first' },
-              { name: 'Accessible', icon: <CheckCircle2 className="w-6 h-6" />, desc: 'WCAG ready' },
-              { name: 'SEO Ready', icon: <Globe className="w-6 h-6" />, desc: 'Optimized' },
-              { name: 'Fast', icon: <Zap className="w-6 h-6" />, desc: 'Performance' },
-              { name: 'Yours', icon: <Shield className="w-6 h-6" />, desc: '100% ownership' },
+              { name: 'React 19', icon: <Code2 className="w-5 h-5" />, desc: 'Latest', color: 'from-cyan-500/20 to-cyan-500/5 border-cyan-500/20 hover:border-cyan-500/40' },
+              { name: 'Tailwind', icon: <Layout className="w-5 h-5" />, desc: 'Utility-first', color: 'from-sky-500/20 to-sky-500/5 border-sky-500/20 hover:border-sky-500/40' },
+              { name: 'TypeScript', icon: <Terminal className="w-5 h-5" />, desc: 'Type-safe', color: 'from-blue-500/20 to-blue-500/5 border-blue-500/20 hover:border-blue-500/40' },
+              { name: 'Responsive', icon: <Smartphone className="w-5 h-5" />, desc: 'Mobile-first', color: 'from-violet-500/20 to-violet-500/5 border-violet-500/20 hover:border-violet-500/40' },
+              { name: 'Accessible', icon: <CheckCircle2 className="w-5 h-5" />, desc: 'WCAG', color: 'from-emerald-500/20 to-emerald-500/5 border-emerald-500/20 hover:border-emerald-500/40' },
+              { name: 'SEO Ready', icon: <Globe className="w-5 h-5" />, desc: 'Optimized', color: 'from-teal-500/20 to-teal-500/5 border-teal-500/20 hover:border-teal-500/40' },
+              { name: 'Fast', icon: <Zap className="w-5 h-5" />, desc: '90+ Lighthouse', color: 'from-amber-500/20 to-amber-500/5 border-amber-500/20 hover:border-amber-500/40' },
+              { name: 'Yours', icon: <Shield className="w-5 h-5" />, desc: '100%', color: 'from-emerald-500/20 to-emerald-500/5 border-emerald-500/20 hover:border-emerald-500/40' },
             ].map((tech, i) => (
               <motion.div 
                 key={i} 
-                className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl text-center hover:border-emerald-500/30 transition-colors gpu-accelerate"
+                className={`p-4 bg-gradient-to-br ${tech.color} border rounded-xl text-center transition-all gpu-accelerate`}
                 style={{ willChange: 'transform, opacity' }}
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: i * 0.05, ease: [0.25, 0.1, 0.25, 1] }}
-                whileHover={{ scale: 1.05, y: -4 }}
+                transition={{ duration: 0.3, delay: i * 0.05 }}
+                whileHover={{ scale: 1.03, y: -2 }}
               >
-                <motion.div 
-                  className="w-12 h-12 mx-auto bg-zinc-800 rounded-lg flex items-center justify-center mb-3 text-zinc-400"
-                  style={{ willChange: 'transform' }}
-                  whileHover={{ scale: 1.1, color: '#10b981' }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-                >
+                <div className="w-10 h-10 mx-auto bg-zinc-900/80 rounded-lg flex items-center justify-center mb-2 text-zinc-300">
                   {tech.icon}
-                </motion.div>
-                <div className="font-medium text-sm">{tech.name}</div>
-                <div className="text-xs text-zinc-600 font-mono mt-1">{tech.desc}</div>
+                </div>
+                <div className="font-semibold text-sm text-white">{tech.name}</div>
+                <div className="text-xs text-zinc-500 mt-0.5">{tech.desc}</div>
               </motion.div>
             ))}
           </div>
