@@ -8,6 +8,7 @@ import { Lock, CreditCard, ArrowRight } from 'lucide-react'
 import BuildFlowController from '@/components/BuildFlowController'
 import TheDream from '@/components/TheDream'
 import TheSubconscious from '@/components/TheSubconscious'
+import WelcomeModal from '@/components/WelcomeModal'
 import { AccountSubscription } from '@/types/subscriptions'
 
 // =============================================================================
@@ -193,6 +194,7 @@ export default function Home() {
     }>
       <TheDream />
       <TheSubconscious />
+      <WelcomeModal trigger="guest" />
       <BuilderContent />
     </Suspense>
   )
