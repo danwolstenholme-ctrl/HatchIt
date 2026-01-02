@@ -854,6 +854,7 @@ export default function Home() {
                 {[
                   { text: '3 Active Projects', included: true },
                   { text: 'Unlimited AI Generations', included: true },
+                  { text: '5 AI Polishes / month', included: true },
                   { text: 'Download Source Code', included: true },
                   { text: 'Deploy to hatchitsites.dev', included: true },
                   { text: 'Custom Domain', included: false },
@@ -890,7 +891,7 @@ export default function Home() {
               <ul className="space-y-3 mb-8">
                 {[
                   'Unlimited Generations',
-                  'Unlimited AI Refinements',
+                  'Up to 30 AI Polishes / month',
                   'Deploy to Custom Domain',
                   'Remove HatchIt Branding',
                   'Priority Code Export',

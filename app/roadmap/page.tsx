@@ -48,7 +48,7 @@ Cycles through 6 thoughts every 4 seconds with fade animation. Makes the System 
         date: 'Dec 2025',
         technicalDetails: `Moved generation tracking from in-memory Map to Supabase. Added generation_count and generation_date columns to users table with atomic increment function.
 
-Free tier now properly enforces 5/day limit. Previously, serverless cold starts would reset the counter, allowing unlimited generations.`
+    Guest flow now enforces the unified 9-credit pool (build/refine/dream) before signup. Previously, serverless cold starts would reset counters, allowing excess usage.`
       },
       { 
         title: 'Security Protocols', 

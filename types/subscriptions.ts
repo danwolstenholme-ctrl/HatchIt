@@ -35,14 +35,14 @@ export const PRICING_TIERS: Record<string, PricingTier> = {
     price: 9,
     generationsPerDay: -1, // Unlimited
     architectRefinementsPerMonth: 5,
-    features: ['Unlimited Generations', '3 Active Projects', 'Code Download', 'Deploy to hatchitsites.dev'],
+    features: ['Unlimited Generations', '5 AI Polishes / month', '3 Active Projects', 'Code Download', 'Deploy to hatchitsites.dev'],
   },
   pro: {
     name: 'pro',
     price: 29,
     generationsPerDay: -1,
-    architectRefinementsPerMonth: -1,
-    features: ['Unlimited generations', 'Unlimited Architect refinements', 'Full code export', 'Custom domains', 'Remove HatchIt Branding', 'The Living Site (Evolution Engine)'],
+    architectRefinementsPerMonth: 30,
+    features: ['Unlimited generations', '≈30 AI Polishes / month', 'Full code export', 'Custom domains', 'Remove HatchIt Branding', 'The Living Site (Evolution Engine)'],
   },
   agency: {
     name: 'agency',

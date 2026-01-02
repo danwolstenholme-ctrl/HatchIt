@@ -58,15 +58,15 @@ export default function FAQPage() {
     questions: [
       {
         q: 'What are the resource costs?',
-        a: 'System access is tiered. Free Tier grants 5 generations to complete your site. Starter Tier ($9/mo) unlocks unlimited generation and deploy for up to 3 sites. Pro Tier ($29/mo) grants unlimited everything. Agency Tier ($99/mo) adds white-label capabilities and priority support.',
+        a: 'System access is tiered. Guest access grants 9 pooled credits across build/refine/dream before signup. Starter ($9/mo) offers unlimited generations and 5 AI polishes per month for up to 3 active projects. Pro ($29/mo) keeps unlimited generations with ~30 AI polishes per month (configurable). Agency ($99/mo) removes limits and adds white-label + priority support.',
       },
       {
         q: 'Is there a trial protocol?',
-        a: 'The Free Tier serves as an indefinite trial protocol, allowing full access to the builder and preview modules with daily generation limits.',
+        a: 'Yes. Guests can build with 9 pooled credits and full preview; signup is required to keep building, export, or deploy.',
       },
       {
         q: 'What is included in the Pro Tier?',
-        a: 'Unlimited generation cycles, global deployment to hatchitsites.dev, full source code export, version history retention, and cross-device state synchronization.',
+        a: 'Unlimited generations, ~30 AI polishes per month, full source export, custom domains, remove branding, and the Living Site evolution engine.',
       },
     ],
   },

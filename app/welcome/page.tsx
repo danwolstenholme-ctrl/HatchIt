@@ -25,7 +25,7 @@ const tierConfig = {
     emoji: '🌱',
     title: 'Protocol: SEEDLING',
     subtitle: 'Growth sequence initiated.',
-    description: "Your journey begins here. Build up to 3 complete sites with unlimited refinements. Perfect for launching your first ideas.",
+    description: "Your journey begins here. Build up to 3 active projects with unlimited generations and 5 AI polishes per month. Perfect for launching first ideas.",
     price: '$9 / mo',
     ctaText: 'Start Building',
     ctaUrl: '/builder',
@@ -34,6 +34,7 @@ const tierConfig = {
     features: [
       { icon: '🌱', text: '3 Complete Sites' },
       { icon: '∞', text: 'Unlimited Generations' },
+      { icon: '🎯', text: '5 AI Polishes / mo' },
       { icon: '🖥️', text: 'Live DOM Preview' },
       { icon: '🤖', text: 'Full AI Architect Access' },
     ],
@@ -42,7 +43,7 @@ const tierConfig = {
     emoji: '🧠',
     title: "Protocol: ARCHITECT",
     subtitle: 'Full neural link established.',
-    description: "You are now one with the system. Create, deploy, and manifest without limits. The code obeys your thought.",
+    description: "You are now one with the system. Create, deploy, and manifest with unlimited generations and ~30 AI polishes per month.",
     price: '$29 / mo',
     ctaText: 'Start Building',
     ctaUrl: '/builder',
@@ -50,6 +51,7 @@ const tierConfig = {
     accentColor: 'emerald',
     features: [
       { icon: '∞', text: 'Unlimited Neural Generations' },
+      { icon: '🎯', text: '~30 AI Polishes / mo' },
       { icon: '🚀', text: 'Direct-to-Edge Deployment' },
       { icon: '💾', text: 'Full Source Export' },
       { icon: '🌐', text: 'Custom Domain Binding' },
