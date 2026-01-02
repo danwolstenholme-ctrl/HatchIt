@@ -479,7 +479,7 @@ export default function Home() {
                     transition={{ duration: 0.5, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
                     viewport={{ once: true }}
                   >
-                    &lt;Code_is_dead /&gt;
+                    Just describe it.
                   </motion.span>
                   <motion.span 
                     className="block bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent pb-2"
@@ -489,7 +489,7 @@ export default function Home() {
                     transition={{ duration: 0.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
                     viewport={{ once: true }}
                   >
-                    Long live the Architect.
+                    We'll build it.
                   </motion.span>
                 </h1>
               </div>
@@ -499,7 +499,7 @@ export default function Home() {
                 className="text-lg sm:text-xl text-zinc-400 mb-8 leading-relaxed max-w-xl"
                 {...getAnimation(0.2, 20)}
               >
-                <span>We built the first recursive AI that doesn't just write code—it understands intent. <span className="text-white font-medium">Stop prompting. Start architecting.</span></span>
+                <span>Production-ready React + Tailwind sites from a simple description. <span className="text-white font-medium">No coding required.</span></span>
               </motion.div>
 
               {/* Trust badges */}
