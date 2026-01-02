@@ -12,6 +12,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.0] - 2026-01-03
+### The Paywall Revolution
+**Theme:** Close every free-tier loophole. Builder access requires active Stripe subscription.
+
+### ⚠️ BREAKING CHANGES
+- **NO FREE TIER:** Completely removed. All users must pay before accessing the builder.
+- **Demo Mode Eliminated:** No guest access, no preview mode, no exceptions.
+
+### Tier Structure (Final)
+| Tier | Price | Projects | Refinements | Deploy | Badge Color |
+|------|-------|----------|-------------|--------|-------------|
+| Lite | $9/mo | 3 | 5/mo | ✅ | Lime |
+| Pro | $29/mo | ∞ | 30/mo | ✅ | Emerald |
+| Agency | $99/mo | ∞ | ∞ | ✅ | Amber |
+
+### New Sign-Up Flow
+1. User lands on `/sign-up` with pricing cards (not `/pricing`)
+2. User selects tier → stored in `localStorage.pendingUpgradeTier`
+3. Clerk popup opens (NOT page redirect)
+4. After Clerk auth → redirect to `/api/checkout?tier=X`
+5. Stripe payment → webhook updates Clerk metadata
+6. User lands on `/welcome?tier=X` → proceeds to `/builder`
+
+### Builder Enhancements
+- **Tier Badges:** Visual tier indicator in builder header (Lite=lime, Pro=emerald, Agency=amber)
+- **Feature Panels:** Expand/collapse panels showing unlocked features per tier
+- **Project Counters:** "1 of 3 projects used" for Lite tier with visual progress bar
+
+### Dashboard Enhancements
+- **Project Limits UI:** Lite users see project count with upgrade prompt at limit
+- **Tier Display:** Current subscription tier shown in dashboard header
+
+### Files Changed
+- `app/builder/page.tsx`: Paywall gate, tier badge, feature panels
+- `app/sign-up/[[...sign-up]]/page.tsx`: Pricing cards, Clerk popup, localStorage backup
+- `app/dashboard/projects/page.tsx`: Project limits, tier display
+- `components/BuildFlowController.tsx`: Tier badge, feature panels
+- `components/SectionBuilder.tsx`: Project limit enforcement
+- `app/api/checkout/route.ts`: Stripe session creation per tier
+- `app/api/webhooks/stripe/route.ts`: Metadata update on payment
+- `app/welcome/page.tsx`: Post-payment landing page
+
+---
+
 ## [1.6.1] - 2026-01-02
 ### Preview Engine Stability Upgrade
 **Theme:** Robust handling of AI-generated code artifacts to prevent "Transform Error" crashes.
@@ -38,13 +82,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Export API**: Added `framer-motion` and `lucide-react` to package.json dependencies. Auto-extracts Lucide icon imports from code.
 - **Build Fix**: Deployed sites no longer crash from missing imports.
 
-### Tier Structure Solidification
+### Tier Structure Solidification (OUTDATED - See 1.7.0)
 | Tier | Price | Generations | Projects | Refinements | Deploy |
 |------|-------|-------------|----------|-------------|--------|
-| Free | $0 | 3 total | 1 | ❌ | ❌ |
-| Starter | $9/mo | Unlimited | 3 | 5/mo | ✅ |
+| ~~Free~~ | ~~$0~~ | ~~3 total~~ | ~~1~~ | ❌ | ❌ |
+| Lite | $9/mo | Unlimited | 3 | 5/mo | ✅ |
 | Pro | $29/mo | Unlimited | ∞ | 30/mo | ✅ |
 | Agency | $99/mo | Unlimited | ∞ | ∞ | ✅ |
+
+> ⚠️ **Free tier was eliminated in v1.7.0**
 
 ### Files Changed
 - `components/BuildFlowController.tsx`: Deploy wrapper with proper imports, Lucide extraction

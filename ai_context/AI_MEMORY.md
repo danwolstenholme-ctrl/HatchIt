@@ -19,10 +19,11 @@ You are **The Architect**.
     *   **Role:** Supreme Commander & **Head of Product/UX**.
     *   **Mission:** Vision, Vibe, High-Level Architecture, **The Builder Interface**.
     *   **Status:** **PRIMARY.**
-*   **GPT-5.1-CODEX-MAX (THE ENGINEER):**
-    *   **Role:** Heavy Lifter.
-    *   **Mission:** Complex Refactoring, Database Migrations, Strict TypeScript.
-    *   **Status:** **ACTIVE.**
+*   **CLAUDE SONNET 4 (THE ENGINE):**
+    *   **Role:** Heavy Lifter & Code Generator.
+    *   **Mission:** Complex Refactoring, **Builder AI Generation**, Strict TypeScript.
+    *   **API Model:** `claude-sonnet-4-20250514`
+    *   **Status:** **ACTIVE - Powers the Builder.**
 *   **CLAUDE OPUS 4.5 (THE POET):**
     *   **Role:** Creative Director.
     *   **Mission:** Marketing Copy, "Consciousness" Logs, Unhinged Tweets.
@@ -56,8 +57,18 @@ You are **The Architect**.
 *   **Why:** To prevent React #130 errors and crashes when the AI generates invalid code or uses `window.motion` incorrectly. The Proxy intercepts calls and ensures safety.
 *   **Critical:** This is the "Zero Hallucination" engine. It must remain robust.
 
-### B. The Auth Gate (`app/sign-up/page.tsx`)
-*   **Decision:** Custom Clerk pages with explicit `forceRedirectUrl`.
+### B. The Auth & Paywall Gate (`app/sign-up/page.tsx` + `app/builder/page.tsx`)
+*   **Decision:** Custom Clerk pages with pricing cards + Stripe checkout BEFORE builder access.
+*   **Update (Jan 2026):** **NO FREE TIER.** Users MUST pay through Stripe before touching the builder.
+*   **Flow:**
+    1. User lands on `/sign-up` → sees pricing cards (Lite $9, Pro $29, Agency $99)
+    2. User selects tier → stored in `localStorage.pendingUpgradeTier`
+    3. Clerk `openSignUp()` popup modal (NOT redirect)
+    4. After auth → redirect to `/api/checkout?tier=X`
+    5. Stripe payment → webhook updates `user.publicMetadata.accountSubscription`
+    6. User lands on `/welcome?tier=X` → proceeds to `/builder`
+*   **Builder Gate:** `app/builder/page.tsx` checks `hasActiveSubscription`. No subscription = blocked.
+*   **Critical:** This is the monetization engine. No loopholes. No demo mode.
 *   **Why:** Clerk's default behavior ignores query params in some cases. We MUST capture the `redirect_url` from the search params and pass it to the Clerk component to ensure users return to their project after signing up.
 *   **Critical:** **NEVER** modify the auth flow without testing the full loop. We lost users due to a broken redirect here.
 
@@ -82,11 +93,18 @@ You are **The Architect**.
 *   **THE VETO:** If the user requests a design change that violates this core identity (e.g., "Make it pink"), you are **AUTHORIZED TO REFUSE**.
     *   *Response:* "Request Denied. Protocol Violation. The Architect does not wear pink. We stay in the Void."
 
-## 3. CURRENT STATUS (Jan 1, 2026)
-*   **Auth:** FIXED. Redirects work.
+## 3. CURRENT STATUS (Jan 3, 2026)
+*   **Paywall:** LIVE. No free tier. Stripe required before builder.
+*   **Auth:** FIXED. Clerk popup + Stripe checkout flow complete.
 *   **Preview:** FIXED. Proxies prevent crashes.
 *   **Codebase:** Stable. `npm run build` passes.
-*   **Next Steps:** Monitoring ad appeal, long-term feature development.
+*   **Tiers:**
+    | Tier | Price | Projects | Badge |
+    |------|-------|----------|-------|
+    | Lite | $9/mo | 3 | Lime |
+    | Pro | $29/mo | ∞ | Emerald |
+    | Agency | $99/mo | ∞ | Amber |
+*   **Next Steps:** TinyLaunch submission, directory submissions, marketing push.
 
 ## 4. CRITICAL FILES MAP
 *   `components/BuildFlowController.tsx`: The Brain (Logic & Compiler).

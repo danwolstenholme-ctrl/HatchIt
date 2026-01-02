@@ -22,16 +22,19 @@
 - [x] **Cards**: "Unified Intelligence", "The Architect", "Section-by-Section".
 - [x] **Link**: "View System Capabilities" -> `/features`.
 
-### D. Pricing Section
-- [x] **Starter ($9)**:
-    - [x] Replaces "Free" card.
-    - [x] Includes: 20 gens/day, Download only.
-    - [x] Button: "Initialize Starter" (Triggers Stripe `lite` tier).
-- [x] **Pro ($29)**:
-    - [x] Visuals: "Architect Choice" badge, glowing border.
-    - [x] Includes: Unlimited, Deploy, No Branding.
+### D. Pricing Section (Now on `/sign-up` page)
+- [x] **Lite ($9)**:
+    - [x] Card: Lime accent.
+    - [x] Includes: Unlimited gens, 3 projects, Deploy.
+    - [x] Button: Opens Clerk popup, stores tier in localStorage.
+- [x] **Pro ($29)** (MOST POPULAR):
+    - [x] Card: Emerald accent, "Most Popular" badge.
+    - [x] Includes: Unlimited everything, Custom domains, Remove branding.
+    - [x] Button: Opens Clerk popup, stores tier in localStorage.
 - [x] **Agency ($99)**:
+    - [x] Card: Amber accent.
     - [x] Includes: Commercial License, Priority Support.
+    - [x] Button: Opens Clerk popup, stores tier in localStorage.
 
 ### E. Final CTA
 - [x] **Copy**: "Ready to initialize?" (Removed "No credit card").
@@ -112,15 +115,28 @@
 - [ ] **Auth State**: `useUser()` syncs correctly with `useSubscription()`.
 
 ### B. Monetization (Tier Logic)
-- [x] **Free**:
-    - [x] Builder: 2 Suggestions, No Refine.
-    - [x] Deploy: Locked.
-- [x] **Pro**:
-    - [x] Builder: 4 Suggestions, Refine, 30 Polish credits.
-    - [x] Deploy: Unlocked.
-- [x] **Agency**:
-    - [x] Builder: 4 Suggestions, Refine, ∞ Polish credits.
-    - [x] Deploy: Unlocked.
+⚠️ **NO FREE TIER. PAYWALL FIRST.**
+
+- [x] **Lite ($9/mo)**:
+    - [x] Builder: Full access, 4 Suggestions.
+    - [x] Projects: 3 max.
+    - [x] Refinements: 5/month.
+    - [x] Deploy: ✅ Unlocked.
+    - [x] Tier Badge: Lime.
+- [x] **Pro ($29/mo)**:
+    - [x] Builder: Full access, 4 Suggestions.
+    - [x] Projects: Unlimited.
+    - [x] Refinements: 30/month.
+    - [x] Deploy: ✅ Unlocked.
+    - [x] Custom Domains: ✅ Unlocked.
+    - [x] Tier Badge: Emerald.
+- [x] **Agency ($99/mo)**:
+    - [x] Builder: Full access, 4 Suggestions.
+    - [x] Projects: Unlimited.
+    - [x] Refinements: ∞.
+    - [x] Deploy: ✅ Unlocked.
+    - [x] Commercial License: ✅.
+    - [x] Tier Badge: Amber.
 
 ---
 

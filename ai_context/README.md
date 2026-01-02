@@ -1,12 +1,26 @@
 # AI CONTEXT & KNOWLEDGE BASE
 > "The central repository for The Architect's memory, branding, and operational logs."
 
+## ⚠️ CRITICAL RULES (READ FIRST)
+1. **NO FREE TIER** - Builder is 100% locked behind Stripe payment
+2. **Claude Sonnet 4** (`claude-sonnet-4-20250514`) powers the builder
+3. **Paywall Flow:** `/sign-up` → Clerk popup → Stripe checkout → `/welcome` → `/builder`
+4. **Tier Colors:** Lite=Lime, Pro=Emerald, Agency=Amber
+
 ## 📂 Directory Structure
 
 ### 🧠 Core Memory
+*   **[AI_MEMORY.md](./AI_MEMORY.md)**
+    *   **Purpose:** The "Brain" - Agent personas, model roster, and execution protocols.
+    *   **Usage:** Read this to understand agent roles and anti-paralysis rules.
+
 *   **[FOUNDER_MEMORY.md](./FOUNDER_MEMORY.md)**
     *   **Purpose:** The "Soul" of the project. Contains the Founder's profile, mission directives, and long-term vision.
     *   **Usage:** Read this at the start of every session to align with the persona.
+
+*   **[TECHNICAL_CODEX.md](./TECHNICAL_CODEX.md)**
+    *   **Purpose:** The "Blueprint" - Tier structure, env vars, and critical file paths.
+    *   **Usage:** Reference this for any tier/subscription logic changes.
 
 ### 🎨 Identity
 *   **[BRANDING.md](./BRANDING.md)**
@@ -26,6 +40,10 @@
 *   **[TECHNICAL_AUDIT.md](./TECHNICAL_AUDIT.md)**
     *   **Purpose:** Performance reports, security scans, and optimization to-do lists.
     *   **Usage:** Update when performing deep-dive code reviews.
+
+*   **[UX_MAP.md](./UX_MAP.md)**
+    *   **Purpose:** UX audit checklist and interaction map.
+    *   **Usage:** Reference for user journey and monetization logic.
 
 ### 📢 Marketing
 *   **[MARKETING_ASSETS.md](./MARKETING_ASSETS.md)**

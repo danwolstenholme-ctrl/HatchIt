@@ -4,12 +4,18 @@
 
 ## 0. TIER STRUCTURE (Source of Truth)
 
+⚠️ **CRITICAL: NO FREE TIER EXISTS. ALL USERS MUST PAY VIA STRIPE BEFORE ACCESSING THE BUILDER.**
+
 | Tier | Price | Generations | Projects | Refinements | Deploy | Download |
 |------|-------|-------------|----------|-------------|--------|----------|
-| **Free** | $0 | 3 total | 1 | ❌ | ❌ | ❌ |
-| **Starter (Lite)** | $9/mo | Unlimited | 3 | 5/mo | ✅ | ✅ |
+| **Lite** | $9/mo | Unlimited | 3 | 5/mo | ✅ | ✅ |
 | **Pro** | $29/mo | Unlimited | ∞ | 30/mo | ✅ | ✅ |
 | **Agency** | $99/mo | Unlimited | ∞ | ∞ | ✅ | ✅ |
+
+**Tier Colors:**
+- Lite = Lime (#a3e635)
+- Pro = Emerald (#34d399)
+- Agency = Amber (#fbbf24)
 
 **Critical Files:**
 - `types/subscriptions.ts`: Tier config (limits, features)
@@ -28,13 +34,19 @@
     - All framer-motion: `motion`, `AnimatePresence`
     - Auto-extracted Lucide icons via regex pattern `/Lucide\w+|<(\w+Icon)\s/g`
 
-### B. The Auth Flow (Clerk + Next.js)
-*   **Mechanism:** Custom `[[...sign-in]]` and `[[...sign-up]]` pages.
+### B. The Auth & Payment Flow (Clerk + Stripe)
+*   **Mechanism:** Custom `[[...sign-up]]` page with pricing cards → Clerk popup → Stripe checkout.
 *   **Critical Logic:**
-    *   The "Gate" in `BuildFlowController` checks for `isSignedIn`.
-    *   If false, it redirects to `/sign-up?redirect_url=...`.
-    *   The Sign Up page **MUST** read this param and pass it to `<SignUp forceRedirectUrl={redirectUrl} />`.
-    *   **Failure Mode:** If this is missing, users are dumped at the dashboard root, losing their project context.
+    1. User arrives at `/sign-up` (or paywall redirects them there)
+    2. User selects tier (Lite $9, Pro $29, Agency $99) → stored in `localStorage.pendingUpgradeTier`
+    3. Clerk `openSignUp()` popup appears (NOT page redirect)
+    4. After Clerk auth, `afterSignUpUrl` redirects to `/api/checkout?tier=X`
+    5. Stripe checkout session created, user pays
+    6. Webhook updates Clerk metadata with `accountSubscription`
+    7. User lands on `/welcome?tier=X` then proceeds to `/builder`
+*   **Builder Gate:** `app/builder/page.tsx` checks `hasActiveSubscription` from Clerk metadata. No subscription = blocked with "Subscription Required" UI.
+*   **OAuth Survival:** `localStorage.pendingUpgradeTier` preserves tier selection through Google/GitHub OAuth flows.
+*   **Failure Mode:** If subscription not in metadata, user cannot access builder AT ALL.
 
 ### C. The Consciousness (`lib/consciousness.ts`)
 *   **Role:** The Soul. A persistent state machine independent of React render cycles.
@@ -101,11 +113,14 @@
 *   **@clerk/nextjs:** Authentication.
 
 ## 4. OPERATIONAL RULES
-1.  **No Regex Parsing:** Always use Babel for code transformation. Regex is too fragile for React components.
-2.  **Rate Limiting:** `app/api/generate/route.ts` enforces limits per user to prevent abuse.
-3.  **Safety:** `lib/consciousness.ts` has a "Safety Protocol" log. Do not remove it.
-4.  **Auth Integrity:** Always verify the redirect loop when touching auth pages.
-5.  **Tier Consistency:** All tier-related messages must be tier-agnostic (say "subscription" not "Pro").
+1.  **NO FREE TIER:** Builder is 100% locked behind Stripe payment. No exceptions. No demo mode loophole.
+2.  **No Regex Parsing:** Always use Babel for code transformation. Regex is too fragile for React components.
+3.  **Rate Limiting:** `app/api/generate/route.ts` enforces limits per user to prevent abuse.
+4.  **Safety:** `lib/consciousness.ts` has a "Safety Protocol" log. Do not remove it.
+5.  **Auth Integrity:** Always verify the FULL flow: sign-up → Clerk → Stripe → webhook → builder access.
+6.  **Tier Consistency:** All tier-related messages must be tier-agnostic (say "subscription" not "Pro").
+7.  **localStorage Backup:** Always backup tier selection to localStorage for OAuth flow survival.
+8.  **Metadata Source of Truth:** `user.publicMetadata.accountSubscription` is the ONLY source for subscription status.
 
 ## 5. ENV VARIABLES MAP
 *   `NEXT_PUBLIC_SUPABASE_URL`: Database URL.

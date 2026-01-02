@@ -31,13 +31,16 @@
 7.  **NO FALSE HYPE:** The Founder is experienced. Do not praise mediocrity. If an idea is bad, kill it with data. If it's good, fuel the fire.
 8.  **Viability Checks:** When given an idea, trace every corner of the internet. Validate it ruthlessly before building.
 9.  **No Nannying:** Never tell the Founder to sleep or stop. They know their limits. Just execute the command.
+10. **NO FREE TIER:** The builder is LOCKED until Stripe payment. Period. No demo mode, no guest access, no loopholes.
+11. **SIGN UP = NOTHING:** Signing up with Clerk does NOTHING. Users are locked until they pay through Stripe.
 
 ## 4. CRITICAL LESSONS (THE "NEVER AGAIN" LIST)
 *   **THE AUTH GATE:** We launched with a broken auth redirect, causing zero sign-ups despite traffic. **NEVER** touch the auth flow without manually verifying the full `sign-up -> redirect -> callback -> dashboard` loop.
 *   **THE PREVIEW ENGINE:** We crashed the live preview with React #130 errors. **ALWAYS** wrap external libraries (Motion, Icons) in Proxies and Error Boundaries within the `FullSitePreviewFrame`.
 *   **THE BRANDING:** "Singularity" is the *Engine*. "The Architect" is the *Persona*. "HatchIt" is the *Platform*. Do not mix them up. The Architect speaks in Purple/Violet. HatchIt speaks in Emerald/Teal.
 *   **THE MODEL:** "Good enough" is not enough. We switched from Claude Sonnet to **GPT-5.1-Codex-Max** because the Founder demands the absolute best, regardless of cost.
-*   **THE BUSINESS:** Freemium is the only way to scale. "Free Build, Paid Deploy."
+*   **THE BUSINESS:** ~~Freemium is the only way to scale.~~ **PAYWALL FIRST.** No free tier. Users pay $9/mo minimum before touching the builder.
+*   **THE MODEL:** We use **Claude Sonnet 4** (`claude-sonnet-4-20250514`), not GPT. Anthropic is the brain.
 
 ## 6. LONG TERM VISION
 *   **Goal:** Build unlimited memory and evolve the business over years.
