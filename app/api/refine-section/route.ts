@@ -126,6 +126,7 @@ export async function POST(request: NextRequest) {
     
     const freeCreditsUsed = (user.publicMetadata?.freeCreditsUsed as number) || 0
     const hasActiveSub = accountSub?.status === 'active'
+    const architectUsed = (user.publicMetadata?.architectRefinementsUsed as number) || 0
 
     // Free users: allow up to FREE_REFINE_LIMIT (1), then block
     const FREE_REFINE_LIMIT = 1
@@ -142,7 +143,6 @@ export async function POST(request: NextRequest) {
     // Check Architect usage for paid tiers (Singularity is unlimited)
     // Skip check if self-healing
     if (!isSelfHealing && hasActiveSub && accountSub?.tier && accountSub.tier !== 'singularity') {
-      const architectUsed = (user.publicMetadata?.architectRefinementsUsed as number) || 0
       const resetDate = user.publicMetadata?.architectRefinementsResetDate as string | undefined
       const today = new Date().toISOString().split('T')[0]
       
