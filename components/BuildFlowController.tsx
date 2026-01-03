@@ -664,48 +664,39 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
   // AUTO-INITIALIZATION LOGIC
   useEffect(() => {
-    console.log('BuildFlowController: useEffect triggered', { existingProjectId, justCreatedProjectId, isCreatingProject, isLoaded })
-
     // If we have an existing project ID, load it
     if (existingProjectId) {
       // Optimization: If we already have this project loaded, skip
       if (project?.id === existingProjectId) {
-        console.log('BuildFlowController: Project already loaded, skipping')
         return
       }
 
-      console.log('BuildFlowController: Loading existing project', existingProjectId)
       loadExistingProject(existingProjectId)
       return
     }
 
     // If we just created a project, do nothing (we are already set up)
     if (justCreatedProjectId) {
-      console.log('BuildFlowController: Just created project, skipping')
       return
     }
 
     // If we already have a project loaded (e.g. via demo mode), skip
     if (project) {
-      console.log('BuildFlowController: Project already loaded (state), skipping')
       return
     }
 
     // If we are already creating, wait
     if (isCreatingProject) {
-      console.log('BuildFlowController: Already creating project, skipping')
       return
     }
 
     // Otherwise, INITIALIZE A NEW PROJECT IMMEDIATELY
-    console.log('BuildFlowController: Initializing new project')
     initializeProject()
     
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existingProjectId, justCreatedProjectId, isCreatingProject, isLoaded, isReplicationReady])
 
   const initializeProject = async () => {
-    console.log('BuildFlowController: initializeProject started')
     setIsCreatingProject(true)
     setIsLoading(true)
     

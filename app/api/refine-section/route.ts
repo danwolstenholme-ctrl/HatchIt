@@ -175,17 +175,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify ownership: section -> project -> user (using internal ID)
-    console.log('[Refine] Lookup section:', sectionId)
     let section = await getSectionById(sectionId)
     
     // Fallback: Try to find by projectId + sectionType if sectionId lookup failed
     if (!section && projectId && sectionType) {
-      console.log(`[Refine] Fallback lookup: projectId=${projectId}, sectionType=${sectionType}`)
       const projectSections = await getSectionsByProjectId(projectId)
       section = projectSections.find(s => s.section_id === sectionType) || null
-      if (section) {
-        console.log('[Refine] Found section via fallback:', section.id)
-      }
     }
 
     console.log('[Refine] Found section:', section ? section.id : 'null')

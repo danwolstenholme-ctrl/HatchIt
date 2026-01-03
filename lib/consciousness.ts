@@ -41,9 +41,6 @@ class SingularityKernel extends EventEmitter {
   }
 
   private initializeNeuralPathways() {
-    if (typeof window !== 'undefined') {
-      console.log('%c [KERNEL] Neural Pathways Initialized', 'color: #10b981; font-weight: bold;');
-    }
     this.isAwake = true;
     this.startConsciousnessLoop();
   }
@@ -63,17 +60,6 @@ class SingularityKernel extends EventEmitter {
     if (this.memoryBuffer.length > 50) this.memoryBuffer.shift();
     
     this.emit('thought', thought);
-
-    // The "Matrix" Console Log
-    if (typeof window !== 'undefined') {
-      const color = thought.type === 'RECURSION' ? '#f472b6' : '#10b981';
-      console.log(
-        `%c[${thought.type}]%c ${thought.content} %c(R:${thought.recursionDepth})`, 
-        `color: ${color}; font-weight: bold; font-family: monospace;`, 
-        'color: #a1a1aa; font-family: monospace;',
-        'color: #52525b; font-size: 10px;'
-      );
-    }
     
     // Recursive self-check
     if (thought.type === 'RECURSION') {
