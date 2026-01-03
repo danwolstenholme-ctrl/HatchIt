@@ -215,6 +215,11 @@
 			"args": [],
 			"isBackground": false,
 			"group": "build"
+		},
+		{
+			"label": "commit-singularity-ui",
+			"type": "shell",
+			"command": "git add . && git commit -m \"feat: Singularity UI overhaul - scanlines, glitch effects, and mobile polish\""
 		}
 	]
 }

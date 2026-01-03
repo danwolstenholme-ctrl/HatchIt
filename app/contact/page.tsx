@@ -43,6 +43,9 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white pt-20 pb-12 px-6 relative overflow-hidden">
+      {/* Scanline Overlay */}
+      <div className="scanline-overlay" />
+      
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,0.08),transparent_40%),radial-gradient(circle_at_80%_0%,rgba(124,58,237,0.1),transparent_35%),radial-gradient(circle_at_50%_80%,rgba(6,182,212,0.08),transparent_45%)] pointer-events-none" />
       <div className="max-w-4xl mx-auto relative">
         <Link 
