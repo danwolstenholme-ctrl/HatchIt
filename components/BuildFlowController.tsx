@@ -1260,8 +1260,8 @@ export default function GeneratedPage() {
   const handleDownload = async () => {
     if (!project || !assembledCode || !buildState) return
     
-    // Check if user has any paid subscription (Lite, Pro, or Agency can download)
-    if (!canDeploy) {
+    // Only Pro and Agency can download code - Lite cannot
+    if (!isProUser) {
       setHatchModalReason('download')
       setShowHatchModal(true)
       return

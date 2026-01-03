@@ -338,6 +338,7 @@ export default function SectionBuilder({
   // Paywall is at DEPLOY/EXPORT only
   const { subscription, tier } = useSubscription()
   const isPaidTier = tier === 'lite' || tier === 'pro' || tier === 'agency'
+  const isProOrHigher = tier === 'pro' || tier === 'agency' // Only Pro/Agency get code access
   const isGuest = !isPaid && !isPaidTier
   const canGuestPolish = true // Everyone can polish - paywall at deploy
   const isLocked = false // No more generation locks
@@ -1163,7 +1164,7 @@ export default function SectionBuilder({
 
   // Immersive Input State - before any code is generated
   const isInitialState = stage === 'input' && !generatedCode
-  const canRevealRawCode = isPaid || isPaidTier
+  const canRevealRawCode = isProOrHigher // Only Pro/Agency can view code - Lite cannot
 
   // IMMERSIVE INITIAL STATE - Full canvas input experience
   if (isInitialState) {
