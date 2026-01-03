@@ -64,6 +64,15 @@ export interface DbBrandConfig {
   }
   fontStyle: string
   styleVibe: string
+  // New fields for V3.1
+  seo?: {
+    title: string
+    description: string
+    keywords: string
+  }
+  integrations?: {
+    formspreeId: string
+  }
 }
 
 export interface DbProject {

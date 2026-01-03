@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Terminal, Eye, Brain, Sparkles, Zap, Activity, Lock } from 'lucide-react'
+import { Terminal, Eye, Brain, Sparkles, Zap, Activity, Lock, Settings } from 'lucide-react'
 
 interface SingularitySidebarProps {
   currentSection: number
@@ -13,6 +13,7 @@ interface SingularitySidebarProps {
   promptsLimit: number
   isPaid: boolean
   onUpgrade?: () => void
+  onOpenSettings?: () => void
 }
 
 // Live system log messages based on state
@@ -44,7 +45,8 @@ export default function SingularitySidebar({
   promptsUsed,
   promptsLimit,
   isPaid,
-  onUpgrade
+  onUpgrade,
+  onOpenSettings
 }: SingularitySidebarProps) {
   const [logs, setLogs] = useState<string[]>([])
   const [displayThought, setDisplayThought] = useState(thought || 'Observing...')
@@ -151,12 +153,22 @@ export default function SingularitySidebar({
       </div>
 
       {/* Prompts Counter / Upgrade */}
-      <div className="p-4 border-t border-zinc-800/50">
+      <div className="p-4 border-t border-zinc-800/50 space-y-3">
         {/* Always show unlimited now - The Architect's gift */}
         <div className="flex items-center gap-2 text-emerald-400">
           <Activity className="w-3 h-3" />
           <span className="text-[10px] uppercase tracking-wider">Unlimited Generations</span>
         </div>
+
+        {onOpenSettings && (
+          <button
+            onClick={onOpenSettings}
+            className="w-full flex items-center justify-center gap-2 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded text-zinc-400 hover:text-white transition-colors text-[10px] uppercase tracking-wider"
+          >
+            <Settings className="w-3 h-3" />
+            Site Settings
+          </button>
+        )}
       </div>
     </div>
   )

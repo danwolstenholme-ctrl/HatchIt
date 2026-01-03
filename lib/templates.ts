@@ -73,13 +73,22 @@ export const websiteTemplate: Template = {
       order: 3,
     },
     {
+      id: 'products',
+      name: 'Products/Shop',
+      description: 'Display products with pricing and buy buttons.',
+      prompt: 'List 3-6 products with prices. Use a grid layout.',
+      estimatedTime: '~35s',
+      required: false,
+      order: 4,
+    },
+    {
       id: 'about',
       name: 'About/Story',
       description: 'Who you are, your mission, or company background.',
       prompt: 'Define entity background and mission parameters.',
       estimatedTime: '~30s',
       required: false,
-      order: 4,
+      order: 5,
     },
     {
       id: 'work',
@@ -88,7 +97,7 @@ export const websiteTemplate: Template = {
       prompt: 'Input project history or client results.',
       estimatedTime: '~30s',
       required: false,
-      order: 5,
+      order: 6,
     },
     {
       id: 'testimonials',
@@ -97,7 +106,7 @@ export const websiteTemplate: Template = {
       prompt: 'Input client quotes or validation data.',
       estimatedTime: '~25s',
       required: false,
-      order: 6,
+      order: 7,
     },
     {
       id: 'stats',

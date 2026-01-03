@@ -4,6 +4,7 @@ import {
   getProjectById, 
   getSectionsByProjectId,
   getOrCreateUser,
+  updateProjectBrandConfig,
 } from '@/lib/db'
 import { getTemplateById } from '@/lib/templates'
 
@@ -52,6 +53,50 @@ export async function GET(
 
   } catch (error) {
     console.error('Error fetching project:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+// =============================================================================
+// PATCH: Update project settings (brand, seo, integrations)
+// =============================================================================
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { userId: clerkId } = await auth()
+    if (!clerkId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const user = await currentUser()
+    const email = user?.emailAddresses?.[0]?.emailAddress
+    const dbUser = await getOrCreateUser(clerkId, email)
+    if (!dbUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    const { id } = await params
+    const body = await request.json()
+    const { brandConfig } = body
+
+    if (!brandConfig) {
+      return NextResponse.json({ error: 'Missing brandConfig' }, { status: 400 })
+    }
+
+    // Verify ownership
+    const project = await getProjectById(id)
+    if (!project || project.user_id !== dbUser.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    const updatedProject = await updateProjectBrandConfig(id, brandConfig)
+    
+    return NextResponse.json({ project: updatedProject })
+
+  } catch (error) {
+    console.error('Error updating project:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

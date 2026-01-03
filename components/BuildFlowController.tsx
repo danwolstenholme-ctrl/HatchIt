@@ -49,6 +49,7 @@ import HatchModal from './HatchModal'
 import Scorecard from './Scorecard'
 import TheWitness from './TheWitness'
 import WelcomeModal from './WelcomeModal'
+import SiteSettingsModal, { SiteSettings } from './SiteSettingsModal'
 import { chronosphere } from '@/lib/chronosphere'
 import { Template, Section, getTemplateById, getSectionById, createInitialBuildState, BuildState, websiteTemplate } from '@/lib/templates'
 import { DbProject, DbSection, DbBrandConfig } from '@/lib/supabase'
@@ -60,7 +61,7 @@ import { useSubscription } from '@/contexts/SubscriptionContext'
 // Renders all assembled sections in an iframe - simplified for reliability
 // =============================================================================
 
-function FullSitePreviewFrame({ sections, deviceView }: { sections: { id: string, code: string }[]; deviceView: 'mobile' | 'tablet' | 'desktop' }) {
+function FullSitePreviewFrame({ sections, deviceView, seo }: { sections: { id: string, code: string }[]; deviceView: 'mobile' | 'tablet' | 'desktop'; seo?: { title: string; description: string; keywords: string } }) {
   const [srcDoc, setSrcDoc] = useState('')
 
   useEffect(() => {
@@ -161,6 +162,9 @@ ${Array.from(allLucideImports).map((name) => {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  ${seo?.title ? `<title>${seo.title}</title>` : ''}
+  ${seo?.description ? `<meta name="description" content="${seo.description}">` : ''}
+  ${seo?.keywords ? `<meta name="keywords" content="${seo.keywords}">` : ''}
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Load React first and expose globally IMMEDIATELY -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -447,6 +451,42 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
   const [showReset, setShowReset] = useState(false)
   const [isReplicationReady, setIsReplicationReady] = useState(false)
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+
+  const handleSaveSettings = async (settings: SiteSettings) => {
+    if (!project) return
+    
+    try {
+      const response = await fetch(`/api/project/${project.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          brandConfig: {
+            ...(project.brand_config || {}),
+            colors: {
+              primary: settings.brand.primaryColor,
+              secondary: '#000000',
+              accent: settings.brand.primaryColor
+            },
+            fontStyle: settings.brand.font,
+            brandName: settings.seo.title || project.name,
+            styleVibe: settings.brand.mode,
+            seo: settings.seo,
+            integrations: settings.integrations
+          }
+        })
+      })
+      
+      if (!response.ok) throw new Error('Failed to update settings')
+      
+      const data = await response.json()
+      setProject(data.project)
+      setBrandConfig(data.project.brand_config)
+      
+    } catch (err) {
+      console.error('Error saving settings:', err)
+    }
+  }
   const showUnlockBanner = useMemo(() => guestMode || (!isPaidUser && !demoMode), [guestMode, isPaidUser, demoMode])
   
   // Persist guest build locally for post-signup migration
@@ -1621,6 +1661,7 @@ export default function GeneratedPage() {
                   setHatchModalReason('generation_limit')
                   setShowHatchModal(true)
                 }}
+                onOpenSettings={() => setIsSettingsOpen(true)}
               />
             </div>
 
@@ -2042,6 +2083,7 @@ export default function GeneratedPage() {
                     <FullSitePreviewFrame 
                       sections={previewSections} 
                       deviceView={reviewDeviceView}
+                      seo={project?.brand_config?.seo}
                     />
                   </motion.div>
                 </div>
@@ -2228,6 +2270,14 @@ export default function GeneratedPage() {
           // We don't force it open, but the "Next" button will trigger it again
           setShowSignupGate(false)
         }} 
+      />
+
+      <SiteSettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        projectId={project?.id || ''}
+        currentBrand={project?.brand_config || undefined}
+        onSave={handleSaveSettings}
       />
     </div>
   )
