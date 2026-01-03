@@ -19,7 +19,7 @@ export default function ProjectsPage() {
     if (tier === 'singularity') return { name: 'Singularity', color: 'amber', icon: Crown, limit: Infinity, gradient: 'from-amber-500 to-orange-500' }
     if (tier === 'visionary') return { name: 'Visionary', color: 'violet', icon: Zap, limit: Infinity, gradient: 'from-violet-500 to-purple-500' }
     if (tier === 'architect') return { name: 'Architect', color: 'emerald', icon: Terminal, limit: 3, gradient: 'from-emerald-500 to-teal-500' }
-    return { name: 'Free Tier', color: 'zinc', icon: Terminal, limit: 1, gradient: 'from-zinc-500 to-zinc-600' }
+    return { name: 'No Plan', color: 'zinc', icon: Terminal, limit: 0, gradient: 'from-zinc-500 to-zinc-600' }
   }, [accountSubscription?.tier])
 
   const projectsRemaining = tierConfig.limit === Infinity ? '∞' : Math.max(0, tierConfig.limit - projects.length)
@@ -87,16 +87,6 @@ export default function ProjectsPage() {
                 </span>
               </div>
             </div>
-
-            {tierConfig.limit !== Infinity && (
-              <button
-                onClick={() => setShowLimitModal(true)}
-                className="hidden md:flex items-center gap-2 px-4 py-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-amber-500/50 text-zinc-400 hover:text-amber-400 rounded-lg font-bold text-sm transition-all"
-              >
-                <Crown className="w-4 h-4" />
-                <span>UPGRADE</span>
-              </button>
-            )}
 
             <button
               onClick={handleCreate}
