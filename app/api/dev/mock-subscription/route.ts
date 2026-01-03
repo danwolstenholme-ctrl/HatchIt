@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  let body: { tier?: 'lite' | 'pro' | 'agency'; clear?: boolean }
+  let body: { tier?: 'architect' | 'visionary' | 'singularity'; clear?: boolean }
   try {
     body = await req.json()
   } catch {
@@ -23,8 +23,8 @@ export async function POST(req: NextRequest) {
 
   const { tier, clear } = body
 
-  if (!clear && (!tier || !['lite', 'pro', 'agency'].includes(tier))) {
-    return NextResponse.json({ error: 'Invalid tier. Use lite, pro, or agency.' }, { status: 400 })
+  if (!clear && (!tier || !['architect', 'visionary', 'singularity'].includes(tier))) {
+    return NextResponse.json({ error: 'Invalid tier. Use architect, visionary, or singularity.' }, { status: 400 })
   }
 
   const client = await clerkClient()

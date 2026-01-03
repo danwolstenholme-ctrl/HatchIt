@@ -65,11 +65,11 @@ export async function POST(req: NextRequest) {
     const user = await client.users.getUser(userId)
     const accountSub = user.publicMetadata?.accountSubscription as AccountSubscription | undefined
     
-    // Allow if: DEV_BYPASS is on, user is admin, or has agency tier
-    const isDemiurge = DEV_BYPASS || accountSub?.tier === 'agency' || user.publicMetadata?.role === 'admin'
+    // Allow if: DEV_BYPASS is on, user is admin, or has singularity tier
+    const isDemiurge = DEV_BYPASS || accountSub?.tier === 'singularity' || user.publicMetadata?.role === 'admin'
     
     if (!isDemiurge) {
-       // The Replicator is gated to Agency tier
+       // The Replicator is gated to Singularity tier
        return NextResponse.json({ error: 'Demiurge Access Required', requiresUpgrade: true }, { status: 403 })
     }
 

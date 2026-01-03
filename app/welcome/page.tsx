@@ -7,7 +7,7 @@ import { motion } from "framer-motion"
 import { track } from "@vercel/analytics"
 import { useSubscription } from "@/contexts/SubscriptionContext"
 
-type WelcomeTier = "lite" | "pro" | "agency"
+type WelcomeTier = "architect" | "visionary" | "singularity"
 
 const TIER_CONFIG: Record<WelcomeTier, {
   title: string
@@ -17,29 +17,29 @@ const TIER_CONFIG: Record<WelcomeTier, {
   gradient: string
   accent: string
 }> = {
-  lite: {
-    title: "Protocol: SEEDLING",
-    subtitle: "Growth sequence initiated.",
-    description: "Launch up to 3 active projects. Unlimited generations. 5 polishes/mo.",
-    price: "$9/mo",
-    gradient: "from-lime-400 to-emerald-400",
-    accent: "text-lime-400",
-  },
-  pro: {
+  architect: {
     title: "Protocol: ARCHITECT",
-    subtitle: "Full neural link established.",
-    description: "Unlimited generations, ~30 polishes/mo, deploy and export anywhere.",
-    price: "$29/mo",
+    subtitle: "Neural handshake complete.",
+    description: "Unlimited generations. Live neural preview. Deploy to hatchitsites.dev.",
+    price: "$19/mo",
     gradient: "from-emerald-400 to-teal-400",
     accent: "text-emerald-400",
   },
-  agency: {
-    title: "Protocol: DEMIURGE",
+  visionary: {
+    title: "Protocol: VISIONARY",
+    subtitle: "Full creative sovereignty.",
+    description: "Source code export. Custom domains. White-label. Priority processing.",
+    price: "$49/mo",
+    gradient: "from-teal-400 to-cyan-400",
+    accent: "text-teal-400",
+  },
+  singularity: {
+    title: "Protocol: SINGULARITY",
     subtitle: "Reality distortion field active.",
-    description: "White-label, priority support, and fleet deployment for teams.",
-    price: "$99/mo",
-    gradient: "from-amber-400 to-orange-400",
-    accent: "text-amber-400",
+    description: "Dedicated infrastructure. Early access. Direct line to founders.",
+    price: "$199/mo",
+    gradient: "from-violet-400 to-purple-400",
+    accent: "text-violet-400",
   },
 }
 
@@ -65,11 +65,11 @@ function WelcomePageInner() {
   const { user, isLoaded } = useUser()
   const { syncSubscription } = useSubscription()
 
-  const urlTier = (searchParams.get("tier") || "pro").toLowerCase()
+  const urlTier = (searchParams.get("tier") || "visionary").toLowerCase()
   // Normalize tier safely to avoid parser edge cases with multiline ternaries
   const tier: WelcomeTier = ((): WelcomeTier => {
-    if (urlTier === "lite" || urlTier === "pro" || urlTier === "agency") return urlTier as WelcomeTier
-    return "pro"
+    if (urlTier === "architect" || urlTier === "visionary" || urlTier === "singularity") return urlTier as WelcomeTier
+    return "visionary"
   })()
 
   // Sync subscription once on mount

@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 import { CheckCircle2, ArrowRight, Sparkles, Rocket, Shield, Wand2, Zap, ShoppingBag, Loader2 } from 'lucide-react'
 
 interface SubscriptionState {
-  tier: 'lite' | 'pro' | 'agency' | null
+  tier: 'architect' | 'visionary' | 'singularity' | null
   status: string | null
   synced: boolean
   message?: string
@@ -20,13 +20,13 @@ function PostPaymentContent() {
   const [subState, setSubState] = useState<SubscriptionState>({ tier: null, status: null, synced: false })
   const [isSyncing, setIsSyncing] = useState(false)
   const [isLaunchingPack, setIsLaunchingPack] = useState(false)
-  const tierParam = searchParams.get('tier') as 'lite' | 'pro' | 'agency' | null
+  const tierParam = searchParams.get('tier') as 'architect' | 'visionary' | 'singularity' | null
   const projectSlug = searchParams.get('project') || undefined
   const launchPackStatus = searchParams.get('launch_pack')
 
   const tier = useMemo(() => {
     if (tierParam) return tierParam
-    const meta = user?.publicMetadata?.accountSubscription as { tier?: 'lite' | 'pro' | 'agency'; status?: string } | undefined
+    const meta = user?.publicMetadata?.accountSubscription as { tier?: 'architect' | 'visionary' | 'singularity'; status?: string } | undefined
     return meta?.tier || null
   }, [tierParam, user?.publicMetadata])
 
@@ -98,16 +98,16 @@ function PostPaymentContent() {
   }
 
   const tierCopy = {
-    lite: {
-      badge: 'Lite activated',
+    architect: {
+      badge: 'Architect activated',
       perks: ['Unlimited generations', '5 AI polishes / month', '3 active projects'],
     },
-    pro: {
-      badge: 'Pro activated',
+    visionary: {
+      badge: 'Visionary activated',
       perks: ['Unlimited generations', '~30 AI polishes / month', 'Custom domains', 'Remove branding'],
     },
-    agency: {
-      badge: 'Agency activated',
+    singularity: {
+      badge: 'Singularity activated',
       perks: ['Unlimited everything', 'White-label', 'Priority support'],
     },
     null: {

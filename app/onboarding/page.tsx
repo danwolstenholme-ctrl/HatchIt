@@ -35,7 +35,7 @@ export default function OnboardingPage() {
         timestamp: Date.now()
       }))
     }
-    router.push('/dashboard/agency')
+    router.push('/dashboard/projects')
   }
 
   return (

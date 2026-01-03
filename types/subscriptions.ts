@@ -7,7 +7,7 @@
  * Stored in Clerk publicMetadata.accountSubscription
  */
 export interface AccountSubscription {
-  tier: 'lite' | 'pro' | 'agency'
+  tier: 'architect' | 'visionary' | 'singularity'
   stripeSubscriptionId: string
   stripeCustomerId: string
   status: 'active' | 'canceled' | 'past_due'

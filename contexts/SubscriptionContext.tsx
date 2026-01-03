@@ -7,10 +7,10 @@ import { AccountSubscription } from '@/types/subscriptions'
 interface SubscriptionContextValue {
   // Subscription data
   subscription: AccountSubscription | null
-  tier: 'free' | 'lite' | 'pro' | 'agency'
+  tier: 'free' | 'architect' | 'visionary' | 'singularity'
   isPaidUser: boolean
-  isProUser: boolean
-  isAgencyUser: boolean
+  isVisionaryUser: boolean
+  isSingularityUser: boolean
   
   // Renewal info
   daysUntilRenewal: number | null
@@ -38,28 +38,28 @@ const defaultColors = {
   bgSubtle: 'bg-zinc-800/50',
 }
 
-const proColors = {
-  gradient: 'from-teal-500 to-cyan-500',
-  border: 'border-teal-500/50',
-  text: 'text-teal-400',
-  glow: 'shadow-teal-500/30',
-  bgSubtle: 'bg-teal-500/10',
+const visionaryColors = {
+  gradient: 'from-violet-500 to-purple-500',
+  border: 'border-violet-500/50',
+  text: 'text-violet-400',
+  glow: 'shadow-violet-500/30',
+  bgSubtle: 'bg-violet-500/10',
 }
 
-const liteColors = {
+const architectColors = {
+  gradient: 'from-emerald-500 to-teal-500',
+  border: 'border-emerald-500/50',
+  text: 'text-emerald-400',
+  glow: 'shadow-emerald-500/30',
+  bgSubtle: 'bg-emerald-500/10',
+}
+
+const singularityColors = {
   gradient: 'from-amber-500 to-orange-500',
   border: 'border-amber-500/50',
   text: 'text-amber-400',
   glow: 'shadow-amber-500/30',
   bgSubtle: 'bg-amber-500/10',
-}
-
-const agencyColors = {
-  gradient: 'from-emerald-500 to-emerald-400',
-  border: 'border-emerald-500/50',
-  text: 'text-emerald-400',
-  glow: 'shadow-emerald-500/30',
-  bgSubtle: 'bg-emerald-500/10',
 }
 
 const SubscriptionContext = createContext<SubscriptionContextValue | null>(null)
@@ -84,8 +84,8 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   }, [subscription])
 
   const isPaidUser = tier !== 'free'
-  const isProUser = tier === 'pro'
-  const isAgencyUser = tier === 'agency'
+  const isVisionaryUser = tier === 'visionary'
+  const isSingularityUser = tier === 'singularity'
 
   const renewalDate = useMemo(() => {
     if (!subscription?.currentPeriodEnd) return null
@@ -100,9 +100,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   }, [renewalDate])
 
   const tierColor = useMemo(() => {
-    if (tier === 'agency') return agencyColors
-    if (tier === 'pro') return proColors
-    if (tier === 'lite') return liteColors
+    if (tier === 'singularity') return singularityColors
+    if (tier === 'visionary') return visionaryColors
+    if (tier === 'architect') return architectColors
     return defaultColors
   }, [tier])
 
@@ -144,8 +144,8 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     subscription,
     tier,
     isPaidUser,
-    isProUser,
-    isAgencyUser,
+    isVisionaryUser,
+    isSingularityUser,
     daysUntilRenewal,
     renewalDate,
     tierColor,

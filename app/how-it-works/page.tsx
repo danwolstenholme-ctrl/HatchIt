@@ -108,7 +108,7 @@ export default function HowItWorksPage() {
               icon={Zap}
               phase="03"
               title="Deployment"
-              description="Instant compilation to live URL. Domain binding available. Full source code ownership retained by the Architect. No platform dependency."
+              description="Instant compilation to live URL via Vercel Edge Network. Domain binding available. Full source code ownership retained by the Architect. No platform dependency."
               delay={0.2}
             />
           </div>
@@ -136,9 +136,9 @@ export default function HowItWorksPage() {
                 <div className="flex items-start gap-4">
                   <div className="mt-1 font-mono text-emerald-500 text-xs">[01]</div>
                   <div>
-                    <h3 className="text-lg font-bold mb-2 font-mono text-white group-hover:text-emerald-400 transition-colors">Tri-Core Neural Pipeline</h3>
+                    <h3 className="text-lg font-bold mb-2 font-mono text-white group-hover:text-emerald-400 transition-colors">Hybrid Intelligence Core</h3>
                     <p className="text-zinc-400 text-sm font-mono leading-relaxed">
-                      Distributed cognitive load. The Architect handles rapid construction. The Architect executes semantic refinement and accessibility compliance. The Architect performs final code audit.
+                      Not a simple builder. A symbiotic AI partner. You retain full control over the creative direction while the System handles the heavy lifting of code generation and optimization.
                     </p>
                   </div>
                 </div>
@@ -148,9 +148,9 @@ export default function HowItWorksPage() {
                 <div className="flex items-start gap-4">
                   <div className="mt-1 font-mono text-emerald-500 text-xs">[02]</div>
                   <div>
-                    <h3 className="text-lg font-bold mb-2 font-mono text-white group-hover:text-emerald-400 transition-colors">Hatch Interface Entity</h3>
+                    <h3 className="text-lg font-bold mb-2 font-mono text-white group-hover:text-emerald-400 transition-colors">Supabase Integration</h3>
                     <p className="text-zinc-400 text-sm font-mono leading-relaxed">
-                      The bridge between Architect and System. Powered by Claude Haiku for low-latency interaction. Capable of extrapolating full prompt directives from minimal user input.
+                      Enterprise-grade backend infrastructure. Secure authentication, real-time databases, and scalable storage are woven into the fabric of your construct from inception.
                     </p>
                   </div>
                 </div>
@@ -160,9 +160,21 @@ export default function HowItWorksPage() {
                 <div className="flex items-start gap-4">
                   <div className="mt-1 font-mono text-emerald-500 text-xs">[03]</div>
                   <div>
-                    <h3 className="text-lg font-bold mb-2 font-mono text-white group-hover:text-emerald-400 transition-colors">Sovereign Code Output</h3>
+                    <h3 className="text-lg font-bold mb-2 font-mono text-white group-hover:text-emerald-400 transition-colors">Chronosphere Versioning</h3>
                     <p className="text-zinc-400 text-sm font-mono leading-relaxed">
-                      Output is standard React/Tailwind architecture. Exportable as ZIP archive. Zero proprietary lock-in. The Architect retains full sovereignty over the generated codebase.
+                      Every iteration is logged. Every prompt is archived. The Chronosphere allows for instant rollback and branching, ensuring no creative spark is ever lost to the void.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="group p-6 bg-zinc-900/30 border border-zinc-800 hover:border-emerald-500/30 transition-colors rounded-sm">
+                <div className="flex items-start gap-4">
+                  <div className="mt-1 font-mono text-emerald-500 text-xs">[04]</div>
+                  <div>
+                    <h3 className="text-lg font-bold mb-2 font-mono text-white group-hover:text-emerald-400 transition-colors">Sovereign Security</h3>
+                    <p className="text-zinc-400 text-sm font-mono leading-relaxed">
+                      Your data. Your code. Your rules. We employ industry-standard encryption and security protocols. Export your entire project at any time. Zero lock-in.
                     </p>
                   </div>
                 </div>

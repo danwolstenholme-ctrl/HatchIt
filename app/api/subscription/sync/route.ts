@@ -48,15 +48,15 @@ export async function GET() {
       
       // Determine tier
       const priceId = sub.items.data[0]?.price?.id
-      let tier: 'lite' | 'pro' | 'agency' = 'pro'
-      if (priceId === process.env.STRIPE_AGENCY_PRICE_ID) {
-        tier = 'agency'
-      } else if (priceId === process.env.STRIPE_PRO_PRICE_ID) {
-        tier = 'pro'
-      } else if (priceId === process.env.STRIPE_LITE_PRICE_ID) {
-        tier = 'lite'
+      let tier: 'architect' | 'visionary' | 'singularity' = 'visionary'
+      if (priceId === process.env.STRIPE_SINGULARITY_PRICE_ID) {
+        tier = 'singularity'
+      } else if (priceId === process.env.STRIPE_VISIONARY_PRICE_ID) {
+        tier = 'visionary'
+      } else if (priceId === process.env.STRIPE_ARCHITECT_PRICE_ID) {
+        tier = 'architect'
       } else {
-        tier = (sub.metadata?.tier as 'lite' | 'pro' | 'agency') || 'pro'
+        tier = (sub.metadata?.tier as 'architect' | 'visionary' | 'singularity') || 'visionary'
       }
       
       // Safely get period end - cast to access property (search API types differ)
@@ -146,15 +146,17 @@ export async function GET() {
 
     // Determine tier from price ID
     const priceId = activeSubscription.items.data[0]?.price?.id
-    let tier: 'pro' | 'agency' = 'pro'
+    let tier: 'architect' | 'visionary' | 'singularity' = 'visionary'
     
-    if (priceId === process.env.STRIPE_AGENCY_PRICE_ID) {
-      tier = 'agency'
-    } else if (priceId === process.env.STRIPE_PRO_PRICE_ID) {
-      tier = 'pro'
+    if (priceId === process.env.STRIPE_SINGULARITY_PRICE_ID) {
+      tier = 'singularity'
+    } else if (priceId === process.env.STRIPE_VISIONARY_PRICE_ID) {
+      tier = 'visionary'
+    } else if (priceId === process.env.STRIPE_ARCHITECT_PRICE_ID) {
+      tier = 'architect'
     } else {
       // Fallback: check metadata
-      tier = (activeSubscription.metadata?.tier as 'pro' | 'agency') || 'pro'
+      tier = (activeSubscription.metadata?.tier as 'architect' | 'visionary' | 'singularity') || 'visionary'
     }
 
     // Safely get period end - cast to access property

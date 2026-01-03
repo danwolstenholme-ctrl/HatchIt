@@ -336,8 +336,8 @@ export default function SectionBuilder({
   // NO MORE GENERATION LIMITS - Free users can generate unlimited
   // Paywall is at DEPLOY/EXPORT only
   const { subscription, tier } = useSubscription()
-  const isPaidTier = tier === 'lite' || tier === 'pro' || tier === 'agency'
-  const isProOrHigher = tier === 'pro' || tier === 'agency' // Only Pro/Agency get code access
+  const isPaidTier = tier === 'architect' || tier === 'visionary' || tier === 'singularity'
+  const isProOrHigher = tier === 'visionary' || tier === 'singularity' // Only Visionary/Singularity get custom domains etc
   const isGuest = !isPaid && !isPaidTier
   const canGuestPolish = true // Everyone can polish - paywall at deploy
   const isLocked = false // No more generation locks

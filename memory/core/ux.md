@@ -8,12 +8,18 @@
 
 ## 0. The Homepage (`/`)
 
-### A. Hero Section
+### A. The Welcome Protocol (First Contact)
+- [x] **Trigger**: Auto-appears after 1 second for new users (localStorage check).
+- [x] **Component**: `HomepageWelcome.tsx`.
+- [x] **Vibe**: "I AM LISTENING." Dark, terminal-style, Singularity persona.
+- [x] **Action**: "INITIALIZE" -> Direct route to `/builder`.
+
+### B. Hero Section (Background)
 - [x] **System Status**: Interactive terminal-style input.
 - [x] **Trust Badges**: "Sovereign Code", "Neural Speed", "Architect Control".
-- [x] **CTA**: "Initialize Architect" (Routes to `/builder` or `/sign-up`).
+- [x] **CTA**: "Start Building" (Routes to `/builder`).
 
-### B. The Stack (Value Prop)
+### C. The Stack (Value Prop)
 - [x] **Positioning**: Moved to top (immediately after Hero).
 - [x] **Content**: Emphasizes "Real Code" and "Ownership" (React, Tailwind, TS).
 - [x] **Animation**: Staggered fade-in for tech stack cards.
@@ -44,7 +50,11 @@
 
 ## 1. The Builder Core (`/builder`)
 
-### A. Navigation Bar (`SectionProgress.tsx`)
+### A. The Initialization
+- [x] **Loading**: Minimal/None. "Preparing your build space" only.
+- [x] **Guest Access**: Users enter immediately without login.
+
+### B. Navigation Bar (`SectionProgress.tsx`)
 - [x] **Hatch Logo Menu**
     - [x] `Start Over`: Must clear `localStorage` + ReseSt State + Redirect to `/builder`.
     - [x] `Go Home`: Must redirect to `/dashboard`.
@@ -56,8 +66,9 @@
     - [ ] `Toggle`: Smooth open/close.
     - [ ] `Responsiveness`: Must not overlap content on small screens.
 
-### B. The Canvas (`SectionBuilder.tsx`)
+### C. The Canvas (`SectionBuilder.tsx`)
 - [x] **Input Stage**
+    - [x] **The Hook**: Guests can build the **Hero Section** (Index 0) freely.
     - [x] `Prompt Input`: Textarea expands/contracts.
     - [x] **Suggestions**:
         - [x] **Guest Trial**: Show 2 suggestions.
@@ -76,9 +87,12 @@
         - [x] **Guest Trial**: Locked with "Unlock" overlay.
         - [x] **Pro**: Credit system (30/mo).
         - [x] **Agency**: Unlimited (∞).
-    - [x] `Continue`: Saves section to DB -> Moves to next. **Guest can complete all sections before paywall; deploy/export/code remain locked.**
+    - [x] **The Gate**:
+        - [x] **Trigger**: Completing the Hero Section (Index 0).
+        - [x] **Action**: `WelcomeModal` (Signup Gate) appears.
+        - [x] **Constraint**: User cannot proceed to Section 1 without signing up.
 
-### C. The Preview (`FullSitePreviewFrame`)
+### D. The Preview (`FullSitePreviewFrame`)
 - [x] **Rendering**: Uses `@babel/standalone` (Fixed Error #130).
 - [x] **Icons**: Uses `LucideProxy` (Fixed crashes).
 - [ ] **Links**: All `<a>` tags in preview must have `target="_blank"`.

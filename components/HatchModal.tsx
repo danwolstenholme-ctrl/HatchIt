@@ -308,7 +308,7 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
                 animate={{ opacity: 1, y: 0 }}
                 className="mb-4 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-center"
               >
-                <p className="text-emerald-400 font-semibold mb-1">You&apos;re already a {tier === 'agency' ? 'Agency' : tier === 'pro' ? 'Pro' : 'Lite'} member!</p>
+                <p className="text-emerald-400 font-semibold mb-1">You&apos;re already a {tier === 'singularity' ? 'Singularity' : tier === 'visionary' ? 'Visionary' : 'Architect'} member!</p>
                 <p className="text-zinc-400 text-sm">You have full access to all features.</p>
                 <button
                   onClick={onClose}

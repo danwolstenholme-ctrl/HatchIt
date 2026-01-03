@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
 import Link from 'next/link'
-import { Activity, Box, Cpu, FlaskConical, Globe, History, LayoutGrid, Palette, Settings, Shield, Target, Users } from 'lucide-react'
+import { Activity, Box, Cpu, FlaskConical, Globe, History, LayoutGrid, Palette, Settings, Shield, Target, Users, Terminal } from 'lucide-react'
 
 import SystemStatus from '@/components/SystemStatus'
 
@@ -26,7 +26,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             <div className="px-2 py-2 text-xs font-mono text-zinc-500 uppercase tracking-wider">Control Plane</div>
             
             <NavItem href="/dashboard/agency" icon={<LayoutGrid className="w-4 h-4" />} label="Overview" active />
-            <NavItem href="/dashboard/projects" icon={<Box className="w-4 h-4" />} label="Projects" />
+            <NavItem href="/dashboard/projects" icon={<Terminal className="w-4 h-4" />} label="Terminal" />
             {/* <NavItem href="/dashboard/agents" icon={<Users className="w-4 h-4" />} label="Agents" /> */}
 
             <div className="mt-8 px-2 py-2 text-xs font-mono text-zinc-500 uppercase tracking-wider">Expansion</div>

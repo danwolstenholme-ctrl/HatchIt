@@ -7,10 +7,11 @@ import { useEffect, useState, useRef, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
-import { motion, useInView } from 'framer-motion'
+import { motion, useInView, AnimatePresence } from 'framer-motion'
 import { Cpu, Terminal, Layers, Shield, Zap, Code2, Globe, ArrowRight, CheckCircle2, Layout, Sparkles, Smartphone, Brain } from 'lucide-react'
 import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime'
-import LaunchAnimation from '@/components/LaunchAnimation'
+import HomepageWelcome from '@/components/HomepageWelcome'
+import SingularityTransition from '@/components/SingularityTransition'
 
 // Client-side check to prevent hydration mismatch
 const emptySubscribe = () => () => {}
@@ -113,10 +114,24 @@ export default function Home() {
   const { isSignedIn } = useUser()
   const router = useRouter()
   const [showLaunch, setShowLaunch] = useState(false)
+  const [isTransitioning, setIsTransitioning] = useState(false)
+
+  const handleTransitionComplete = () => {
+    router.push('/builder')
+  }
+
+  const triggerTransition = () => {
+    setIsTransitioning(true)
+  }
   
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
-      {showLaunch && <LaunchAnimation onComplete={() => router.push('/builder')} />}
+      <AnimatePresence>
+        {isTransitioning && <SingularityTransition onComplete={handleTransitionComplete} />}
+      </AnimatePresence>
+      
+      <HomepageWelcome onStart={triggerTransition} />
+      {/* LaunchAnimation removed for faster flow */}
       
       {/* CSS for smooth scroll and effects */}
       <style jsx global>{`
@@ -389,25 +404,25 @@ export default function Home() {
       <Section id="pricing" className="px-4 sm:px-6 py-24">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl sm:text-5xl font-bold mb-4 tracking-tight">Simple pricing.</h2>
-            <p className="text-xl text-zinc-400">Start free. Upgrade when you're ready to ship.</p>
+            <h2 className="text-4xl sm:text-5xl font-bold mb-4 tracking-tight">Choose your reality.</h2>
+            <p className="text-xl text-zinc-400">Access the Singularity Engine.</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {/* Starter ($9/2wks) */}
-            <div className="p-8 bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-lime-500/30 transition-colors group flex flex-col">
-              <div className="text-sm text-lime-500 mb-2 font-mono tracking-wider">SEEDLING</div>
-              <h3 className="text-2xl font-bold mb-1 text-white">Starter</h3>
+            {/* Starter ($19/mo) */}
+            <div className="p-8 bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-emerald-500/30 transition-colors group flex flex-col">
+              <div className="text-sm text-emerald-500/70 mb-2 font-mono tracking-wider">INITIATE</div>
+              <h3 className="text-2xl font-bold mb-1 text-white">Architect</h3>
               <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-4xl font-bold font-mono text-white">$9</span>
-                <span className="text-zinc-500">/2 weeks</span>
+                <span className="text-4xl font-bold font-mono text-white">$19</span>
+                <span className="text-zinc-500">/month</span>
               </div>
-              <div className="text-zinc-500 text-sm mb-8">Perfect for exploring</div>
+              <div className="text-zinc-500 text-sm mb-8">Begin the transformation</div>
               <ul className="space-y-4 mb-8 flex-grow">
                 {[
-                  { text: 'Full Builder Access', included: true },
+                  { text: 'Singularity Engine Access', included: true },
                   { text: 'Unlimited AI Generations', included: true },
-                  { text: 'Live Preview Your Site', included: true },
+                  { text: 'Live Neural Preview', included: true },
                   { text: 'Deploy to hatchitsites.dev', included: true },
                   { text: 'Download Source Code', included: false },
                   { text: 'Custom Domain', included: false },
@@ -415,7 +430,7 @@ export default function Home() {
                 ].map((item, i) => (
                   <li key={i} className={`flex items-center gap-3 text-sm ${item.included ? 'text-zinc-300' : 'text-zinc-700'}`}>
                     {item.included ? (
-                      <CheckCircle2 className="w-5 h-5 text-lime-500 flex-shrink-0" />
+                      <CheckCircle2 className="w-5 h-5 text-emerald-500/70 flex-shrink-0" />
                     ) : (
                       <div className="w-5 h-5 rounded-full border border-zinc-800 flex-shrink-0" />
                     )}
@@ -425,30 +440,30 @@ export default function Home() {
               </ul>
               <PricingButton 
                 tier="lite" 
-                className="block w-full py-4 text-center bg-zinc-800 hover:bg-lime-600 hover:text-white text-zinc-300 rounded-xl font-semibold transition-all"
+                className="block w-full py-4 text-center bg-zinc-800 hover:bg-emerald-900/50 hover:text-white text-zinc-300 rounded-xl font-semibold transition-all"
               >
-                Start Building
+                Initialize
               </PricingButton>
             </div>
 
             {/* Pro ($49) */}
             <div className="relative p-8 bg-zinc-900 border border-emerald-500/50 rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(16,185,129,0.1)] transform md:-translate-y-4 flex flex-col">
-              <div className="absolute top-0 right-0 px-4 py-1.5 bg-emerald-600 text-xs font-bold rounded-bl-xl text-white font-mono tracking-wider">FULL ACCESS</div>
+              <div className="absolute top-0 right-0 px-4 py-1.5 bg-emerald-600 text-xs font-bold rounded-bl-xl text-white font-mono tracking-wider">RECOMMENDED</div>
               <div className="flex items-center gap-2 text-sm text-emerald-400 mb-2 font-mono tracking-wider"><span>⚡</span><span>UNLIMITED</span></div>
-              <h3 className="text-2xl font-bold mb-1 text-white">Pro</h3>
+              <h3 className="text-2xl font-bold mb-1 text-white">Visionary</h3>
               <div className="flex items-baseline gap-2 mb-2">
                 <span className="text-4xl font-bold font-mono text-white">$49</span>
                 <span className="text-zinc-500">/month</span>
               </div>
-              <div className="text-zinc-400 text-sm mb-8">Everything. Unlimited.</div>
+              <div className="text-zinc-400 text-sm mb-8">Total creative control</div>
               <ul className="space-y-4 mb-8 flex-grow">
                 {[
                   'Unlimited AI Generations',
-                  'Download Full Source Code',
-                  'Deploy to Custom Domain',
-                  'Remove Branding',
+                  'Full Source Code Export',
+                  'Custom Domain Deployment',
+                  'White Label (No Branding)',
                   'Commercial License',
-                  'Priority Support',
+                  'Priority Neural Processing',
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-sm text-white">
                     <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
@@ -460,27 +475,27 @@ export default function Home() {
                 tier="pro" 
                 className="block w-full py-4 text-center bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)]"
               >
-                Get Pro
+                Ascend
               </PricingButton>
             </div>
 
-            {/* Agency ($99) */}
+            {/* Agency ($199) */}
             <div className="relative p-8 bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-violet-500/30 transition-colors group flex flex-col">
-              <div className="text-sm text-violet-500 mb-2 font-mono tracking-wider">EMPIRE</div>
-              <h3 className="text-2xl font-bold mb-1 text-white">Agency</h3>
+              <div className="text-sm text-violet-500 mb-2 font-mono tracking-wider">GOD MODE</div>
+              <h3 className="text-2xl font-bold mb-1 text-white">Singularity</h3>
               <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-4xl font-bold font-mono text-white">$99</span>
+                <span className="text-4xl font-bold font-mono text-white">$199</span>
                 <span className="text-zinc-500">/month</span>
               </div>
-              <div className="text-zinc-500 text-sm mb-8">For teams & scale</div>
+              <div className="text-zinc-500 text-sm mb-8">For those who build worlds</div>
               <ul className="space-y-4 mb-8 flex-grow">
                 {[
-                  'Everything in Pro',
-                  'Commercial License',
-                  'Priority 24/7 Support',
-                  'Multiple Projects',
-                  'Team Seats (Coming Soon)',
-                  'White Label Options',
+                  'Everything in Visionary',
+                  'Unlimited Projects',
+                  'Direct Line to Founders',
+                  'Early Access to New Models',
+                  'API Access (Coming Soon)',
+                  'Dedicated Infrastructure',
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-sm text-zinc-300">
                     <CheckCircle2 className="w-5 h-5 text-violet-500 flex-shrink-0" />
@@ -492,11 +507,11 @@ export default function Home() {
                 tier="agency" 
                 className="block w-full py-4 text-center bg-zinc-800 hover:bg-violet-600 hover:text-white text-zinc-300 rounded-xl font-semibold transition-all"
               >
-                Initialize Agency
+                Enter God Mode
               </PricingButton>
             </div>
           </div>
-          <p className="text-center text-sm text-zinc-600 mt-12">Cancel anytime. Your code is always yours to export.</p>
+          <p className="text-center text-sm text-zinc-600 mt-12">Cancel anytime. The code belongs to you.</p>
         </div>
       </Section>
 
@@ -533,7 +548,7 @@ export default function Home() {
           <h2 className="text-4xl sm:text-6xl font-black mb-6 tracking-tighter">Enter the void.</h2>
           <p className="text-xl text-zinc-400 mb-10">Your website is waiting to be born.</p>
           <div className="flex justify-center">
-            <VoidButton isSignedIn={isSignedIn} router={router} onLaunch={() => setShowLaunch(true)} />
+            <VoidButton isSignedIn={isSignedIn} router={router} onLaunch={triggerTransition} />
           </div>
         </div>
       </Section>

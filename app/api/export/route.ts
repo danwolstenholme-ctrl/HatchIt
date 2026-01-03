@@ -87,13 +87,13 @@ export async function POST(req: NextRequest) {
     const user = await client.users.getUser(userId)
     const accountSubscription = user.publicMetadata?.accountSubscription as AccountSubscription | undefined
     
-    // Export requires Pro or Agency - Lite tier cannot download code
-    const isProOrAgency = accountSubscription?.status === 'active' && 
-                          (accountSubscription.tier === 'pro' || accountSubscription.tier === 'agency')
+    // Export requires active subscription (Architect, Visionary, or Singularity)
+    const hasAccess = accountSubscription?.status === 'active' && 
+                      (accountSubscription.tier === 'architect' || accountSubscription.tier === 'visionary' || accountSubscription.tier === 'singularity')
     
-    if (!isProOrAgency) {
+    if (!hasAccess) {
       return NextResponse.json({ 
-        error: 'Pro subscription ($49/mo) required to download code',
+        error: 'Active subscription required to download code',
         requiresUpgrade: true 
       }, { status: 403 })
     }

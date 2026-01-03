@@ -49,7 +49,6 @@ import HatchModal from './HatchModal'
 import Scorecard from './Scorecard'
 import TheWitness from './TheWitness'
 import WelcomeModal from './WelcomeModal'
-import FirstContact from './FirstContact'
 import { chronosphere } from '@/lib/chronosphere'
 import { Template, Section, getTemplateById, getSectionById, createInitialBuildState, BuildState, websiteTemplate } from '@/lib/templates'
 import { DbProject, DbSection, DbBrandConfig } from '@/lib/supabase'
@@ -405,10 +404,6 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const [showPaywallTransition, setShowPaywallTransition] = useState(false)
   const [paywallReason, setPaywallReason] = useState<'limit_reached' | 'site_complete'>('limit_reached')
   
-  // First Contact experience for new users
-  const [showFirstContact, setShowFirstContact] = useState(false)
-  const [firstContactPrompt, setFirstContactPrompt] = useState<string | undefined>(undefined)
-  const [skipLoadingScreen, setSkipLoadingScreen] = useState(false) // Skip loading after FirstContact
   const WELCOME_SEEN_KEY = 'hatch_intro_v2_seen'
   const OLD_WELCOME_KEYS = ['hatch_welcome_v1_seen', 'hatch_v1_welcome_seen']
   const skipFirstGuestCreditRef = useRef<boolean>(!!initialPrompt)
@@ -564,37 +559,37 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     return accountSubscription?.status === 'active' && ['lite', 'pro', 'agency'].includes(accountSubscription.tier)
   }, [accountSubscription])
   
-  // Pro features: Custom domain, remove branding (pro/agency only)
+  // Visionary features: Custom domain, remove branding (visionary/singularity only)
   const isProUser = useMemo(() => {
-    return accountSubscription?.status === 'active' && (accountSubscription.tier === 'pro' || accountSubscription.tier === 'agency')
+    return accountSubscription?.status === 'active' && (accountSubscription.tier === 'visionary' || accountSubscription.tier === 'singularity')
   }, [accountSubscription])
 
   // Tier display config for badges and features
   const tierConfig = useMemo(() => {
     const tier = accountSubscription?.tier
-    if (tier === 'agency') return {
-      name: 'Agency',
+    if (tier === 'singularity') return {
+      name: 'Singularity',
       color: 'amber',
       icon: Crown,
       projectLimit: Infinity,
       features: ['Unlimited Projects', 'Custom Domains', 'Remove Branding', 'Commercial License', 'Priority Support'],
       gradient: 'from-amber-500 to-orange-500'
     }
-    if (tier === 'pro') return {
-      name: 'Pro',
-      color: 'emerald',
+    if (tier === 'visionary') return {
+      name: 'Visionary',
+      color: 'violet',
       icon: Zap,
       projectLimit: Infinity,
       features: ['Unlimited Projects', 'Custom Domains', 'Remove Branding', 'Evolution Engine'],
-      gradient: 'from-emerald-500 to-teal-500'
+      gradient: 'from-violet-500 to-purple-500'
     }
-    if (tier === 'lite') return {
-      name: 'Lite',
-      color: 'lime',
+    if (tier === 'architect') return {
+      name: 'Architect',
+      color: 'emerald',
       icon: Star,
       projectLimit: 3,
       features: ['3 Active Projects', 'Deploy to hatchitsites.dev', 'Code Download'],
-      gradient: 'from-lime-500 to-green-500'
+      gradient: 'from-emerald-500 to-teal-500'
     }
     return null
   }, [accountSubscription?.tier])
@@ -662,18 +657,6 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       return
     }
 
-    const hasSeenWelcome = localStorage.getItem(WELCOME_SEEN_KEY)
-    // For guests, always show First Contact on fresh load; signed-in users respect the seen flag
-    // const shouldShowFirstContact = (!existingProjectId && (!hasSeenWelcome || !isSignedIn))
-    const shouldShowFirstContact = false // FORCE SKIP FIRST CONTACT - User wants straight to builder
-
-    if (shouldShowFirstContact) {
-      console.log('BuildFlowController: Showing First Contact experience')
-      setShowFirstContact(true)
-      setIsLoading(false)
-      return
-    }
-
     // Otherwise, INITIALIZE A NEW PROJECT IMMEDIATELY
     console.log('BuildFlowController: Initializing new project')
     initializeProject()
@@ -681,8 +664,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existingProjectId, justCreatedProjectId, isCreatingProject, isLoaded, isReplicationReady])
 
-  const initializeProject = async (firstContactPrompt?: string) => {
-    console.log('BuildFlowController: initializeProject started', { firstContactPrompt })
+  const initializeProject = async () => {
+    console.log('BuildFlowController: initializeProject started')
     setIsCreatingProject(true)
     setIsLoading(true)
     
@@ -692,7 +675,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     const sections = customizedSections.length > 0 ? customizedSections : template.sections
     
     // Use the prompt from First Contact if available
-    const projectPrompt = firstContactPrompt || initialPrompt
+    const projectPrompt = initialPrompt
     
     const brand: DbBrandConfig = {
       brandName: brandConfig?.brandName || (template.name === 'The Singularity' ? 'Untitled Project' : template.name),
@@ -740,7 +723,6 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       setDemoMode(true)
       setIsCreatingProject(false)
       setIsLoading(false)
-      setSkipLoadingScreen(false) // Reset for future loads
     }
 
     // If user is not signed in, redirect to sign up - NO MORE DEMO MODE LOOPHOLE
@@ -810,7 +792,6 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       setupDemoMode()
     } finally {
       setIsLoading(false)
-      setSkipLoadingScreen(false) // Reset for future loads
       setIsCreatingProject(false)
     }
   }
@@ -1464,24 +1445,8 @@ export default function GeneratedPage() {
     alert("Brand settings are managed automatically. Ask to change colors or fonts.")
   }
 
-  // Handle First Contact completion
-  const handleFirstContactComplete = (prompt?: string) => {
-    localStorage.setItem(WELCOME_SEEN_KEY, 'true')
-    setShowFirstContact(false)
-    setFirstContactPrompt(prompt)
-    skipFirstGuestCreditRef.current = true
-    setSkipLoadingScreen(true) // Skip the loading screen - FirstContact already did the theatrical intro
-    setIsLoading(true)
-    // Initialize project with the prompt from First Contact
-    initializeProject(prompt)
-  }
-
-  // FIRST CONTACT - Theatrical onboarding for new users
-  if (showFirstContact) {
-    return <FirstContact onComplete={handleFirstContactComplete} defaultPrompt={initialPrompt} />
-  }
-
   // Only show loading screen if NOT coming from FirstContact
+  /*
   if (isLoading && !skipLoadingScreen) {
     // Show different message depending on if we're loading existing vs creating new
     let loadingMessage = 'Initializing the build system...'
@@ -1550,6 +1515,7 @@ export default function GeneratedPage() {
       </div>
     )
   }
+  */
 
   if (error) {
     return (
@@ -1586,6 +1552,7 @@ export default function GeneratedPage() {
       )}
       
       <AnimatePresence mode="wait">
+        {/*
         {phase === 'initializing' && (
           <motion.div
             key="initializing"
@@ -1630,6 +1597,7 @@ export default function GeneratedPage() {
             </motion.div>
           </motion.div>
         )}
+        */}
 
         {phase === 'building' && templateForBuild && buildState && (
           <motion.div
@@ -1980,14 +1948,14 @@ export default function GeneratedPage() {
                       ))}
                     </div>
                     
-                    {/* Upgrade prompt for Lite users */}
-                    {accountSubscription?.tier === 'lite' && (
+                    {/* Upgrade prompt for Architect users */}
+                    {accountSubscription?.tier === 'architect' && (
                       <button 
-                        onClick={() => window.location.href = '/sign-up?upgrade=pro'}
+                        onClick={() => window.location.href = '/sign-up?upgrade=visionary'}
                         className="mt-4 w-full py-2 text-xs font-medium bg-gradient-to-r from-emerald-600/20 to-teal-600/20 border border-emerald-500/30 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition-colors flex items-center justify-center gap-2"
                       >
                         <Zap className="w-3.5 h-3.5" />
-                        Upgrade to Pro for Unlimited
+                        Upgrade to Visionary for Unlimited
                       </button>
                     )}
                   </div>

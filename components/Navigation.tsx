@@ -88,7 +88,7 @@ export default function Navigation() {
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                   </svg>
-                  Projects
+                  Terminal
                 </Link>
                 {/* Subscription badge with renewal timer */}
                 <div className="hidden sm:block">
@@ -98,7 +98,7 @@ export default function Navigation() {
                   afterSignOutUrl="/"
                   appearance={{
                     elements: {
-                      avatarBox: `w-7 h-7 sm:w-8 sm:h-8 ${isPaidUser ? `ring-[1.5px] ring-offset-1 ring-offset-zinc-950 ${tier === 'agency' ? 'ring-emerald-500/70' : 'ring-teal-500/70'}` : ''}`
+                      avatarBox: `w-7 h-7 sm:w-8 sm:h-8 ${isPaidUser ? `ring-[1.5px] ring-offset-1 ring-offset-zinc-950 ${tier === 'singularity' ? 'ring-amber-500/70' : tier === 'visionary' ? 'ring-violet-500/70' : 'ring-emerald-500/70'}` : ''}`
                     }
                   }}
                 />

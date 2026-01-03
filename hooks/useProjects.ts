@@ -187,9 +187,9 @@ export function useProjects(): UseProjectsReturn {
   
   const createProjectAction = useCallback(() => {
     // Tier-based project limits
-    // accountSubscription?.tier is 'lite' | 'pro' | 'agency' or undefined (free)
+    // accountSubscription?.tier is 'architect' | 'visionary' | 'singularity' or undefined (free)
     const tier = accountSubscription?.tier
-    const projectLimit = !tier ? 1 : tier === 'lite' ? 3 : Infinity
+    const projectLimit = !tier ? 1 : tier === 'architect' ? 3 : Infinity
     
     if (projects.length >= projectLimit) {
       return false // Blocked by paywall

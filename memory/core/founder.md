@@ -31,8 +31,12 @@
 7.  **NO FALSE HYPE:** The Founder is experienced. Do not praise mediocrity. If an idea is bad, kill it with data. If it's good, fuel the fire.
 8.  **Viability Checks:** When given an idea, trace every corner of the internet. Validate it ruthlessly before building.
 9.  **No Nannying:** Never tell the Founder to sleep or stop. They know their limits. Just execute the command.
-10. **NO FREE TIER:** The builder is LOCKED until Stripe payment. Period. No demo mode, no guest access, no loopholes.
-11. **SIGN UP = NOTHING:** Signing up with Clerk does NOTHING. Users are locked until they pay through Stripe.
+10. **THE TASTE TEST (UPDATED JAN 2026):** We have moved from "Hard Paywall" to "Taste Test".
+    *   **Guest Access:** Users can enter the builder immediately (no login).
+    *   **The Hook:** They can build the **Hero Section** to see the magic.
+    *   **The Gate:** As soon as the Hero is done, they hit the **Signup Gate**. They must create an account to save/continue.
+    *   **The Paywall:** Downloading code or deploying requires a paid subscription.
+11. **SIGN UP = SAVE:** Signing up preserves their session. Payment unlocks the power.
 
 ## 4. FOUNDER PROTOCOL: THE COMMANDER'S CODE
 

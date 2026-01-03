@@ -50,27 +50,28 @@ export default function ContactPage() {
       <div className="max-w-4xl mx-auto relative">
         <Link 
           href="/"
-          className="inline-flex items-center gap-2 text-zinc-500 hover:text-emerald-400 transition-colors mb-6 group text-sm"
+          className="inline-flex items-center gap-2 text-zinc-500 hover:text-emerald-400 transition-colors mb-6 group text-sm font-mono"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span>Back to Home</span>
+          <span>RETURN_TO_BASE</span>
         </Link>
 
         {/* Header with Early Days badge */}
         <div className="flex flex-wrap items-center gap-4 mb-6">
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-3xl font-bold tracking-tight font-mono">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-500">
-              Let's Talk
+              OPEN CHANNEL
             </span>
           </h1>
           <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-3 py-1">
-            <Rocket className="w-4 h-4 text-emerald-400" />
-            <span className="text-emerald-400 text-xs font-medium">Early Access — Your feedback shapes everything</span>
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+            <span className="text-emerald-400 text-xs font-mono tracking-wider">SIGNAL_ACTIVE</span>
           </div>
         </div>
 
-        <p className="text-zinc-400 mb-8 text-sm max-w-2xl">
-          Bugs, features, partnerships, or a quick hello — drop a note. We route everything to a human at support@hatchit.dev.
+        <p className="text-zinc-400 mb-8 text-sm max-w-2xl font-mono">
+          // TRANSMISSION PROTOCOL INITIATED<br/>
+          Report anomalies, request feature injection, or establish partnership uplink.
         </p>
 
         <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-6 items-start">
@@ -80,22 +81,28 @@ export default function ContactPage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="bg-zinc-900/70 border border-zinc-800 rounded-2xl p-6 shadow-[0_0_60px_rgba(16,185,129,0.08)] backdrop-blur"
+            className="bg-zinc-900/70 border border-zinc-800 rounded-none p-6 shadow-[0_0_60px_rgba(16,185,129,0.08)] backdrop-blur relative overflow-hidden"
           >
+            {/* Corner accents */}
+            <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-emerald-500/50" />
+            <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-emerald-500/50" />
+            <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-emerald-500/50" />
+            <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-emerald-500/50" />
+
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-zinc-400 uppercase tracking-wide">Name</label>
+                <label className="text-xs text-emerald-500/70 uppercase tracking-widest font-mono">Identity</label>
                 <input
                   name="name"
                   value={form.name}
                   onChange={handleChange}
                   required
-                  placeholder="Ada Lovelace"
-                  className="mt-2 w-full rounded-lg bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-white focus:border-emerald-500 focus:ring-emerald-500/30 outline-none transition"
+                  placeholder="Operator Name"
+                  className="mt-2 w-full bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 outline-none transition font-mono placeholder:text-zinc-700"
                 />
               </div>
               <div>
-                <label className="text-xs text-zinc-400 uppercase tracking-wide">Email</label>
+                <label className="text-xs text-emerald-500/70 uppercase tracking-widest font-mono">Contact_Point</label>
                 <input
                   name="email"
                   type="email"

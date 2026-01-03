@@ -252,6 +252,11 @@
 			"isBackground": false,
 			"problemMatcher": [],
 			"group": "build"
+		},
+		{
+			"label": "commit-pricing-migration",
+			"type": "shell",
+			"command": "git add . && git commit -m \"feat: complete migration to Singularity pricing tiers (Architect, Visionary, Singularity)\""
 		}
 	]
 }

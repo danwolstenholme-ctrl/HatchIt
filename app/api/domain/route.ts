@@ -3,14 +3,14 @@ import { auth } from '@clerk/nextjs/server'
 import { clerkClient } from '@clerk/nextjs/server'
 import { AccountSubscription } from '@/types/subscriptions'
 
-// Helper to check if user has Pro or Agency tier (custom domains require Pro+)
+// Helper to check if user has Visionary or Singularity tier (custom domains require Visionary+)
 async function isProOrAgency(userId: string): Promise<boolean> {
   try {
     const client = await clerkClient()
     const user = await client.users.getUser(userId)
     const accountSubscription = user.publicMetadata?.accountSubscription as AccountSubscription | undefined
     return accountSubscription?.status === 'active' && 
-           (accountSubscription.tier === 'pro' || accountSubscription.tier === 'agency')
+           (accountSubscription.tier === 'visionary' || accountSubscription.tier === 'singularity')
   } catch {
     return false
   }

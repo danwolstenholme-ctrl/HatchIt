@@ -21,7 +21,7 @@ export function TierGlowOverlay() {
       />
       <div 
         className={`absolute top-0 left-0 right-0 h-8 bg-gradient-to-b ${
-          tier === 'agency' ? 'from-emerald-500/10' : 'from-teal-500/10'
+          tier === 'singularity' ? 'from-amber-500/10' : tier === 'visionary' ? 'from-violet-500/10' : 'from-emerald-500/10'
         } to-transparent`}
       />
       
@@ -31,7 +31,7 @@ export function TierGlowOverlay() {
       />
       <div 
         className={`absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t ${
-          tier === 'agency' ? 'from-emerald-500/10' : 'from-teal-500/10'
+          tier === 'singularity' ? 'from-amber-500/10' : tier === 'visionary' ? 'from-violet-500/10' : 'from-emerald-500/10'
         } to-transparent`}
       />
       
@@ -47,16 +47,16 @@ export function TierGlowOverlay() {
       
       {/* Corner accents */}
       <div className={`absolute top-0 left-0 w-16 h-16 bg-gradient-to-br ${
-        tier === 'agency' ? 'from-emerald-500/20' : 'from-teal-500/20'
+        tier === 'singularity' ? 'from-amber-500/20' : tier === 'visionary' ? 'from-violet-500/20' : 'from-emerald-500/20'
       } to-transparent`} />
       <div className={`absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl ${
-        tier === 'agency' ? 'from-emerald-500/20' : 'from-teal-500/20'
+        tier === 'singularity' ? 'from-amber-500/20' : tier === 'visionary' ? 'from-violet-500/20' : 'from-emerald-500/20'
       } to-transparent`} />
       <div className={`absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr ${
-        tier === 'agency' ? 'from-emerald-500/20' : 'from-teal-500/20'
+        tier === 'singularity' ? 'from-amber-500/20' : tier === 'visionary' ? 'from-violet-500/20' : 'from-emerald-500/20'
       } to-transparent`} />
       <div className={`absolute bottom-0 right-0 w-16 h-16 bg-gradient-to-tl ${
-        tier === 'agency' ? 'from-emerald-500/20' : 'from-teal-500/20'
+        tier === 'singularity' ? 'from-amber-500/20' : tier === 'visionary' ? 'from-violet-500/20' : 'from-emerald-500/20'
       } to-transparent`} />
     </div>
   )
@@ -71,8 +71,8 @@ export function SubscriptionBadge({ showRenewal = false, compact = false }: { sh
 
   if (!isPaidUser) return null
 
-  const tierEmoji = tier === 'agency' ? '⚡' : tier === 'pro' ? '🐣' : tier === 'lite' ? '🌱' : '🥚'
-  const tierName = tier === 'agency' ? 'Agency' : tier === 'pro' ? 'Pro' : tier === 'lite' ? 'Starter' : 'Free'
+  const tierEmoji = tier === 'singularity' ? '👑' : tier === 'visionary' ? '⚡' : tier === 'architect' ? '🏗️' : '🥚'
+  const tierName = tier === 'singularity' ? 'Singularity' : tier === 'visionary' ? 'Visionary' : tier === 'architect' ? 'Architect' : 'Free'
 
   if (compact) {
     return (
@@ -122,7 +122,7 @@ export function RenewalTimer({ className = '' }: { className?: string }) {
   if (!isPaidUser || daysUntilRenewal === null) return null
 
   const isUrgent = daysUntilRenewal <= 3
-  const tierEmoji = tier === 'agency' ? '⚡' : tier === 'pro' ? '🐣' : tier === 'lite' ? '🌱' : '🥚'
+  const tierEmoji = tier === 'singularity' ? '👑' : tier === 'visionary' ? '⚡' : tier === 'architect' ? '🏗️' : '🥚'
 
   return (
     <AnimatePresence>
@@ -166,9 +166,9 @@ export function SubscriptionStatusCard() {
     isSyncing 
   } = useSubscription()
 
-  const tierEmoji = tier === 'agency' ? '⚡' : tier === 'pro' ? '🐣' : tier === 'lite' ? '🌱' : '🥚'
-  const tierName = tier === 'agency' ? 'Agency' : tier === 'pro' ? 'Pro' : tier === 'lite' ? 'Starter' : 'Free'
-  const price = tier === 'agency' ? '$99' : tier === 'pro' ? '$49' : tier === 'lite' ? '$9' : '$0'
+  const tierEmoji = tier === 'singularity' ? '👑' : tier === 'visionary' ? '⚡' : tier === 'architect' ? '🏗️' : '🥚'
+  const tierName = tier === 'singularity' ? 'Singularity' : tier === 'visionary' ? 'Visionary' : tier === 'architect' ? 'Architect' : 'Free'
+  const price = tier === 'singularity' ? '$99' : tier === 'visionary' ? '$29' : tier === 'architect' ? '$9' : '$0'
 
   return (
     <div className={`p-6 rounded-2xl ${tierColor.bgSubtle} border ${tierColor.border}`}>

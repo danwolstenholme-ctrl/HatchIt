@@ -58,15 +58,15 @@ export default function FAQPage() {
     questions: [
       {
         q: 'What are the resource costs?',
-        a: 'System access is tiered. Guest access grants 9 pooled credits across build/refine/dream before signup. Starter ($9/mo) offers unlimited generations and 5 AI polishes per month for up to 3 active projects. Pro ($29/mo) keeps unlimited generations with ~30 AI polishes per month (configurable). Agency ($99/mo) removes limits and adds white-label + priority support.',
+        a: 'System access is tiered. Architect ($19/mo) grants full Singularity Engine access and unlimited generations. Visionary ($49/mo) adds full source code export, white-labeling, and priority processing. Singularity ($199/mo) is for high-volume agency use with dedicated infrastructure.',
       },
       {
         q: 'Is there a trial protocol?',
-        a: 'Yes. Guests can build with 9 pooled credits and full preview; signup is required to keep building, export, or deploy.',
+        a: 'Yes. Guests can initiate the neural handshake and preview the output. Account creation is required to save, refine, or deploy.',
       },
       {
-        q: 'What is included in the Pro Tier?',
-        a: 'Unlimited generations, ~30 AI polishes per month, full source export, custom domains, remove branding, and the Living Site evolution engine.',
+        q: 'What is included in the Visionary Tier?',
+        a: 'Unlimited generations, full source export, custom domain deployment, white-labeling (no branding), commercial license, and priority neural processing.',
       },
     ],
   },

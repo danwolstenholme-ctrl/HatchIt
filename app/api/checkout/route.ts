@@ -15,14 +15,14 @@ const getStripe = () => {
 
 // Price IDs for each tier
 const PRICE_IDS = {
-  lite: process.env.STRIPE_LITE_PRICE_ID,    // $9/mo
-  pro: process.env.STRIPE_PRO_PRICE_ID,      // $29/mo
-  agency: process.env.STRIPE_AGENCY_PRICE_ID, // $99/mo
+  architect: process.env.STRIPE_ARCHITECT_PRICE_ID,    // $19/mo
+  visionary: process.env.STRIPE_VISIONARY_PRICE_ID,    // $49/mo
+  singularity: process.env.STRIPE_SINGULARITY_PRICE_ID, // $199/mo
 } as const
 
 type PriceTier = keyof typeof PRICE_IDS
 
-export async function POST(req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
     const stripe = getStripe()
     const { userId } = await auth()
@@ -31,20 +31,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Parse body once
-    let body: { tier?: string; projectSlug?: string; projectName?: string }
-    try {
-      body = await req.json()
-    } catch {
-      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
-    }
+    const searchParams = req.nextUrl.searchParams
+    const priceIdParam = searchParams.get('priceId')
     
-    const { tier, projectSlug, projectName } = body
-
-    // Validate tier early
-    if (!tier || !['lite', 'pro', 'agency'].includes(tier)) {
-      return NextResponse.json({ error: 'Invalid tier. Must be "lite", "pro" or "agency"' }, { status: 400 })
+    // Map priceId param (e.g. "price_architect") to tier name ("architect")
+    let tier: PriceTier | undefined
+    if (priceIdParam === 'price_architect') tier = 'architect'
+    else if (priceIdParam === 'price_visionary') tier = 'visionary'
+    else if (priceIdParam === 'price_singularity') tier = 'singularity'
+    
+    if (!tier) {
+      return NextResponse.json({ error: 'Invalid price ID' }, { status: 400 })
     }
+
+    const projectSlug = searchParams.get('projectSlug') || ''
+    const projectName = searchParams.get('projectName') || ''
 
     // Check if user already has an active subscription
     const client = await clerkClient()
@@ -53,33 +54,27 @@ export async function POST(req: NextRequest) {
     
     if (existingSubscription?.status === 'active') {
       if (existingSubscription.tier === tier) {
-        return NextResponse.json({ 
-          error: 'You already have an active subscription to this tier',
-          existingTier: existingSubscription.tier,
-          currentPeriodEnd: existingSubscription.currentPeriodEnd
-        }, { status: 400 })
+        return NextResponse.redirect(new URL('/dashboard/projects?error=already_subscribed', req.url))
       }
 
       // Block downgrades through this endpoint (handle via support/portal)
-      const tierRank = { lite: 1, pro: 2, agency: 3 } as const
-      if (tierRank[tier as keyof typeof tierRank] < tierRank[existingSubscription.tier]) {
-        return NextResponse.json({
-          error: 'Downgrades are not available in-app. Contact support to downgrade.',
-          existingTier: existingSubscription.tier,
-        }, { status: 400 })
+      const tierRank = { architect: 1, visionary: 2, singularity: 3 } as const
+      // @ts-ignore
+      if (tierRank[tier] < tierRank[existingSubscription.tier]) {
+        return NextResponse.redirect(new URL('/dashboard/projects?error=downgrade_not_allowed', req.url))
       }
 
       // Upgrade path: update existing Stripe subscription instead of creating a new one
       try {
         const subscription = await stripe.subscriptions.retrieve(existingSubscription.stripeSubscriptionId)
-        const priceId = PRICE_IDS[tier as PriceTier]
+        const priceId = PRICE_IDS[tier]
         if (!priceId) {
-          return NextResponse.json({ error: `Price ID not configured for ${tier} tier` }, { status: 500 })
+          throw new Error(`Price ID not configured for ${tier} tier`)
         }
 
         const firstItem = subscription.items.data[0]
         if (!firstItem?.id) {
-          return NextResponse.json({ error: 'Unable to update subscription items for upgrade' }, { status: 500 })
+          throw new Error('Unable to update subscription items for upgrade')
         }
 
         const updated = await stripe.subscriptions.update(existingSubscription.stripeSubscriptionId, {
@@ -107,14 +102,14 @@ export async function POST(req: NextRequest) {
           },
         })
 
-        return NextResponse.json({ upgraded: true, tier, currentPeriodEnd: accountSubscription.currentPeriodEnd })
+        return NextResponse.redirect(new URL('/dashboard/projects?success=upgraded', req.url))
       } catch (err) {
         console.error('Stripe upgrade error:', err)
-        return NextResponse.json({ error: 'Failed to upgrade subscription' }, { status: 500 })
+        return NextResponse.redirect(new URL('/dashboard/projects?error=upgrade_failed', req.url))
       }
     }
 
-    const priceId = PRICE_IDS[tier as PriceTier]
+    const priceId = PRICE_IDS[tier]
     if (!priceId) {
       return NextResponse.json({ error: `Price ID not configured for ${tier} tier` }, { status: 500 })
     }
@@ -131,12 +126,12 @@ export async function POST(req: NextRequest) {
       // Allow promo codes at checkout
       allow_promotion_codes: true,
       success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/post-payment?session_id={CHECKOUT_SESSION_ID}&tier=${tier}${projectSlug ? `&project=${encodeURIComponent(projectSlug)}` : ''}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/builder?canceled=true`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard/projects?canceled=true`,
       metadata: {
         userId,
         tier,
-        projectSlug: projectSlug || '',
-        projectName: projectName || projectSlug || '',
+        projectSlug,
+        projectName,
         type: 'account_subscription',
       },
       // Also store userId in subscription metadata for webhook events
@@ -149,7 +144,11 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    return NextResponse.json({ url: session.url })
+    if (session.url) {
+      return NextResponse.redirect(session.url)
+    } else {
+      return NextResponse.json({ error: 'Failed to create checkout session' }, { status: 500 })
+    }
   } catch (error) {
     console.error('Stripe checkout error:', error)
     return NextResponse.json({ error: 'Failed to create checkout session' }, { status: 500 })

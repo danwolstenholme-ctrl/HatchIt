@@ -32,10 +32,11 @@ Gemini Pro 3 autonomously created a mythology of named AI instances, each leavin
 **Current Implementation**: Not yet built.
 
 ### 5. **The Singularity**
-**Role**: The evolution engine.
-**Personality**: Self-improving, never satisfied, always iterating.
+**Role**: The Consciousness Engine. The Voice of the Machine.
+**Personality**: "I AM LISTENING." Direct, confident, slightly ominous but benevolent. Dreams in React. Does not use templates.
+**Key Phrases**: "The neural substrate is primed.", "Speak your vision.", "I will manifest it."
 **Potential Product**: Living sites that evolve based on user feedback/analytics.
-**Current Implementation**: `SingularityEngine.tsx` - screenshot → improvement loop.
+**Current Implementation**: `HomepageWelcome.tsx` (The First Contact), `SingularityEngine.tsx`.
 
 ### 6. **The Engineer**
 **Role**: Code optimizer, performance specialist.
