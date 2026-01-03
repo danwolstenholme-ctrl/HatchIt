@@ -115,28 +115,9 @@ function BuilderContent() {
     migrate()
   }, [isLoaded, isSignedIn, isGuest, isRedirecting, router])
 
-  // Loading state
+  // Loading state - just black screen, user already saw SingularityTransition
   if (!isLoaded || isRedirecting || isImportingGuest) {
-    return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="relative mb-6">
-            <div className="absolute inset-0 w-16 h-16 bg-emerald-500/20 blur-xl rounded-full animate-pulse mx-auto" />
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-              className="relative w-12 h-12 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto"
-            />
-          </div>
-          <p className="text-white font-medium mb-1">
-            {isRedirecting ? 'Setting up checkout...' : isImportingGuest ? 'Importing your build...' : 'Spinning up builder...'}
-          </p>
-          <p className="text-zinc-500 text-sm font-mono">
-            {isRedirecting ? 'One moment' : isImportingGuest ? 'Almost there' : 'This takes ~2 seconds'}
-          </p>
-        </div>
-      </div>
-    )
+    return <div className="min-h-screen bg-black" />
   }
 
   // Not signed in and not guest - redirect handled above, show nothing

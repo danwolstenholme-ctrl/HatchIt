@@ -1583,54 +1583,8 @@ export default function GeneratedPage() {
       )}
       
       <AnimatePresence mode="wait">
-        {/*
-        {phase === 'initializing' && (
-          <motion.div
-            key="initializing"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-center h-screen bg-zinc-950"
-          >
-            <div className="relative mb-8">
-              <div className="absolute inset-0 bg-emerald-500/20 blur-3xl rounded-full animate-pulse" />
-              <div className="relative w-20 h-20 bg-zinc-900 border border-emerald-500/30 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.2)]">
-                <Terminal className="w-8 h-8 text-emerald-400" />
-              </div>
-            </div>
-            
-            <h2 className="text-xl font-bold text-white mb-2">Setting up your workspace</h2>
-            
-            <div className="flex items-center gap-2 text-emerald-400/80 font-mono text-sm mb-6">
-              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-              <span>Connecting to AI...</span>
-            </div>
-            
-            <p className="text-zinc-500 text-sm max-w-xs text-center">
-              First build takes ~30 seconds. After that, iterations are faster.
-            </p>
-            
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 5 }}
-              className="mt-8"
-            >
-              <button 
-                onClick={() => {
-                  localStorage.removeItem('hatch_current_project')
-                  window.location.href = '/builder'
-                }}
-                className="text-xs text-zinc-500 hover:text-zinc-300 underline decoration-zinc-700 underline-offset-4 transition-colors"
-              >
-                Taking too long? Start over
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-        */}
-
-        {phase === 'building' && templateForBuild && buildState && (
+        {/* Show builder for both initializing and building - no separate loading screen */}
+        {(phase === 'initializing' || phase === 'building') && templateForBuild && (
           <motion.div
             key="building"
             initial={{ opacity: 0 }}
@@ -1641,7 +1595,7 @@ export default function GeneratedPage() {
             {/* Singularity Sidebar - Desktop Only */}
             <div className="hidden lg:block">
               <SingularitySidebar
-                currentSection={buildState.currentSectionIndex + 1}
+                currentSection={(buildState?.currentSectionIndex ?? 0) + 1}
                 totalSections={sectionsForBuild.length}
                 isGenerating={false}
                 thought={getCurrentSection()?.name ? `Building ${getCurrentSection()?.name}...` : 'Analyzing...'}
@@ -1658,15 +1612,24 @@ export default function GeneratedPage() {
 
             {/* Main Build Area */}
             <div className="flex-1 flex flex-col overflow-hidden">
-              <SectionProgress
-                template={templateForBuild}
-                buildState={buildState}
-                onSectionClick={handleSectionClick}
-                onSkip={handleSkipSection}
-              />
+              {buildState && (
+                <SectionProgress
+                  template={templateForBuild}
+                  buildState={buildState}
+                  onSectionClick={handleSectionClick}
+                  onSkip={handleSkipSection}
+                />
+              )}
 
               <div className="flex-1 flex min-h-0 overflow-hidden">
-                {getCurrentSection() && getCurrentDbSection() && (project?.id || getCurrentDbSection()!.project_id) && (
+                {/* Show minimal loader while buildState is being created */}
+                {!buildState && (
+                  <div className="flex-1 flex items-center justify-center bg-black">
+                    <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                  </div>
+                )}
+                
+                {buildState && getCurrentSection() && getCurrentDbSection() && (project?.id || getCurrentDbSection()!.project_id) && (
                   <SectionBuilder
                     section={getCurrentSection()!}
                     dbSection={getCurrentDbSection()!}
@@ -1681,7 +1644,7 @@ export default function GeneratedPage() {
                   />
                 )}
 
-              {getCurrentSection() && getCurrentDbSection() && !(project?.id || getCurrentDbSection()!.project_id) && (
+              {buildState && getCurrentSection() && getCurrentDbSection() && !(project?.id || getCurrentDbSection()!.project_id) && (
                 <div className="flex-1 flex items-center justify-center bg-zinc-950">
                   <div className="max-w-md text-center px-6">
                     <div className="text-4xl mb-4">⚠️</div>
@@ -1707,7 +1670,7 @@ export default function GeneratedPage() {
                 </div>
               )}
 
-              {getCurrentSection() && !getCurrentDbSection() && (
+              {buildState && getCurrentSection() && !getCurrentDbSection() && (
                 <div className="flex-1 flex items-center justify-center bg-zinc-950">
                   <div className="max-w-md text-center px-6">
                     <div className="text-4xl mb-4">⚠️</div>
@@ -1721,12 +1684,6 @@ export default function GeneratedPage() {
                         className="px-4 py-2 bg-zinc-800 text-white rounded-lg hover:bg-zinc-700"
                       >
                         Start Fresh
-                      </button>
-                      <button
-                        onClick={() => setPhase('initializing')}
-                        className="px-4 py-2 bg-zinc-700 text-zinc-200 rounded-lg hover:bg-zinc-600"
-                      >
-                        Back to Start
                       </button>
                     </div>
                   </div>
