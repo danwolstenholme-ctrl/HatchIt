@@ -44,7 +44,6 @@ export default function Navigation() {
             >
               <Image src="/assets/hatchit_definitive.svg" alt="HatchIt" width={32} height={32} className="w-8 h-8" />
             </motion.div>
-            <span className="font-semibold text-white">HatchIt</span>
           </Link>
           
           {/* Desktop Nav Links - footer style */}

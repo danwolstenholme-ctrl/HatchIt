@@ -49,11 +49,11 @@ function VoidButton({ isSignedIn, router }: { isSignedIn: boolean | undefined, r
         {isLoading ? (
           <>
             <div className="w-5 h-5 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
-            <span className="text-emerald-400 font-mono text-base">INITIALIZING...</span>
+            <span className="text-emerald-400 font-mono text-base">LOADING...</span>
           </>
         ) : (
           <>
-            <span className="text-white tracking-wide">INITIALIZE ARCHITECT</span>
+            <span className="text-white tracking-wide">START BUILDING</span>
             <ArrowRight className="w-5 h-5 text-emerald-400 group-hover:translate-x-1 transition-transform" />
           </>
         )}
@@ -172,14 +172,14 @@ export default function Home() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
               </span>
-              <span className="text-sm font-mono text-emerald-400 tracking-wide">SYSTEM ONLINE // V3.1.3</span>
+              <span className="text-sm font-mono text-emerald-400 tracking-wide">AI WEBSITE BUILDER</span>
             </motion.div>
 
             {/* Main headline - BIG and BOLD */}
-            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter leading-[0.9] mb-8 glitch-text" data-text="ARCHITECT YOUR REALITY">
-              <span className="block text-white mb-2">ARCHITECT YOUR</span>
+            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter leading-[0.9] mb-8 glitch-text" data-text="BUILD YOUR VISION">
+              <span className="block text-white mb-2">BUILD YOUR</span>
               <span className="block bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
-                REALITY
+                VISION
               </span>
             </h1>
 
@@ -190,10 +190,10 @@ export default function Home() {
               transition={{ delay: 0.4 }}
               className="text-lg sm:text-xl md:text-2xl text-zinc-400 max-w-2xl mx-auto leading-relaxed mb-10"
             >
-              The Singularity is here. Stop coding components. <br className="hidden md:block" />
-              Start manifesting systems.
+              Turn text into production-ready React code. <br className="hidden md:block" />
+              No drag-and-drop. Just speak.
               <span className="block mt-4 text-emerald-500/80 font-mono text-sm">
-                // POWERED BY CLAUDE 3.5 SONNET + GEMINI 3 PRO
+                // EXPORT TO NEXT.JS + TAILWIND
               </span>
             </motion.p>
 
@@ -358,7 +358,7 @@ export default function Home() {
                 <Terminal className="w-6 h-6 text-white" />
               </div>
               <div className="text-xs font-mono text-white/60 mb-2 tracking-wider">STEP 1</div>
-              <h3 className="text-xl font-bold mb-2">You Describe</h3>
+              <h3 className="text-xl font-bold mb-2">Describe</h3>
               <p className="text-sm text-zinc-400 leading-relaxed">Tell us what you need. You&apos;re in control. Speak your intent.</p>
             </div>
 
@@ -368,8 +368,8 @@ export default function Home() {
                 <Cpu className="w-6 h-6 text-emerald-500" />
               </div>
               <div className="text-xs font-mono text-emerald-400 mb-2 tracking-wider">STEP 2</div>
-              <h3 className="text-xl font-bold mb-2">AI Generates</h3>
-              <p className="text-sm text-zinc-400 leading-relaxed">Frontier models (Claude 3.5 Sonnet) build the initial code fast.</p>
+              <h3 className="text-xl font-bold mb-2">Generate</h3>
+              <p className="text-sm text-zinc-400 leading-relaxed">Our AI builds the initial code fast. React + Tailwind.</p>
             </div>
 
             {/* Step 3: Refine */}
@@ -378,7 +378,7 @@ export default function Home() {
                 <Sparkles className="w-6 h-6 text-teal-500" />
               </div>
               <div className="text-xs font-mono text-teal-400 mb-2 tracking-wider">STEP 3</div>
-              <h3 className="text-xl font-bold mb-2">AI Refines</h3>
+              <h3 className="text-xl font-bold mb-2">Refine</h3>
               <p className="text-sm text-zinc-400 leading-relaxed">Polish UI, ensure accessibility, fix edge cases automatically.</p>
             </div>
 
@@ -388,7 +388,7 @@ export default function Home() {
                 <Shield className="w-6 h-6 text-violet-500" />
               </div>
               <div className="text-xs font-mono text-violet-400 mb-2 tracking-wider">STEP 4</div>
-              <h3 className="text-xl font-bold mb-2">AI Audits</h3>
+              <h3 className="text-xl font-bold mb-2">Audit</h3>
               <p className="text-sm text-zinc-400 leading-relaxed">Security check and performance audit before you ship.</p>
             </div>
           </div>
@@ -460,7 +460,7 @@ export default function Home() {
                   'Unlimited AI Generations',
                   'Download Full Source Code',
                   'Deploy to Custom Domain',
-                  'Remove HatchIt Branding',
+                  'Remove Branding',
                   'Commercial License',
                   'Priority Support',
                 ].map((item, i) => (

@@ -46,7 +46,6 @@ export default function Footer() {
                 height={32} 
                 className="w-8 h-8" 
               />
-              <span className="font-semibold text-white">HatchIt</span>
             </Link>
             <p className="text-sm text-zinc-500 leading-relaxed">
               Ship real websites with AI. React + Tailwind code you own.
