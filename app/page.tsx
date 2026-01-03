@@ -54,10 +54,17 @@ function PricingButton({ tier, className, children }: { tier: 'lite' | 'pro' | '
   
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault()
-    const params = new URLSearchParams()
-    params.set('upgrade', tier)
-    if (!isSignedIn) params.set('mode', 'demo')
-    router.push(`/launch?${params.toString()}`)
+    setIsLoading(true)
+    
+    const targetUrl = `/builder?upgrade=${tier}`
+    
+    if (isSignedIn) {
+      router.push(targetUrl)
+    } else {
+      // Redirect to signup with return URL so they land on builder -> checkout
+      const signUpUrl = `/sign-up?redirect_url=${encodeURIComponent(targetUrl)}`
+      router.push(signUpUrl)
+    }
   }
   
   return (

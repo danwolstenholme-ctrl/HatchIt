@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Terminal, Eye, Brain, Sparkles, Zap, Activity, Lock, Settings } from 'lucide-react'
+import ArchitectLogo from './ArchitectLogo'
 
 interface SingularitySidebarProps {
   currentSection: number
@@ -27,8 +28,8 @@ const getSystemLogs = (isGenerating: boolean, currentSection: number, promptsUse
   }
   
   if (isGenerating) {
-    logs.push('[NEURAL] Synthesizing component structure...')
-    logs.push('[VISUAL] Generating layout patterns...')
+    logs.push('[BUILDER] Synthesizing component structure...')
+    logs.push('[LAYOUT] Generating layout patterns...')
   } else {
     logs.push(`[STATUS] Section ${currentSection} active`)
     logs.push('[READY] Awaiting input...')
@@ -74,9 +75,9 @@ export default function SingularitySidebar({
     <div className="w-72 border-r border-zinc-800/50 bg-black/40 backdrop-blur-sm flex flex-col font-mono text-xs overflow-hidden">
       {/* Header */}
       <div className="p-4 border-b border-zinc-800/50">
-        <div className="flex items-center gap-2 text-emerald-400">
-          <Brain className="w-4 h-4" />
-          <span className="uppercase tracking-wider font-semibold">Singularity</span>
+        <div className="flex items-center gap-3">
+          <ArchitectLogo className="w-6 h-6" />
+          <span className="uppercase tracking-wider font-bold text-white">HatchIt</span>
         </div>
       </div>
 
