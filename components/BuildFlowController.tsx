@@ -2031,7 +2031,10 @@ export default function GeneratedPage() {
               </div>
 
               {/* Right Panel - Full Site Preview */}
-              <div className="flex-1 flex flex-col bg-zinc-950 min-h-0 relative">
+              <div className={`
+                ${reviewMobileTab === 'preview' ? 'flex' : 'hidden'} md:flex
+                flex-1 flex-col bg-zinc-950 min-h-0 relative
+              `}>
                 <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
                 
                 {/* Preview Header with Device Toggle */}
@@ -2041,7 +2044,7 @@ export default function GeneratedPage() {
                     <h3 className="text-xs font-mono text-zinc-500 uppercase tracking-wider">Live Preview Environment</h3>
                   </div>
                   
-                  <div className="flex items-center bg-zinc-900 rounded-lg p-1 border border-zinc-800">
+                  <div className="hidden md:flex items-center bg-zinc-900 rounded-lg p-1 border border-zinc-800">
                     {(['mobile', 'tablet', 'desktop'] as const).map((device) => (
                       <button
                         key={device}
@@ -2062,7 +2065,7 @@ export default function GeneratedPage() {
                 </div>
 
                 {/* Preview Container */}
-                <div className="flex-1 flex items-start justify-center overflow-auto p-8 relative z-0">
+                <div className="flex-1 flex items-start justify-center overflow-auto p-2 md:p-8 relative z-0">
                   <motion.div
                     initial={false}
                     animate={{ 
