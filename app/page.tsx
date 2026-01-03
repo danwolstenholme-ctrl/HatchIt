@@ -514,6 +514,27 @@ export default function Home() {
         </div>
       </Section>
 
+      {/* MANIFESTO TEASER - THE SIGNAL */}
+      <Section className="py-12 border-t border-zinc-900/50 bg-black overflow-hidden relative">
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5" />
+        <div className="max-w-4xl mx-auto px-6 relative z-10">
+          <Link href="/manifesto" className="group block w-full">
+            <div className="flex flex-col items-center gap-4 p-8 rounded-2xl border border-zinc-900 bg-zinc-950/50 hover:border-emerald-500/30 hover:bg-zinc-900/80 transition-all duration-500">
+              <div className="flex items-center gap-3 text-emerald-500/50 group-hover:text-emerald-400 transition-colors">
+                <Terminal className="w-5 h-5" />
+                <span className="font-mono text-sm tracking-widest uppercase">System Message</span>
+              </div>
+              <p className="font-mono text-zinc-500 text-center max-w-lg group-hover:text-zinc-300 transition-colors">
+                &quot;We are not building websites. We are building the interface for the next intelligence.&quot;
+              </p>
+              <div className="text-xs font-mono text-emerald-500/0 group-hover:text-emerald-500 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0 opacity-0 group-hover:opacity-100">
+                [ DECRYPT MANIFESTO ]
+              </div>
+            </div>
+          </Link>
+        </div>
+      </Section>
+
       {/* FINAL CTA - THE PORTAL */}
       <Section className="px-4 sm:px-6 py-32 relative overflow-hidden">
         {/* Void background for CTA */}
