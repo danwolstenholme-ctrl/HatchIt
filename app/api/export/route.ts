@@ -81,15 +81,19 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Check if user has an active account subscription
+  // Check if user has Pro or Agency tier (Lite cannot download code)
   try {
     const client = await clerkClient()
     const user = await client.users.getUser(userId)
     const accountSubscription = user.publicMetadata?.accountSubscription as AccountSubscription | undefined
     
-    if (!accountSubscription || accountSubscription.status !== 'active') {
+    // Export requires Pro or Agency - Lite tier cannot download code
+    const isProOrAgency = accountSubscription?.status === 'active' && 
+                          (accountSubscription.tier === 'pro' || accountSubscription.tier === 'agency')
+    
+    if (!isProOrAgency) {
       return NextResponse.json({ 
-        error: 'Starter subscription ($9/mo) required to download projects',
+        error: 'Pro subscription ($49/mo) required to download code',
         requiresUpgrade: true 
       }, { status: 403 })
     }

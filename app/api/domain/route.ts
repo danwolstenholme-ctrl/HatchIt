@@ -3,13 +3,14 @@ import { auth } from '@clerk/nextjs/server'
 import { clerkClient } from '@clerk/nextjs/server'
 import { AccountSubscription } from '@/types/subscriptions'
 
-// Helper to check if user has active account subscription
-async function isPaidUser(userId: string): Promise<boolean> {
+// Helper to check if user has Pro or Agency tier (custom domains require Pro+)
+async function isProOrAgency(userId: string): Promise<boolean> {
   try {
     const client = await clerkClient()
     const user = await client.users.getUser(userId)
     const accountSubscription = user.publicMetadata?.accountSubscription as AccountSubscription | undefined
-    return accountSubscription?.status === 'active'
+    return accountSubscription?.status === 'active' && 
+           (accountSubscription.tier === 'pro' || accountSubscription.tier === 'agency')
   } catch {
     return false
   }
@@ -54,8 +55,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Invalid project slug' }, { status: 400 })
     }
 
-    // Check if user has an active subscription
-    if (!await isPaidUser(userId)) {
+    // Check if user has Pro or Agency tier (custom domains are Pro+ only)
+    if (!await isProOrAgency(userId)) {
       return NextResponse.json({ 
         success: false, 
         error: 'Pro subscription required for custom domains',
