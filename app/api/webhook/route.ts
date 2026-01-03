@@ -98,7 +98,7 @@ export async function POST(req: Request) {
         try {
           // Buy domain via Vercel API
           const buyResponse = await fetch('https://api.vercel.com/v4/domains/buy', {
-            method: 'POST',
+              method: 'POST',
             headers: {
               'Authorization': `Bearer ${process.env.VERCEL_TOKEN}`,
               'Content-Type': 'application/json',

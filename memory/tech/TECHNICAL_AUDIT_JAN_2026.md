@@ -2,44 +2,26 @@
 **Date:** January 3, 2026  
 **Auditor:** The Auditor (2077)  
 **System:** HatchIt - The Singularity Interface  
-**Status:** POST-HOTFIX STABILIZATION AUDIT
+**Status:** POST-HOTFIX STABILIZATION AUDIT  
+**Last Updated:** January 3, 2026 (post tier-fix)
 
 ---
 
 ## 🚨 CRITICAL VULNERABILITIES
 
-### 1. THE TIER NAMING SCHIZOPHRENIA (CRITICAL)
+### 1. THE TIER NAMING SCHIZOPHRENIA ~~(CRITICAL)~~ ✅ FIXED
 
-**Location:** Multiple files across the codebase
+**Status:** RESOLVED on Jan 3, 2026
 
-The system has TWO competing tier naming conventions that are not fully synchronized:
+All tier naming is now standardized to `architect | visionary | singularity`:
+- ✅ Homepage pricing buttons
+- ✅ Builder page validation  
+- ✅ Checkout API
+- ✅ Refine-section API
+- ✅ Deploy/Export APIs
+- ✅ types/subscriptions.ts
 
-| Source of Truth | Tier Names |
-|-----------------|------------|
-| `types/subscriptions.ts` (Interface) | `architect`, `visionary`, `singularity` |
-| `types/subscriptions.ts` (PRICING_TIERS) | `lite`, `pro`, `agency` |
-| Stripe Checkout `/api/checkout/route.ts` | `lite`, `architect`, `visionary`, `singularity` |
-| Webhook Processing | `architect`, `visionary`, `singularity` |
-| Deploy/Export Gates | Checks for `lite`, `pro`, `agency` |
-
-**IMPACT:** 
-- A user who subscribes to the **`lite`** tier through the checkout API will have their metadata set with `tier: 'lite'`
-- The webhook handler at [route.ts#L133](app/api/webhook/route.ts#L133) only processes `architect | visionary | singularity` tiers
-- Deploy API at [route.ts#L119](app/api/deploy/route.ts#L119) checks for `lite, pro, agency`
-- **Result:** Lite subscribers may be BLOCKED from deploying because the gates expect different tier names!
-
-**EXPLOIT:** A user could purchase the `lite` tier and potentially access features if the tier name doesn't match the gate check.
-
-**FIX REQUIRED:**
-```typescript
-// Standardize on ONE naming convention across ALL files:
-// Option A: architect, visionary, singularity (new branding)
-// Option B: lite, pro, agency (legacy pricing)
-
-// In /api/deploy/route.ts, change:
-const hasAccess = accountSubscription?.status === 'active' && 
-  ['architect', 'visionary', 'singularity'].includes(accountSubscription.tier)
-```
+**Commit:** `fix(critical): align tier naming to architect/visionary/singularity`
 
 ---
 
@@ -172,20 +154,14 @@ const commitSection = async (code: string) => {
 
 ---
 
-### 4. LEGACY TIER ARTIFACTS IN REFINEMENT API
+### 4. ~~LEGACY TIER ARTIFACTS IN REFINEMENT API~~ ✅ FIXED
 
-**Location:** [app/api/refine-section/route.ts#L149-L155](app/api/refine-section/route.ts#L149-L155)
+**Status:** RESOLVED on Jan 3, 2026
 
-```typescript
-const limit = accountSub.tier === 'lite'
-  ? LITE_ARCHITECT_LIMIT
-  : parseInt(process.env.PRO_ARCHITECT_MONTHLY_LIMIT || '30', 10)
-
-// Error message references "Pro" and "Agency" - legacy names
-error: `Monthly refinement limit reached (${limit}/month). ${accountSub?.tier === 'lite' ? 'Upgrade to Pro for 30/month.' : 'Upgrade to Agency for unlimited.'}`,
-```
-
-**Issue:** Uses `lite` tier name but error message references legacy `Pro` and `Agency` names. Inconsistent with the `architect`, `visionary`, `singularity` naming in the rest of the system.
+The refine-section API now correctly:
+- Checks for `architect` tier (not `lite`)
+- Checks for `singularity` tier for unlimited (not `agency`)
+- Error messages reference correct tier names
 
 ---
 
@@ -276,13 +252,9 @@ transformedCode = Babel.transform(sanitizedCode, {
 
 ## ✅ ACTION PLAN
 
-### Immediate (P0 - Do Today):
+### ~~Immediate (P0 - Do Today):~~ ✅ DONE
 
-1. **FIX TIER NAMING:** Standardize ALL tier checks to use `architect | visionary | singularity`. Update:
-   - [app/api/deploy/route.ts](app/api/deploy/route.ts) - line 119
-   - [app/api/export/route.ts](app/api/export/route.ts) - line 86
-   - [app/api/refine-section/route.ts](app/api/refine-section/route.ts) - lines 149-155
-   - [types/subscriptions.ts](types/subscriptions.ts) - `PRICING_TIERS` object
+1. ~~**FIX TIER NAMING:**~~ ✅ COMPLETED - All tiers now use `architect | visionary | singularity`
 
 2. **VERIFY PRODUCTION ENV:** Confirm `NEXT_PUBLIC_APP_ENV` is NOT set to `local*` in Vercel production.
 
@@ -333,16 +305,16 @@ transformedCode = Babel.transform(sanitizedCode, {
 
 | Category | Score | Notes |
 |----------|-------|-------|
-| Money Loop | 7/10 | Tier naming mismatch is critical bug |
+| Money Loop | ~~7/10~~ **9/10** | Tier naming FIXED ✅ |
 | Security | 8/10 | Ownership checks good, middleware gaps |
 | Architecture | 5/10 | God Component still exists |
-| Code Health | 6/10 | Ghost files, legacy references |
+| Code Health | 6/10 | Ghost files still present |
 | Singularity Vibe | 9/10 | Consciousness intact, UI aligned |
 
-**OVERALL:** 7.0/10 - Functional but fragile. Fix tier naming ASAP.
+**OVERALL:** ~~7.0/10~~ **7.4/10** - Money loop fixed. Ghost files and architecture remain.
 
 ---
 
-*"The system is alive, but it bleeds in places you cannot see. Patch the wounds before they fester."*
+*"The bleeding has stopped. Now clean the wound."*
 
 — The Auditor, 2077
