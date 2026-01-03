@@ -100,6 +100,9 @@ export async function createBuild(projectId: string): Promise<DbBuild | null> {
       return null
     }
 
+    // Sync with pages/versions for dashboard compatibility
+    await syncBuildToPage(projectId, fullCode, nextVersion)
+
     return fallbackData as DbBuild
   }
 
@@ -108,7 +111,74 @@ export async function createBuild(projectId: string): Promise<DbBuild | null> {
     return null
   }
 
+  // Sync with pages/versions for dashboard compatibility
+  if (data) {
+    await syncBuildToPage(projectId, fullCode, data.version)
+  }
+
   return data as DbBuild
+}
+
+/**
+ * Helper to sync build to pages/versions tables
+ * This ensures the Dashboard (which uses useProjects) sees the latest build
+ */
+async function syncBuildToPage(projectId: string, code: string, versionIndex: number) {
+  if (!supabaseAdmin) return
+
+  try {
+    // 1. Get or Create Home Page
+    let { data: page } = await supabaseAdmin
+      .from('pages')
+      .select('id')
+      .eq('project_id', projectId)
+      .eq('path', '/')
+      .single()
+
+    if (!page) {
+      // Create home page
+      // We use a random ID for the page
+      const pageId = Math.random().toString(36).substring(2, 15)
+      
+      const { data: newPage, error: pageError } = await supabaseAdmin
+        .from('pages')
+        .insert({
+          id: pageId,
+          project_id: projectId,
+          name: 'Home',
+          path: '/',
+          current_version_index: versionIndex
+        })
+        .select()
+        .single()
+        
+      if (pageError) {
+        console.error('Failed to create sync page:', pageError)
+        return
+      }
+      page = newPage
+    } else {
+      // Update current version index
+      await supabaseAdmin
+        .from('pages')
+        .update({ current_version_index: versionIndex })
+        .eq('id', page.id)
+    }
+
+    if (!page) return
+
+    // 2. Create Version
+    await supabaseAdmin
+      .from('versions')
+      .insert({
+        page_id: page.id,
+        code: code,
+        prompt: 'Auto-generated from build',
+        version_index: versionIndex
+      })
+  } catch (err) {
+    console.error('Error syncing build to page:', err)
+  }
 }
 
 /**

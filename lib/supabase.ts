@@ -8,6 +8,17 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 
+// Helper to create a client with a Clerk token
+export const createClerkSupabaseClient = (clerkToken: string) => {
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    global: {
+      headers: {
+        Authorization: `Bearer ${clerkToken}`,
+      },
+    },
+  })
+}
+
 // Client-side Supabase client (uses anon key, respects RLS)
 // Only create if URL is configured
 export const supabase: SupabaseClient | null = supabaseUrl && supabaseAnonKey
