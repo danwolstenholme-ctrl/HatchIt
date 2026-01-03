@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
     const user = await client.users.getUser(userId)
     const accountSub = user.publicMetadata?.accountSubscription as { 
       status?: string
-      tier?: 'lite' | 'pro' | 'agency'
+      tier?: 'lite' | 'pro' | 'agency' | 'singularity'
     } | undefined
     
     const freeCreditsUsed = (user.publicMetadata?.freeCreditsUsed as number) || 0

@@ -38,8 +38,8 @@ export default function SiteSettingsModal({ isOpen, onClose, projectId, currentB
       keywords: ''
     },
     brand: {
-      primaryColor: currentBrand?.colors?.[0] || '#10b981',
-      font: currentBrand?.font || 'Inter',
+      primaryColor: currentBrand?.colors?.primary || '#10b981',
+      font: currentBrand?.fontStyle || 'Inter',
       mode: 'dark'
     },
     integrations: {
@@ -58,8 +58,8 @@ export default function SiteSettingsModal({ isOpen, onClose, projectId, currentB
         setSettings(prev => ({
           ...prev,
           brand: {
-            primaryColor: currentBrand.colors?.[0] || prev.brand.primaryColor,
-            font: currentBrand.font || prev.brand.font,
+            primaryColor: currentBrand.colors?.primary || prev.brand.primaryColor,
+            font: currentBrand.fontStyle || prev.brand.font,
             mode: 'dark'
           }
         }))
