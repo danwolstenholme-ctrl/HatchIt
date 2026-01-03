@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, Dna, FlaskConical, Sparkles, Zap } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useProjects } from '@/hooks/useProjects'
 
 // Genetic material for website generation
 const NICHES = ['FinTech', 'BioHealth', 'CyberSecurity', 'AstroMining', 'NeuralLink', 'QuantumComputing', 'EcoSynth']
@@ -29,6 +30,7 @@ export default function GenesisEngine() {
   const [generation, setGeneration] = useState(1)
   const [isIncubating, setIsIncubating] = useState(true)
   const router = useRouter()
+  const { createProject } = useProjects()
 
   const generateOrganism = (gen: number): Organism => {
     const niche = NICHES[Math.floor(Math.random() * NICHES.length)]
@@ -80,10 +82,18 @@ export default function GenesisEngine() {
   }, [generation])
 
   const handleManifest = (organism: Organism) => {
-    // In a real app, this would create a project in the DB
-    // For now, we simulate the "extraction" of the idea
-    alert(`MANIFESTING REALITY: ${organism.name}\n\nInitializing ${organism.vibe} design system for ${organism.niche} sector...`)
-    router.push(`/builder?project=new&template=${organism.vibe.toLowerCase()}&name=${organism.name}`)
+    const project = createProject(organism.name)
+    
+    if (!project) {
+      // In a real app, show a proper modal or toast
+      alert("CAPACITY REACHED. UPGRADE TO EXPAND CONTAINMENT FIELD.")
+      return
+    }
+
+    const prompt = `Create a ${organism.vibe} ${organism.niche} website. The primary color is ${organism.color}. Name: ${organism.name}.`
+    const encodedPrompt = encodeURIComponent(prompt)
+    
+    router.push(`/builder?project=${project.id}&prompt=${encodedPrompt}`)
   }
 
   return (

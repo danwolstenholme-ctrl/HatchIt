@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { useUser, useAuth } from '@clerk/nextjs'
+import { useUser } from '@clerk/nextjs'
 import { Project, Page, Version, DeployedProject } from '@/types/builder'
 import { AccountSubscription } from '@/types/subscriptions'
 import { 
@@ -13,7 +13,6 @@ import {
   getCurrentPage
 } from '@/lib/project-utils'
 import { showSuccessToast, showErrorToast } from '@/app/lib/toast'
-import { createClerkSupabaseClient } from '@/lib/supabase'
 
 interface UseProjectsReturn {
   // Project state
@@ -42,16 +41,15 @@ interface UseProjectsReturn {
   isDeployed: boolean
   canUndo: boolean
   canRedo: boolean
-  isLoading: boolean
   
   // Actions
   updateCurrentProject: (updates: Partial<Project>) => void
-  createProject: (name?: string) => Promise<Project | null> // returns null if blocked by paywall
+  createProject: (name?: string) => Project | null // returns null if blocked by paywall
   switchProject: (id: string) => void
   renameProject: (newName: string) => void
   deleteProject: (id?: string) => void
   deleteAllProjects: () => void
-  duplicateProject: () => Promise<boolean> // returns false if blocked by paywall
+  duplicateProject: () => boolean // returns false if blocked by paywall
   
   // Page actions
   addPage: (name: string, path?: string) => void
@@ -72,95 +70,51 @@ interface UseProjectsReturn {
   applyBrandColorChange: (oldColor: string, newColor: string) => void
 }
 
-export function useProjects(): UseProjectsReturn {
-  const { user, isLoaded: isUserLoaded } = useUser()
-  const { getToken } = useAuth()
-  const [projects, setProjects] = useState<Project[]>([])
-  const [currentProjectId, setCurrentProjectId] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  // 1. Fetch Projects from Supabase on Load
-  useEffect(() => {
-    if (!isUserLoaded || !user) {
-      setIsLoading(false)
-      return
-    }
-
-    const fetchProjects = async () => {
+// Initialize projects from localStorage (run once on load)
+function getInitialProjects(): { projects: Project[], currentId: string | null } {
+  if (typeof window === 'undefined') {
+    const defaultProject = createNewProject('My First Project')
+    return { projects: [defaultProject], currentId: defaultProject.id }
+  }
+  
+  try {
+    const savedProjects = localStorage.getItem('hatchit-projects')
+    const savedCurrentId = localStorage.getItem('hatchit-current-project')
+    
+    if (savedProjects) {
       try {
-        setIsLoading(true)
-        const token = await getToken({ template: 'supabase' })
-        if (!token) throw new Error('No auth token')
-        
-        const supabase = createClerkSupabaseClient(token)
-        
-        // Fetch projects
-        const { data: projectsData, error: projectsError } = await supabase
-          .from('projects')
-          .select('*')
-          .order('updated_at', { ascending: false })
-
-        if (projectsError) throw projectsError
-
-        if (!projectsData || projectsData.length === 0) {
-          setProjects([])
-          return
-        }
-
-        // For each project, fetch its pages and versions
-        // Note: In a real app, we might lazy load this, but for now we load all
-        const fullProjects = await Promise.all(projectsData.map(async (p) => {
-          const { data: pagesData } = await supabase
-            .from('pages')
-            .select('*')
-            .eq('project_id', p.id)
-          
-          const pagesWithVersions = await Promise.all((pagesData || []).map(async (page) => {
-            const { data: versionsData } = await supabase
-              .from('versions')
-              .select('*')
-              .eq('page_id', page.id)
-              .order('version_index', { ascending: true })
-            
-            return {
-              ...page,
-              versions: versionsData || [],
-              currentVersionIndex: page.current_version_index
-            }
-          }))
-
-          return {
-            ...p,
-            pages: pagesWithVersions,
-            currentPageId: pagesWithVersions.length > 0 ? pagesWithVersions[0].id : null,
-            // Legacy fields for compatibility
-            versions: [],
-            currentVersionIndex: -1
-          } as Project
-        }))
-
-        setProjects(fullProjects)
-        
-        // Restore last active project
-        const lastId = localStorage.getItem('hatchit-current-project')
-        if (lastId && fullProjects.find(p => p.id === lastId)) {
-          setCurrentProjectId(lastId)
-        } else if (fullProjects.length > 0) {
-          setCurrentProjectId(fullProjects[0].id)
-        }
-
-      } catch (err) {
-        console.error('Error fetching projects:', err)
-        showErrorToast('Failed to sync projects')
-      } finally {
-        setIsLoading(false)
+        const parsed = JSON.parse(savedProjects) as Project[]
+        const migrated = parsed.map(p => migrateToMultiPage(migrateProject(p)))
+        const currentId = savedCurrentId && migrated.find(p => p.id === savedCurrentId) 
+          ? savedCurrentId 
+          : (migrated.length > 0 ? migrated[0].id : null)
+        return { projects: migrated, currentId }
+      } catch {
+        localStorage.removeItem('hatchit-projects')
       }
     }
+  } catch {
+    // localStorage unavailable
+  }
+  
+  const defaultProject = createNewProject('My First Project')
+  return { projects: [defaultProject], currentId: defaultProject.id }
+}
 
-    fetchProjects()
-  }, [isUserLoaded, user, getToken])
-
-  // Save current project ID to localStorage (just for UI preference)
+export function useProjects(): UseProjectsReturn {
+  // Use lazy initialization to avoid setState in effect
+  const [projects, setProjects] = useState<Project[]>(() => getInitialProjects().projects)
+  const [currentProjectId, setCurrentProjectId] = useState<string | null>(() => getInitialProjects().currentId)
+  const { user } = useUser()
+  
+  // Save projects to localStorage
+  useEffect(() => {
+    if (projects.length > 0) {
+      localStorage.setItem('hatchit-projects', JSON.stringify(projects))
+    }
+  }, [projects])
+  
+  // Save current project ID to localStorage
   useEffect(() => {
     if (currentProjectId) {
       localStorage.setItem('hatchit-current-project', currentProjectId)
@@ -221,138 +175,30 @@ export function useProjects(): UseProjectsReturn {
     )
   }, [deployedProjects, projects])
   
-  // ===========================================================================
-  // ACTIONS (Now with Supabase Sync)
-  // ===========================================================================
-
-  const updateCurrentProject = useCallback(async (updates: Partial<Project>) => {
+  // Actions
+  const updateCurrentProject = useCallback((updates: Partial<Project>) => {
     if (!currentProjectId) return
-    
-    // Optimistic Update
     setProjects(prev => prev.map(p => 
       p.id === currentProjectId 
         ? { ...p, ...updates, updatedAt: new Date().toISOString() } 
         : p
     ))
-
-    // Sync to Supabase
-    try {
-      const token = await getToken({ template: 'supabase' })
-      if (!token) return
-      const supabase = createClerkSupabaseClient(token)
-
-      // 1. Update Project Metadata
-      if (updates.name || updates.description || updates.vibe) {
-        await supabase.from('projects').update({
-          name: updates.name,
-          description: updates.description,
-          vibe: updates.vibe,
-          updated_at: new Date().toISOString()
-        }).eq('id', currentProjectId)
-      }
-
-      // 2. Update Pages & Versions (Complex)
-      // If we are updating pages (e.g. new version added), we need to sync that specific page
-      if (updates.pages && currentPage) {
-        const updatedPage = updates.pages.find(p => p.id === currentPage.id)
-        if (updatedPage) {
-          // Update page metadata (current version index)
-          await supabase.from('pages').update({
-            current_version_index: updatedPage.currentVersionIndex,
-            updated_at: new Date().toISOString()
-          }).eq('id', updatedPage.id)
-
-          // If a new version was added (length mismatch), insert it
-          // This is a simplification; robust sync would diff properly
-          // For now, we assume the last version is the new one if count increased
-          const lastVersion = updatedPage.versions[updatedPage.versions.length - 1]
-          if (lastVersion) {
-             // Check if this version exists (by ID) to avoid duplicates
-             const { data: existing } = await supabase.from('versions').select('id').eq('id', lastVersion.id).single()
-             if (!existing) {
-               await supabase.from('versions').insert({
-                 id: lastVersion.id,
-                 page_id: updatedPage.id,
-                 code: lastVersion.code,
-                 prompt: lastVersion.prompt,
-                 version_index: updatedPage.versions.length - 1,
-                 created_at: lastVersion.timestamp
-               })
-             }
-          }
-        }
-      }
-
-    } catch (err) {
-      console.error('Failed to sync update:', err)
-      // In a real app, we'd revert the optimistic update or show an error
-    }
-  }, [currentProjectId, getToken, currentPage])
+  }, [currentProjectId])
   
-  const createProjectAction = useCallback(async (name?: string) => {
+  const createProjectAction = useCallback((name?: string) => {
+    // Tier-based project limits
+    // accountSubscription?.tier is 'architect' | 'visionary' | 'singularity' or undefined (free)
     const tier = accountSubscription?.tier
     const projectLimit = !tier ? 1 : tier === 'architect' ? 3 : Infinity
     
     if (projects.length >= projectLimit) {
-      return null
+      return null // Blocked by paywall
     }
-
     const newProject = createNewProject(name)
-    
-    // Optimistic
     setProjects(prev => [newProject, ...prev])
     setCurrentProjectId(newProject.id)
-
-    // Sync
-    try {
-      const token = await getToken({ template: 'supabase' })
-      if (!token) throw new Error('No auth token')
-      const supabase = createClerkSupabaseClient(token)
-
-      // Insert Project
-      const { error: projError } = await supabase.from('projects').insert({
-        id: newProject.id,
-        user_id: user?.id, // RLS will verify this matches auth.uid()
-        name: newProject.name,
-        created_at: newProject.createdAt,
-        updated_at: newProject.updatedAt
-      })
-      if (projError) throw projError
-
-      // Insert Default Page
-      const defaultPage = newProject.pages![0]
-      const { error: pageError } = await supabase.from('pages').insert({
-        id: defaultPage.id,
-        project_id: newProject.id,
-        name: defaultPage.name,
-        path: defaultPage.path,
-        current_version_index: defaultPage.currentVersionIndex
-      })
-      if (pageError) throw pageError
-
-      // Insert Initial Version
-      if (defaultPage.versions.length > 0) {
-        const v = defaultPage.versions[0]
-        await supabase.from('versions').insert({
-          id: v.id,
-          page_id: defaultPage.id,
-          code: v.code,
-          prompt: v.prompt,
-          version_index: 0,
-          created_at: v.timestamp
-        })
-      }
-
-    } catch (err) {
-      console.error('Failed to create project:', err)
-      showErrorToast('Failed to save project to cloud')
-      // Revert
-      setProjects(prev => prev.filter(p => p.id !== newProject.id))
-      return null
-    }
-
     return newProject
-  }, [accountSubscription?.tier, projects.length, getToken, user?.id])
+  }, [accountSubscription?.tier, projects.length])
   
   const switchProject = useCallback((id: string) => {
     if (id === currentProjectId) return
@@ -364,55 +210,37 @@ export function useProjects(): UseProjectsReturn {
     updateCurrentProject({ name: newName.trim() })
   }, [currentProjectId, updateCurrentProject])
   
-  const deleteProjectAction = useCallback(async (id?: string) => {
+  const deleteProjectAction = useCallback((id?: string) => {
     const targetId = id || currentProjectId
     if (!targetId) return
 
-    // Optimistic
     setProjects(prev => {
       const next = prev.filter(p => p.id !== targetId)
+      // If we deleted the current project, switch to another one or null
       if (targetId === currentProjectId) {
         const nextProject = next.length > 0 ? next[0] : null
         setCurrentProjectId(nextProject ? nextProject.id : null)
       }
       return next
     })
-
-    // Sync
-    try {
-      const token = await getToken({ template: 'supabase' })
-      if (!token) return
-      const supabase = createClerkSupabaseClient(token)
-      await supabase.from('projects').delete().eq('id', targetId)
-    } catch (err) {
-      console.error('Failed to delete project:', err)
-    }
-  }, [currentProjectId, getToken])
+  }, [currentProjectId])
   
-  const deleteAllProjectsAction = useCallback(async () => {
-    // Optimistic clear
-    setProjects([])
-    setCurrentProjectId(null)
-
-    // Sync
-    try {
-      const token = await getToken({ template: 'supabase' })
-      if (!token) return
-      const supabase = createClerkSupabaseClient(token)
-      // Delete all projects for this user (RLS handles the "for this user" part)
-      await supabase.from('projects').delete().neq('id', '000000') // Delete all
-      
-      // Create fresh one
-      await createProjectAction('My First Project')
-    } catch (err) {
-      console.error('Failed to reset projects:', err)
-    }
-  }, [getToken, createProjectAction])
+  const deleteAllProjectsAction = useCallback(() => {
+    const freshProject = createNewProject()
+    setProjects([freshProject])
+    setCurrentProjectId(freshProject.id)
+    // Clear chat history from localStorage
+    const keysToRemove = Object.keys(localStorage).filter(key => 
+      key.startsWith('chat-build-') || key.startsWith('chat-chat-')
+    )
+    keysToRemove.forEach(key => localStorage.removeItem(key))
+  }, [])
   
-  const duplicateProjectAction = useCallback(async () => {
-    if (!isPaidUser && projects.length >= 1) return false
+  const duplicateProjectAction = useCallback(() => {
+    if (!isPaidUser && projects.length >= 1) {
+      return false
+    }
     if (!currentProject) return false
-    
     const duplicate: Project = {
       ...currentProject,
       id: generateId(),
@@ -421,60 +249,13 @@ export function useProjects(): UseProjectsReturn {
       updatedAt: new Date().toISOString(),
       deployedSlug: undefined,
     }
-    
-    // Optimistic
     setProjects(prev => [duplicate, ...prev])
     setCurrentProjectId(duplicate.id)
-
-    // Sync (Deep Copy)
-    try {
-      const token = await getToken({ template: 'supabase' })
-      if (!token) return false
-      const supabase = createClerkSupabaseClient(token)
-
-      // 1. Project
-      await supabase.from('projects').insert({
-        id: duplicate.id,
-        user_id: user?.id,
-        name: duplicate.name,
-        created_at: duplicate.createdAt,
-        updated_at: duplicate.updatedAt
-      })
-
-      // 2. Pages & Versions
-      if (duplicate.pages) {
-        for (const page of duplicate.pages) {
-          const newPageId = generateId() // Need new IDs for pages too
-          await supabase.from('pages').insert({
-            id: newPageId,
-            project_id: duplicate.id,
-            name: page.name,
-            path: page.path,
-            current_version_index: page.currentVersionIndex
-          })
-
-          for (let i = 0; i < page.versions.length; i++) {
-            const v = page.versions[i]
-            await supabase.from('versions').insert({
-              id: generateId(), // New ID for version
-              page_id: newPageId,
-              code: v.code,
-              prompt: v.prompt,
-              version_index: i,
-              created_at: v.timestamp
-            })
-          }
-        }
-      }
-      return true
-    } catch (err) {
-      console.error('Failed to duplicate:', err)
-      return false
-    }
-  }, [isPaidUser, projects.length, currentProject, getToken, user?.id])
+    return true
+  }, [isPaidUser, projects.length, currentProject])
   
-  // Page actions (Simplified for brevity - similar sync logic needed)
-  const addPage = useCallback(async (name: string, pathInput?: string) => {
+  // Page actions
+  const addPage = useCallback((name: string, pathInput?: string) => {
     if (!currentProject || !name.trim()) return
     const path = pathInput?.trim() || `/${name.toLowerCase().replace(/\s+/g, '-')}`
     const newPage: Page = {
@@ -484,8 +265,6 @@ export function useProjects(): UseProjectsReturn {
       versions: [],
       currentVersionIndex: -1
     }
-    
-    // Optimistic
     const updatedProject = {
       ...currentProject,
       pages: [...(currentProject.pages || []), newPage],
@@ -493,31 +272,15 @@ export function useProjects(): UseProjectsReturn {
       updatedAt: new Date().toISOString()
     }
     setProjects(prev => prev.map(p => p.id === currentProject.id ? updatedProject : p))
-
-    // Sync
-    try {
-      const token = await getToken({ template: 'supabase' })
-      if (!token) return
-      const supabase = createClerkSupabaseClient(token)
-      await supabase.from('pages').insert({
-        id: newPage.id,
-        project_id: currentProject.id,
-        name: newPage.name,
-        path: newPage.path,
-        current_version_index: -1
-      })
-    } catch (err) { console.error(err) }
-  }, [currentProject, getToken])
+  }, [currentProject])
   
-  const deletePage = useCallback(async (pageId: string) => {
+  const deletePage = useCallback((pageId: string) => {
     if (!currentProject || !currentProject.pages) return
     if (currentProject.pages.length <= 1) return
-    
     const updatedPages = currentProject.pages.filter(p => p.id !== pageId)
     const newCurrentPageId = currentProject.currentPageId === pageId 
       ? updatedPages[0].id 
       : currentProject.currentPageId
-      
     const updatedProject = {
       ...currentProject,
       pages: updatedPages,
@@ -525,17 +288,18 @@ export function useProjects(): UseProjectsReturn {
       updatedAt: new Date().toISOString()
     }
     setProjects(prev => prev.map(p => p.id === currentProject.id ? updatedProject : p))
-
-    try {
-      const token = await getToken({ template: 'supabase' })
-      if (!token) return
-      const supabase = createClerkSupabaseClient(token)
-      await supabase.from('pages').delete().eq('id', pageId)
-    } catch (err) { console.error(err) }
-  }, [currentProject, getToken])
+  }, [currentProject])
   
   const deleteAllPagesExceptFirst = useCallback(() => {
-    // Implementation omitted for brevity - similar pattern
+    if (!currentProject || !currentProject.pages || currentProject.pages.length <= 1) return
+    const firstPage = currentProject.pages[0]
+    const updatedProject = {
+      ...currentProject,
+      pages: [firstPage],
+      currentPageId: firstPage.id,
+      updatedAt: new Date().toISOString()
+    }
+    setProjects(prev => prev.map(p => p.id === currentProject.id ? updatedProject : p))
   }, [currentProject])
   
   const switchPage = useCallback((pageId: string) => {
@@ -554,8 +318,10 @@ export function useProjects(): UseProjectsReturn {
           : page
       )
       updateCurrentProject({ pages: updatedPages })
+    } else {
+      updateCurrentProject({ currentVersionIndex: currentVersionIndex - 1 })
     }
-  }, [canUndo, currentProject, currentPage, updateCurrentProject])
+  }, [canUndo, currentProject, currentPage, currentVersionIndex, updateCurrentProject])
   
   const handleRedo = useCallback(() => {
     if (!canRedo || !currentProject) return
@@ -566,8 +332,10 @@ export function useProjects(): UseProjectsReturn {
           : page
       )
       updateCurrentProject({ pages: updatedPages })
+    } else {
+      updateCurrentProject({ currentVersionIndex: currentVersionIndex + 1 })
     }
-  }, [canRedo, currentProject, currentPage, updateCurrentProject])
+  }, [canRedo, currentProject, currentPage, currentVersionIndex, updateCurrentProject])
   
   const restoreVersion = useCallback((index: number) => {
     if (!currentProject) return
@@ -578,6 +346,8 @@ export function useProjects(): UseProjectsReturn {
           : page
       )
       updateCurrentProject({ pages: updatedPages })
+    } else {
+      updateCurrentProject({ currentVersionIndex: index })
     }
   }, [currentProject, currentPage, updateCurrentProject])
   
@@ -600,25 +370,101 @@ export function useProjects(): UseProjectsReturn {
           : page
       )
       updateCurrentProject({ pages: updatedPages })
+    } else {
+      const updatedVersions = [...(currentProject.versions || []), newVersion]
+      updateCurrentProject({ 
+        versions: updatedVersions, 
+        currentVersionIndex: updatedVersions.length - 1 
+      })
     }
   }, [currentProject, currentPage, updateCurrentProject])
   
   const pullProject = useCallback((deployedProject: DeployedProject) => {
-    // Implementation omitted - would need to insert into Supabase
-    showSuccessToast('Pull functionality pending cloud sync update')
+    let newProject: Project
+    if (deployedProject.pages && deployedProject.pages.length > 0) {
+      const pages: Page[] = deployedProject.pages.map((p) => ({
+        id: generateId(),
+        name: p.name,
+        path: p.path,
+        versions: [{
+          id: generateId(),
+          code: p.code,
+          timestamp: deployedProject.deployedAt,
+          prompt: 'Pulled from deployed project'
+        }],
+        currentVersionIndex: 0
+      }))
+      newProject = {
+        id: generateId(),
+        name: deployedProject.name,
+        pages,
+        currentPageId: pages[0].id,
+        versions: [],
+        currentVersionIndex: -1,
+        createdAt: deployedProject.deployedAt,
+        updatedAt: new Date().toISOString(),
+        deployedSlug: deployedProject.slug,
+      }
+    } else {
+      newProject = {
+        id: generateId(),
+        name: deployedProject.name,
+        versions: [{
+          id: generateId(),
+          code: deployedProject.code || '',
+          timestamp: deployedProject.deployedAt,
+          prompt: 'Pulled from deployed project'
+        }],
+        currentVersionIndex: 0,
+        createdAt: deployedProject.deployedAt,
+        updatedAt: new Date().toISOString(),
+        deployedSlug: deployedProject.slug,
+      }
+    }
+    setProjects(prev => [newProject, ...prev])
+    setCurrentProjectId(newProject.id)
+    showSuccessToast('Project pulled successfully!')
   }, [])
   
   const applyBrandColorChange = useCallback((oldColor: string, newColor: string) => {
-    // Implementation omitted - relies on updateCurrentProject which is synced
     if (!code || !currentProject) return
     const updatedCode = code.replaceAll(oldColor, newColor)
     if (updatedCode === code) {
       showErrorToast('Color not found in current code')
       return
     }
-    handleCodeChange(updatedCode)
+    const newVersion: Version = { 
+      id: generateId(), 
+      code: updatedCode, 
+      timestamp: new Date().toISOString(), 
+      prompt: `Changed color ${oldColor} to ${newColor}` 
+    }
+    const newBrandColors = (currentProject.brand?.colors || []).map(c => 
+      c.toLowerCase() === oldColor.toLowerCase() ? newColor : c
+    )
+    if (currentPage && isMultiPageProject(currentProject)) {
+      const updatedPages = currentProject.pages!.map(page =>
+        page.id === currentPage.id
+          ? {
+              ...page,
+              versions: [...page.versions.slice(0, page.currentVersionIndex + 1), newVersion],
+              currentVersionIndex: page.currentVersionIndex + 1
+            }
+          : page
+      )
+      updateCurrentProject({ pages: updatedPages, brand: { ...currentProject.brand!, colors: newBrandColors } })
+    } else {
+      const newVersions = currentVersionIndex >= 0 
+        ? [...versions.slice(0, currentVersionIndex + 1), newVersion] 
+        : [newVersion]
+      updateCurrentProject({ 
+        versions: newVersions, 
+        currentVersionIndex: newVersions.length - 1, 
+        brand: { ...currentProject.brand!, colors: newBrandColors } 
+      })
+    }
     showSuccessToast('Color updated!')
-  }, [code, currentProject, handleCodeChange])
+  }, [code, currentProject, currentPage, currentVersionIndex, versions, updateCurrentProject])
   
   return {
     projects,
@@ -638,7 +484,6 @@ export function useProjects(): UseProjectsReturn {
     isDeployed,
     canUndo,
     canRedo,
-    isLoading,
     updateCurrentProject,
     createProject: createProjectAction,
     switchProject,
