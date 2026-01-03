@@ -197,11 +197,12 @@ export default function AgencyDashboard() {
         <div className="lg:col-span-2 space-y-4 md:space-y-6">
           <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4 md:p-6 backdrop-blur-sm">
             <div className="flex items-center justify-between mb-4 md:mb-6">
-              <h2 className="text-base md:text-lg font-mono font-bold flex items-center gap-2">
+              <Link href="/dashboard/projects" className="text-base md:text-lg font-mono font-bold flex items-center gap-2 hover:text-emerald-400 transition-colors">
                 <Terminal className="w-4 h-4 md:w-5 md:h-5 text-emerald-500" />
                 <span className="hidden sm:inline">ACTIVE_OPERATIONS</span>
                 <span className="sm:hidden">MY PROJECTS</span>
-              </h2>
+                <ArrowRight className="w-4 h-4 opacity-0 -ml-2 group-hover:opacity-100 group-hover:ml-0 transition-all" />
+              </Link>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-xs font-mono text-zinc-500 hidden sm:inline">SYNCED</span>
@@ -249,7 +250,11 @@ export default function AgencyDashboard() {
                         </a>
                       )}
                       <button 
-                        onClick={() => deleteProject()}
+                        onClick={() => {
+                          if (confirm('Are you sure you want to delete this project?')) {
+                            deleteProject(project.id)
+                          }
+                        }}
                         className="p-2 hover:bg-red-900/20 rounded text-zinc-400 hover:text-red-400"
                         title="Delete"
                       >
