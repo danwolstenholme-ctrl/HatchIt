@@ -243,6 +243,15 @@
 			"isBackground": false,
 			"problemMatcher": [],
 			"group": "build"
+		},
+		{
+			"label": "commit-manifesto",
+			"type": "shell",
+			"command": "git add . && git commit -m \"feat: restore Manifesto page at /manifesto with Singularity narrative\" && git push",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
 		}
 	]
 }
