@@ -727,7 +727,7 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
             className="h-full bg-zinc-900 rounded-lg overflow-hidden shadow-2xl"
             style={{ 
               maxWidth: '100%',
-              minHeight: isMobileDevice ? '640px' : deviceView === 'desktop' ? '100%' : '600px',
+              height: '100%',
             }}
           >
             {/* Device Frame */}

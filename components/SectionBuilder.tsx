@@ -425,7 +425,7 @@ export default function SectionBuilder({
 
   // Guide State
   // Only show guide if it's the first section (Hero) and user hasn't seen it
-  const [showGuide, setShowGuide] = useState(section.id === 'hero' && !dbSection.code)
+  const [showGuide, setShowGuide] = useState(false) // Disabled - no intro popup needed
   const autoBuildRanRef = useRef(false)
 
   // Redirect to sign-up page when paywall is hit (deploy/export only)
@@ -1531,18 +1531,8 @@ export default function SectionBuilder({
         <div className="flex-1 p-3 lg:p-4 flex flex-col min-h-0 overflow-auto">
           <div className="flex items-center justify-between mb-1.5">
             <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider flex items-center gap-2">
-              Directive
-              {/* All tools unlocked */}
+              Describe your section
             </label>
-            <motion.button 
-              onClick={() => initializePromptHelper()}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="group relative px-2 py-1 rounded-lg bg-zinc-900 border border-emerald-500/30 hover:border-emerald-500/60 flex items-center gap-1.5 transition-all text-xs"
-            >
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
-              <span className="text-xs font-medium text-emerald-400 group-hover:text-emerald-300">Ask The Architect</span>
-            </motion.button>
           </div>
           
           <div className="relative group">
