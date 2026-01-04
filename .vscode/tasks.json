@@ -262,6 +262,11 @@
 			"label": "commit-final-fixes",
 			"type": "shell",
 			"command": "git add . && git commit -m \"fix: resolve remaining legacy tier references in HatchModal and Chat components\""
+		},
+		{
+			"label": "commit-preview-fix",
+			"type": "shell",
+			"command": "git add components/SectionPreview.tsx && git commit -m \"fix: compact preview toolbar and ensure full width on desktop\" && git push"
 		}
 	]
 }

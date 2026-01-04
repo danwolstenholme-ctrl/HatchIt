@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Lock, Zap, Crown, Eye, Brain, Sparkles, CheckCircle2, ArrowRight, Terminal } from 'lucide-react'
+import { Lock, Zap, Crown, Eye, Sparkles, CheckCircle2, ArrowRight, Terminal } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 interface PaywallTransitionProps {

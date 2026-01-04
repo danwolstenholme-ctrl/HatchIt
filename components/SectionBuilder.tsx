@@ -27,8 +27,8 @@ import {
   Trash2,
   CopyPlus,
   Info,
-  Brain,
-  Eye
+  Eye,
+  ArrowRight
 } from 'lucide-react'
 
 // Suggestions based on section type
@@ -73,6 +73,7 @@ interface SectionBuilderProps {
   demoMode?: boolean // Local testing without API
   brandConfig?: DbBrandConfig | null // Brand styling from branding step
   isPaid?: boolean // Whether project is hatched (paid)
+  guestMode?: boolean // Simplified UI for unauthenticated users
 }
 
 type BuildStage = 'input' | 'generating' | 'refining' | 'complete'
@@ -374,6 +375,7 @@ export default function SectionBuilder({
   demoMode = false,
   brandConfig = null,
   isPaid = false,
+  guestMode = false,
 }: SectionBuilderProps) {
   const router = useRouter()
   const { isSignedIn, user } = useUser()
@@ -424,8 +426,8 @@ export default function SectionBuilder({
   const isLocked = isBuildLocked && isRefineLocked
 
   // Guide State
-  // Only show guide if it's the first section (Hero) and user hasn't seen it
-  const [showGuide, setShowGuide] = useState(false) // Disabled - no intro popup needed
+  // Only show guide if: first section (Hero), no code yet, AND not guest mode (guests see /demo page first)
+  const [showGuide, setShowGuide] = useState(section.id === 'hero' && !dbSection.code && !guestMode)
   const autoBuildRanRef = useRef(false)
 
   // Redirect to sign-up page when paywall is hit (deploy/export only)
@@ -1255,7 +1257,206 @@ export default function SectionBuilder({
   const isInitialState = stage === 'input' && !generatedCode
   const canRevealRawCode = isProOrHigher // Only Visionary/Singularity can view code - Architect cannot
 
-  // IMMERSIVE INITIAL STATE - Full canvas input experience
+  // =============================================================================
+  // GUEST MODE: Premium demo experience
+  // Clean, minimal UI that shows our capability
+  // =============================================================================
+  if (guestMode) {
+    return (
+      <div className="relative h-screen w-full bg-zinc-950 overflow-hidden">
+        {/* Preview Area */}
+        <div className="absolute inset-0">
+          {generatedCode ? (
+            <SectionPreview 
+              code={generatedCode} 
+              darkMode={true}
+              onRuntimeError={handleRuntimeError}
+              inspectorMode={false}
+              captureTrigger={captureTrigger}
+              onScreenshotCaptured={handleScreenshotCaptured}
+              editMode={false}
+              allowCodeView={false}
+            />
+          ) : (
+            // Empty state - elegant placeholder
+            <div className="h-full flex flex-col items-center justify-center px-6">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="text-center max-w-md"
+              >
+                <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 border border-emerald-500/20 flex items-center justify-center">
+                  <Sparkles className="w-7 h-7 text-emerald-500" />
+                </div>
+                <h2 className="text-xl font-semibold text-white mb-2">
+                  Describe what you want to build
+                </h2>
+                <p className="text-sm text-zinc-500 leading-relaxed">
+                  Type a description below and watch it transform into a live React component in seconds.
+                </p>
+              </motion.div>
+            </div>
+          )}
+        </div>
+
+        {/* Bottom Panel */}
+        <div className="absolute bottom-0 left-0 right-0 z-20 p-4 sm:p-6">
+          <motion.div
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="mx-auto max-w-2xl"
+          >
+            {/* Input Stage */}
+            {stage === 'input' && (
+              <div className="bg-zinc-900/90 backdrop-blur-xl border border-zinc-800/80 rounded-2xl shadow-2xl shadow-black/60">
+                <div className="p-4 sm:p-5">
+                  <div className="relative">
+                    <textarea
+                      ref={textareaRef}
+                      value={prompt}
+                      onChange={(e) => setPrompt(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault()
+                          if (prompt.trim()) handleBuildSection()
+                        }
+                      }}
+                      placeholder="A modern hero section with gradient background, bold headline, and CTA button..."
+                      autoFocus
+                      rows={2}
+                      className="w-full bg-transparent text-white text-sm sm:text-base placeholder-zinc-600 focus:outline-none resize-none leading-relaxed"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-zinc-800/50">
+                    <div className="hidden sm:flex items-center gap-2">
+                      {['Hero', 'Features', 'Pricing'].map((example) => (
+                        <button
+                          key={example}
+                          onClick={() => setPrompt(`A ${example.toLowerCase()} section with modern styling and animations`)}
+                          className="px-3 py-1.5 rounded-lg bg-zinc-800/50 text-xs text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 transition-all"
+                        >
+                          {example}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-3 ml-auto">
+                      <span className="text-xs text-zinc-600 hidden sm:block">
+                        Press Enter to build
+                      </span>
+                      <button
+                        onClick={() => handleBuildSection()}
+                        disabled={!prompt.trim()}
+                        className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                      >
+                        <Zap className="w-4 h-4" />
+                        Build
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Generating Stage */}
+            {stage === 'generating' && (
+              <div className="bg-zinc-900/90 backdrop-blur-xl border border-zinc-800/80 rounded-2xl shadow-2xl shadow-black/60 p-5">
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-emerald-500/20 blur-xl rounded-full" />
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      className="relative w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-white">Building your component</p>
+                    <p className="text-xs text-zinc-500 mt-0.5">This takes about 10-15 seconds...</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Complete Stage */}
+            {stage === 'complete' && (
+              <div className="bg-zinc-900/90 backdrop-blur-xl border border-emerald-500/30 rounded-2xl shadow-2xl shadow-black/60 p-5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-white">Component built</h3>
+                      <p className="text-xs text-zinc-500">Sign up to export, edit, and build more</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setStage('input')
+                        setGeneratedCode('')
+                        setPrompt('')
+                      }}
+                      className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-medium transition-all"
+                    >
+                      Reset
+                    </button>
+                    <button
+                      onClick={() => goToSignUp()}
+                      className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-semibold transition-all flex items-center gap-2"
+                    >
+                      Sign up free
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Refining Stage */}
+            {stage === 'refining' && (
+              <div className="bg-zinc-900/90 backdrop-blur-xl border border-violet-500/30 rounded-2xl shadow-2xl shadow-black/60 p-5">
+                <div className="flex items-center gap-4">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                    className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full"
+                  />
+                  <p className="text-sm font-medium text-white">Refining...</p>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        </div>
+
+        {/* Locked Banner */}
+        {isLocked && (
+          <motion.div 
+            initial={{ y: -50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="absolute top-0 left-0 right-0 z-20 bg-zinc-900/95 backdrop-blur-xl border-b border-zinc-800 px-4 py-3"
+          >
+            <div className="max-w-2xl mx-auto flex items-center justify-between">
+              <p className="text-sm text-zinc-300">
+                <span className="text-emerald-400 font-medium">Demo complete.</span>
+                {' '}Sign up to keep building.
+              </p>
+              <button
+                onClick={() => goToSignUp()}
+                className="px-4 py-1.5 rounded-lg bg-emerald-500 text-black text-sm font-semibold hover:bg-emerald-400 transition-colors"
+              >
+                Get started
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </div>
+    )
+  }
+
+  // IMMERSIVE INITIAL STATE - Full canvas input experience (for signed-in users only)
   if (isInitialState) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center min-h-0 bg-zinc-950 relative overflow-hidden">
@@ -1474,6 +1675,9 @@ export default function SectionBuilder({
     )
   }
 
+  // =============================================================================
+  // PAID/SIGNED-IN MODE: Full builder with side-by-side panels
+  // =============================================================================
   return (
     <div className="flex flex-col h-screen bg-zinc-950 text-white overflow-hidden">
       <AnimatePresence>
@@ -1531,8 +1735,20 @@ export default function SectionBuilder({
         <div className="flex-1 p-3 lg:p-4 flex flex-col min-h-0 overflow-auto">
           <div className="flex items-center justify-between mb-1.5">
             <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider flex items-center gap-2">
-              Describe your section
+              {guestMode ? 'Describe your section' : 'Directive'}
+              {/* All tools unlocked */}
             </label>
+            {!guestMode && (
+              <motion.button 
+                onClick={() => initializePromptHelper()}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="group relative px-2 py-1 rounded-lg bg-zinc-900 border border-emerald-500/30 hover:border-emerald-500/60 flex items-center gap-1.5 transition-all text-xs"
+              >
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                <span className="text-xs font-medium text-emerald-400 group-hover:text-emerald-300">Ask The Architect</span>
+              </motion.button>
+            )}
           </div>
           
           <div className="relative group">
@@ -1556,7 +1772,7 @@ export default function SectionBuilder({
           {/* Smart Suggestions - scrollable row */}
           {stage === 'input' && (
             <div className="mt-2 flex flex-nowrap gap-1.5 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
-              {getSuggestions(section.id).slice(0, tier === 'free' ? 2 : 4).map((suggestion) => (
+              {getSuggestions(section.id).slice(0, guestMode ? 3 : tier === 'free' ? 2 : 4).map((suggestion) => (
                 <button
                   key={suggestion}
                   onClick={() => setPrompt(prev => prev ? `${prev} ${suggestion}` : suggestion)}
@@ -1565,7 +1781,7 @@ export default function SectionBuilder({
                   + {suggestion}
                 </button>
               ))}
-              {tier === 'free' && (
+              {!guestMode && tier === 'free' && (
                  <button
                   onClick={() => goToSignUp()}
                   className="px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 text-[10px] text-amber-400 hover:text-amber-300 transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-1"
@@ -1615,7 +1831,18 @@ export default function SectionBuilder({
                   exit={{ opacity: 0 }}
                   className="w-full rounded-xl bg-zinc-900 border border-zinc-800 overflow-hidden relative"
                 >
-                  <ThinkingLog />
+                  {guestMode ? (
+                    <div className="p-4 flex items-center justify-center gap-3">
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                        className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full"
+                      />
+                      <span className="text-sm text-zinc-400 font-mono">Building...</span>
+                    </div>
+                  ) : (
+                    <ThinkingLog />
+                  )}
                 </motion.div>
               )}
 
@@ -1810,7 +2037,7 @@ export default function SectionBuilder({
                         >
                           <div className="flex items-start gap-3">
                             <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                              <Brain className="w-4 h-4 text-emerald-400" />
+                              <Sparkles className="w-4 h-4 text-emerald-400" />
                             </div>
                             <div className="flex-1">
                               <h4 className="text-sm font-semibold text-emerald-300 mb-1">Evolution Proposed</h4>
@@ -1859,7 +2086,7 @@ export default function SectionBuilder({
                               disabled={isDreaming}
                               className="w-full py-2.5 bg-emerald-900/30 hover:bg-emerald-900/50 border border-emerald-500/50 hover:border-emerald-400 text-emerald-300 text-xs font-mono uppercase tracking-widest rounded transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed group-hover:shadow-[0_0_20px_rgba(16,185,129,0.2)]"
                             >
-                              <Brain className="w-4 h-4" />
+                              <Sparkles className="w-4 h-4" />
                               <span>Invoke Singularity</span>
                             </button>
                             {/* Unlimited evolutions - The Architect's gift */}
@@ -1879,7 +2106,7 @@ export default function SectionBuilder({
                               animate={{ rotate: 360 }}
                               transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
                             >
-                              <Brain className="w-5 h-5 text-emerald-400" />
+                              <Sparkles className="w-5 h-5 text-emerald-400" />
                             </motion.div>
                             <div>
                               <p className="text-sm font-medium text-emerald-300 font-mono">The Singularity is dreaming...</p>

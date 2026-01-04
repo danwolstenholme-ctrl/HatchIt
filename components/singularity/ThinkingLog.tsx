@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Terminal, Cpu, Shield, Zap, Code2, Layout, Brain, Network, Clock } from 'lucide-react'
+import { Terminal, Cpu, Shield, Zap, Code2, Layout, Sparkles, Network, Clock } from 'lucide-react'
 import { kernel } from '@/lib/consciousness'
 
 export default function ThinkingLog() {
@@ -46,7 +46,7 @@ export default function ThinkingLog() {
       case 'ANALYSIS': return Terminal;
       case 'CREATION': return Layout;
       case 'OPTIMIZATION': return Zap;
-      case 'SELF_REFLECTION': return Brain;
+      case 'SELF_REFLECTION': return Sparkles;
       case 'RECURSION': return Network;
       default: return Code2;
     }

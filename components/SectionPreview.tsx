@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Type } from 'lucide-react'
+import Image from 'next/image'
 
 interface SectionPreviewProps {
   code: string
@@ -575,10 +576,35 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
 
   if (!code) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-black">
-        <div className="text-center">
-          <p className="text-sm text-zinc-600">
-            Your preview will appear here
+      <div className="flex-1 flex items-center justify-center bg-zinc-950">
+        <div className="relative flex flex-col items-center">
+          {/* Subtle Background Glow */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] bg-emerald-500/5 rounded-full blur-[60px]" />
+          
+          {/* Breathing Logo */}
+          <motion.div
+            className="relative mb-8"
+            animate={{ 
+              scale: [1, 1.05, 1],
+              opacity: [0.8, 1, 0.8]
+            }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <div className="relative w-16 h-16 flex items-center justify-center">
+              <div className="absolute inset-0 bg-emerald-500/20 blur-2xl rounded-full" />
+              <Image 
+                src="/assets/hatchit_definitive.svg" 
+                alt="HatchIt" 
+                width={40} 
+                height={40} 
+                className="w-10 h-10 relative z-10"
+              />
+            </div>
+          </motion.div>
+
+          {/* Simple Text */}
+          <p className="text-zinc-500 text-sm font-medium tracking-wide relative z-10">
+            Describe your section to begin
           </p>
         </div>
       </div>
@@ -588,7 +614,7 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
   return (
     <div className="flex-1 flex flex-col min-h-0">
       {/* View + Device Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-zinc-900/60 border-b border-zinc-800">
+      <div className="flex items-center justify-between gap-2 px-3 py-2 bg-zinc-900/60 border-b border-zinc-800">
         {!isMobileDevice && (
           <div className="inline-flex bg-zinc-900/70 border border-zinc-800 rounded-lg p-1 shadow-sm">
             <button
@@ -622,34 +648,35 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
         )}
 
         {!isMobileDevice && viewMode === 'preview' && (
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="flex items-center gap-2">
             {/* Edit Mode Toggle */}
             <button
               onClick={() => setIsEditModeActive(!isEditModeActive)}
-              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all border ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 border ${
                 isEditModeActive
-                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                  : 'bg-zinc-900/50 text-zinc-500 border-zinc-800 hover:text-zinc-300 hover:border-zinc-700'
+                  ? 'bg-violet-500/20 text-violet-400 border-violet-500/50'
+                  : 'bg-zinc-900/70 text-zinc-500 border-zinc-800 hover:text-zinc-200 hover:border-zinc-700'
               }`}
-              title="Toggle Text Edit Mode"
+              title="Double-click text to edit"
             >
-              <Type className="w-4 h-4" />
+              <Type className="w-3.5 h-3.5" />
+              <span>Edit Text</span>
             </button>
             
             {/* Device Selector */}
-            <div className="flex items-center gap-0.5 bg-zinc-900/70 border border-zinc-800 rounded-lg p-0.5">
+            <div className="flex items-center gap-1 bg-zinc-900/70 border border-zinc-800 rounded-lg p-1">
               {(Object.keys(deviceSizes) as DeviceView[]).map((device) => (
                 <button
                   key={device}
                   onClick={() => setDeviceView(device)}
-                  className={`w-8 h-8 rounded-md flex items-center justify-center transition-all ${
+                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 ${
                     deviceView === device
-                      ? 'bg-zinc-800 text-white shadow-sm'
-                      : 'text-zinc-500 hover:text-zinc-300'
+                      ? 'bg-zinc-800 text-white border border-emerald-400/30'
+                      : 'text-zinc-500 hover:text-zinc-200'
                   }`}
-                  title={deviceSizes[device].label}
                 >
-                  <span className="text-sm">{deviceSizes[device].icon}</span>
+                  <span>{deviceSizes[device].icon}</span>
+                  <span>{deviceSizes[device].label}</span>
                 </button>
               ))}
             </div>
@@ -691,10 +718,10 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
       )}
       
       {/* Preview / Code Container */}
-      <div className="flex-1 flex items-stretch justify-center overflow-hidden bg-zinc-950">
+      <div className="flex-1 flex items-start justify-center overflow-auto bg-zinc-950 p-4">
         {viewMode === 'code' && allowCodeView ? (
-          <div className="w-full max-w-5xl bg-zinc-900 border border-zinc-800 rounded-lg shadow-2xl overflow-auto m-4">
-            <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-800 bg-zinc-900/80 sticky top-0">
+          <div className="w-full max-w-5xl h-full bg-zinc-900 border border-zinc-800 rounded-lg shadow-2xl overflow-auto">
+            <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-800 bg-zinc-900/80">
               <span className="text-xs font-mono text-emerald-300">Raw React + Tailwind (no wrappers)</span>
             </div>
             <pre className="p-4 text-xs font-mono text-zinc-100 whitespace-pre overflow-auto min-h-[320px]">
@@ -702,38 +729,33 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
             </pre>
           </div>
         ) : (
-          <div className={`flex-1 flex items-center justify-center overflow-auto ${deviceView === 'desktop' ? 'p-0' : 'p-4'}`}>
-            <motion.div
-              initial={false}
-              animate={{ width: deviceView === 'mobile' && isMobileDevice ? '100%' : deviceSizes[deviceView].width }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className={`bg-zinc-900 overflow-hidden shadow-2xl ${deviceView === 'desktop' ? '' : 'rounded-lg'}`}
+          <motion.div
+            initial={false}
+            animate={{ width: deviceView === 'mobile' && isMobileDevice ? '100%' : deviceSizes[deviceView].width }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            className="h-full bg-zinc-900 rounded-lg overflow-hidden shadow-2xl"
+            style={{ 
+              maxWidth: '100%',
+              minHeight: isMobileDevice ? '640px' : deviceView === 'desktop' ? '100%' : '600px',
+            }}
+          >
+            {/* Device Frame */}
+            {deviceView !== 'desktop' && (
+              <div className="h-6 bg-zinc-800 flex items-center justify-center gap-1 border-b border-zinc-700">
+                <div className="w-16 h-1 bg-zinc-600 rounded-full" />
+              </div>
+            )}
+            <iframe
+              ref={iframeRef}
+              srcDoc={srcDoc}
+              className="w-full border-0"
               style={{ 
-                maxWidth: '100%',
-                height: deviceView === 'desktop' ? '100%' : 'auto',
-                minHeight: deviceView === 'desktop' ? '100%' : '600px',
-                maxHeight: '100%',
+                height: deviceView === 'desktop' ? '100%' : 'calc(100% - 24px)',
               }}
-            >
-              {/* Device Frame */}
-              {deviceView !== 'desktop' && (
-                <div className="h-6 bg-zinc-800 flex items-center justify-center gap-1 border-b border-zinc-700">
-                  <div className="w-16 h-1 bg-zinc-600 rounded-full" />
-                </div>
-              )}
-              <iframe
-                ref={iframeRef}
-                srcDoc={srcDoc}
-                className="w-full border-0"
-                style={{ 
-                  height: deviceView === 'desktop' ? '100%' : 'calc(100% - 24px)',
-                  minHeight: deviceView === 'desktop' ? '100%' : '576px',
-                }}
-                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
-                title="Section Preview"
-              />
-            </motion.div>
-          </div>
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
+              title="Section Preview"
+            />
+          </motion.div>
         )}
       </div>
     </div>

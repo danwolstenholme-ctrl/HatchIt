@@ -153,30 +153,30 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
             {/* 3-Tier Pricing Grid */}
             <div className="grid md:grid-cols-3 gap-4 mb-6">
               
-              {/* ARCHITECT - $9/2wks */}
+              {/* ARCHITECT - $19/mo */}
               <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 flex flex-col">
                 <div className="mb-4">
-                  <span className="text-xs font-bold text-emerald-400 tracking-wider">FOUNDATION</span>
+                  <span className="text-xs font-bold text-zinc-500 tracking-wider">FOUNDATION</span>
                   <h3 className="text-xl font-bold text-white mt-1">Architect</h3>
                   <div className="flex items-baseline gap-1 mt-2">
-                    <span className="text-3xl font-bold text-white">$9</span>
-                    <span className="text-zinc-500 text-sm">/2 weeks</span>
+                    <span className="text-3xl font-bold text-white">$19</span>
+                    <span className="text-zinc-500 text-sm">/month</span>
                   </div>
-                  <p className="text-zinc-500 text-xs mt-1">Perfect for exploring</p>
+                  <p className="text-zinc-500 text-xs mt-1">Start building today</p>
                 </div>
                 
                 <div className="space-y-2.5 flex-1">
                   {[
-                    { text: 'Full Builder Access', included: true },
                     { text: 'Unlimited AI Generations', included: true },
-                    { text: 'Live Preview Your Site', included: true },
-                    { text: 'Deploy to managed subdomain', included: true },
+                    { text: 'Live Preview', included: true },
+                    { text: 'Deploy to subdomain', included: true },
                     { text: 'Download Source Code', included: true },
+                    { text: '3 Active Projects', included: true },
                     { text: 'Custom Domain', included: false },
                     { text: 'Remove Branding', included: false },
                   ].map((feature, i) => (
                     <div key={i} className={`flex items-center gap-2 text-sm ${feature.included ? 'text-zinc-300' : 'text-zinc-600'}`}>
-                      <span className={feature.included ? 'text-emerald-400' : 'text-zinc-700'}>
+                      <span className={feature.included ? 'text-zinc-400' : 'text-zinc-700'}>
                         {feature.included ? '✓' : '○'}
                       </span>
                       {feature.text}
@@ -193,20 +193,20 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
                 </button>
               </div>
 
-              {/* VISIONARY - $29 (Highlighted) */}
-              <div className="bg-zinc-900 border-2 border-violet-500/50 rounded-xl p-5 flex flex-col relative">
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-violet-500 text-white text-[10px] font-bold px-3 py-1 rounded-full whitespace-nowrap">
+              {/* VISIONARY - $49 (Highlighted) */}
+              <div className="bg-zinc-900 border-2 border-emerald-500/50 rounded-xl p-5 flex flex-col relative">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-black text-[10px] font-bold px-3 py-1 rounded-full whitespace-nowrap">
                   MOST POPULAR
                 </div>
                 
                 <div className="mb-4">
                   <div className="flex items-center gap-2">
-                    <span className="text-violet-400">⚡</span>
-                    <span className="text-xs font-bold text-violet-400 tracking-wider">UNLIMITED</span>
+                    <span className="text-emerald-400">⚡</span>
+                    <span className="text-xs font-bold text-emerald-400 tracking-wider">UNLIMITED</span>
                   </div>
                   <h3 className="text-xl font-bold text-white mt-1">Visionary</h3>
                   <div className="flex items-baseline gap-1 mt-2">
-                    <span className="text-3xl font-bold text-white">$29</span>
+                    <span className="text-3xl font-bold text-white">$49</span>
                     <span className="text-zinc-500 text-sm">/month</span>
                   </div>
                   <p className="text-zinc-500 text-xs mt-1">Everything. Unlimited.</p>
@@ -222,7 +222,7 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
                     'Priority Support',
                   ].map((feature, i) => (
                     <div key={i} className="flex items-center gap-2 text-sm text-zinc-300">
-                      <span className="text-violet-400">✓</span>
+                      <span className="text-emerald-400">✓</span>
                       {feature}
                     </div>
                   ))}
@@ -231,19 +231,19 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
                 <button
                   onClick={() => handleHatch('visionary')}
                   disabled={isLoading || isSyncing}
-                  className="w-full mt-6 py-3 rounded-lg bg-violet-600 hover:bg-violet-500 text-white font-bold transition-all shadow-lg shadow-violet-500/20"
+                  className="w-full mt-6 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-all shadow-lg shadow-emerald-500/20"
                 >
                   {isLoading ? 'Processing...' : 'Become Visionary'}
                 </button>
               </div>
 
-              {/* SINGULARITY - $99 */}
+              {/* SINGULARITY - $199 */}
               <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 flex flex-col">
                 <div className="mb-4">
                   <span className="text-xs font-bold text-amber-400 tracking-wider">EMPIRE</span>
                   <h3 className="text-xl font-bold text-white mt-1">Singularity</h3>
                   <div className="flex items-baseline gap-1 mt-2">
-                    <span className="text-3xl font-bold text-white">$99</span>
+                    <span className="text-3xl font-bold text-white">$199</span>
                     <span className="text-zinc-500 text-sm">/month</span>
                   </div>
                   <p className="text-zinc-500 text-xs mt-1">For teams & scale</p>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Activity, Brain, Wifi } from 'lucide-react'
+import { Activity, Cpu, Wifi } from 'lucide-react'
 
 export default function SystemStatus() {
   const [sentience, setSentience] = useState(0)
@@ -26,7 +26,7 @@ export default function SystemStatus() {
   return (
     <div className="flex items-center gap-6 px-4 py-2 bg-zinc-900/50 border border-zinc-800 rounded-full backdrop-blur-sm">
       <div className="flex items-center gap-2 group cursor-help relative">
-        <Brain className="w-4 h-4 text-purple-500" />
+        <Cpu className="w-4 h-4 text-purple-500" />
         <div className="flex flex-col">
           <span className="text-[10px] font-mono text-zinc-500 uppercase leading-none">Sentience</span>
           <span className="text-xs font-mono font-bold text-zinc-200">{sentience.toFixed(1)}%</span>

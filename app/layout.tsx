@@ -5,7 +5,7 @@ import { Inter, JetBrains_Mono } from 'next/font/google';
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import ContactButton from "@/components/ContactButton";
 import ConditionalNavigation from "@/components/ConditionalNavigation";
-import Footer from "@/components/Footer";
+import ConditionalFooter from "@/components/ConditionalFooter";
 import ConditionalAnalytics from "@/components/ConditionalAnalytics";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import UserSync from "@/components/UserSync";
@@ -109,7 +109,7 @@ export default function RootLayout({
             <ServiceWorkerRegistration />
             <ConditionalNavigation />
             {children}
-            <Footer />
+            <ConditionalFooter />
             <ContactButton />
             <ConditionalAnalytics />
           </SubscriptionProvider>

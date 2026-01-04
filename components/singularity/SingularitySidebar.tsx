@@ -1,173 +1,143 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Terminal, Eye, Brain, Sparkles, Zap, Activity, Lock, Settings } from 'lucide-react'
-import ArchitectLogo from '../ArchitectLogo'
+import { motion } from 'framer-motion'
+import { Settings, Check } from 'lucide-react'
+import Image from 'next/image'
 
 interface SingularitySidebarProps {
   currentSection: number
   totalSections: number
+  sectionNames?: string[]
   isGenerating: boolean
   thought?: string
   promptsUsed: number
   promptsLimit: number
   isPaid: boolean
+  projectName?: string
   onUpgrade?: () => void
   onOpenSettings?: () => void
-}
-
-// Live system log messages based on state
-const getSystemLogs = (isGenerating: boolean, currentSection: number, promptsUsed: number) => {
-  const logs: string[] = []
-  
-  if (promptsUsed === 0) {
-    logs.push('[SYSTEM] Awaiting first instruction...')
-  } else {
-    logs.push(`[SYSTEM] ${promptsUsed} generation${promptsUsed > 1 ? 's' : ''} processed`)
-  }
-  
-  if (isGenerating) {
-    logs.push('[BUILDER] Synthesizing component structure...')
-    logs.push('[LAYOUT] Generating layout patterns...')
-  } else {
-    logs.push(`[STATUS] Section ${currentSection} active`)
-    logs.push('[READY] Awaiting input...')
-  }
-  
-  return logs
 }
 
 export default function SingularitySidebar({
   currentSection,
   totalSections,
+  sectionNames,
   isGenerating,
-  thought,
-  promptsUsed,
-  promptsLimit,
-  isPaid,
-  onUpgrade,
+  projectName = "Untitled Project",
   onOpenSettings
 }: SingularitySidebarProps) {
-  const [logs, setLogs] = useState<string[]>([])
-  const [displayThought, setDisplayThought] = useState(thought || 'Observing...')
-  const logsRef = useRef<HTMLDivElement>(null)
-
-  // Update logs based on state changes
-  useEffect(() => {
-    const newLogs = getSystemLogs(isGenerating, currentSection, promptsUsed)
-    setLogs(prev => [...newLogs, ...prev].slice(0, 20))
-  }, [isGenerating, currentSection, promptsUsed])
-
-  // Update thought with typing effect
-  useEffect(() => {
-    if (thought && thought !== displayThought) {
-      setDisplayThought(thought)
+  
+  // Generate a clean label for each section
+  const getSectionLabel = (index: number) => {
+    if (sectionNames && sectionNames[index]) {
+      // Convert "Hero Section" to "Hero" for cleaner UI
+      return sectionNames[index].replace(/Section/i, '').trim()
     }
-  }, [thought, displayThought])
-
-  const promptsRemaining = promptsLimit < 0 ? Infinity : promptsLimit - promptsUsed
-  const isUnlimited = promptsLimit < 0
-  const isRunningLow = !isPaid && !isUnlimited && promptsRemaining <= 2 && promptsRemaining > 0
-  const isAtLimit = !isPaid && !isUnlimited && promptsRemaining <= 0
+    return `Step ${index + 1}`
+  }
 
   return (
-    <div className="w-72 border-r border-zinc-800/50 bg-black/40 backdrop-blur-sm flex flex-col font-mono text-xs overflow-hidden">
-      {/* Header */}
-      <div className="p-4 border-b border-zinc-800/50">
-        <div className="flex items-center gap-3">
-          <ArchitectLogo className="w-6 h-6" />
-          <span className="uppercase tracking-wider font-bold text-white">HATCHIT</span>
-        </div>
-      </div>
+    <div className="w-64 border-r border-zinc-900 bg-zinc-950 flex flex-col h-full relative overflow-hidden">
+      {/* Subtle Void Gradient */}
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.03),transparent_40%)]" />
 
-      {/* Status */}
-      <div className="p-4 border-b border-zinc-800/50">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-zinc-500 uppercase tracking-wider text-[10px]">Status</span>
-          <span className={`flex items-center gap-1.5 ${isGenerating ? 'text-amber-400' : 'text-emerald-400'}`}>
-            {isGenerating ? (
-              <>
-                <Sparkles className="w-3 h-3 animate-spin" />
-                Generating
-              </>
-            ) : (
-              <>
-                <Eye className="w-3 h-3" />
-                Ready
-              </>
-            )}
-          </span>
-        </div>
+      {/* Header - Minimalist Logo & Context */}
+      <div className="relative p-6 flex items-center gap-4 border-b border-zinc-900/50 overflow-hidden">
+        {/* Subtle ambient glow */}
+        <div className="absolute top-0 left-0 w-32 h-full bg-gradient-to-r from-emerald-500/5 to-transparent opacity-50" />
         
-        {/* Progress indicator */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-[10px]">
-            <span className="text-zinc-500">Progress</span>
-            <span className="text-zinc-400">{currentSection} / {totalSections}</span>
+        <div className="relative z-10 group cursor-default shrink-0">
+          <div className="absolute -inset-4 bg-emerald-500/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+          <Image 
+            src="/assets/hatchit_definitive.svg" 
+            alt="HatchIt" 
+            width={36} 
+            height={36} 
+            className="w-9 h-9 relative z-10 opacity-100 transition-opacity duration-500" 
+          />
+        </div>
+
+        {/* Project Context - Very subtle */}
+        <div className="relative z-10 flex flex-col justify-center">
+          <div className="h-3 w-px bg-zinc-800 absolute -left-2 top-1/2 -translate-y-1/2" />
+          <span className="text-xs font-medium text-zinc-300 tracking-wide truncate max-w-[140px]">
+            {projectName}
+          </span>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <div className="w-1 h-1 rounded-full bg-emerald-500/50" />
+            <span className="text-[9px] text-zinc-600 font-medium uppercase tracking-wider">
+              Environment Active
+            </span>
           </div>
-          <div className="h-1 bg-zinc-800 rounded-full overflow-hidden">
-            <motion.div 
-              className="h-full bg-emerald-500/50"
-              initial={{ width: 0 }}
-              animate={{ width: `${(currentSection / totalSections) * 100}%` }}
-              transition={{ duration: 0.5 }}
-            />
-          </div>
         </div>
       </div>
 
-      {/* Current Thought */}
-      <div className="p-4 border-b border-zinc-800/50">
-        <span className="text-zinc-500 uppercase tracking-wider text-[10px] block mb-2">Thought</span>
-        <div className="p-3 bg-zinc-900/50 border border-zinc-800 rounded-lg">
-          <p className="text-emerald-400/80 text-[11px] leading-relaxed italic">
-            "{displayThought}"
-          </p>
+      {/* Studio Timeline */}
+      <div className="flex-1 overflow-y-auto py-8 px-6 custom-scrollbar">
+        <div className="relative">
+          {/* Vertical Line */}
+          <div className="absolute left-[11px] top-2 bottom-2 w-px bg-zinc-900" />
+
+          {Array.from({ length: totalSections }).map((_, i) => {
+            const isActive = i === currentSection - 1
+            const isCompleted = i < currentSection - 1
+
+            return (
+              <div key={i} className="relative flex items-center gap-4 mb-6 last:mb-0 group">
+                {/* Status Dot */}
+                <div className={`relative z-10 flex items-center justify-center w-4 h-4 rounded-full border transition-all duration-500 ${
+                  isActive ? 'bg-zinc-950 border-emerald-500/50 shadow-[0_0_10px_rgba(16,185,129,0.15)]' : 
+                  isCompleted ? 'bg-emerald-500/5 border-emerald-500/30' : 
+                  'bg-zinc-950 border-zinc-800'
+                }`}>
+                  {isCompleted ? (
+                    <Check className="w-2.5 h-2.5 text-emerald-500/70" />
+                  ) : isActive ? (
+                    <div className="w-1.5 h-1.5 bg-emerald-500/80 rounded-full animate-pulse" />
+                  ) : (
+                    <div className="w-1 h-1 bg-zinc-800 rounded-full group-hover:bg-zinc-700 transition-colors" />
+                  )}
+                </div>
+
+                {/* Label */}
+                <div className={`flex flex-col transition-all duration-500 ${
+                  isActive ? 'opacity-100 translate-x-1' : 
+                  isCompleted ? 'opacity-60' : 
+                  'opacity-40'
+                }`}>
+                  <span className={`text-sm font-medium tracking-wide ${isActive ? 'text-white' : 'text-zinc-400'}`}>
+                    {getSectionLabel(i)}
+                  </span>
+                  {isActive && (
+                    <motion.span 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="text-[10px] text-emerald-600 font-medium tracking-wider uppercase mt-0.5"
+                    >
+                      {isGenerating ? 'Building...' : 'Current Step'}
+                    </motion.span>
+                  )}
+                </div>
+              </div>
+            )
+          })}
         </div>
       </div>
 
-      {/* System Logs */}
-      <div className="flex-1 p-4 overflow-hidden flex flex-col">
-        <div className="flex items-center gap-2 mb-2">
-          <Terminal className="w-3 h-3 text-zinc-500" />
-          <span className="text-zinc-500 uppercase tracking-wider text-[10px]">System</span>
-        </div>
-        <div 
-          ref={logsRef}
-          className="flex-1 bg-black/50 border border-zinc-800/50 rounded-lg p-2 overflow-y-auto"
-        >
-          <AnimatePresence mode="popLayout">
-            {logs.map((log, i) => (
-              <motion.div
-                key={`${log}-${i}`}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0 }}
-                className="text-[10px] text-zinc-500 py-0.5 border-b border-zinc-900/50 last:border-0"
-              >
-                {log}
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-      </div>
-
-      {/* Prompts Counter / Upgrade */}
-      <div className="p-4 border-t border-zinc-800/50 space-y-3">
-        {/* Always show unlimited now - The Architect's gift */}
-        <div className="flex items-center gap-2 text-emerald-400">
-          <Activity className="w-3 h-3" />
-          <span className="text-[10px] uppercase tracking-wider">Unlimited Generations</span>
-        </div>
-
+      {/* Footer Controls */}
+      <div className="p-4 border-t border-zinc-900 bg-zinc-950/50 backdrop-blur-sm">
         {onOpenSettings && (
           <button
             onClick={onOpenSettings}
-            className="w-full flex items-center justify-center gap-2 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded text-zinc-400 hover:text-white transition-colors text-[10px] uppercase tracking-wider"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-zinc-900/50 hover:bg-zinc-900 border border-zinc-800/50 hover:border-zinc-700 transition-all group"
           >
-            <Settings className="w-3 h-3" />
-            Site Settings
+            <div className="p-1.5 rounded-lg bg-zinc-800 group-hover:bg-zinc-700 transition-colors">
+              <Settings className="w-4 h-4 text-zinc-400 group-hover:text-white" />
+            </div>
+            <div className="flex flex-col items-start">
+              <span className="text-xs font-medium text-zinc-300 group-hover:text-white">Project Settings</span>
+              <span className="text-[10px] text-zinc-500">Configure SEO & Brand</span>
+            </div>
           </button>
         )}
       </div>

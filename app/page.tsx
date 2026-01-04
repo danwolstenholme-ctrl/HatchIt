@@ -69,7 +69,7 @@ function PricingButton({ tier, className, children }: { tier: 'architect' | 'vis
   
   return (
     <button onClick={handleClick} disabled={isLoading} className={className}>
-      {isLoading ? 'Loading...' : children}
+      {children}
     </button>
   )
 }
@@ -124,7 +124,8 @@ export default function Home() {
   const [isTransitioning, setIsTransitioning] = useState(false)
 
   const handleTransitionComplete = () => {
-    router.push('/builder')
+    // Route to /demo for guests, /builder for signed-in users
+    router.push(isSignedIn ? '/builder' : '/demo')
   }
 
   const triggerTransition = () => {
@@ -140,117 +141,83 @@ export default function Home() {
       <HomepageWelcome onStart={triggerTransition} />
       {/* LaunchAnimation removed for faster flow */}
       
-      {/* CSS for smooth scroll and effects */}
+      {/* CSS for smooth scroll */}
       <style jsx global>{`
         html { scroll-behavior: smooth; }
-        @keyframes glow-pulse {
-          0%, 100% { opacity: 0.4; }
-          50% { opacity: 0.8; }
+        @keyframes gradient-shift {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
         }
-        .glow-pulse { animation: glow-pulse 3s ease-in-out infinite; }
+        .animate-gradient {
+          background-size: 200% 200%;
+          animation: gradient-shift 8s ease infinite;
+        }
       `}</style>
 
-      {/* Scanline Overlay */}
-      <div className="scanline-overlay" />
-      <div className="scanline-beam" />
-
-      {/* HERO SECTION */}
+      {/* HERO SECTION - Clean and confident */}
       <section className="relative min-h-[90vh] flex flex-col justify-center items-center pt-28 sm:pt-32 pb-12 px-4 sm:px-6 overflow-hidden">
-        {/* THE VOID - deep black with subtle grid */}
+        {/* Simple background - one subtle glow */}
         <div className="absolute inset-0 bg-zinc-950" />
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.015)_1px,transparent_1px)] bg-[size:60px_60px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/[0.07] rounded-full blur-[120px]" />
         
-        {/* Massive void orbs - the portal */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] sm:w-[800px] h-[300px] sm:h-[800px] bg-emerald-500/[0.08] sm:bg-emerald-500/[0.04] rounded-full blur-[80px] sm:blur-[150px] glow-pulse" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] sm:w-[600px] h-[250px] sm:h-[600px] bg-teal-500/[0.1] sm:bg-teal-500/[0.06] rounded-full blur-[60px] sm:blur-[120px] glow-pulse" style={{ animationDelay: '1.5s' }} />
-        
-        {/* Radial fade to void edges */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(9,9,11,0.4)_50%,rgba(9,9,11,0.9)_100%)]" />
-        
-        <div className="max-w-7xl mx-auto w-full relative z-10 flex flex-col items-center text-center">
+        <div className="max-w-4xl mx-auto w-full relative z-10 flex flex-col items-center text-center">
             
-            {/* Status badge */}
-            <motion.div 
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2.5 px-4 py-2 bg-zinc-900/90 border border-emerald-500/40 rounded-full mb-8 backdrop-blur-sm"
-            >
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-              </span>
-              <span className="text-sm font-mono text-emerald-400 tracking-wide">AI WEBSITE BUILDER</span>
-            </motion.div>
-
-            {/* Main headline - BIG and BOLD */}
+            {/* Main headline - clean, no gimmicks */}
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
-              className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter leading-[0.9] mb-8 glitch-text" 
-              data-text="BUILD YOUR VISION"
+              transition={{ delay: 0.3, duration: 0.6 }}
+              className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tight leading-[1.1] mb-6"
             >
-              <span className="block text-white mb-2">BUILD YOUR</span>
-              <span className="block bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
-                VISION
+              <span className="block text-white">Describe it.</span>
+              <span className="block bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400 bg-clip-text text-transparent animate-gradient">
+                Watch it build.
               </span>
             </motion.h1>
 
-            {/* Subheadline */}
+            {/* Subheadline - let it breathe */}
             <motion.p 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="text-lg sm:text-xl md:text-2xl text-zinc-400 max-w-2xl mx-auto leading-relaxed mb-10"
+              transition={{ delay: 0.5 }}
+              className="text-lg sm:text-xl text-zinc-400 max-w-xl mx-auto leading-relaxed mb-12"
             >
-              Turn text into production-ready React code. <br className="hidden md:block" />
-              No drag-and-drop. Just speak.
-              <span className="block mt-4 text-emerald-500/80 font-mono text-sm">
-                // EXPORT TO NEXT.JS + TAILWIND
-              </span>
+              Type what you want. Get production-ready React + Tailwind in seconds.
             </motion.p>
 
-            {/* THE BIG CTA */}
+            {/* CTA */}
             <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.6 }}
-              className="mb-12 w-full sm:w-auto"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+              className="mb-16"
             >
               <VoidButton isSignedIn={isSignedIn} router={router} onLaunch={triggerTransition} />
             </motion.div>
 
-            {/* Value props */}
+            {/* Trust signals - simple row */}
             <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8 }}
-              className="flex flex-wrap justify-center gap-3 sm:gap-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.9 }}
+              className="flex items-center justify-center gap-6 text-sm text-zinc-500"
             >
-              <div className="flex items-center gap-2 px-4 py-2 bg-zinc-900/80 border border-zinc-800 rounded-lg text-sm backdrop-blur-sm">
-                <Zap className="w-4 h-4 text-amber-400" />
-                <span>~30 sec builds</span>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-zinc-900/80 border border-zinc-800 rounded-lg text-sm backdrop-blur-sm">
-                <Code2 className="w-4 h-4 text-emerald-400" />
-                <span>Export code</span>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-zinc-900/80 border border-zinc-800 rounded-lg text-sm backdrop-blur-sm">
-                <Shield className="w-4 h-4 text-violet-400" />
-                <span>100% yours</span>
-              </div>
+              <span className="flex items-center gap-2">
+                <Zap className="w-4 h-4 text-emerald-500/70" />
+                ~15 sec builds
+              </span>
+              <span className="w-1 h-1 rounded-full bg-zinc-700" />
+              <span className="flex items-center gap-2">
+                <Code2 className="w-4 h-4 text-emerald-500/70" />
+                Export anytime
+              </span>
+              <span className="w-1 h-1 rounded-full bg-zinc-700" />
+              <span className="flex items-center gap-2">
+                <Shield className="w-4 h-4 text-emerald-500/70" />
+                Your code
+              </span>
             </motion.div>
         </div>
-        
-        {/* Mobile Scroll Hint */}
-        <motion.div 
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 text-zinc-600 md:hidden"
-        >
-          <ArrowRight className="rotate-90 w-6 h-6" />
-        </motion.div>
       </section>
 
       {/* THE STACK */}

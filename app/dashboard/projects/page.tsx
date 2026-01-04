@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Plus, Box, ArrowRight, Trash2, ExternalLink, Calendar, Clock, Crown, Zap, Star, Lock, Terminal, Search, Filter, MoreHorizontal, Activity, Database, Cpu, Globe } from 'lucide-react'
+import { Plus, Box, ArrowRight, Trash2, ExternalLink, Calendar, Clock, Crown, Zap, Star, Lock, Terminal, Search, Filter, MoreHorizontal, Activity, Database, Cpu, Globe, Share2, Check, Copy } from 'lucide-react'
 import { useProjects } from '@/hooks/useProjects'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -12,6 +12,7 @@ export default function ProjectsPage() {
   const [isCreating, setIsCreating] = useState(false)
   const [showLimitModal, setShowLimitModal] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [copiedId, setCopiedId] = useState<string | null>(null)
 
   // Tier config for display
   const tierConfig = useMemo(() => {
@@ -219,16 +220,35 @@ export default function ProjectsPage() {
                   {/* Operations */}
                   <div className="col-span-4 md:col-span-3 flex items-center justify-end gap-2 relative z-20">
                     {project.deployedSlug && (
-                      <a
-                        href={`https://${project.deployedSlug}.hatchit.app`} // Assuming domain structure
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 text-zinc-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded transition-colors"
-                        title="View Live"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Globe className="w-4 h-4" />
-                      </a>
+                      <>
+                        <a
+                          href={`https://${project.deployedSlug}.hatchit.app`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 text-zinc-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded transition-colors"
+                          title="View Live"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Globe className="w-4 h-4" />
+                        </a>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            const url = `https://${project.deployedSlug}.hatchit.app`
+                            navigator.clipboard.writeText(url)
+                            setCopiedId(project.id)
+                            setTimeout(() => setCopiedId(null), 2000)
+                          }}
+                          className="p-2 text-zinc-500 hover:text-blue-400 hover:bg-blue-500/10 rounded transition-colors"
+                          title="Copy Share Link"
+                        >
+                          {copiedId === project.id ? (
+                            <Check className="w-4 h-4 text-emerald-400" />
+                          ) : (
+                            <Share2 className="w-4 h-4" />
+                          )}
+                        </button>
+                      </>
                     )}
                     
                     {!isLocked && (

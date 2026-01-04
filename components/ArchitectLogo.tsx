@@ -17,27 +17,27 @@ export default function ArchitectLogo({ className = "w-8 h-8", animated = true }
         className="w-full h-full"
       >
         <defs>
-          {/* The Architect Glow (Violet) */}
+          {/* The Architect Glow (Emerald) */}
           <filter id="glow-architect" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="12" result="blur" />
             <feComposite in="SourceGraphic" in2="blur" operator="over" />
           </filter>
           
-          {/* Glassy Face Gradients (Violet/Indigo) */}
+          {/* Glassy Face Gradients (Emerald/Teal) */}
           <linearGradient id="face-left-arch" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#4c1d95" stopOpacity="0.4"/> {/* Violet 900 */}
-            <stop offset="100%" stopColor="#2e1065" stopOpacity="0.8"/> {/* Violet 950 */}
+            <stop offset="0%" stopColor="#064e3b" stopOpacity="0.4"/> {/* Emerald 900 */}
+            <stop offset="100%" stopColor="#022c22" stopOpacity="0.8"/> {/* Emerald 950 */}
           </linearGradient>
           
           <linearGradient id="face-right-arch" x1="1" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#5b21b6" stopOpacity="0.4"/> {/* Violet 800 */}
-            <stop offset="100%" stopColor="#2e1065" stopOpacity="0.8"/> {/* Violet 950 */}
+            <stop offset="0%" stopColor="#065f46" stopOpacity="0.4"/> {/* Emerald 800 */}
+            <stop offset="100%" stopColor="#022c22" stopOpacity="0.8"/> {/* Emerald 950 */}
           </linearGradient>
 
-          {/* The "Energy" Gradient for the Stroke (Violet/Purple) */}
+          {/* The "Energy" Gradient for the Stroke (Emerald/Teal) */}
           <linearGradient id="stroke-arch" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#a78bfa" /> {/* Violet 400 */}
-            <stop offset="100%" stopColor="#7c3aed" /> {/* Violet 600 */}
+            <stop offset="0%" stopColor="#34d399" /> {/* Emerald 400 */}
+            <stop offset="100%" stopColor="#059669" /> {/* Emerald 600 */}
           </linearGradient>
         </defs>
 

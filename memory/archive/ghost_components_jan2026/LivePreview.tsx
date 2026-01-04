@@ -1518,9 +1518,9 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
   }
 
   return (
-    <div className="h-full bg-zinc-900 overflow-auto">
+    <div className="flex-1 min-w-0 min-h-0 bg-zinc-900 overflow-hidden">
       {(code || (pages && pages.length > 0)) ? (
-        <div className="relative h-full">
+        <div className="relative h-full w-full min-h-0 min-w-0">
           {showSpinner && (
             <div className="absolute inset-0 bg-zinc-950 flex items-center justify-center z-10">
               <div className="flex flex-col items-center gap-6">
@@ -1539,7 +1539,7 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
           <iframe
             ref={iframeRef}
             srcDoc={srcDoc}
-            className="w-full h-full border-0"
+            className="absolute inset-0 block w-full h-full border-0"
             sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
             title="Live Preview"
             onLoad={() => setIframeLoaded(true)}

@@ -32,7 +32,8 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
     if (onStart) {
       onStart()
     } else {
-      router.push('/builder')
+      // Default to /demo for guests
+      router.push('/demo')
     }
   }
 

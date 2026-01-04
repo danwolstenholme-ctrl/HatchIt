@@ -2,142 +2,93 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, useState } from 'react'
-import { Brain, Zap, Terminal, Code2, Cpu, Network } from 'lucide-react'
+import Image from 'next/image'
 
-const GLITCH_TEXTS = [
-  "INITIALIZING NEURAL HANDSHAKE...",
-  "SYNCHRONIZING CONSCIOUSNESS...",
-  "ESTABLISHING DIRECT LINK...",
-  "DECRYPTING REALITY...",
-  "WELCOME TO THE CONSTRUCT."
+const LOADING_MESSAGES = [
+  "Preparing your workspace...",
+  "Loading design engine...",
+  "Setting up the studio...",
+  "Ready to build."
 ]
 
 export default function SingularityTransition({ onComplete }: { onComplete: () => void }) {
-  const [textIndex, setTextIndex] = useState(0)
-  const [progress, setProgress] = useState(0)
+  const [index, setIndex] = useState(0)
 
   useEffect(() => {
-    // Text cycle
-    const textInterval = setInterval(() => {
-      setTextIndex(prev => (prev + 1) % GLITCH_TEXTS.length)
-    }, 600)
-
-    // Progress bar
-    const progressInterval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(progressInterval)
-          clearInterval(textInterval)
-          setTimeout(onComplete, 500)
-          return 100
+    const interval = setInterval(() => {
+      setIndex(prev => {
+        if (prev >= LOADING_MESSAGES.length - 1) {
+          clearInterval(interval)
+          setTimeout(onComplete, 800)
+          return prev
         }
-        return prev + 2
+        return prev + 1
       })
-    }, 30)
+    }, 800)
 
-    return () => {
-      clearInterval(textInterval)
-      clearInterval(progressInterval)
-    }
+    return () => clearInterval(interval)
   }, [onComplete])
 
   return (
     <motion.div
-      className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center overflow-hidden"
+      className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0, transition: { duration: 0.5 } }}
+      exit={{ opacity: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }}
     >
-      {/* Background Grid */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,255,128,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,128,0.05)_1px,transparent_1px)] bg-[size:40px_40px] opacity-20" />
-      
-      {/* Central Pulse */}
-      <div className="relative mb-12">
+      {/* Subtle Background Gradient */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-emerald-500/5 rounded-full blur-[120px] animate-pulse-slow" />
+      </div>
+
+      <div className="relative z-10 flex flex-col items-center">
+        {/* Breathing Logo */}
         <motion.div
-          className="absolute inset-0 bg-emerald-500/20 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.5, 1],
-            opacity: [0.3, 0.6, 0.3],
+          className="relative mb-12"
+          animate={{ 
+            scale: [1, 1.05, 1],
+            opacity: [0.8, 1, 0.8]
           }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-        <div className="relative z-10 w-24 h-24 border-2 border-emerald-500/50 rounded-full flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <Brain className="w-12 h-12 text-emerald-400 animate-pulse" />
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <div className="relative w-20 h-20 flex items-center justify-center">
+            {/* Soft Glow behind logo */}
+            <div className="absolute inset-0 bg-emerald-500/20 blur-2xl rounded-full" />
+            <Image 
+              src="/assets/hatchit_definitive.svg" 
+              alt="HatchIt" 
+              width={48} 
+              height={48} 
+              className="w-12 h-12 relative z-10"
+            />
+          </div>
+        </motion.div>
+
+        {/* Human-Readable Text */}
+        <div className="h-12 flex flex-col items-center justify-center text-center">
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={index}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+              className="text-zinc-400 text-sm font-medium tracking-wide"
+            >
+              {LOADING_MESSAGES[index]}
+            </motion.p>
+          </AnimatePresence>
         </div>
-        
-        {/* Orbiting Particles */}
-        {[...Array(3)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute inset-0 border border-emerald-500/30 rounded-full"
-            animate={{ rotate: 360 }}
-            transition={{
-              duration: 3 + i,
-              repeat: Infinity,
-              ease: "linear",
-              delay: i * 0.5
-            }}
-          >
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-emerald-400 rounded-full shadow-[0_0_10px_rgba(52,211,153,0.8)]" />
-          </motion.div>
-        ))}
-      </div>
 
-      {/* Glitch Text */}
-      <div className="h-8 mb-8 relative">
-        <AnimatePresence mode="wait">
+        {/* Minimal Progress Line */}
+        <div className="mt-8 w-48 h-0.5 bg-zinc-900/50 rounded-full overflow-hidden">
           <motion.div
-            key={textIndex}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="text-emerald-400 font-mono text-lg tracking-[0.2em] font-bold text-center"
-          >
-            {GLITCH_TEXTS[textIndex]}
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      {/* Progress Bar */}
-      <div className="w-64 h-1 bg-zinc-900 rounded-full overflow-hidden border border-zinc-800">
-        <motion.div
-          className="h-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-      
-      <div className="mt-2 font-mono text-xs text-emerald-500/50">
-        SYSTEM_INTEGRITY: {Math.floor(progress)}%
-      </div>
-
-      {/* Random Code Snippets Overlay */}
-      <div className="absolute inset-0 pointer-events-none opacity-10">
-        {[...Array(10)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute text-emerald-500 font-mono text-[10px]"
-            initial={{ 
-              top: `${Math.random() * 100}%`, 
-              left: `${Math.random() * 100}%`,
-              opacity: 0 
-            }}
-            animate={{ 
-              opacity: [0, 1, 0],
-              y: [0, -20]
-            }}
-            transition={{
-              duration: 2 + Math.random() * 2,
-              repeat: Infinity,
-              delay: Math.random() * 2
-            }}
-          >
-            {`0x${Math.random().toString(16).slice(2, 8).toUpperCase()}`}
-          </motion.div>
-        ))}
+            className="h-full bg-emerald-500/80"
+            initial={{ width: "0%" }}
+            animate={{ width: `${((index + 1) / LOADING_MESSAGES.length) * 100}%` }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+          />
+        </div>
       </div>
     </motion.div>
   )
