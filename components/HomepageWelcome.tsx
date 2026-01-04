@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Globe } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 
@@ -177,133 +177,128 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
           {/* Matrix rain background */}
           <MatrixRain />
 
-          {/* Main content */}
+          {/* Main content - Glass Card */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -30 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="relative z-10 w-full max-w-lg text-center"
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -20 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="relative z-10 w-full max-w-2xl bg-zinc-950/80 backdrop-blur-xl border border-zinc-800/50 rounded-3xl overflow-hidden shadow-2xl shadow-black/50"
           >
-            {/* Logo with breathing animation */}
-            <motion.div
-              animate={{ scale: [1, 1.05, 1], opacity: [0.7, 1, 0.7] }}
-              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-              className="w-20 h-20 mx-auto mb-8"
-            >
-              <Image 
-                src="/assets/hatchit_definitive.svg" 
-                alt="HatchIt" 
-                width={80} 
-                height={80}
-                className="w-full h-full"
-              />
-            </motion.div>
-            
-            {/* Terminal-style header */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="mb-6"
-            >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/30 mb-6">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-xs font-mono text-emerald-400 tracking-widest">SYSTEM INITIALIZED</span>
+            {/* Top Bar (Browser/Terminal style) */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800/50 bg-zinc-900/50">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/50" />
+                <div className="w-3 h-3 rounded-full bg-amber-500/20 border border-amber-500/50" />
+                <div className="w-3 h-3 rounded-full bg-emerald-500/20 border border-emerald-500/50" />
               </div>
-              
-              <h1 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">
-                <TypewriterText text="Text → React" delay={200} />
-              </h1>
-              
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: phase === 'ready' ? 1 : 0 }}
-                className="text-zinc-400 text-lg leading-relaxed max-w-md mx-auto"
-              >
-                Describe what you want.
-                <br />
-                <span className="text-emerald-400">Watch it build in real-time.</span>
-              </motion.p>
-            </motion.div>
+              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-950/50 border border-zinc-800">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[10px] font-mono text-zinc-500 tracking-widest uppercase">System Online</span>
+              </div>
+            </div>
 
-            {/* CTA Button */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: phase === 'ready' ? 1 : 0, y: phase === 'ready' ? 0 : 20 }}
-              transition={{ delay: 0.2 }}
-              className="space-y-4"
-            >
-              <motion.button
-                onClick={handleStart}
-                className="group relative w-full py-5 px-8 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-lg rounded-2xl transition-all overflow-hidden"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+            <div className="p-8 md:p-12 text-center">
+              {/* Logo with breathing animation */}
+              <motion.div
+                animate={{ scale: [1, 1.05, 1], opacity: [0.8, 1, 0.8] }}
+                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                className="w-16 h-16 mx-auto mb-8 relative"
               >
-                {/* Shine effect */}
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12"
-                  initial={{ x: '-100%' }}
-                  whileHover={{ x: '100%' }}
-                  transition={{ duration: 0.6 }}
+                <div className="absolute inset-0 bg-emerald-500/20 blur-xl rounded-full" />
+                <Image 
+                  src="/assets/hatchit_definitive.svg" 
+                  alt="HatchIt" 
+                  width={64} 
+                  height={64}
+                  className="w-full h-full relative z-10"
                 />
-                
-                <span className="relative flex items-center justify-center gap-3">
-                  TRY IT FREE
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </span>
-              </motion.button>
+              </motion.div>
               
-              {/* Skip link */}
-              <motion.button
-                onClick={handleSkip}
-                className="text-sm text-zinc-600 hover:text-zinc-400 transition-colors"
+              {/* Hero Text */}
+              <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
+                transition={{ delay: 0.3 }}
+                className="mb-8"
               >
-                or explore the homepage first
-              </motion.button>
-            </motion.div>
-
-            {/* Tech badges */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: phase === 'ready' ? 1 : 0 }}
-              transition={{ delay: 0.4 }}
-              className="flex justify-center gap-3 mt-8"
-            >
-              {['React', 'Tailwind', 'TypeScript'].map((tech) => (
-                <span
-                  key={tech}
-                  className="px-3 py-1 text-xs text-zinc-500 border border-zinc-800 rounded-full bg-zinc-900/50"
+                <h1 className="text-5xl md:text-6xl font-black text-white mb-6 tracking-tight leading-tight">
+                  <span className="inline-block bg-gradient-to-r from-white via-zinc-200 to-zinc-400 bg-clip-text text-transparent">
+                    Text
+                  </span>
+                  <span className="mx-4 text-zinc-700 font-light">→</span>
+                  <span className="inline-block bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+                    <TypewriterText text="React" delay={400} />
+                  </span>
+                </h1>
+                
+                <motion.p
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: phase === 'ready' ? 1 : 0, y: phase === 'ready' ? 0 : 10 }}
+                  className="text-zinc-400 text-lg md:text-xl leading-relaxed max-w-md mx-auto font-light"
                 >
-                  {tech}
-                </span>
-              ))}
-            </motion.div>
-            
-            {/* Social proof hint */}
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: phase === 'ready' ? 1 : 0 }}
-              transition={{ delay: 0.6 }}
-              className="text-xs text-zinc-600 mt-6"
-            >
-              No account needed • Get a shareable link • Export anytime
-            </motion.p>
-            
-            {/* Share teaser */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: phase === 'ready' ? 1 : 0 }}
-              transition={{ delay: 0.7 }}
-              className="mt-4 px-4 py-2 rounded-lg bg-zinc-900/50 border border-zinc-800 inline-flex items-center gap-2"
-            >
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs text-zinc-500 font-mono">yoursite.hatchitsites.dev</span>
-            </motion.div>
+                  Describe your vision.
+                  <br />
+                  <span className="text-white font-medium">We build the code.</span>
+                </motion.p>
+              </motion.div>
+
+              {/* CTA Section */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: phase === 'ready' ? 1 : 0, y: phase === 'ready' ? 0 : 20 }}
+                transition={{ delay: 0.4 }}
+                className="space-y-6"
+              >
+                <motion.button
+                  onClick={handleStart}
+                  className="group relative w-full max-w-sm mx-auto py-4 px-8 bg-white hover:bg-zinc-100 text-black font-bold text-lg rounded-xl transition-all shadow-[0_0_40px_rgba(255,255,255,0.1)] hover:shadow-[0_0_60px_rgba(255,255,255,0.2)] overflow-hidden"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <span className="relative flex items-center justify-center gap-3">
+                    Start Building Free
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                </motion.button>
+                
+                <motion.button
+                  onClick={handleSkip}
+                  className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors border-b border-transparent hover:border-zinc-700 pb-0.5"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.6 }}
+                >
+                  or explore the homepage first
+                </motion.button>
+              </motion.div>
+
+              {/* Footer Info */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: phase === 'ready' ? 1 : 0 }}
+                transition={{ delay: 0.7 }}
+                className="mt-10 pt-8 border-t border-zinc-800/50 flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8"
+              >
+                <div className="flex items-center gap-2 text-xs text-zinc-500 font-mono">
+                  <div className="flex -space-x-2">
+                    <div className="w-6 h-6 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-[8px]">TS</div>
+                    <div className="w-6 h-6 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-[8px]">R</div>
+                    <div className="w-6 h-6 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-[8px]">TW</div>
+                  </div>
+                  <span>Stack Included</span>
+                </div>
+
+                <div className="hidden md:block w-px h-4 bg-zinc-800" />
+
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-zinc-900/50 border border-zinc-800/50">
+                  <Globe className="w-3 h-3 text-emerald-500" />
+                  <span className="text-xs text-zinc-500 font-mono">yoursite.hatchitsites.dev</span>
+                </div>
+              </motion.div>
+            </div>
           </motion.div>
+
         </motion.div>
       )}
     </AnimatePresence>

@@ -11,8 +11,10 @@ export default function ContactButton() {
   // Don't show on the contact page itself
   if (pathname === '/contact') return null
 
+  const contactUrl = `/contact?returnUrl=${encodeURIComponent(pathname)}`
+
   return (
-    <Link href="/contact" aria-label="Contact Support">
+    <Link href={contactUrl} aria-label="Contact Support">
       <motion.button
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}

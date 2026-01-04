@@ -1,11 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { motion } from 'framer-motion'
-import { Mail, MessageSquare, ArrowLeft, Rocket, Heart, Send } from 'lucide-react'
+import { Mail, MessageSquare, ArrowLeft, Send, Globe, HelpCircle } from 'lucide-react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 
-export default function ContactPage() {
+function ContactForm() {
+  const searchParams = useSearchParams()
+  const returnUrl = searchParams.get('returnUrl') || '/'
+  
   const [form, setForm] = useState({ name: '', email: '', topic: 'General', message: '', website: '' })
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const [error, setError] = useState<string | null>(null)
@@ -42,212 +46,200 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white pt-20 pb-12 px-6 relative overflow-hidden">
-      {/* Scanline Overlay */}
-      <div className="scanline-overlay" />
+    <div className="min-h-screen bg-zinc-950 text-white pt-20 pb-12 px-6 relative overflow-hidden font-sans">
+      {/* Background Grid */}
+      <div className="fixed inset-0 bg-[linear-gradient(to_right,#18181b_1px,transparent_1px),linear-gradient(to_bottom,#18181b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
       
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,0.08),transparent_40%),radial-gradient(circle_at_80%_0%,rgba(124,58,237,0.1),transparent_35%),radial-gradient(circle_at_50%_80%,rgba(6,182,212,0.08),transparent_45%)] pointer-events-none" />
-      <div className="max-w-4xl mx-auto relative">
+      <div className="max-w-5xl mx-auto relative z-10">
         <Link 
-          href="/"
-          className="inline-flex items-center gap-2 text-zinc-500 hover:text-emerald-400 transition-colors mb-6 group text-sm font-mono"
+          href={returnUrl}
+          className="inline-flex items-center gap-2 text-zinc-500 hover:text-white transition-colors mb-8 group text-sm font-medium"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span>RETURN_TO_BASE</span>
+          <span>Back</span>
         </Link>
 
-        {/* Header with Early Days badge */}
-        <div className="flex flex-wrap items-center gap-4 mb-6">
-          <h1 className="text-3xl font-bold tracking-tight font-mono">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-500">
-              OPEN CHANNEL
-            </span>
-          </h1>
-          <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-3 py-1">
-            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-            <span className="text-emerald-400 text-xs font-mono tracking-wider">SIGNAL_ACTIVE</span>
-          </div>
-        </div>
-
-        <p className="text-zinc-400 mb-8 text-sm max-w-2xl font-mono">
-          // TRANSMISSION PROTOCOL INITIATED<br/>
-          Report anomalies, request feature injection, or establish partnership uplink.
-        </p>
-
-        <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-6 items-start">
-          {/* Form */}
-          <motion.form
-            onSubmit={handleSubmit}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="bg-zinc-900/70 border border-zinc-800 rounded-none p-6 shadow-[0_0_60px_rgba(16,185,129,0.08)] backdrop-blur relative overflow-hidden"
-          >
-            {/* Corner accents */}
-            <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-emerald-500/50" />
-            <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-emerald-500/50" />
-            <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-emerald-500/50" />
-            <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-emerald-500/50" />
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs text-emerald-500/70 uppercase tracking-widest font-mono">Identity</label>
-                <input
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  required
-                  placeholder="Operator Name"
-                  className="mt-2 w-full bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 outline-none transition font-mono placeholder:text-zinc-700"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-emerald-500/70 uppercase tracking-widest font-mono">Contact_Point</label>
-                <input
-                  name="email"
-                  type="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  required
-                  placeholder="you@company.com"
-                  className="mt-2 w-full rounded-lg bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-white focus:border-emerald-500 focus:ring-emerald-500/30 outline-none transition"
-                />
-              </div>
+        <div className="grid lg:grid-cols-[1fr_320px] gap-12 items-start">
+          {/* Main Content */}
+          <div>
+            <div className="mb-8">
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-3">
+                Contact Support
+              </h1>
+              <p className="text-zinc-400 text-lg">
+                We're here to help. Send us a message and we'll respond as soon as possible.
+              </p>
             </div>
 
-            <div className="mt-4 grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs text-zinc-400 uppercase tracking-wide">Topic</label>
-                <select
-                  name="topic"
-                  value={form.topic}
-                  onChange={handleChange}
-                  className="mt-2 w-full rounded-lg bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-white focus:border-emerald-500 focus:ring-emerald-500/30 outline-none transition"
-                >
-                  <option>General</option>
-                  <option>Support</option>
-                  <option>Feature Request</option>
-                  <option>Partnership</option>
-                  <option>Bug Report</option>
-                </select>
-              </div>
-              <div className="hidden">
-                <label className="text-xs text-zinc-400 uppercase tracking-wide">Website</label>
-                <input
-                  name="website"
-                  value={form.website}
-                  onChange={handleChange}
-                  className="mt-2 w-full rounded-lg bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-white"
-                  autoComplete="off"
-                />
-              </div>
-            </div>
-
-            <div className="mt-4">
-              <label className="text-xs text-zinc-400 uppercase tracking-wide">Message</label>
-              <textarea
-                name="message"
-                value={form.message}
-                onChange={handleChange}
-                required
-                minLength={10}
-                placeholder="Tell us how we can help..."
-                className="mt-2 w-full rounded-lg bg-zinc-950 border border-zinc-800 px-3 py-3 text-sm text-white focus:border-emerald-500 focus:ring-emerald-500/30 outline-none transition h-32 resize-none"
-              />
-            </div>
-
-            {error && (
-              <div className="mt-3 text-sm text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2">
-                {error}
-              </div>
-            )}
-
-            {status === 'sent' && (
-              <div className="mt-3 text-sm text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 rounded-lg px-3 py-2">
-                Message received — a human will reply from support@hatchit.dev.
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={status === 'sending'}
-              className="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 text-zinc-950 font-semibold text-sm shadow-lg shadow-emerald-500/25 hover:from-emerald-400 hover:to-teal-400 transition disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {status === 'sending' ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-emerald-900 border-t-emerald-100 rounded-full animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                <>
-                  <Send className="w-4 h-4" />
-                  Send to the team
-                </>
-              )}
-            </button>
-          </motion.form>
-
-          {/* Secondary channels */}
-          <div className="space-y-4">
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.05 }}
-              className="bg-gradient-to-br from-orange-500/10 to-red-500/10 border-2 border-orange-500/30 rounded-xl p-4"
+              transition={{ duration: 0.4 }}
+              className="bg-zinc-900/50 border border-zinc-800/50 rounded-2xl p-6 md:p-8 backdrop-blur-xl shadow-xl"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center flex-shrink-0">
-                  <MessageSquare className="w-5 h-5 text-orange-300" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-white">r/HatchIt</h3>
-                    <span className="text-[10px] bg-orange-500/20 text-orange-200 px-2 py-0.5 rounded-full">Fastest</span>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-zinc-300">Name</label>
+                    <input
+                      name="name"
+                      value={form.name}
+                      onChange={handleChange}
+                      required
+                      placeholder="Your name"
+                      className="w-full bg-zinc-950/50 border border-zinc-800 rounded-lg px-4 py-2.5 text-sm text-white focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 outline-none transition placeholder:text-zinc-600"
+                    />
                   </div>
-                  <p className="text-xs text-orange-100/80">Community, feature votes, bug reports.</p>
-                  <Link href="https://www.reddit.com/r/HatchIt/" target="_blank" rel="noopener noreferrer" className="text-xs text-orange-100 underline underline-offset-4">Open Reddit</Link>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-zinc-300">Email</label>
+                    <input
+                      name="email"
+                      type="email"
+                      value={form.email}
+                      onChange={handleChange}
+                      required
+                      placeholder="you@company.com"
+                      className="w-full bg-zinc-950/50 border border-zinc-800 rounded-lg px-4 py-2.5 text-sm text-white focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 outline-none transition placeholder:text-zinc-600"
+                    />
+                  </div>
                 </div>
-              </div>
-            </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.15 }}
-              className="bg-zinc-900/60 border border-zinc-800 rounded-xl p-4"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-                  <Mail className="w-5 h-5 text-emerald-400" />
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-zinc-300">Topic</label>
+                  <div className="relative">
+                    <select
+                      name="topic"
+                      value={form.topic}
+                      onChange={handleChange}
+                      className="w-full bg-zinc-950/50 border border-zinc-800 rounded-lg px-4 py-2.5 text-sm text-white focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 outline-none transition appearance-none"
+                    >
+                      <option>General Inquiry</option>
+                      <option>Technical Support</option>
+                      <option>Billing & Account</option>
+                      <option>Feature Request</option>
+                      <option>Partnership</option>
+                    </select>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-white">Email</h3>
-                  <p className="text-xs text-emerald-200/80">support@hatchit.dev</p>
-                </div>
-              </div>
-            </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.2 }}
-              className="bg-zinc-900/60 border border-zinc-800 rounded-xl p-4"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-violet-500/10 flex items-center justify-center flex-shrink-0">
-                  <Heart className="w-5 h-5 text-violet-400" />
+                {/* Honeypot */}
+                <div className="hidden">
+                  <input
+                    name="website"
+                    value={form.website}
+                    onChange={handleChange}
+                    autoComplete="off"
+                  />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-white">Feature Requests</h3>
-                  <p className="text-xs text-zinc-400">Post & vote on Reddit.</p>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-zinc-300">Message</label>
+                  <textarea
+                    name="message"
+                    value={form.message}
+                    onChange={handleChange}
+                    required
+                    minLength={10}
+                    placeholder="How can we help you?"
+                    className="w-full bg-zinc-950/50 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-white focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 outline-none transition h-32 resize-none placeholder:text-zinc-600"
+                  />
                 </div>
-              </div>
+
+                {error && (
+                  <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3">
+                    {error}
+                  </div>
+                )}
+
+                {status === 'sent' && (
+                  <div className="text-sm text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-4 py-3 flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    Message sent successfully. We'll be in touch shortly.
+                  </div>
+                )}
+
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={status === 'sending'}
+                    className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg bg-white text-black font-medium text-sm hover:bg-zinc-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                  >
+                    {status === 'sending' ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        Send Message
+                        <Send className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </div>
-        </div>
 
-        <p className="text-center text-zinc-600 text-xs mt-8">Built by humans who actually respond.</p>
+          {/* Sidebar */}
+          <div className="space-y-6">
+            <div className="bg-zinc-900/30 border border-zinc-800 rounded-xl p-5">
+              <h3 className="font-medium text-white mb-4 flex items-center gap-2">
+                <HelpCircle className="w-4 h-4 text-zinc-400" />
+                Other Ways to Connect
+              </h3>
+              
+              <div className="space-y-4">
+                <a 
+                  href="mailto:support@hatchit.dev" 
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-zinc-800/50 transition-colors group"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center group-hover:bg-zinc-700 transition-colors">
+                    <Mail className="w-4 h-4 text-zinc-400 group-hover:text-white" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-zinc-200">Email Support</div>
+                    <div className="text-xs text-zinc-500">support@hatchit.dev</div>
+                  </div>
+                </a>
+
+                <a 
+                  href="https://www.reddit.com/r/HatchIt/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-zinc-800/50 transition-colors group"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center group-hover:bg-orange-500/20 transition-colors">
+                    <MessageSquare className="w-4 h-4 text-orange-500" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-zinc-200">Community</div>
+                    <div className="text-xs text-zinc-500">Join r/HatchIt</div>
+                  </div>
+                </a>
+              </div>
+            </div>
+
+            <div className="bg-zinc-900/30 border border-zinc-800 rounded-xl p-5">
+              <h3 className="font-medium text-white mb-2">Response Time</h3>
+              <p className="text-sm text-zinc-400 leading-relaxed">
+                We typically respond to all inquiries within 24 hours during business days.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+  )
+}
+
+export default function ContactPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-zinc-950" />}>
+      <ContactForm />
+    </Suspense>
   )
 }
