@@ -380,21 +380,21 @@ export default function Home() {
 
           {/* Key differentiators */}
           <div className="grid md:grid-cols-3 gap-6 mb-16">
-            <div className="p-6 bg-zinc-900/50 border border-zinc-800 sm:border-zinc-800 border-emerald-500/20 rounded-xl hover:border-emerald-500/30 transition-all group">
+            <div className="p-6 bg-zinc-900/50 border border-zinc-800 sm:border-zinc-800 border-emerald-500/20 rounded-md hover:border-emerald-500/30 transition-all group">
               <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <Code2 className="w-6 h-6 text-emerald-400" />
               </div>
               <h3 className="text-xl font-bold mb-2 text-white">Download Anytime</h3>
               <p className="text-zinc-400 text-sm leading-relaxed">Export your full source code with one click. It&apos;s your code from day one.</p>
             </div>
-            <div className="p-6 bg-zinc-900/50 border border-zinc-800 sm:border-zinc-800 border-teal-500/20 rounded-xl hover:border-teal-500/30 transition-all group">
+            <div className="p-6 bg-zinc-900/50 border border-zinc-800 sm:border-zinc-800 border-teal-500/20 rounded-md hover:border-teal-500/30 transition-all group">
               <div className="w-12 h-12 bg-teal-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <Shield className="w-6 h-6 text-teal-400" />
               </div>
               <h3 className="text-xl font-bold mb-2 text-white">No Lock-in</h3>
               <p className="text-zinc-400 text-sm leading-relaxed">Host it yourself, use any deployment platform. We don&apos;t trap your code.</p>
             </div>
-            <div className="p-6 bg-zinc-900/50 border border-zinc-800 sm:border-zinc-800 border-teal-500/20 rounded-xl hover:border-teal-500/30 transition-all group">
+            <div className="p-6 bg-zinc-900/50 border border-zinc-800 sm:border-zinc-800 border-teal-500/20 rounded-md hover:border-teal-500/30 transition-all group">
               <div className="w-12 h-12 bg-teal-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <Layout className="w-6 h-6 text-teal-400" />
               </div>
@@ -473,7 +473,7 @@ export default function Home() {
             ].map((tech, i) => (
               <div 
                 key={i} 
-                className={`group p-4 bg-gradient-to-br ${tech.bg} to-transparent border border-zinc-800 rounded-xl text-center transition-all duration-300 cursor-default hover:scale-[1.02] hover:shadow-lg ${tech.hover}`}
+                className={`group p-4 bg-gradient-to-br ${tech.bg} to-transparent border border-zinc-800 rounded-md text-center transition-all duration-300 cursor-default hover:scale-[1.02] hover:shadow-lg ${tech.hover}`}
               >
                 <div className={`w-10 h-10 mx-auto bg-zinc-900/80 rounded-lg flex items-center justify-center mb-2 text-zinc-400 ${tech.text} transition-colors`}>
                   {tech.icon}
@@ -499,21 +499,21 @@ export default function Home() {
           {/* 3-step process */}
           <div className="grid md:grid-cols-3 gap-6">
             <div className="text-center p-6">
-              <div className="w-14 h-14 mx-auto bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-center mb-4">
+              <div className="w-14 h-14 mx-auto bg-emerald-500/10 border border-emerald-500/20 rounded-md flex items-center justify-center mb-4">
                 <span className="text-2xl font-bold text-emerald-400">1</span>
               </div>
               <h3 className="text-lg font-bold mb-2">Describe your site</h3>
               <p className="text-zinc-400 text-sm">Tell us what you&apos;re building. A landing page, portfolio, SaaS app — whatever you need.</p>
             </div>
             <div className="text-center p-6">
-              <div className="w-14 h-14 mx-auto bg-teal-500/10 border border-teal-500/20 rounded-xl flex items-center justify-center mb-4">
+              <div className="w-14 h-14 mx-auto bg-teal-500/10 border border-teal-500/20 rounded-md flex items-center justify-center mb-4">
                 <span className="text-2xl font-bold text-teal-400">2</span>
               </div>
               <h3 className="text-lg font-bold mb-2">AI builds each section</h3>
               <p className="text-zinc-400 text-sm">Our multi-model pipeline generates, refines, and audits real React + Tailwind code.</p>
             </div>
             <div className="text-center p-6">
-              <div className="w-14 h-14 mx-auto bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center justify-center mb-4">
+              <div className="w-14 h-14 mx-auto bg-amber-500/10 border border-amber-500/20 rounded-md flex items-center justify-center mb-4">
                 <span className="text-2xl font-bold text-amber-400">3</span>
               </div>
               <h3 className="text-lg font-bold mb-2">Export or deploy</h3>
@@ -536,8 +536,8 @@ export default function Home() {
             <div className="hidden md:block absolute top-10 left-[12%] right-[12%] h-px bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-cyan-500/20" />
             
             {/* Step 1: You */}
-            <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-6 rounded-xl hover:border-white/30 transition-colors group">
-              <div className="w-14 h-14 bg-white/5 rounded-xl flex items-center justify-center mb-6 border border-white/10 shadow-lg shadow-white/5">
+            <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-6 rounded-md hover:border-white/30 transition-colors group">
+              <div className="w-14 h-14 bg-white/5 rounded-md flex items-center justify-center mb-6 border border-white/10 shadow-lg shadow-white/5">
                 <Terminal className="w-6 h-6 text-white" />
               </div>
               <div className="text-xs font-mono text-white/60 mb-2 tracking-wider">STEP 1</div>
@@ -546,8 +546,8 @@ export default function Home() {
             </div>
 
             {/* Step 2: Generate */}
-            <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-6 rounded-xl hover:border-emerald-500/30 transition-colors group">
-              <div className="w-14 h-14 bg-emerald-500/5 rounded-xl flex items-center justify-center mb-6 border border-emerald-500/10 shadow-lg shadow-emerald-500/5">
+            <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-6 rounded-md hover:border-emerald-500/30 transition-colors group">
+              <div className="w-14 h-14 bg-emerald-500/5 rounded-md flex items-center justify-center mb-6 border border-emerald-500/10 shadow-lg shadow-emerald-500/5">
                 <Cpu className="w-6 h-6 text-emerald-500" />
               </div>
               <div className="text-xs font-mono text-emerald-400 mb-2 tracking-wider">STEP 2</div>
@@ -556,8 +556,8 @@ export default function Home() {
             </div>
 
             {/* Step 3: Refine */}
-            <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-6 rounded-xl hover:border-teal-500/30 transition-colors group">
-              <div className="w-14 h-14 bg-teal-500/5 rounded-xl flex items-center justify-center mb-6 border border-teal-500/10 shadow-lg shadow-teal-500/5">
+            <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-6 rounded-md hover:border-teal-500/30 transition-colors group">
+              <div className="w-14 h-14 bg-teal-500/5 rounded-md flex items-center justify-center mb-6 border border-teal-500/10 shadow-lg shadow-teal-500/5">
                 <Wand2 className="w-6 h-6 text-teal-500" />
               </div>
               <div className="text-xs font-mono text-teal-400 mb-2 tracking-wider">STEP 3</div>
@@ -566,8 +566,8 @@ export default function Home() {
             </div>
 
             {/* Step 4: Audit */}
-            <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-6 rounded-xl hover:border-amber-500/30 transition-colors group">
-              <div className="w-14 h-14 bg-amber-500/5 rounded-xl flex items-center justify-center mb-6 border border-amber-500/10 shadow-lg shadow-amber-500/5">
+            <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-6 rounded-md hover:border-amber-500/30 transition-colors group">
+              <div className="w-14 h-14 bg-amber-500/5 rounded-md flex items-center justify-center mb-6 border border-amber-500/10 shadow-lg shadow-amber-500/5">
                 <Shield className="w-6 h-6 text-amber-500" />
               </div>
               <div className="text-xs font-mono text-amber-400 mb-2 tracking-wider">STEP 4</div>
@@ -619,7 +619,7 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-sm sm:max-w-none mx-auto">
             {/* Starter ($19/mo) */}
             <motion.div 
-              className="group relative p-8 bg-zinc-950 border border-zinc-800 rounded-2xl hover:border-emerald-500/30 transition-all duration-500 flex flex-col overflow-hidden"
+              className="group relative p-8 bg-zinc-950 border border-zinc-800 rounded-md hover:border-emerald-500/30 transition-all duration-500 flex flex-col overflow-hidden"
               whileHover={{ y: -4 }}
             >
               <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -654,7 +654,7 @@ export default function Home() {
 
             {/* Pro ($49) */}
             <motion.div 
-              className="group relative p-8 bg-zinc-950 border border-emerald-500/50 rounded-2xl shadow-[0_0_50px_rgba(16,185,129,0.1)] hover:shadow-[0_0_80px_rgba(16,185,129,0.2)] transition-all duration-500 flex flex-col overflow-hidden lg:-translate-y-4"
+              className="group relative p-8 bg-zinc-950 border border-emerald-500/50 rounded-md shadow-[0_0_50px_rgba(16,185,129,0.1)] hover:shadow-[0_0_80px_rgba(16,185,129,0.2)] transition-all duration-500 flex flex-col overflow-hidden lg:-translate-y-4"
               whileHover={{ y: -12 }}
             >
               <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/10 via-emerald-500/5 to-transparent opacity-100" />
@@ -694,7 +694,7 @@ export default function Home() {
 
             {/* Agency ($199) */}
             <motion.div 
-              className="group relative p-8 bg-zinc-950 border border-zinc-800 rounded-2xl hover:border-amber-500/30 transition-all duration-500 flex flex-col overflow-hidden"
+              className="group relative p-8 bg-zinc-950 border border-zinc-800 rounded-md hover:border-amber-500/30 transition-all duration-500 flex flex-col overflow-hidden"
               whileHover={{ y: -4 }}
             >
               <div className="absolute inset-0 bg-gradient-to-b from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -738,7 +738,7 @@ export default function Home() {
           >
             <Link 
               href="/sign-up"
-              className="group relative inline-flex items-center gap-3 px-12 py-5 bg-emerald-500 hover:bg-emerald-400 text-black rounded-xl font-bold text-lg transition-all shadow-[0_0_40px_rgba(16,185,129,0.3)] hover:shadow-[0_0_60px_rgba(16,185,129,0.5)] hover:scale-105 active:scale-95"
+              className="group relative inline-flex items-center gap-3 px-12 py-5 bg-emerald-500 hover:bg-emerald-400 text-black rounded-md font-bold text-lg transition-all shadow-[0_0_40px_rgba(16,185,129,0.3)] hover:shadow-[0_0_60px_rgba(16,185,129,0.5)] hover:scale-105 active:scale-95"
             >
               <span>Sign Up Free</span>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -755,7 +755,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5" />
         <div className="max-w-4xl mx-auto px-6 relative z-10">
           <Link href="/manifesto" className="group block w-full">
-            <div className="flex flex-col items-center gap-4 p-8 rounded-2xl border border-zinc-900 bg-zinc-950/50 hover:border-emerald-500/30 hover:bg-zinc-900/80 transition-all duration-500">
+            <div className="flex flex-col items-center gap-4 p-8 rounded-md border border-zinc-900 bg-zinc-950/50 hover:border-emerald-500/30 hover:bg-zinc-900/80 transition-all duration-500">
               <div className="flex items-center gap-3 text-emerald-500/50 group-hover:text-emerald-400 transition-colors">
                 <Terminal className="w-5 h-5" />
                 <span className="font-mono text-sm tracking-widest uppercase">System Message</span>

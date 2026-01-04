@@ -127,13 +127,13 @@ export default function FeaturesPage() {
           >
             <Link
               href="/builder"
-              className="px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-xl font-bold text-lg transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)]"
+              className="px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-md font-bold text-lg transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)]"
             >
               Initialize System
             </Link>
             <Link
               href="/roadmap"
-              className="px-8 py-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-emerald-500/30 rounded-xl font-semibold text-lg transition-all text-zinc-300 hover:text-white"
+              className="px-8 py-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-emerald-500/30 rounded-md font-semibold text-lg transition-all text-zinc-300 hover:text-white"
             >
               View Evolution Log
             </Link>
@@ -152,13 +152,13 @@ export default function FeaturesPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="group relative p-6 md:p-8 rounded-2xl bg-zinc-900/50 border border-zinc-800 hover:border-emerald-500/30 transition-all duration-300 hover:bg-zinc-900/80"
+                className="group relative p-6 md:p-8 rounded-md bg-zinc-900/50 border border-zinc-800 hover:border-emerald-500/30 transition-all duration-300 hover:bg-zinc-900/80"
               >
-                <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-5 rounded-2xl transition-opacity duration-500`} />
+                <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-5 rounded-md transition-opacity duration-500`} />
                 
                 <div className="relative z-10">
                   <div className="flex justify-between items-start mb-6">
-                    <div className="p-3 rounded-xl bg-zinc-950 border border-zinc-800 text-emerald-400 group-hover:scale-110 transition-transform duration-300">
+                    <div className="p-3 rounded-md bg-zinc-950 border border-zinc-800 text-emerald-400 group-hover:scale-110 transition-transform duration-300">
                       {feature.icon}
                     </div>
                     {feature.badge && (
@@ -231,9 +231,9 @@ export default function FeaturesPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className={`p-6 rounded-2xl bg-zinc-950 border ${model.border} hover:border-opacity-50 transition-all group`}
+                className={`p-6 rounded-md bg-zinc-950 border ${model.border} hover:border-opacity-50 transition-all group`}
               >
-                <div className={`w-12 h-12 rounded-xl ${model.bg} ${model.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                <div className={`w-12 h-12 rounded-md ${model.bg} ${model.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
                   {model.icon}
                 </div>
                 <h3 className="text-xl font-bold text-white mb-1">{model.name}</h3>
@@ -270,7 +270,7 @@ export default function FeaturesPage() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.05 }}
-                className="p-4 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center gap-3 hover:border-emerald-500/30 transition-colors group"
+                className="p-4 rounded-md bg-zinc-950 border border-zinc-800 flex items-center gap-3 hover:border-emerald-500/30 transition-colors group"
               >
                 <div className="text-zinc-500 group-hover:text-emerald-400 transition-colors">
                   {tech.icon}
