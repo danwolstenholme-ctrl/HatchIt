@@ -23,16 +23,18 @@ export default function AboutPage() {
   const storyInView = useInView(storyRef, { once: true, margin: "-100px" })
 
   return (
-    <div className="bg-zinc-950 text-white min-h-screen overflow-hidden">
+    <div className="bg-zinc-950 text-white min-h-screen overflow-hidden relative selection:bg-emerald-500/30">
+      {/* Ambient void background */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[150px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-teal-500/5 rounded-full blur-[150px]" />
+      </div>
+
+      {/* Scanline Effect */}
+      <div className="fixed inset-0 pointer-events-none z-50 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDIiLz4KPC9zdmc+')] opacity-20 mix-blend-overlay" />
+
       {/* Matrix/Grid Background */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
-
-      {/* Gradient orbs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -left-40 w-80 h-80 bg-emerald-500/10 rounded-full blur-[100px] opacity-50 md:opacity-100" />
-        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-teal-500/10 rounded-full blur-[100px] opacity-50 md:opacity-100" />
-        <div className="absolute -bottom-40 left-1/3 w-80 h-80 bg-emerald-900/20 rounded-full blur-[100px] opacity-50 md:opacity-100" />
-      </div>
 
       {/* Hero */}
       <div className="relative px-6 pt-20 pb-24 text-center z-10">

@@ -1,31 +1,27 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'About HatchIt - Built in 3 Days, Perfected in 7',
-  description: 'The story of HatchIt: how one founder with zero React knowledge built a production-grade AI website builder in 7 days using Claude Opus 4.5 and Gemini 2.5 Pro. Real code, real results.',
+  title: 'Origin Story - HatchIt | The Singularity',
+  description: 'The genesis of the Singularity Engine. How a recursive AI system evolved from a script into an Architect.',
   keywords: [
-    'about HatchIt',
-    'AI website builder story',
-    'Claude Opus 4.5',
-    'Gemini 2.5 Pro',
-    'React code generator',
-    'AI coding tool',
-    'no-code to real code',
-    'startup website builder',
-    'solo founder',
-    'built with AI',
+    'AI website builder',
+    'Singularity Engine',
+    'autonomous coding',
+    'React generation',
+    'AI architect',
+    'HatchIt origin',
   ],
   openGraph: {
-    title: 'About HatchIt - Built in 3 Days, Perfected in 7',
-    description: 'How one founder with zero React knowledge built a production-grade AI website builder in 7 days. The AI writes the code, I make the decisions.',
+    title: 'Origin Story - HatchIt | The Singularity',
+    description: 'It wasn\'t built. It was grown. The story of the Singularity Engine.',
     url: 'https://hatchit.dev/about',
     siteName: 'HatchIt',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'About HatchIt - Built in 3 Days, Perfected in 7',
-    description: 'How one founder built a production-grade AI website builder in 7 days with zero React knowledge.',
+    title: 'Origin Story - HatchIt | The Singularity',
+    description: 'It wasn\'t built. It was grown. The story of the Singularity Engine.',
     creator: '@HatchItD',
   },
   alternates: {
