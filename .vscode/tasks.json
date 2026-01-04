@@ -302,6 +302,11 @@
 			"label": "commit-sidebar-fix",
 			"type": "shell",
 			"command": "git add . && git commit -m \"fix: align dashboard sidebar colors with Singularity aesthetic\" && git push"
+		},
+		{
+			"label": "commit-contact-polish",
+			"type": "shell",
+			"command": "git add . && git commit -m \"feat: polish contact page with Singularity aesthetic (grid, scanlines, gradients)\" && git push"
 		}
 	]
 }

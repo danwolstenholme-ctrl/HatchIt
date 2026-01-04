@@ -7,9 +7,7 @@ import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 
 // =============================================================================
-// CONTACT PAGE - Professional Studio Edition
-// Clean, minimal, and functional. No hacker vibes.
-// Fits on one screen (desktop).
+// CONTACT PAGE - Singularity Edition
 // =============================================================================
 
 function ContactForm() {
@@ -54,11 +52,39 @@ function ContactForm() {
   }
 
   return (
-    <div className="h-screen w-full bg-zinc-950 text-zinc-200 font-sans selection:bg-emerald-500/30 overflow-hidden flex flex-col">
-      {/* Subtle Ambient Background */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-[-20%] right-[-10%] w-[800px] h-[800px] bg-emerald-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] bg-teal-500/5 rounded-full blur-3xl" />
+    <div className="min-h-screen w-full bg-zinc-950 text-zinc-200 font-sans selection:bg-emerald-500/30 overflow-hidden flex flex-col relative">
+      
+      {/* Singularity Background System */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Perspective Grid */}
+        <div 
+          className="absolute inset-0 opacity-[0.15] bg-grid-flow"
+          style={{
+            backgroundImage: `
+              linear-gradient(rgba(16,185,129,0.3) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(16,185,129,0.3) 1px, transparent 1px)
+            `,
+            backgroundSize: '60px 60px',
+            maskImage: 'linear-gradient(to bottom, transparent, black 20%, black 50%, transparent 90%)',
+            WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 20%, black 50%, transparent 90%)',
+            transform: 'perspective(500px) rotateX(60deg) translateY(-50%)',
+            transformOrigin: 'center top',
+            height: '200%',
+            top: '30%',
+          }}
+        />
+        
+        {/* Scanlines */}
+        <div className="absolute inset-0 opacity-[0.03]" 
+             style={{ 
+               backgroundImage: 'linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06))',
+               backgroundSize: '100% 2px, 3px 100%'
+             }} 
+        />
+
+        {/* Ambient Glows */}
+        <div className="absolute top-[-20%] right-[-10%] w-[800px] h-[800px] bg-emerald-500/5 rounded-full blur-[100px]" />
+        <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] bg-teal-500/5 rounded-full blur-[100px]" />
       </div>
 
       <div className="flex-1 flex flex-col max-w-6xl mx-auto w-full px-6 py-8 relative z-10 h-full">
@@ -101,7 +127,7 @@ function ContactForm() {
                     onChange={handleChange}
                     required
                     placeholder="Jane Doe"
-                    className="w-full bg-zinc-900/30 border border-zinc-800 rounded-xl px-4 py-2.5 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all placeholder:text-zinc-700"
+                    className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl px-4 py-2.5 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all placeholder:text-zinc-600 hover:border-zinc-700"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -113,7 +139,7 @@ function ContactForm() {
                     onChange={handleChange}
                     required
                     placeholder="jane@example.com"
-                    className="w-full bg-zinc-900/30 border border-zinc-800 rounded-xl px-4 py-2.5 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all placeholder:text-zinc-700"
+                    className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl px-4 py-2.5 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all placeholder:text-zinc-600 hover:border-zinc-700"
                   />
                 </div>
               </div>
@@ -125,7 +151,7 @@ function ContactForm() {
                     name="topic"
                     value={form.topic}
                     onChange={handleChange}
-                    className="w-full bg-zinc-900/30 border border-zinc-800 rounded-xl px-4 py-2.5 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all appearance-none cursor-pointer"
+                    className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl px-4 py-2.5 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all appearance-none cursor-pointer hover:border-zinc-700"
                   >
                     <option>General Inquiry</option>
                     <option>Technical Support</option>
@@ -158,7 +184,7 @@ function ContactForm() {
                   required
                   minLength={10}
                   placeholder="How can we help you?"
-                  className="w-full bg-zinc-900/30 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all h-32 resize-none placeholder:text-zinc-700"
+                  className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all h-32 resize-none placeholder:text-zinc-600 hover:border-zinc-700"
                 />
               </div>
 
@@ -190,11 +216,11 @@ function ContactForm() {
                 <button
                   type="submit"
                   disabled={status === 'sending'}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-white/5"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:-translate-y-0.5"
                 >
                   {status === 'sending' ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       Sending...
                     </>
                   ) : (

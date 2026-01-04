@@ -169,9 +169,16 @@ export default function Home() {
           0%, 100% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
         }
+        @keyframes grid-flow {
+          0% { background-position: 0px 0px; }
+          100% { background-position: 0px 60px; }
+        }
         .animate-gradient {
           background-size: 200% 200%;
           animation: gradient-shift 8s ease infinite;
+        }
+        .bg-grid-flow {
+          animation: grid-flow 3s linear infinite;
         }
       `}</style>
 
@@ -183,7 +190,7 @@ export default function Home() {
         {/* Perspective grid - fades into distance */}
         <div className="absolute inset-0 overflow-hidden">
           <div 
-            className="absolute inset-0 opacity-[0.15]"
+            className="absolute inset-0 opacity-[0.15] bg-grid-flow"
             style={{
               backgroundImage: `
                 linear-gradient(rgba(16,185,129,0.3) 1px, transparent 1px),
@@ -199,6 +206,14 @@ export default function Home() {
             }}
           />
         </div>
+        
+        {/* Scanline Overlay */}
+        <div className="absolute inset-0 pointer-events-none opacity-[0.03]" 
+             style={{ 
+               backgroundImage: 'linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06))',
+               backgroundSize: '100% 2px, 3px 100%'
+             }} 
+        />
         
         {/* Radial depth layers */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-emerald-500/[0.08] rounded-full blur-[150px]" />
