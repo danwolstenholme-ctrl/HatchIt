@@ -52,7 +52,7 @@ export default function GuestPromptModal({ isOpen, onSubmit }: GuestPromptModalP
           {/* Background Effects - Subtle Void */}
           <div className="absolute inset-0 pointer-events-none">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-emerald-500/5 rounded-full blur-3xl" />
-            <div className="absolute inset-0 bg-[url('/assets/grid-pattern.svg')] opacity-[0.03]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-zinc-800/10 to-transparent opacity-20" />
           </div>
 
           {/* Main Content - Glass Card */}

@@ -1753,71 +1753,17 @@ export default function SectionBuilder({
               </div>
             )}
 
-            {/* Complete Stage - Premium Studio Panel */}
-            {stage === 'complete' && (
-              <motion.div 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-zinc-950/95 backdrop-blur-xl border border-zinc-800/80 rounded-xl shadow-2xl shadow-black/50"
-              >
-                {/* Compact toolbar row - Figma/Studio style */}
-                <div className="flex items-center gap-2 px-3 py-2.5">
-                  {/* Status indicator - matches generating sidebar */}
-                  <div className="flex items-center gap-1.5 px-2 py-1 bg-zinc-900/50 rounded-md border border-zinc-800/50">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    <span className="text-[10px] font-medium text-zinc-400 uppercase tracking-wider">Ready</span>
-                  </div>
-                  
-                  {/* Divider */}
-                  <div className="w-px h-5 bg-zinc-800/50" />
-                  
-                  {/* Refine input - main focus */}
-                  <div className="flex-1 relative">
-                    <input
-                      type="text"
-                      value={refinePrompt}
-                      onChange={(e) => setRefinePrompt(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && refinePrompt.trim() && handleUserRefine()}
-                      disabled={isUserRefining}
-                      placeholder="Describe changes... (colors, layout, animations)"
-                      className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-md px-3 py-1.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 disabled:opacity-50 font-mono"
-                    />
-                  </div>
-                  
-                  {/* Refine button - matches sidebar aesthetic */}
-                  <button
-                    onClick={handleUserRefine}
-                    disabled={!refinePrompt.trim() || isUserRefining}
-                    className="px-3 py-1.5 rounded-md bg-zinc-900/50 hover:bg-zinc-800 border border-zinc-800/50 text-zinc-300 text-[10px] font-medium uppercase tracking-wider transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
-                  >
-                    {isUserRefining ? (
-                      <RefreshCw className="w-3 h-3 animate-spin" />
-                    ) : (
-                      <Edit3 className="w-3 h-3" />
-                    )}
-                    <span>Refine</span>
-                  </button>
-                  
-                  {/* Export CTA - emerald accent */}
-                  <button
-                    onClick={() => goToSignUp()}
-                    className="px-3 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-medium uppercase tracking-wider transition-all flex items-center gap-1.5"
-                  >
-                    <span>Export</span>
-                    <ArrowRight className="w-3 h-3" />
-                  </button>
-                </div>
-              </motion.div>
-            )}
+            {/* Complete Stage - Toolbar Removed per user request */}
+            {stage === 'complete' && null}
 
             {/* Refining Stage */}
             {stage === 'refining' && (
-              <div className="bg-zinc-900/90 backdrop-blur-xl border border-violet-500/30 rounded-2xl shadow-2xl shadow-black/60 p-5">
+              <div className="bg-zinc-900/90 backdrop-blur-xl border border-emerald-500/30 rounded-2xl shadow-2xl shadow-black/60 p-5">
                 <div className="flex items-center gap-4">
                   <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                    className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full"
+                    className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full"
                   />
                   <p className="text-sm font-medium text-white">Refining...</p>
                 </div>
