@@ -52,6 +52,7 @@ function MatrixRain() {
 function TypewriterText({ text, delay = 0 }: { text: string; delay?: number }) {
   const [displayed, setDisplayed] = useState('')
   const [started, setStarted] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
   
   useEffect(() => {
     const startTimer = setTimeout(() => setStarted(true), delay)
@@ -73,8 +74,22 @@ function TypewriterText({ text, delay = 0 }: { text: string; delay?: number }) {
   }, [text, started])
   
   return (
-    <span>
-      {displayed}
+    <motion.span 
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
+      className="relative inline-block cursor-default"
+    >
+      <span className={isHovered ? "opacity-0" : "opacity-100"}>
+        {displayed}
+      </span>
+      
+      {/* Glitch Overlay on Hover */}
+      {isHovered && (
+        <span className="absolute inset-0 text-emerald-400 animate-pulse">
+          {displayed}
+        </span>
+      )}
+      
       {started && displayed.length < text.length && (
         <motion.span
           animate={{ opacity: [1, 0] }}
@@ -84,7 +99,7 @@ function TypewriterText({ text, delay = 0 }: { text: string; delay?: number }) {
           _
         </motion.span>
       )}
-    </span>
+    </motion.span>
   )
 }
 

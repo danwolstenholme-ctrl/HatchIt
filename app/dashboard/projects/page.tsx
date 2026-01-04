@@ -55,226 +55,172 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto font-mono">
-      {/* Terminal Header */}
-      <div className="mb-8 border-b border-zinc-800 pb-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
-              <Terminal className="w-8 h-8 text-emerald-500" />
-              <span>PROJECT_INDEX</span>
-            </h1>
-            <p className="text-zinc-500 text-xs mt-1 flex items-center gap-2">
-              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-              SYSTEM_READY // ACCESS_LEVEL: <span className={`uppercase ${
-                tierConfig.color === 'amber' ? 'text-amber-400' : 
-                tierConfig.color === 'violet' ? 'text-violet-400' : 
-                tierConfig.color === 'emerald' ? 'text-emerald-400' : 'text-zinc-400'
-              }`}>{tierConfig.name}</span>
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="hidden md:flex items-center gap-4 px-4 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg">
-              <div className="flex flex-col">
-                <span className="text-[10px] text-zinc-500 uppercase">Total Constructs</span>
-                <span className="text-lg font-bold text-white leading-none">{projects.length}</span>
-              </div>
-              <div className="w-px h-8 bg-zinc-800" />
-              <div className="flex flex-col">
-                <span className="text-[10px] text-zinc-500 uppercase">Capacity</span>
-                <span className="text-lg font-bold text-zinc-400 leading-none">
-                  {tierConfig.limit === Infinity ? '∞' : tierConfig.limit}
-                </span>
-              </div>
-            </div>
-
-            <button
-              onClick={handleCreate}
-              disabled={isCreating}
-              className={`flex items-center gap-2 px-4 py-3 rounded-lg font-bold text-sm transition-all hover:shadow-[0_0_20px_rgba(16,185,129,0.2)] ${
-                isAtLimit 
-                  ? 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700' 
-                  : 'bg-emerald-600 hover:bg-emerald-500 text-white'
-              }`}
-            >
-              {isCreating ? (
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : isAtLimit ? (
-                <Lock className="w-4 h-4" />
-              ) : (
-                <Plus className="w-4 h-4" />
-              )}
-              <span>{isAtLimit ? 'UPGRADE_REQUIRED' : 'INITIALIZE_NEW'}</span>
-            </button>
-          </div>
+    <div className="max-w-6xl mx-auto">
+      {/* Professional Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-2xl font-semibold text-white tracking-tight">Projects</h1>
+          <p className="text-zinc-400 text-sm mt-1">
+            Manage and deploy your generated sites.
+          </p>
         </div>
 
-        {/* Command Bar */}
-        <div className="flex items-center gap-4 bg-zinc-900/30 border border-zinc-800 p-1 rounded-lg">
-          <div className="flex-1 flex items-center gap-3 px-3">
-            <span className="text-emerald-500 font-bold">{'>'}</span>
-            <input 
-              type="text" 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="filter_constructs..." 
-              className="bg-transparent border-none focus:outline-none text-white text-sm w-full font-mono placeholder-zinc-600"
-            />
+        <div className="flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-3 px-3 py-1.5 bg-zinc-900/50 border border-zinc-800 rounded-md">
+            <span className="text-xs text-zinc-500 font-medium">PLAN</span>
+            <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
+              tierConfig.color === 'amber' ? 'bg-amber-500/10 text-amber-400' : 
+              tierConfig.color === 'violet' ? 'bg-violet-500/10 text-violet-400' : 
+              tierConfig.color === 'emerald' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-zinc-800 text-zinc-400'
+            }`}>{tierConfig.name}</span>
           </div>
-          <div className="flex items-center gap-1 pr-1">
-            <button className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded transition-colors">
-              <Filter className="w-4 h-4" />
-            </button>
-            <button className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded transition-colors">
-              <Activity className="w-4 h-4" />
-            </button>
-          </div>
+
+          <button
+            onClick={handleCreate}
+            disabled={isCreating}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium text-sm transition-all ${
+              isAtLimit 
+                ? 'bg-zinc-800 text-zinc-400 cursor-not-allowed' 
+                : 'bg-white text-black hover:bg-zinc-200'
+            }`}
+          >
+            {isCreating ? (
+              <>
+                <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                <span>Creating...</span>
+              </>
+            ) : (
+              <>
+                <Plus className="w-4 h-4" />
+                <span>New Project</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
 
-      {/* Data Grid */}
-      {projects.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 border border-dashed border-zinc-800 rounded-xl bg-zinc-900/10">
-          <div className="w-16 h-16 bg-zinc-900 border border-zinc-800 rounded-full flex items-center justify-center mb-4">
-            <Database className="w-8 h-8 text-zinc-700" />
+      {/* Search & Filter Bar */}
+      <div className="flex items-center gap-4 mb-6">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+          <input 
+            type="text"
+            placeholder="Search projects..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-zinc-900/30 border border-zinc-800 rounded-md pl-9 pr-4 py-2 text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-700 focus:ring-1 focus:ring-zinc-700 transition-all"
+          />
+        </div>
+      </div>
+
+      {/* Project Grid */}
+      {filteredProjects.length === 0 ? (
+        <div className="text-center py-20 border border-dashed border-zinc-800 rounded-xl bg-zinc-900/20">
+          <div className="w-12 h-12 bg-zinc-900 rounded-full flex items-center justify-center mx-auto mb-4 border border-zinc-800">
+            <Box className="w-6 h-6 text-zinc-600" />
           </div>
-          <h3 className="text-xl font-bold text-white mb-2">NO_DATA_FOUND</h3>
-          <p className="text-zinc-500 mb-6 font-mono text-sm">
-            Database empty. Initialize first construct.
+          <h3 className="text-zinc-300 font-medium mb-1">No projects found</h3>
+          <p className="text-zinc-500 text-sm mb-6">
+            {searchQuery ? "Try adjusting your search terms." : "Create your first project to get started."}
           </p>
-          <button
-            onClick={handleCreate}
-            className="flex items-center gap-2 px-6 py-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 hover:border-emerald-500/50 text-white rounded-lg font-mono text-sm transition-all group"
-          >
-            <Plus className="w-4 h-4 text-emerald-500 group-hover:animate-pulse" />
-            <span>EXECUTE_INIT</span>
-          </button>
+          {!searchQuery && (
+            <button
+              onClick={handleCreate}
+              className="px-4 py-2 bg-white text-black rounded-md text-sm font-medium hover:bg-zinc-200 transition-colors"
+            >
+              Create Project
+            </button>
+          )}
         </div>
       ) : (
-        <div className="border border-zinc-800 rounded-xl overflow-hidden bg-zinc-900/20">
-          {/* Table Header */}
-          <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-zinc-900/50 border-b border-zinc-800 text-[10px] uppercase tracking-wider text-zinc-500 font-bold">
-            <div className="col-span-5 md:col-span-4">Construct Identity</div>
-            <div className="col-span-3 md:col-span-2 text-center">Status</div>
-            <div className="hidden md:block md:col-span-3">Last Modified</div>
-            <div className="col-span-4 md:col-span-3 text-right">Operations</div>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredProjects.map((project) => {
+            const isLocked = tierConfig.name === 'No Plan'
+            
+            return (
+              <motion.div
+                key={project.id}
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                onClick={() => isLocked && setShowLimitModal(true)}
+                className={`group relative bg-zinc-900/30 border border-zinc-800 hover:border-zinc-700 rounded-xl overflow-hidden transition-all hover:shadow-lg hover:shadow-black/20 ${
+                  isLocked ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+              >
+                {!isLocked && (
+                  <Link href={`/builder?project=${project.id}`} className="absolute inset-0 z-0" />
+                )}
 
-          {/* Table Body */}
-          <div className="divide-y divide-zinc-800/50">
-            {filteredProjects.map((project) => {
-              const isLocked = tierConfig.name === 'No Plan'
-              
-              return (
-                <div
-                  key={project.id}
-                  onClick={() => isLocked && setShowLimitModal(true)}
-                  className={`group relative grid grid-cols-12 gap-4 px-6 py-4 items-center transition-colors ${
-                    isLocked 
-                      ? 'opacity-50 cursor-not-allowed bg-zinc-950' 
-                      : 'hover:bg-zinc-900/40 cursor-pointer'
-                  }`}
-                >
-                  {!isLocked && (
-                    <Link href={`/builder?project=${project.id}`} className="absolute inset-0 z-0" />
-                  )}
-
-                  {/* Identity */}
-                  <div className="col-span-5 md:col-span-4 relative z-10">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded flex items-center justify-center shrink-0 ${
-                        isLocked ? 'bg-zinc-800' : 'bg-emerald-500/10 border border-emerald-500/20'
-                      }`}>
-                        <Cpu className={`w-4 h-4 ${isLocked ? 'text-zinc-600' : 'text-emerald-500'}`} />
-                      </div>
-                      <div className="min-w-0">
-                        <h3 className={`text-sm font-bold truncate ${isLocked ? 'text-zinc-500' : 'text-white group-hover:text-emerald-400 transition-colors'}`}>
-                          {project.name || 'UNTITLED_CONSTRUCT'}
-                        </h3>
-                        <p className="text-[10px] text-zinc-600 font-mono truncate">
-                          ID: {project.id.substring(0, 8)}...
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Status */}
-                  <div className="col-span-3 md:col-span-2 flex justify-center relative z-10">
-                    <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${
-                      project.deployedSlug 
-                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
-                        : 'bg-zinc-800/50 text-zinc-500 border-zinc-700/50'
+                <div className="p-5 relative z-10 pointer-events-none">
+                  <div className="flex items-start justify-between mb-4 pointer-events-auto">
+                    <div className={`w-10 h-10 rounded-lg border flex items-center justify-center transition-colors ${
+                      isLocked 
+                        ? 'bg-zinc-900 border-zinc-800' 
+                        : 'bg-zinc-900 border-zinc-800 group-hover:border-zinc-700'
                     }`}>
-                      {project.deployedSlug ? 'LIVE' : 'DRAFT'}
+                      <Box className={`w-5 h-5 ${isLocked ? 'text-zinc-600' : 'text-zinc-400 group-hover:text-white'} transition-colors`} />
                     </div>
-                  </div>
-
-                  {/* Last Modified */}
-                  <div className="hidden md:block md:col-span-3 text-xs text-zinc-500 font-mono relative z-10">
-                    {project.updatedAt 
-                      ? formatDistanceToNow(new Date(project.updatedAt), { addSuffix: true })
-                      : 'Just now'}
-                  </div>
-
-                  {/* Operations */}
-                  <div className="col-span-4 md:col-span-3 flex items-center justify-end gap-2 relative z-20">
-                    {project.deployedSlug && (
-                      <>
+                    
+                    <div className="flex items-center gap-1">
+                      {project.deployedSlug && (
                         <a
                           href={`https://${project.deployedSlug}.hatchit.app`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-2 text-zinc-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded transition-colors"
+                          className="p-1.5 text-zinc-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-md transition-colors"
                           title="View Live"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <Globe className="w-4 h-4" />
                         </a>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            const url = `https://${project.deployedSlug}.hatchit.app`
-                            navigator.clipboard.writeText(url)
-                            setCopiedId(project.id)
-                            setTimeout(() => setCopiedId(null), 2000)
-                          }}
-                          className="p-2 text-zinc-500 hover:text-blue-400 hover:bg-blue-500/10 rounded transition-colors"
-                          title="Copy Share Link"
+                      )}
+                      
+                      {!isLocked && (
+                        <button 
+                          onClick={(e) => handleDelete(e, project.id)}
+                          className="p-1.5 text-zinc-600 hover:text-red-400 hover:bg-red-400/10 rounded-md transition-colors opacity-0 group-hover:opacity-100"
+                          title="Delete Project"
                         >
-                          {copiedId === project.id ? (
-                            <Check className="w-4 h-4 text-emerald-400" />
-                          ) : (
-                            <Share2 className="w-4 h-4" />
-                          )}
+                          <Trash2 className="w-4 h-4" />
                         </button>
-                      </>
-                    )}
+                      )}
+                    </div>
+                  </div>
+
+                  <h3 className="text-white font-medium truncate pr-4 mb-1">{project.name || 'Untitled Project'}</h3>
+                  <div className="flex items-center gap-2 text-xs text-zinc-500 font-mono mb-4 pointer-events-auto">
+                    <span className="truncate max-w-[120px]">{project.id}</span>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        navigator.clipboard.writeText(project.id)
+                        setCopiedId(project.id)
+                        setTimeout(() => setCopiedId(null), 2000)
+                      }}
+                      className="hover:text-zinc-300 transition-colors"
+                    >
+                      {copiedId === project.id ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-zinc-800/50">
+                    <div className="flex items-center gap-1.5 text-xs text-zinc-500">
+                      <Clock className="w-3 h-3" />
+                      <span>{project.updatedAt ? formatDistanceToNow(new Date(project.updatedAt), { addSuffix: true }) : 'Just now'}</span>
+                    </div>
                     
                     {!isLocked && (
-                      <Link
-                        href={`/builder?project=${project.id}`}
-                        className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium rounded transition-colors"
-                      >
-                        <Terminal className="w-3 h-3" />
-                        <span>EDIT</span>
-                      </Link>
-                    )}
-
-                    {!isLocked && (
-                      <button
-                        onClick={(e) => handleDelete(e, project.id)}
-                        className="p-2 text-zinc-600 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
-                        title="Delete"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-zinc-300 group-hover:text-white transition-colors">
+                        Open Studio
+                        <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                      </div>
                     )}
                   </div>
                 </div>
-              )
-            })}
-          </div>
+              </motion.div>
+            )
+          })}
         </div>
       )}
       
