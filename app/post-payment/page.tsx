@@ -117,9 +117,18 @@ function PostPaymentContent() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,0.08),transparent_45%),radial-gradient(circle_at_80%_0%,rgba(124,58,237,0.08),transparent_40%),radial-gradient(circle_at_50%_80%,rgba(6,182,212,0.08),transparent_45%)]" />
-      <div className="absolute inset-0 bg-grid-white/[0.03] bg-[size:46px_46px] opacity-30" />
+    <div className="min-h-screen bg-zinc-950 text-white relative overflow-hidden selection:bg-emerald-500/30">
+      {/* Ambient void background */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[150px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-teal-500/5 rounded-full blur-[150px]" />
+      </div>
+
+      {/* Scanline Effect */}
+      <div className="fixed inset-0 pointer-events-none z-50 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDIiLz4KPC9zdmc+')] opacity-20 mix-blend-overlay" />
+
+      {/* Grid Background */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-16">
         <div className="flex items-center justify-between mb-6">
