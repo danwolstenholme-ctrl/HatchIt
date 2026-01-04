@@ -1722,25 +1722,13 @@ export default function SectionBuilder({
                       <p className="text-xs text-zinc-500">Sign up to export, edit, and build more</p>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        setStage('input')
-                        setGeneratedCode('')
-                        setPrompt('')
-                      }}
-                      className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-medium transition-all"
-                    >
-                      Reset
-                    </button>
-                    <button
-                      onClick={() => goToSignUp()}
-                      className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-semibold transition-all flex items-center gap-2"
-                    >
-                      Sign up free
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => goToSignUp()}
+                    className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-semibold transition-all flex items-center gap-2"
+                  >
+                    Sign up free
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             )}

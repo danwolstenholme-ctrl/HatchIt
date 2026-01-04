@@ -564,10 +564,10 @@ export default function Home() {
             <p className="text-xl text-zinc-400">Access the Singularity Engine.</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-sm sm:max-w-none mx-auto">
             {/* Starter ($19/mo) */}
             <motion.div 
-              className="p-8 bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl hover:border-emerald-500/30 transition-all group flex flex-col relative"
+              className="p-6 sm:p-8 bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl hover:border-emerald-500/30 transition-all group flex flex-col relative sm:col-span-1"
               whileHover={{ 
                 y: -8, 
                 boxShadow: '0 20px 40px -20px rgba(16,185,129,0.2)',
@@ -611,7 +611,7 @@ export default function Home() {
 
             {/* Pro ($49) */}
             <motion.div 
-              className="relative p-8 bg-gradient-to-b from-zinc-900 to-zinc-900/80 backdrop-blur-sm border-2 border-emerald-500/60 rounded-2xl overflow-hidden shadow-[0_0_60px_rgba(16,185,129,0.2)] transform md:-translate-y-4 flex flex-col"
+              className="relative p-6 sm:p-8 bg-gradient-to-b from-zinc-900 to-zinc-900/80 backdrop-blur-sm border-2 border-emerald-500/60 rounded-2xl overflow-hidden shadow-[0_0_60px_rgba(16,185,129,0.2)] transform lg:-translate-y-4 flex flex-col sm:col-span-2 lg:col-span-1 order-first sm:order-none"
               whileHover={{ 
                 y: -12, 
                 boxShadow: '0 30px 60px -20px rgba(16,185,129,0.4)',
@@ -657,7 +657,7 @@ export default function Home() {
 
             {/* Agency ($199) */}
             <motion.div 
-              className="relative p-8 bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl hover:border-violet-500/30 transition-all group flex flex-col"
+              className="relative p-6 sm:p-8 bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl hover:border-violet-500/30 transition-all group flex flex-col"
               whileHover={{ 
                 y: -8, 
                 boxShadow: '0 20px 40px -20px rgba(139,92,246,0.2)',
