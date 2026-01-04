@@ -75,11 +75,11 @@ export async function POST(req: NextRequest) {
     }
 
     // Check tier - Architect or higher required for deployment
-    const client = await clerkClient()
-    const user = await client.users.getUser(userId)
-    const accountSub = user.publicMetadata?.accountSubscription as AccountSubscription | undefined
+    const clerkClientInstance = await clerkClient()
+    const userRecord = await clerkClientInstance.users.getUser(userId)
+    const accountSub = userRecord.publicMetadata?.accountSubscription as AccountSubscription | undefined
     
-    const hasDeployAccess = ['architect', 'visionary', 'singularity'].includes(accountSub?.tier || '') || user.publicMetadata?.role === 'admin'
+    const hasDeployAccess = ['architect', 'visionary', 'singularity'].includes(accountSub?.tier || '') || userRecord.publicMetadata?.role === 'admin'
     
     if (!hasDeployAccess) {
       return NextResponse.json({ 
@@ -126,16 +126,16 @@ export async function POST(req: NextRequest) {
 
     // Verify user has an active account subscription
     const client = await clerkClient()
-    let user = await client.users.getUser(userId)
-    let accountSubscription = user.publicMetadata?.accountSubscription as AccountSubscription | undefined
+    let userWithSub = await client.users.getUser(userId)
+    let accountSubscription = userWithSub.publicMetadata?.accountSubscription as AccountSubscription | undefined
 
     // If no subscription found, wait and retry once (handles race condition after checkout)
     if (!accountSubscription || accountSubscription.status !== 'active') {
       await new Promise(resolve => setTimeout(resolve, 2000))
       
       // Refetch user data
-      user = await client.users.getUser(userId)
-      accountSubscription = user.publicMetadata?.accountSubscription as AccountSubscription | undefined
+      userWithSub = await client.users.getUser(userId)
+      accountSubscription = userWithSub.publicMetadata?.accountSubscription as AccountSubscription | undefined
     }
 
     if (!accountSubscription || accountSubscription.status !== 'active') {

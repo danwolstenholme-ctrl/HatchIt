@@ -707,6 +707,8 @@ export default function ProjectsPage() {
           </motion.div>
         </motion.div>
       )}
+      
+      </div>
     </div>
   )
 }

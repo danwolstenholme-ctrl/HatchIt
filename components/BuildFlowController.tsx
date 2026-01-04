@@ -101,7 +101,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const [phase, setPhase] = useState<BuildPhase>('initializing')
   const [selectedTemplate, setSelectedTemplate] = useState<Template>(SINGULARITY_TEMPLATE)
   const [customizedSections, setCustomizedSections] = useState<Section[]>(SINGULARITY_TEMPLATE.sections)
-  const [brandConfig, setBrandConfig] = useState<any>(null) // Brand config is now implicit or AI-driven
+  const [brandConfig, setBrandConfig] = useState<DbBrandConfig | null>(null)
   const [buildState, setBuildState] = useState<BuildState | null>(null)
   const [project, setProject] = useState<DbProject | null>(null)
   // Initialize guest count from localStorage to stay in sync with SectionBuilder
@@ -118,15 +118,6 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const OLD_WELCOME_KEYS = ['hatch_welcome_v1_seen', 'hatch_v1_welcome_seen']
   const skipFirstGuestCreditRef = useRef<boolean>(!!initialPrompt)
   
-  // Handle Guest Mode & Initial Prompt
-  useEffect(() => {
-    if (initialPrompt && phase === 'initializing') {
-      // If we have an initial prompt, we can jump straight to building
-      // But we need to initialize the build state first
-      console.log('Initializing with prompt:', initialPrompt)
-      // TODO: Trigger AI initialization with this prompt
-    }
-  }, [initialPrompt, phase])
   const [dbSections, setDbSections] = useState<DbSection[]>([])
   const [isLoading, setIsLoading] = useState(true) // Start loading immediately
   const [error, setError] = useState<string | null>(null)
@@ -270,8 +261,13 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
           setSelectedTemplate(newTemplate)
           setBrandConfig({
             brandName: onboardingData.brandName,
-            description: onboardingData.description,
-            archetype: onboardingData.archetype
+            colors: {
+              primary: '#10b981',
+              secondary: '#09090b',
+              accent: '#34d399'
+            },
+            fontStyle: 'Inter',
+            styleVibe: 'modern'
           })
         }
       } catch (e) {
@@ -423,7 +419,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
         accent: '#34d399' // Emerald-400
       },
       fontStyle: 'Inter',
-      styleVibe: brandConfig?.archetype ? 'modern' : 'modern'
+      styleVibe: brandConfig?.styleVibe || 'modern'
     }
 
     const setupDemoMode = () => {
@@ -467,7 +463,6 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     if (!isSignedIn || !user) {
       // ALLOW GUEST MODE IF EXPLICITLY REQUESTED
       if (guestMode) {
-        console.log('BuildFlowController: Entering Guest Mode')
         setTimeout(setupDemoMode, 1000)
         return
       }
@@ -551,7 +546,6 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       clearTimeout(timeoutId)
       
       if (response.status === 403 || response.status === 404) {
-        console.log('Project not found, starting fresh')
         localStorage.removeItem('hatch_current_project')
         
         // Only redirect if we are not already at /builder (to avoid loop)
@@ -1066,7 +1060,7 @@ export default function GeneratedPage() {
         body: JSON.stringify({
           code: wrappedCode,
           projectSlug: project.slug || project.id,
-          assets: [] // TODO: Add assets if needed
+          assets: [] // Future: Include uploaded images/assets from sections
         }),
       })
 
@@ -1938,7 +1932,7 @@ export default function GeneratedPage() {
                         {/* Pro Feature: Custom Domain */}
                         {isProUser ? (
                           <button
-                            onClick={() => {/* TODO: Open domain settings */}}
+                            onClick={() => setIsSettingsOpen(true)}
                             className="w-full flex items-center gap-3 p-3 bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/20 rounded-lg transition-colors text-left group"
                           >
                             <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
