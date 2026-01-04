@@ -780,7 +780,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     // Guest Mode: Force signup after Hero (or any section) to save progress
     if (guestMode) {
       track('Guest Handoff - Signup Triggered')
-      const returnUrl = '/dashboard/projects'
+      // Redirect back to builder so the migration logic in app/builder/page.tsx can run
+      const returnUrl = '/builder'
       router.push(`/sign-up?redirect_url=${encodeURIComponent(returnUrl)}`)
       return
     }
