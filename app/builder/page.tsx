@@ -14,6 +14,13 @@ import { AccountSubscription } from '@/types/subscriptions'
 // URL: /builder
 // =============================================================================
 
+// Seamless loading screen - matches builder background exactly
+function SeamlessLoader() {
+  return (
+    <div className="min-h-screen bg-black" />
+  )
+}
+
 function BuilderContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -115,14 +122,14 @@ function BuilderContent() {
     migrate()
   }, [isLoaded, isSignedIn, isGuest, isRedirecting, router])
 
-  // Loading state - seamless
+  // Loading state - seamless black screen (no flash)
   if (!isLoaded || isRedirecting || isImportingGuest) {
-    return <div className="min-h-screen bg-zinc-950" />
+    return <SeamlessLoader />
   }
 
   // Not signed in and not guest - redirect handled above, show nothing
   if (!isSignedIn && !isGuest) {
-    return null
+    return <SeamlessLoader />
   }
 
   // Signed in but no subscription - BLOCKED (unless guest)
@@ -168,7 +175,7 @@ function BuilderContent() {
 
 export default function Home() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-zinc-950" />}>
+    <Suspense fallback={<SeamlessLoader />}>
       <BuilderContent />
     </Suspense>
   )

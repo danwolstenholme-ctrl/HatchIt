@@ -31,7 +31,7 @@ export default function DemoPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
       {/* Void Transition */}
       <AnimatePresence>
         {isTransitioning && (
