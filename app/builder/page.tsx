@@ -17,7 +17,7 @@ import { AccountSubscription } from '@/types/subscriptions'
 // Seamless loading screen - matches builder background exactly
 function SeamlessLoader() {
   return (
-    <div className="min-h-screen bg-black" />
+    <div className="min-h-screen bg-zinc-950" />
   )
 }
 

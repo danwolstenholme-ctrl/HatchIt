@@ -1915,11 +1915,11 @@ export default function GeneratedPage() {
                           onClick={() => setDeployedUrl(null)}
                           className="w-full flex items-center gap-3 p-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg transition-colors text-left group"
                         >
-                          <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                            <Edit3 className="w-4 h-4 text-purple-400" />
+                          <div className="w-8 h-8 rounded-lg bg-teal-500/10 flex items-center justify-center">
+                            <Edit3 className="w-4 h-4 text-teal-400" />
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-white group-hover:text-purple-300 transition-colors">Continue Building</p>
+                            <p className="text-sm font-medium text-white group-hover:text-teal-300 transition-colors">Continue Building</p>
                             <p className="text-xs text-zinc-500">Refine sections and add new modules</p>
                           </div>
                         </button>
@@ -1956,11 +1956,11 @@ export default function GeneratedPage() {
                           onClick={handleStartFresh}
                           className="w-full flex items-center gap-3 p-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg transition-colors text-left group"
                         >
-                          <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                            <Plus className="w-4 h-4 text-blue-400" />
+                          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                            <Plus className="w-4 h-4 text-emerald-400" />
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-white group-hover:text-blue-300 transition-colors">Start New Project</p>
+                            <p className="text-sm font-medium text-white group-hover:text-emerald-300 transition-colors">Start New Project</p>
                             <p className="text-xs text-zinc-500">
                               {tierConfig?.projectLimit === Infinity 
                                 ? 'Unlimited projects on your plan' 
