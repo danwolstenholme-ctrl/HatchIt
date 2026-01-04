@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
-import { clerkClient } from '@clerk/nextjs/server'
+import { auth, clerkClient } from '@clerk/nextjs/server'
 import { track } from '@vercel/analytics/server'
+import { AccountSubscription } from '@/types/subscriptions'
+
+// =============================================================================
+// DEPLOYMENT API
+// TIER: Architect+ (required for deployment)
+// =============================================================================
 
 // GET handler to check if a deployed site is ready
 export async function GET(req: NextRequest) {
@@ -45,9 +50,6 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// Type for account subscription
-import { AccountSubscription } from '@/types/subscriptions'
-
 // Type for deployed project
 interface DeployedProject {
   slug: string
@@ -70,6 +72,21 @@ export async function POST(req: NextRequest) {
     const { userId } = await auth()
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check tier - Architect or higher required for deployment
+    const client = await clerkClient()
+    const user = await client.users.getUser(userId)
+    const accountSub = user.publicMetadata?.accountSubscription as AccountSubscription | undefined
+    
+    const hasDeployAccess = ['architect', 'visionary', 'singularity'].includes(accountSub?.tier || '') || user.publicMetadata?.role === 'admin'
+    
+    if (!hasDeployAccess) {
+      return NextResponse.json({ 
+        error: 'Deployment requires Architect tier or higher', 
+        requiresUpgrade: true,
+        requiredTier: 'architect'
+      }, { status: 403 })
     }
 
     const { code, pages, projectName } = await req.json()

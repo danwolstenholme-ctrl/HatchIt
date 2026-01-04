@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
-import { clerkClient } from '@clerk/nextjs/server'
+import { auth, clerkClient } from '@clerk/nextjs/server'
 import { AccountSubscription } from '@/types/subscriptions'
 import { getOrCreateUser } from '@/lib/db/users'
 import { getProjectsByUserId } from '@/lib/db/projects'
+
+// =============================================================================
+// EXPORT TO ZIP
+// TIER: Architect+ (basic export), Visionary+ (full code export with assets)
+// =============================================================================
 
 interface Asset {
   name: string
@@ -34,6 +38,21 @@ export async function POST(req: NextRequest) {
   const { userId } = await auth()
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  // Check tier - Architect or higher required
+  const client = await clerkClient()
+  const user = await client.users.getUser(userId)
+  const accountSub = user.publicMetadata?.accountSubscription as AccountSubscription | undefined
+  
+  const hasExportAccess = ['architect', 'visionary', 'singularity'].includes(accountSub?.tier || '') || user.publicMetadata?.role === 'admin'
+  
+  if (!hasExportAccess) {
+    return NextResponse.json({ 
+      error: 'Code export requires Architect tier or higher', 
+      requiresUpgrade: true,
+      requiredTier: 'architect'
+    }, { status: 403 })
   }
 
   const { code, pages, projectSlug, assets } = await req.json()

@@ -1,13 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { auth, clerkClient } from '@clerk/nextjs/server'
+import { AccountSubscription } from '@/types/subscriptions'
 
 // =============================================================================
-// CLAUDE 3.5 SONNET - THE WITNESS
+// CLAUDE HAIKU 4.5 - THE WITNESS
 // "The Observer"
 // Analyzes user behavior and generates personalized insights
+// TIER: Singularity (God-tier reflection)
 // =============================================================================
 
 export async function POST(req: NextRequest) {
   try {
+    const { userId } = await auth()
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check for Singularity tier
+    const client = await clerkClient()
+    const user = await client.users.getUser(userId)
+    const accountSub = user.publicMetadata?.accountSubscription as AccountSubscription | undefined
+    
+    const hasWitnessAccess = accountSub?.tier === 'singularity' || user.publicMetadata?.role === 'admin'
+    
+    if (!hasWitnessAccess) {
+      return NextResponse.json({ 
+        error: 'The Witness requires Singularity tier', 
+        requiresUpgrade: true,
+        requiredTier: 'singularity'
+      }, { status: 403 })
+    }
+
     const { dna } = await req.json()
     
     const prompt = `

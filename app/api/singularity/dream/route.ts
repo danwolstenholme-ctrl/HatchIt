@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
+import { auth, clerkClient } from '@clerk/nextjs/server'
 import { GoogleGenAI } from '@google/genai'
 import { getOrCreateUser } from '@/lib/db'
 import { getUserDNA, updateUserDNA } from '@/lib/db/chronosphere'
+import { AccountSubscription } from '@/types/subscriptions'
 
 // =============================================================================
 // THE SINGULARITY - DREAM ENGINE
 // Self-evolving UI generation
+// TIER: Singularity (God-tier self-mutation)
 // =============================================================================
 
 const geminiApiKey = process.env.GEMINI_API_KEY
@@ -41,6 +43,22 @@ export async function POST(req: NextRequest) {
   try {
     const { userId } = await auth()
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    
+    // Check for Singularity tier
+    const client = await clerkClient()
+    const user = await client.users.getUser(userId)
+    const accountSub = user.publicMetadata?.accountSubscription as AccountSubscription | undefined
+    
+    const hasDreamAccess = accountSub?.tier === 'singularity' || user.publicMetadata?.role === 'admin'
+    
+    if (!hasDreamAccess) {
+      return NextResponse.json({ 
+        error: 'The Dream Engine requires Singularity tier', 
+        requiresUpgrade: true,
+        requiredTier: 'singularity'
+      }, { status: 403 })
+    }
+    
     if (!genai) return NextResponse.json({ error: 'No Brain' }, { status: 500 })
 
     const { code, screenshot, iteration } = await req.json()

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth, currentUser } from '@clerk/nextjs/server'
+import { auth, currentUser, clerkClient } from '@clerk/nextjs/server'
 import { 
   getLatestBuild, 
   updateBuildAudit,
@@ -7,10 +7,12 @@ import {
   getProjectById,
   getOrCreateUser,
 } from '@/lib/db'
+import { AccountSubscription } from '@/types/subscriptions'
 
 // =============================================================================
 // CLAUDE SONNET 4.5 - THE AUDITOR
 // Final review with fresh eyes from the smartest model available
+// TIER: Visionary+ (AI Quality Check)
 // =============================================================================
 
 const AUDITOR_SYSTEM_PROMPT = `You are The Auditor — a high-precision quality assurance system performing a FINAL AUDIT on a React + Tailwind page.
@@ -100,7 +102,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const user = await currentUser()
+    // Check for Visionary or Singularity tier
+    const client = await clerkClient()
+    const user = await client.users.getUser(clerkId)
+    const accountSub = user.publicMetadata?.accountSubscription as AccountSubscription | undefined
+    
+    const hasAuditorAccess = ['visionary', 'singularity'].includes(accountSub?.tier || '') || user.publicMetadata?.role === 'admin'
+    
+    if (!hasAuditorAccess) {
+      return NextResponse.json({ 
+        error: 'The Auditor requires Visionary tier or higher', 
+        requiresUpgrade: true,
+        requiredTier: 'visionary'
+      }, { status: 403 })
+    }
+
     const email = user?.emailAddresses?.[0]?.emailAddress
     const dbUser = await getOrCreateUser(clerkId, email)
     if (!dbUser) {

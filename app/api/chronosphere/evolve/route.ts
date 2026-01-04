@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
+import { auth, clerkClient } from '@clerk/nextjs/server'
 import { GoogleGenAI } from '@google/genai'
 import { getOrCreateUser } from '@/lib/db'
 import { getUserDNA, updateUserDNA } from '@/lib/db/chronosphere'
 import { StyleDNA } from '@/lib/supabase'
+import { AccountSubscription } from '@/types/subscriptions'
 
 // =============================================================================
 // THE CHRONOSPHERE - EVOLUTION ENGINE
 // Analyzes code to update User Style DNA
+// TIER: Singularity (learns your taste over time)
 // =============================================================================
 
 const geminiApiKey = process.env.GEMINI_API_KEY
@@ -48,6 +50,21 @@ export async function POST(req: NextRequest) {
     const { userId } = await auth()
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check for Singularity tier
+    const client = await clerkClient()
+    const user = await client.users.getUser(userId)
+    const accountSub = user.publicMetadata?.accountSubscription as AccountSubscription | undefined
+    
+    const hasChronosphereAccess = accountSub?.tier === 'singularity' || user.publicMetadata?.role === 'admin'
+    
+    if (!hasChronosphereAccess) {
+      return NextResponse.json({ 
+        error: 'The Chronosphere requires Singularity tier', 
+        requiresUpgrade: true,
+        requiredTier: 'singularity'
+      }, { status: 403 })
     }
 
     if (!genai) {

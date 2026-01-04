@@ -1,7 +1,35 @@
 import { NextResponse } from 'next/server'
+import { auth, clerkClient } from '@clerk/nextjs/server'
+import { AccountSubscription } from '@/types/subscriptions'
+
+// =============================================================================
+// THE HEALER
+// Auto-fix runtime errors in generated code
+// TIER: Visionary+
+// =============================================================================
 
 export async function POST(req: Request) {
   try {
+    const { userId } = await auth()
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check for Visionary or Singularity tier
+    const client = await clerkClient()
+    const user = await client.users.getUser(userId)
+    const accountSub = user.publicMetadata?.accountSubscription as AccountSubscription | undefined
+    
+    const hasHealerAccess = ['visionary', 'singularity'].includes(accountSub?.tier || '') || user.publicMetadata?.role === 'admin'
+    
+    if (!hasHealerAccess) {
+      return NextResponse.json({ 
+        error: 'The Healer requires Visionary tier or higher', 
+        requiresUpgrade: true,
+        requiredTier: 'visionary'
+      }, { status: 403 })
+    }
+
     const { error, componentStack, context } = await req.json()
     
     // In a full implementation, this would:
