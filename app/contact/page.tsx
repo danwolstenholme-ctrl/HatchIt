@@ -2,7 +2,7 @@
 
 import { useState, Suspense } from 'react'
 import { motion } from 'framer-motion'
-import { Mail, MessageSquare, ArrowLeft, ArrowRight, Send, HelpCircle, CheckCircle2, AlertCircle } from 'lucide-react'
+import { Mail, MessageSquare, ArrowLeft, Send, HelpCircle, CheckCircle2, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 
