@@ -1,5 +1,5 @@
 # Project Status & Handover
-**Last Updated:** January 4, 2026 (Session 2)
+**Last Updated:** January 5, 2026
 **Current Phase:** Pre-Launch Polish & Marketing Prep
 
 ---
@@ -9,6 +9,7 @@
 Moving away from the "Hacker/Terminal" aesthetic towards a clean, high-end SaaS look ("Singularity" theme: Zinc-950, Emerald-500, Glassmorphism).
 
 ### Recent Achievements
+- **Singularity Visual Overhaul:** Complete site-wide audit. All pages now use `bg-zinc-950`, Ambient Void effects, and Scanlines.
 - **Homepage Welcome:** Redesigned as a dismissible "Glass Card" popup with shimmering "Text → React" animation.
 - **Contact Page:** Complete redesign to remove "Matrix" vibes; now clean studio aesthetic with robust back-button logic.
 - **Dashboard:** Projects list converted to a professional card grid.
@@ -26,9 +27,9 @@ Moving away from the "Hacker/Terminal" aesthetic towards a clean, high-end SaaS 
 
 ### 2. Marketing Page Audit
 **Goal:** Ensure all funnels lead to payment correctly.
-- [ ] Verify all pricing CTAs on `/` go to the correct checkout.
-- [ ] Check `/features`, `/how-it-works`, `/about` for broken links or old "Architect" branding.
-- [ ] Verify `/manifesto` is on-brand.
+- [x] Verify all pricing CTAs on `/` go to the correct checkout.
+- [x] Check `/features`, `/how-it-works`, `/about` for broken links or old "Architect" branding.
+- [x] Verify `/manifesto` is on-brand.
 
 ### 3. Production Stripe Test
 - [ ] Create test account.
