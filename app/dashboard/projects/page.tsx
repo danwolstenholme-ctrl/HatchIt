@@ -563,7 +563,7 @@ export default function ProjectsPage() {
                 />
               </div>
 
-              <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+              <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-sm">
                 <PremiumFeaturesShowcase 
                   onFeatureClick={() => setShowLimitModal(true)}
                 />
@@ -572,168 +572,173 @@ export default function ProjectsPage() {
           )}
         </div>
       
-      {/* Limit Modal - Redesigned */}
+      {/* Limit Modal - Redesigned (Singularity) */}
       {showLimitModal && (
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4" 
+          className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4" 
           onClick={() => setShowLimitModal(false)}
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="bg-white rounded-2xl p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200"
+            className="bg-zinc-950 rounded-2xl p-8 w-full max-w-5xl max-h-[90vh] overflow-y-auto shadow-2xl border border-zinc-800 relative overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
+            {/* Background Effects */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none" />
+            
             {/* Header */}
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-xl shadow-emerald-500/25">
-                <Sparkles className="w-8 h-8 text-white" />
+            <div className="text-center mb-10 relative z-10">
+              <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center shadow-xl shadow-emerald-500/10">
+                <Sparkles className="w-8 h-8 text-emerald-500" />
               </div>
-              <h2 className="text-2xl font-bold text-slate-900 mb-2">Upgrade Your Workspace</h2>
-              <p className="text-slate-600">
-                Choose a plan that fits your needs
+              <h2 className="text-3xl font-bold text-white mb-3 tracking-tight">Upgrade Your Reality</h2>
+              <p className="text-zinc-400 text-lg">
+                Unlock the full power of the Singularity Engine.
               </p>
             </div>
             
             {/* Pricing Cards */}
-            <div className="grid md:grid-cols-3 gap-4 mb-6">
+            <div className="grid md:grid-cols-3 gap-6 mb-8 relative z-10">
               {/* Architect */}
               <Link 
                 href="/api/checkout?priceId=price_architect" 
-                className="group relative bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 hover:border-emerald-400 rounded-2xl p-6 transition-all hover:shadow-xl hover:shadow-emerald-500/10 hover:-translate-y-1"
+                className="group relative bg-zinc-900/50 border border-zinc-800 hover:border-emerald-500/30 rounded-2xl p-6 transition-all hover:shadow-xl hover:shadow-emerald-500/5 hover:-translate-y-1 flex flex-col"
               >
-                <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/25">
-                  <Terminal className="w-5 h-5 text-white" />
-                </div>
+                <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 
-                <div className="mb-4">
-                  <div className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-2">Architect</div>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-slate-900">$19</span>
-                    <span className="text-slate-500 font-medium">/month</span>
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="text-xs font-mono text-zinc-500 uppercase tracking-widest">Initiate</div>
+                    <Terminal className="w-5 h-5 text-zinc-600 group-hover:text-emerald-500 transition-colors" />
                   </div>
-                </div>
+                  
+                  <div className="mb-6">
+                    <h3 className="text-xl font-bold text-white mb-2">Architect</h3>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-3xl font-mono font-bold text-white">$19</span>
+                      <span className="text-zinc-600 font-mono text-sm">/mo</span>
+                    </div>
+                  </div>
 
-                <ul className="space-y-3 mb-6">
-                  <li className="flex items-start gap-2 text-sm text-slate-700">
-                    <Check className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
-                    <span>Up to <strong>3 sites</strong></span>
-                  </li>
-                  <li className="flex items-start gap-2 text-sm text-slate-700">
-                    <Check className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
-                    <span>Unlimited builds & refinements</span>
-                  </li>
-                  <li className="flex items-start gap-2 text-sm text-slate-700">
-                    <Check className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
-                    <span>Custom domains</span>
-                  </li>
-                  <li className="flex items-start gap-2 text-sm text-slate-700">
-                    <Check className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
-                    <span>Export source code</span>
-                  </li>
-                </ul>
+                  <ul className="space-y-3 mb-8 flex-grow">
+                    {[
+                      'Up to 3 sites',
+                      'Unlimited builds',
+                      'Custom domains',
+                      'Export source code'
+                    ].map((item, i) => (
+                      <li key={i} className="flex items-start gap-3 text-sm text-zinc-400 group-hover:text-zinc-300 transition-colors">
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 flex-shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
 
-                <div className="px-4 py-3 bg-white rounded-xl text-center font-semibold text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white transition-all">
-                  Get Started
+                  <div className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-center font-medium transition-all border border-zinc-700 group-hover:border-zinc-600">
+                    Select Plan
+                  </div>
                 </div>
               </Link>
 
               {/* Visionary - Featured */}
               <Link 
                 href="/api/checkout?priceId=price_visionary" 
-                className="group relative bg-gradient-to-br from-teal-50 to-emerald-50 border-2 border-teal-400 hover:border-teal-500 rounded-2xl p-6 transition-all hover:shadow-2xl hover:shadow-teal-500/20 hover:-translate-y-2 scale-105"
+                className="group relative bg-zinc-900 border border-emerald-500/50 rounded-2xl p-6 transition-all hover:shadow-[0_0_40px_rgba(16,185,129,0.15)] hover:-translate-y-2 scale-105 z-20 flex flex-col"
               >
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-gradient-to-r from-teal-600 to-emerald-600 text-white text-xs font-bold rounded-full shadow-lg">
-                  MOST POPULAR
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-emerald-500 text-black text-[10px] font-bold font-mono uppercase tracking-wider rounded-full shadow-lg shadow-emerald-500/20">
+                  Recommended
                 </div>
 
-                <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-teal-500/25">
-                  <Zap className="w-5 h-5 text-white" />
-                </div>
+                <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/10 to-transparent opacity-50 group-hover:opacity-80 transition-opacity duration-500" />
                 
-                <div className="mb-4">
-                  <div className="text-xs font-bold text-teal-600 uppercase tracking-wider mb-2">Visionary</div>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-slate-900">$49</span>
-                    <span className="text-slate-500 font-medium">/month</span>
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="text-xs font-mono text-emerald-400 uppercase tracking-widest">Unlimited</div>
+                    <Zap className="w-5 h-5 text-emerald-400" />
                   </div>
-                </div>
+                  
+                  <div className="mb-6">
+                    <h3 className="text-2xl font-bold text-white mb-2">Visionary</h3>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-4xl font-mono font-bold text-white">$49</span>
+                      <span className="text-zinc-500 font-mono text-sm">/mo</span>
+                    </div>
+                  </div>
 
-                <ul className="space-y-3 mb-6">
-                  <li className="flex items-start gap-2 text-sm text-slate-700">
-                    <Check className="w-4 h-4 text-teal-500 mt-0.5 flex-shrink-0" />
-                    <span><strong>Unlimited sites</strong></span>
-                  </li>
-                  <li className="flex items-start gap-2 text-sm text-slate-700">
-                    <Check className="w-4 h-4 text-teal-500 mt-0.5 flex-shrink-0" />
-                    <span>Everything in Architect</span>
-                  </li>
-                  <li className="flex items-start gap-2 text-sm text-slate-700">
-                    <Check className="w-4 h-4 text-teal-500 mt-0.5 flex-shrink-0" />
-                    <span>Priority support</span>
-                  </li>
-                  <li className="flex items-start gap-2 text-sm text-slate-700">
-                    <Check className="w-4 h-4 text-teal-500 mt-0.5 flex-shrink-0" />
-                    <span>Advanced analytics</span>
-                  </li>
-                </ul>
+                  <ul className="space-y-3 mb-8 flex-grow">
+                    {[
+                      'Unlimited sites',
+                      'Everything in Architect',
+                      'Priority support',
+                      'Advanced analytics',
+                      'Commercial license'
+                    ].map((item, i) => (
+                      <li key={i} className="flex items-start gap-3 text-sm text-white font-medium">
+                        <Check className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
 
-                <div className="px-4 py-3 bg-gradient-to-r from-teal-600 to-emerald-600 rounded-xl text-center font-semibold text-white group-hover:from-teal-500 group-hover:to-emerald-500 transition-all shadow-lg">
-                  Get Started
+                  <div className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-black rounded-xl text-center font-bold transition-all shadow-lg shadow-emerald-500/20">
+                    Get Started
+                  </div>
                 </div>
               </Link>
 
               {/* Singularity */}
               <Link 
                 href="/api/checkout?priceId=price_singularity" 
-                className="group relative bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 hover:border-amber-400 rounded-2xl p-6 transition-all hover:shadow-xl hover:shadow-amber-500/10 hover:-translate-y-1"
+                className="group relative bg-zinc-900/50 border border-zinc-800 hover:border-amber-500/30 rounded-2xl p-6 transition-all hover:shadow-xl hover:shadow-amber-500/5 hover:-translate-y-1 flex flex-col"
               >
-                <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/25">
-                  <Crown className="w-5 h-5 text-white" />
-                </div>
+                <div className="absolute inset-0 bg-gradient-to-b from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 
-                <div className="mb-4">
-                  <div className="text-xs font-bold text-amber-600 uppercase tracking-wider mb-2">Singularity</div>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-slate-900">$199</span>
-                    <span className="text-slate-500 font-medium">/month</span>
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="text-xs font-mono text-amber-500 uppercase tracking-widest">God Mode</div>
+                    <Crown className="w-5 h-5 text-zinc-600 group-hover:text-amber-500 transition-colors" />
                   </div>
-                </div>
+                  
+                  <div className="mb-6">
+                    <h3 className="text-xl font-bold text-white mb-2">Singularity</h3>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-3xl font-mono font-bold text-white">$199</span>
+                      <span className="text-zinc-600 font-mono text-sm">/mo</span>
+                    </div>
+                  </div>
 
-                <ul className="space-y-3 mb-6">
-                  <li className="flex items-start gap-2 text-sm text-slate-700">
-                    <Check className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
-                    <span>Everything in Visionary</span>
-                  </li>
-                  <li className="flex items-start gap-2 text-sm text-slate-700">
-                    <Check className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
-                    <span><strong>White label branding</strong></span>
-                  </li>
-                  <li className="flex items-start gap-2 text-sm text-slate-700">
-                    <Check className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
-                    <span>AI website cloner</span>
-                  </li>
-                  <li className="flex items-start gap-2 text-sm text-slate-700">
-                    <Check className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
-                    <span>Style DNA evolution</span>
-                  </li>
-                </ul>
+                  <ul className="space-y-3 mb-8 flex-grow">
+                    {[
+                      'Everything in Visionary',
+                      'White label branding',
+                      'AI website cloner',
+                      'Style DNA evolution',
+                      'Direct founder access'
+                    ].map((item, i) => (
+                      <li key={i} className="flex items-start gap-3 text-sm text-zinc-400 group-hover:text-zinc-300 transition-colors">
+                        <div className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 flex-shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
 
-                <div className="px-4 py-3 bg-white rounded-xl text-center font-semibold text-amber-700 group-hover:bg-amber-600 group-hover:text-white transition-all">
-                  Get Started
+                  <div className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-center font-medium transition-all border border-zinc-700 group-hover:border-zinc-600">
+                    Select Plan
+                  </div>
                 </div>
               </Link>
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-center gap-4 pt-6 border-t border-slate-200">
+            <div className="flex items-center justify-center gap-4 pt-6 border-t border-zinc-800/50 relative z-10">
               <button
                 onClick={() => setShowLimitModal(false)}
-                className="px-6 py-2.5 text-slate-600 hover:text-slate-900 font-medium transition-colors"
+                className="px-6 py-2.5 text-zinc-500 hover:text-white font-medium transition-colors text-sm"
               >
                 Maybe Later
               </button>

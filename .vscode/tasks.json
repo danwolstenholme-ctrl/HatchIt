@@ -292,6 +292,11 @@
 			"label": "commit-singularity-polish",
 			"type": "shell",
 			"command": "git add . && git commit -m \"feat: Singularity Polish - Redesigned Pricing, Fixed Refine Tool, Enhanced Demo UI, and Cleanup\""
+		},
+		{
+			"label": "commit-dashboard-redesign",
+			"type": "shell",
+			"command": "git add . && git commit -m \"feat: redesign dashboard upgrade modal to match Singularity aesthetic\" && git push"
 		}
 	]
 }

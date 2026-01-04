@@ -72,12 +72,12 @@ export default function PremiumFeaturesShowcase({ onFeatureClick }: PremiumFeatu
       {/* Section Header */}
       <div className="px-1">
         <div className="flex items-center gap-2 mb-2">
-          <Lock className="w-3.5 h-3.5 text-zinc-600" />
+          <Lock className="w-3.5 h-3.5 text-zinc-500" />
           <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
             Premium Features
           </span>
         </div>
-        <p className="text-[10px] text-zinc-600 leading-relaxed">
+        <p className="text-[10px] text-zinc-500 leading-relaxed">
           Unlock advanced AI tools and capabilities
         </p>
       </div>
@@ -137,7 +137,7 @@ export default function PremiumFeaturesShowcase({ onFeatureClick }: PremiumFeatu
               {feature.stats && (
                 <div className="flex items-center gap-1.5 mt-2 pt-2 border-t border-zinc-800/50">
                   <div className="w-1 h-1 rounded-full bg-emerald-500/50 animate-pulse" />
-                  <span className="text-[9px] text-zinc-600 font-medium group-hover:text-zinc-500 transition-colors">
+                  <span className="text-[9px] text-zinc-500 font-medium group-hover:text-zinc-400 transition-colors">
                     {feature.stats}
                   </span>
                 </div>
@@ -160,7 +160,7 @@ export default function PremiumFeaturesShowcase({ onFeatureClick }: PremiumFeatu
             <span className="text-amber-400 font-semibold"> Singularity</span> unlocks all 5.
           </p>
           <div className="flex items-center justify-between text-[9px]">
-            <span className="text-zinc-600">Starting at</span>
+            <span className="text-zinc-500">Starting at</span>
             <span className="text-white font-bold">$19/month</span>
           </div>
         </div>
