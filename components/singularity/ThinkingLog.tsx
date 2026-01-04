@@ -137,7 +137,7 @@ export default function ThinkingLog() {
           <span className="text-cyan-400">{elapsedSeconds}s</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+          <div className="w-1.5 h-1.5 rounded-full bg-teal-500" />
           Memory: 64%
         </div>
       </div>

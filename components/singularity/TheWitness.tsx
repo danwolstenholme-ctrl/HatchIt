@@ -58,7 +58,7 @@ export default function TheWitness({ isOpen, onClose, note, isLoading }: TheWitn
             <div className="p-8 md:p-10 bg-gradient-to-b from-zinc-900 to-zinc-950 min-h-[300px] flex flex-col items-center justify-center">
               {isLoading ? (
                 <div className="flex flex-col items-center gap-4">
-                  <div className="w-12 h-12 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
+                  <div className="w-12 h-12 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
                   <p className="text-zinc-400 animate-pulse">Analyzing your build patterns...</p>
                 </div>
               ) : (
