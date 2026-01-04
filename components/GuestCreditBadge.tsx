@@ -52,14 +52,14 @@ export default function GuestCreditBadge({
     >
       {/* Main Badge */}
       <div className={`
-        relative overflow-hidden rounded-xl border
-        ${color === 'emerald' ? 'bg-emerald-500/5 border-emerald-500/20' : ''}
-        ${color === 'amber' ? 'bg-amber-500/5 border-amber-500/30' : ''}
-        ${color === 'orange' ? 'bg-orange-500/5 border-orange-500/40' : ''}
-        ${color === 'red' ? 'bg-red-500/5 border-red-500/30' : ''}
+        relative overflow-hidden rounded-xl border backdrop-blur-sm
+        ${color === 'emerald' ? 'bg-emerald-500/[0.02] border-emerald-500/20' : ''}
+        ${color === 'amber' ? 'bg-amber-500/[0.02] border-amber-500/30' : ''}
+        ${color === 'orange' ? 'bg-orange-500/[0.02] border-orange-500/40' : ''}
+        ${color === 'red' ? 'bg-red-500/[0.02] border-red-500/30' : ''}
       `}>
-        {/* Ambient Glow */}
-        <div className={`absolute inset-0 opacity-20 blur-xl
+        {/* Ambient Glow - More Subtle */}
+        <div className={`absolute inset-0 opacity-[0.08] blur-2xl
           ${color === 'emerald' ? 'bg-emerald-500' : ''}
           ${color === 'amber' ? 'bg-amber-500' : ''}
           ${color === 'orange' ? 'bg-orange-500' : ''}

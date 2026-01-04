@@ -99,8 +99,8 @@ export default function PremiumFeaturesShowcase({ onFeatureClick }: PremiumFeatu
             }}
             className="group relative w-full text-left overflow-hidden rounded-lg border border-zinc-800/50 hover:border-zinc-700 bg-zinc-900/30 hover:bg-zinc-900/50 transition-all duration-300"
           >
-            {/* Gradient Glow */}
-            <div className={`absolute inset-0 bg-gradient-to-r ${feature.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`} />
+            {/* Subtle Glow on Hover */}
+            <div className={`absolute inset-0 bg-gradient-to-r ${feature.gradient} opacity-0 group-hover:opacity-[0.03] transition-opacity duration-500`} />
             
             {/* Lock Icon Overlay */}
             <div className="absolute top-2 right-2 opacity-30 group-hover:opacity-50 transition-opacity">
@@ -110,24 +110,24 @@ export default function PremiumFeaturesShowcase({ onFeatureClick }: PremiumFeatu
             <div className="relative p-3">
               {/* Icon & Name */}
               <div className="flex items-start gap-2.5 mb-2">
-                <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${feature.gradient} opacity-80 flex items-center justify-center flex-shrink-0 shadow-lg`}>
-                  <div className="text-white">
+                <div className={`w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center flex-shrink-0 shadow-sm group-hover:border-zinc-700 transition-colors`}>
+                  <div className={`text-zinc-400 group-hover:text-white transition-colors`}>
                     {feature.icon}
                   </div>
                 </div>
                 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="text-xs font-semibold text-white group-hover:text-emerald-400 transition-colors">
+                    <span className="text-xs font-semibold text-zinc-300 group-hover:text-white transition-colors">
                       {feature.name}
                     </span>
                     {feature.tier === 'singularity' && (
-                      <span className="text-[9px] font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                      <span className="text-[9px] font-bold text-amber-500/80 bg-amber-500/5 px-1.5 py-0.5 rounded uppercase tracking-wider border border-amber-500/10">
                         Elite
                       </span>
                     )}
                   </div>
-                  <p className="text-[10px] text-zinc-500 leading-snug">
+                  <p className="text-[10px] text-zinc-500 leading-snug group-hover:text-zinc-400 transition-colors">
                     {feature.description}
                   </p>
                 </div>
@@ -137,14 +137,11 @@ export default function PremiumFeaturesShowcase({ onFeatureClick }: PremiumFeatu
               {feature.stats && (
                 <div className="flex items-center gap-1.5 mt-2 pt-2 border-t border-zinc-800/50">
                   <div className="w-1 h-1 rounded-full bg-emerald-500/50 animate-pulse" />
-                  <span className="text-[9px] text-zinc-600 font-medium">
+                  <span className="text-[9px] text-zinc-600 font-medium group-hover:text-zinc-500 transition-colors">
                     {feature.stats}
                   </span>
                 </div>
               )}
-
-              {/* Hover Indicator */}
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
           </motion.button>
         ))}

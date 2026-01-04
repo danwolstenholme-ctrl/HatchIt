@@ -382,20 +382,76 @@ export default function Home() {
           {/* Tech badges */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { name: 'React 19', icon: <Code2 className="w-5 h-5" />, desc: 'Latest', color: 'cyan', hover: 'hover:border-cyan-400/50 hover:shadow-cyan-500/20' },
-              { name: 'Tailwind', icon: <Layout className="w-5 h-5" />, desc: 'Utility-first', color: 'sky', hover: 'hover:border-sky-400/50 hover:shadow-sky-500/20' },
-              { name: 'TypeScript', icon: <Terminal className="w-5 h-5" />, desc: 'Type-safe', color: 'blue', hover: 'hover:border-blue-400/50 hover:shadow-blue-500/20' },
-              { name: 'Responsive', icon: <Smartphone className="w-5 h-5" />, desc: 'Mobile-first', color: 'violet', hover: 'hover:border-violet-400/50 hover:shadow-violet-500/20' },
-              { name: 'Accessible', icon: <CheckCircle2 className="w-5 h-5" />, desc: 'WCAG', color: 'emerald', hover: 'hover:border-emerald-400/50 hover:shadow-emerald-500/20' },
-              { name: 'SEO Ready', icon: <Globe className="w-5 h-5" />, desc: 'Optimized', color: 'teal', hover: 'hover:border-teal-400/50 hover:shadow-teal-500/20' },
-              { name: 'Fast', icon: <Zap className="w-5 h-5" />, desc: '90+ Lighthouse', color: 'amber', hover: 'hover:border-amber-400/50 hover:shadow-amber-500/20' },
-              { name: 'Yours', icon: <Shield className="w-5 h-5" />, desc: '100%', color: 'emerald', hover: 'hover:border-emerald-400/50 hover:shadow-emerald-500/20' },
+              { 
+                name: 'React 19', 
+                icon: <Code2 className="w-5 h-5" />, 
+                desc: 'Latest', 
+                bg: 'from-cyan-500/10', 
+                text: 'group-hover:text-cyan-400', 
+                hover: 'hover:border-cyan-400/50 hover:shadow-cyan-500/20' 
+              },
+              { 
+                name: 'Tailwind', 
+                icon: <Layout className="w-5 h-5" />, 
+                desc: 'Utility-first', 
+                bg: 'from-sky-500/10', 
+                text: 'group-hover:text-sky-400', 
+                hover: 'hover:border-sky-400/50 hover:shadow-sky-500/20' 
+              },
+              { 
+                name: 'TypeScript', 
+                icon: <Terminal className="w-5 h-5" />, 
+                desc: 'Type-safe', 
+                bg: 'from-blue-500/10', 
+                text: 'group-hover:text-blue-400', 
+                hover: 'hover:border-blue-400/50 hover:shadow-blue-500/20' 
+              },
+              { 
+                name: 'Framer Motion', 
+                icon: <Layers className="w-5 h-5" />, 
+                desc: 'Cinematic', 
+                bg: 'from-fuchsia-500/10', 
+                text: 'group-hover:text-fuchsia-400', 
+                hover: 'hover:border-fuchsia-400/50 hover:shadow-fuchsia-500/20' 
+              },
+              { 
+                name: 'Responsive', 
+                icon: <Smartphone className="w-5 h-5" />, 
+                desc: 'Mobile-first', 
+                bg: 'from-violet-500/10', 
+                text: 'group-hover:text-violet-400', 
+                hover: 'hover:border-violet-400/50 hover:shadow-violet-500/20' 
+              },
+              { 
+                name: 'Accessible', 
+                icon: <CheckCircle2 className="w-5 h-5" />, 
+                desc: 'WCAG', 
+                bg: 'from-emerald-500/10', 
+                text: 'group-hover:text-emerald-400', 
+                hover: 'hover:border-emerald-400/50 hover:shadow-emerald-500/20' 
+              },
+              { 
+                name: 'SEO Ready', 
+                icon: <Globe className="w-5 h-5" />, 
+                desc: 'Optimized', 
+                bg: 'from-teal-500/10', 
+                text: 'group-hover:text-teal-400', 
+                hover: 'hover:border-teal-400/50 hover:shadow-teal-500/20' 
+              },
+              { 
+                name: 'Yours', 
+                icon: <Shield className="w-5 h-5" />, 
+                desc: '100%', 
+                bg: 'from-emerald-500/10', 
+                text: 'group-hover:text-emerald-400', 
+                hover: 'hover:border-emerald-400/50 hover:shadow-emerald-500/20' 
+              },
             ].map((tech, i) => (
               <div 
                 key={i} 
-                className={`group p-4 bg-gradient-to-br from-${tech.color}-500/10 to-transparent border border-zinc-800 rounded-xl text-center transition-all duration-300 cursor-default hover:scale-[1.02] hover:shadow-lg ${tech.hover}`}
+                className={`group p-4 bg-gradient-to-br ${tech.bg} to-transparent border border-zinc-800 rounded-xl text-center transition-all duration-300 cursor-default hover:scale-[1.02] hover:shadow-lg ${tech.hover}`}
               >
-                <div className={`w-10 h-10 mx-auto bg-zinc-900/80 rounded-lg flex items-center justify-center mb-2 text-zinc-400 group-hover:text-${tech.color}-400 transition-colors`}>
+                <div className={`w-10 h-10 mx-auto bg-zinc-900/80 rounded-lg flex items-center justify-center mb-2 text-zinc-400 ${tech.text} transition-colors`}>
                   {tech.icon}
                 </div>
                 <div className="font-semibold text-sm text-white">{tech.name}</div>
