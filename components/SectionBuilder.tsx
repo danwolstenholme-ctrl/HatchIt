@@ -380,8 +380,10 @@ export default function SectionBuilder({
   const router = useRouter()
   const { isSignedIn, user } = useUser()
   const [prompt, setPrompt] = useState(dbSection.user_prompt || '')
+  // If we have a prompt from demo page, start in generating state immediately (no empty state)
+  const hasInitialPrompt = !!dbSection.user_prompt && !dbSection.code
   const [stage, setStage] = useState<BuildStage>(
-    dbSection.status === 'complete' ? 'complete' : 'input'
+    dbSection.status === 'complete' ? 'complete' : (hasInitialPrompt ? 'generating' : 'input')
   )
   const [generatedCode, setGeneratedCode] = useState(dbSection.code || '')
   const [streamingCode, setStreamingCode] = useState('') // For real-time display
@@ -436,17 +438,14 @@ export default function SectionBuilder({
     router.push(`/sign-up?upgrade=${tier}&redirect_url=${encodeURIComponent(currentUrl)}`)
   }
 
-  // Auto-start generation if prompt is pre-filled (e.g. from homepage)
-  // This enables the "Build First" flow where users type in the terminal and land here running.
+  // Auto-start generation if prompt is pre-filled (e.g. from demo page)
+  // Since we start in 'generating' stage, this kicks off immediately
   useEffect(() => {
     if (autoBuildRanRef.current) return
-    if (dbSection.user_prompt && stage === 'input' && !generatedCode && prompt) {
+    if (dbSection.user_prompt && !generatedCode && prompt) {
       autoBuildRanRef.current = true
-      // Small delay to ensure UI is ready and feels like a "handoff"
-      const timer = setTimeout(() => {
-        handleBuildSection({ skipGuestCredit: true })
-      }, 500)
-      return () => clearTimeout(timer)
+      // Kick off generation immediately - no delay needed since we're already in generating state
+      handleBuildSection({ skipGuestCredit: true })
     }
   }, []) // Run once on mount
 
@@ -1278,8 +1277,41 @@ export default function SectionBuilder({
               allowCodeView={false}
               hideToolbar={true}
             />
+          ) : stage === 'generating' ? (
+            // Generating state - show building animation (not empty state)
+            <div className="h-full flex flex-col items-center justify-center px-6">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3 }}
+                className="text-center max-w-md"
+              >
+                {/* Spinning loader */}
+                <div className="w-20 h-20 mx-auto mb-6 relative">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                    className="absolute inset-0 rounded-full border-2 border-emerald-500/30 border-t-emerald-500"
+                  />
+                  <div className="absolute inset-2 rounded-full bg-zinc-900 flex items-center justify-center">
+                    <Sparkles className="w-6 h-6 text-emerald-500" />
+                  </div>
+                </div>
+                <h2 className="text-xl font-semibold text-white mb-2">
+                  Building your component
+                </h2>
+                <p className="text-sm text-zinc-500 leading-relaxed">
+                  This takes about 10-15 seconds...
+                </p>
+                {prompt && (
+                  <p className="text-xs text-zinc-600 mt-4 italic truncate max-w-xs mx-auto">
+                    "{prompt.slice(0, 60)}{prompt.length > 60 ? '...' : ''}"
+                  </p>
+                )}
+              </motion.div>
+            </div>
           ) : (
-            // Empty state - elegant placeholder
+            // Empty state - user needs to type a prompt
             <div className="h-full flex flex-col items-center justify-center px-6">
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
