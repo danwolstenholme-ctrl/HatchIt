@@ -576,7 +576,7 @@ export default function Home() {
                   <span className="text-zinc-500 font-mono text-sm">/mo</span>
                 </div>
                 
-                <div className="h-px w-full bg-emerald-500/20 mb-6" />
+                <div className="h-px w-full bg-gradient-to-r from-transparent via-white/20 to-transparent mb-6" />
                 
                 <ul className="space-y-4 mb-8">
                   {[

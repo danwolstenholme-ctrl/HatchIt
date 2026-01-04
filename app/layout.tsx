@@ -75,7 +75,7 @@ export default function RootLayout({
       appearance={{
         baseTheme: dark,
         variables: {
-          colorPrimary: '#10b981', // emerald-500
+          colorPrimary: '#ffffff', // white
           colorBackground: '#18181b', // zinc-900
           colorText: '#f4f4f5', // zinc-100
           colorTextSecondary: '#a1a1aa', // zinc-400
@@ -85,19 +85,19 @@ export default function RootLayout({
         },
         elements: {
           rootBox: 'font-sans',
-          card: 'bg-zinc-900 border border-zinc-800 shadow-[0_0_50px_rgba(16,185,129,0.05)]',
-          headerTitle: 'text-white font-mono font-bold',
-          headerSubtitle: 'text-zinc-400 font-mono text-xs',
-          formButtonPrimary: 'bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold shadow-[0_0_20px_-5px_rgba(16,185,129,0.5)] transition-all',
-          formFieldInput: 'bg-zinc-950 border-zinc-800 focus:border-emerald-500 text-white font-mono',
-          formFieldLabel: 'text-zinc-400 font-mono text-xs uppercase tracking-wider',
-          footerActionLink: 'text-emerald-500 hover:text-emerald-400 font-mono',
-          identityPreviewText: 'text-zinc-300 font-mono',
+          card: 'bg-zinc-900 border border-zinc-800 shadow-xl',
+          headerTitle: 'text-white font-bold',
+          headerSubtitle: 'text-zinc-400 text-sm',
+          formButtonPrimary: 'bg-white hover:bg-zinc-200 text-black font-bold shadow-lg transition-all',
+          formFieldInput: 'bg-zinc-950 border-zinc-800 focus:border-white text-white',
+          formFieldLabel: 'text-zinc-400 text-xs uppercase tracking-wider',
+          footerActionLink: 'text-white hover:text-zinc-300',
+          identityPreviewText: 'text-zinc-300',
           formFieldInputShowPasswordButton: 'text-zinc-400 hover:text-white',
-          socialButtonsBlockButton: 'bg-zinc-950 border-zinc-800 text-zinc-300 hover:bg-zinc-900 hover:text-white hover:border-emerald-500/30 transition-all',
-          socialButtonsBlockButtonText: 'font-mono text-xs',
+          socialButtonsBlockButton: 'bg-zinc-950 border-zinc-800 text-zinc-300 hover:bg-zinc-900 hover:text-white hover:border-zinc-700 transition-all',
+          socialButtonsBlockButtonText: 'text-xs',
           dividerLine: 'bg-zinc-800',
-          dividerText: 'text-zinc-600 font-mono text-[10px] uppercase',
+          dividerText: 'text-zinc-600 text-[10px] uppercase',
           footer: 'hidden', // Hide the "Secured by Clerk" footer for cleaner look if allowed, or style it minimal
         }
       }}

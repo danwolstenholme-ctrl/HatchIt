@@ -37,7 +37,7 @@ export default function FeaturesPage() {
         'The Auditor: Security & best-practice audit',
         'Recursive self-correction loop',
       ],
-      gradient: 'from-emerald-500 to-teal-600',
+      gradient: 'from-white/10 to-zinc-500/10',
     },
     {
       id: 'hatch-helper',
@@ -51,7 +51,7 @@ export default function FeaturesPage() {
         'Recursive prompt refinement',
         'Hands-free architectural control',
       ],
-      gradient: 'from-emerald-600 to-teal-700',
+      gradient: 'from-white/10 to-zinc-500/10',
       badge: 'V4.0',
     },
     {
@@ -66,23 +66,20 @@ export default function FeaturesPage() {
         'Style propagation system',
         'Modular rollback capability',
       ],
-      gradient: 'from-teal-500 to-emerald-600',
+      gradient: 'from-white/10 to-zinc-500/10',
     },
   ]
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white overflow-hidden relative">
-      {/* Scanline Overlay */}
-      <div className="fixed inset-0 pointer-events-none z-50 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDIiLz4KPC9zdmc+')] opacity-20 mix-blend-overlay" />
-      
-      {/* Matrix/Grid Background */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+      {/* Subtle Grid Background */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
       {/* Gradient orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -left-40 w-80 h-80 bg-emerald-500/10 rounded-full blur-[100px] opacity-50 md:opacity-100" />
-        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-teal-500/10 rounded-full blur-[100px] opacity-50 md:opacity-100" />
-        <div className="absolute -bottom-40 left-1/3 w-80 h-80 bg-emerald-900/20 rounded-full blur-[100px] opacity-50 md:opacity-100" />
+        <div className="absolute -top-40 -left-40 w-80 h-80 bg-white/5 rounded-full blur-[100px] opacity-50 md:opacity-100" />
+        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-zinc-500/5 rounded-full blur-[100px] opacity-50 md:opacity-100" />
+        <div className="absolute -bottom-40 left-1/3 w-80 h-80 bg-white/5 rounded-full blur-[100px] opacity-50 md:opacity-100" />
       </div>
       
       {/* Hero Section */}
@@ -91,7 +88,7 @@ export default function FeaturesPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm mb-8 font-mono"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 text-sm mb-8 font-mono"
           >
             <Zap className="w-4 h-4" />
             <span>SYSTEM_CAPABILITIES</span>
@@ -105,7 +102,7 @@ export default function FeaturesPage() {
           >
             Beyond
             <br />
-            <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
+            <span className="text-white">
               Templates.
             </span>
           </motion.h1>
@@ -127,13 +124,13 @@ export default function FeaturesPage() {
           >
             <Link
               href="/builder"
-              className="px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-md font-bold text-lg transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)]"
+              className="px-8 py-4 bg-white hover:bg-zinc-200 text-black rounded-full font-bold text-lg transition-all shadow-lg hover:scale-105"
             >
               Initialize System
             </Link>
             <Link
               href="/roadmap"
-              className="px-8 py-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-emerald-500/30 rounded-md font-semibold text-lg transition-all text-zinc-300 hover:text-white"
+              className="px-8 py-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-full font-semibold text-lg transition-all text-zinc-300 hover:text-white"
             >
               View Evolution Log
             </Link>
@@ -152,30 +149,30 @@ export default function FeaturesPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="group relative p-6 md:p-8 rounded-md bg-zinc-900/50 border border-zinc-800 hover:border-emerald-500/30 transition-all duration-300 hover:bg-zinc-900/80"
+                className="group relative p-6 md:p-8 rounded-xl bg-zinc-900/20 border border-zinc-800 hover:border-zinc-600 transition-all duration-300 hover:bg-zinc-900/40"
               >
-                <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-5 rounded-md transition-opacity duration-500`} />
+                <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-5 rounded-xl transition-opacity duration-500`} />
                 
                 <div className="relative z-10">
                   <div className="flex justify-between items-start mb-6">
-                    <div className="p-3 rounded-md bg-zinc-950 border border-zinc-800 text-emerald-400 group-hover:scale-110 transition-transform duration-300">
+                    <div className="p-3 rounded-lg bg-zinc-900 border border-zinc-800 text-white group-hover:scale-110 transition-transform duration-300">
                       {feature.icon}
                     </div>
                     {feature.badge && (
-                      <span className="px-2 py-1 rounded text-xs font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      <span className="px-2 py-1 rounded text-xs font-mono bg-white/10 text-white border border-white/20">
                         {feature.badge}
                       </span>
                     )}
                   </div>
                   
                   <h3 className="text-xl font-bold mb-1 text-white">{feature.title}</h3>
-                  <p className="text-sm font-mono text-emerald-400/80 mb-4">{feature.subtitle}</p>
+                  <p className="text-sm font-mono text-zinc-500 mb-4">{feature.subtitle}</p>
                   <p className="text-zinc-400 leading-relaxed mb-6">{feature.description}</p>
                   
                   <ul className="space-y-2">
                     {feature.details.map((detail, j) => (
                       <li key={j} className="flex items-center gap-2 text-sm text-zinc-500">
-                        <div className="w-1 h-1 rounded-full bg-emerald-500/50" />
+                        <div className="w-1 h-1 rounded-full bg-white/50" />
                         {detail}
                       </li>
                     ))}
