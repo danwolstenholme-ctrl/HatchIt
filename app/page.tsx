@@ -173,8 +173,8 @@ export default function Home() {
   const [isTransitioning, setIsTransitioning] = useState(false)
 
   const handleTransitionComplete = () => {
-    // Route to /demo for guests, /builder for signed-in users
-    router.push(isSignedIn ? '/builder' : '/demo')
+    // Go straight to builder - no /demo intermediary
+    router.push(isSignedIn ? '/builder' : '/builder?mode=guest')
   }
 
   const triggerTransition = () => {

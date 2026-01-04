@@ -124,13 +124,29 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
       }
 
       // Clean the code to remove markdown artifacts and "use client" directive
-      const cleanCode = code
+      let cleanCode = code
         .replace(/```tsx/g, '')
         .replace(/```typescript/g, '')
+        .replace(/```json/g, '')
         .replace(/```/g, '')
         .replace(/'use client'/g, '')
         .replace(/"use client"/g, '')
         .trim();
+      
+      // Handle case where API returned raw JSON instead of extracted code
+      if (cleanCode.startsWith('{') && cleanCode.includes('"code"')) {
+        try {
+          const parsed = JSON.parse(cleanCode);
+          if (parsed.code) {
+            cleanCode = parsed.code
+              .replace(/'use client'/g, '')
+              .replace(/"use client"/g, '')
+              .trim();
+          }
+        } catch {
+          // Not valid JSON, continue with original
+        }
+      }
 
       const sanitizedCode = sanitizeLessThanInText(sanitizeSvgDataUrls(cleanCode))
 

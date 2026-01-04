@@ -1,54 +1,18 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowRight, Command, Sparkles } from 'lucide-react'
+import { ArrowRight, Command } from 'lucide-react'
 import Image from 'next/image'
-import VoidTransition from '@/components/singularity/VoidTransition'
 
 // =============================================================================
-// DEMO PAGE - The Portal
-// Cinematic entrance to HatchIt. Make them feel like they're entering something special.
+// GUEST PROMPT MODAL
+// Cinematic prompt entry for guest users. Ported from /demo page.
+// Shows when guest arrives at builder with no prompt.
 // =============================================================================
 
-// Animated code rain characters
+// Animated code characters for matrix rain
 const CODE_CHARS = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン</>{}[];=>'
-
-// Floating code snippet that fades in/out
-function FloatingCode({ delay, x, y }: { delay: number; x: string; y: string }) {
-  const snippets = [
-    '<Hero gradient="emerald" />',
-    'const [magic] = useState(true)',
-    'className="flex items-center"',
-    'export default function App()',
-    '<motion.div animate={{}}/>',
-    'tailwind.config.ts',
-    'npm run build',
-    'git push origin main',
-  ]
-  const snippet = snippets[Math.floor(delay * 10) % snippets.length]
-  
-  return (
-    <motion.div
-      className="absolute font-mono text-[10px] text-emerald-500/20 whitespace-nowrap select-none pointer-events-none"
-      style={{ left: x, top: y }}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ 
-        opacity: [0, 0.3, 0.3, 0],
-        y: [20, 0, 0, -20],
-      }}
-      transition={{
-        duration: 8,
-        delay: delay,
-        repeat: Infinity,
-        repeatDelay: 4,
-      }}
-    >
-      {snippet}
-    </motion.div>
-  )
-}
 
 // Matrix-style falling character
 function MatrixDrop({ column, speed }: { column: number; speed: number }) {
@@ -95,6 +59,41 @@ function MatrixDrop({ column, speed }: { column: number; speed: number }) {
   )
 }
 
+// Floating code snippet that fades in/out
+function FloatingCode({ delay, x, y }: { delay: number; x: string; y: string }) {
+  const snippets = [
+    '<Hero gradient="emerald" />',
+    'const [magic] = useState(true)',
+    'className="flex items-center"',
+    'export default function App()',
+    '<motion.div animate={{}}/>',
+    'tailwind.config.ts',
+    'npm run build',
+    'git push origin main',
+  ]
+  const snippet = snippets[Math.floor(delay * 10) % snippets.length]
+  
+  return (
+    <motion.div
+      className="absolute font-mono text-[10px] text-emerald-500/20 whitespace-nowrap select-none pointer-events-none"
+      style={{ left: x, top: y }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ 
+        opacity: [0, 0.3, 0.3, 0],
+        y: [20, 0, 0, -20],
+      }}
+      transition={{
+        duration: 8,
+        delay: delay,
+        repeat: Infinity,
+        repeatDelay: 4,
+      }}
+    >
+      {snippet}
+    </motion.div>
+  )
+}
+
 // Glowing orb that follows mouse subtly
 function GlowOrb() {
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 })
@@ -126,55 +125,30 @@ function GlowOrb() {
   )
 }
 
-export default function DemoPage() {
-  const router = useRouter()
-  const [isTransitioning, setIsTransitioning] = useState(false)
-  const [prompt, setPrompt] = useState('')
-  const [hasEntered, setHasEntered] = useState(false)
-  const [isFocused, setIsFocused] = useState(false)
+interface GuestPromptModalProps {
+  isOpen: boolean
+  onSubmit: (prompt: string) => void
+}
 
-  // Check if user already has a cached preview - skip demo and go straight to builder
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    try {
-      // Check for last used prompt
-      const lastPrompt = localStorage.getItem('hatch_last_prompt')
-      if (lastPrompt) {
-        const storageKey = `hatch_preview_${btoa(lastPrompt.slice(0, 100)).replace(/[^a-zA-Z0-9]/g, '')}`
-        const saved = localStorage.getItem(storageKey)
-        if (saved) {
-          const { code, timestamp } = JSON.parse(saved)
-          // Valid cached code exists (within 1 hour)
-          if (code && Date.now() - timestamp < 60 * 60 * 1000) {
-            // Redirect to builder with the original prompt
-            router.replace(`/builder?mode=guest&prompt=${encodeURIComponent(lastPrompt)}`)
-            return
-          }
-        }
-      }
-    } catch { /* ignore */ }
-  }, [router])
+export default function GuestPromptModal({ isOpen, onSubmit }: GuestPromptModalProps) {
+  const [prompt, setPrompt] = useState('')
+  const [isFocused, setIsFocused] = useState(false)
+  const [hasEntered, setHasEntered] = useState(false)
 
   // Entrance animation trigger
   useEffect(() => {
-    const timer = setTimeout(() => setHasEntered(true), 100)
-    return () => clearTimeout(timer)
-  }, [])
-
-  const handleInitialize = () => {
-    // Require a real prompt (at least 10 characters)
-    if (!prompt.trim() || prompt.trim().length < 10) {
-      return
+    if (isOpen) {
+      const timer = setTimeout(() => setHasEntered(true), 100)
+      return () => clearTimeout(timer)
+    } else {
+      setHasEntered(false)
     }
-    setIsTransitioning(true)
-  }
+  }, [isOpen])
 
-  const handleTransitionComplete = () => {
-    const params = new URLSearchParams()
-    params.set('mode', 'guest')
-    // Prompt is guaranteed to exist due to handleInitialize check
-    params.set('prompt', prompt.trim())
-    router.push(`/builder?${params.toString()}`)
+  const handleSubmit = () => {
+    if (prompt.trim().length >= 10) {
+      onSubmit(prompt.trim())
+    }
   }
 
   // Quick prompt suggestions - showcase specific, impressive capabilities
@@ -185,85 +159,79 @@ export default function DemoPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Void Transition */}
-      <AnimatePresence>
-        {isTransitioning && (
-          <VoidTransition 
-            onComplete={handleTransitionComplete} 
-            prompt={prompt.trim() || undefined}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* === CINEMATIC BACKGROUND === */}
-      
-      {/* Mouse-following glow */}
-      <GlowOrb />
-      
-      {/* Matrix rain - sparse, elegant */}
-      <div className="absolute inset-0 overflow-hidden opacity-40">
-        {[5, 15, 25, 35, 45, 55, 65, 75, 85, 95].map((col, i) => (
-          <MatrixDrop key={col} column={col} speed={8 + (i % 3) * 2} />
-        ))}
-      </div>
-      
-      {/* Floating code snippets */}
-      <div className="absolute inset-0 overflow-hidden">
-        <FloatingCode delay={0} x="10%" y="20%" />
-        <FloatingCode delay={2} x="80%" y="15%" />
-        <FloatingCode delay={4} x="15%" y="70%" />
-        <FloatingCode delay={6} x="75%" y="75%" />
-        <FloatingCode delay={1} x="60%" y="30%" />
-        <FloatingCode delay={3} x="25%" y="50%" />
-      </div>
-      
-      {/* Perspective grid floor */}
-      <motion.div 
-        className="absolute inset-0 pointer-events-none"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: hasEntered ? 1 : 0 }}
-        transition={{ duration: 2, delay: 0.5 }}
-      >
-        <div 
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(16,185,129,1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(16,185,129,1) 1px, transparent 1px)
-            `,
-            backgroundSize: '80px 80px',
-            transform: 'perspective(400px) rotateX(60deg) translateY(-30%)',
-            transformOrigin: 'center top',
-          }}
-        />
-      </motion.div>
-      
-      {/* Central glow pulse */}
-      <motion.div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full pointer-events-none"
-        style={{
-          background: 'radial-gradient(circle, rgba(16,185,129,0.08) 0%, transparent 60%)',
-        }}
-        animate={{
-          scale: [1, 1.1, 1],
-          opacity: [0.5, 0.8, 0.5],
-        }}
-        transition={{
-          duration: 4,
-          repeat: Infinity,
-          ease: 'easeInOut',
-        }}
-      />
-      
-      {/* Vignette */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,transparent_40%,rgba(0,0,0,0.8)_100%)] pointer-events-none" />
-
-      {/* === MAIN CONTENT === */}
-      <AnimatePresence mode="wait">
-        {!isTransitioning && (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 bg-black flex items-center justify-center p-4 overflow-hidden"
+        >
+          {/* === CINEMATIC BACKGROUND === */}
+          
+          {/* Mouse-following glow */}
+          <GlowOrb />
+          
+          {/* Matrix rain - sparse, elegant */}
+          <div className="absolute inset-0 overflow-hidden opacity-40">
+            {[5, 15, 25, 35, 45, 55, 65, 75, 85, 95].map((col, i) => (
+              <MatrixDrop key={col} column={col} speed={8 + (i % 3) * 2} />
+            ))}
+          </div>
+          
+          {/* Floating code snippets */}
+          <div className="absolute inset-0 overflow-hidden">
+            <FloatingCode delay={0} x="10%" y="20%" />
+            <FloatingCode delay={2} x="80%" y="15%" />
+            <FloatingCode delay={4} x="15%" y="70%" />
+            <FloatingCode delay={6} x="75%" y="75%" />
+            <FloatingCode delay={1} x="60%" y="30%" />
+            <FloatingCode delay={3} x="25%" y="50%" />
+          </div>
+          
+          {/* Perspective grid floor */}
+          <motion.div 
+            className="absolute inset-0 pointer-events-none"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: hasEntered ? 1 : 0 }}
+            transition={{ duration: 2, delay: 0.5 }}
+          >
+            <div 
+              className="absolute inset-0 opacity-[0.03]"
+              style={{
+                backgroundImage: `
+                  linear-gradient(rgba(16,185,129,1) 1px, transparent 1px),
+                  linear-gradient(90deg, rgba(16,185,129,1) 1px, transparent 1px)
+                `,
+                backgroundSize: '80px 80px',
+                transform: 'perspective(400px) rotateX(60deg) translateY(-30%)',
+                transformOrigin: 'center top',
+              }}
+            />
+          </motion.div>
+          
+          {/* Central glow pulse */}
           <motion.div
-            key="portal"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(16,185,129,0.08) 0%, transparent 60%)',
+            }}
+            animate={{
+              scale: [1, 1.1, 1],
+              opacity: [0.5, 0.8, 0.5],
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+          />
+          
+          {/* Vignette */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,transparent_40%,rgba(0,0,0,0.8)_100%)] pointer-events-none" />
+
+          {/* === MAIN CONTENT === */}
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }}
@@ -324,6 +292,12 @@ export default function DemoPage() {
                     onChange={(e) => setPrompt(e.target.value)}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey && prompt.trim().length >= 10) {
+                        e.preventDefault()
+                        handleSubmit()
+                      }
+                    }}
                     placeholder="A landing page for my startup with hero, features, and pricing..."
                     className="w-full min-h-[100px] bg-transparent text-white text-lg placeholder-zinc-600 focus:outline-none resize-none leading-relaxed"
                     autoFocus
@@ -365,7 +339,7 @@ export default function DemoPage() {
                   </div>
                   
                   <motion.button
-                    onClick={handleInitialize}
+                    onClick={handleSubmit}
                     disabled={prompt.trim().length < 10}
                     className={`group relative px-6 py-2.5 font-semibold rounded-xl transition-all flex items-center gap-2 overflow-hidden ${
                       prompt.trim().length < 10 
@@ -427,8 +401,8 @@ export default function DemoPage() {
               <span>Join r/hatchit for early access</span>
             </motion.a>
           </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }

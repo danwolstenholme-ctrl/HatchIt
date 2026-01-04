@@ -1284,6 +1284,25 @@ export default function GeneratedPage() {
       </div>
     )
   }
+  
+  // Show simple loading state while initializing (especially for guest mode)
+  if (phase === 'initializing' || isLoading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <motion.div
+          animate={{ scale: [1, 1.05, 1], opacity: [0.6, 0.9, 0.6] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <Image 
+            src="/assets/hatchit_definitive.svg" 
+            alt="Loading" 
+            width={48} 
+            height={48}
+          />
+        </motion.div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950">

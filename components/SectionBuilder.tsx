@@ -30,6 +30,7 @@ import {
   Eye,
   ArrowRight
 } from 'lucide-react'
+import GuestPromptModal from './GuestPromptModal'
 
 // Suggestions based on section type
 const getSuggestions = (id: string) => {
@@ -463,15 +464,52 @@ export default function SectionBuilder({
   const { isSignedIn, user } = useUser()
   // Use initialPrompt from props (passed from demo) or fallback to dbSection
   const effectivePrompt = initialPrompt || dbSection.user_prompt || ''
+  
+  // localStorage helpers for guest preview persistence
+  const getStorageKey = (p: string) => `hatch_preview_${btoa(p.slice(0, 100)).replace(/[^a-zA-Z0-9]/g, '')}`
+  const getSavedPreview = (p: string) => {
+    if (typeof window === 'undefined' || !p) return null
+    try {
+      const saved = localStorage.getItem(getStorageKey(p))
+      if (saved) {
+        const { code, reasoning, timestamp } = JSON.parse(saved)
+        // Expire after 1 hour
+        if (Date.now() - timestamp < 60 * 60 * 1000) {
+          return { code, reasoning }
+        }
+        localStorage.removeItem(getStorageKey(p))
+      }
+    } catch { /* ignore */ }
+    return null
+  }
+  const savePreview = (p: string, code: string, reason: string) => {
+    if (typeof window === 'undefined' || !p || !code) return
+    try {
+      localStorage.setItem(getStorageKey(p), JSON.stringify({
+        code,
+        reasoning: reason,
+        timestamp: Date.now()
+      }))
+    } catch { /* ignore */ }
+  }
+  const clearSavedPreview = (p: string) => {
+    if (typeof window === 'undefined' || !p) return
+    try { localStorage.removeItem(getStorageKey(p)) } catch { /* ignore */ }
+  }
+  
+  // Check for saved preview on init (guest mode)
+  const savedPreview = guestMode ? getSavedPreview(effectivePrompt) : null
+  
   const [prompt, setPrompt] = useState(effectivePrompt)
   // If we have a prompt from demo page, start in generating state immediately (no empty state)
-  const hasInitialPrompt = !!effectivePrompt && !dbSection.code
+  // UNLESS we have a saved preview, then skip straight to complete
+  const hasInitialPrompt = !!effectivePrompt && !dbSection.code && !savedPreview
   const [stage, setStage] = useState<BuildStage>(
-    dbSection.status === 'complete' ? 'complete' : (hasInitialPrompt ? 'generating' : 'input')
+    savedPreview ? 'complete' : (dbSection.status === 'complete' ? 'complete' : (hasInitialPrompt ? 'generating' : 'input'))
   )
-  const [generatedCode, setGeneratedCode] = useState(dbSection.code || '')
+  const [generatedCode, setGeneratedCode] = useState(savedPreview?.code || dbSection.code || '')
   const [streamingCode, setStreamingCode] = useState('') // For real-time display
-  const [reasoning, setReasoning] = useState('') // AI's design reasoning
+  const [reasoning, setReasoning] = useState(savedPreview?.reasoning || '') // AI's design reasoning
   const [refined, setRefined] = useState(dbSection.refined)
   const [refinementChanges, setRefinementChanges] = useState<string[]>(
     dbSection.refinement_changes || []
@@ -489,8 +527,13 @@ export default function SectionBuilder({
   const [explanation, setExplanation] = useState<string | null>(null)
   const [isExplaining, setIsExplaining] = useState(false)
   const [isDreaming, setIsDreaming] = useState(false)
+  
+  // Guest prompt modal - shows when guest arrives with no prompt
+  const [showGuestPromptModal, setShowGuestPromptModal] = useState(
+    guestMode && !effectivePrompt && !savedPreview
+  )
 
-  // Paywall Logic: Free users get 3 credits (1 Build + 2 Refines)
+  // Paywall Logic
   const { subscription, tier } = useSubscription()
   const isPaidTier = tier === 'architect' || tier === 'visionary' || tier === 'singularity'
   const isProOrHigher = tier === 'visionary' || tier === 'singularity'
@@ -499,14 +542,49 @@ export default function SectionBuilder({
   const freeCreditsUsed = (user?.publicMetadata?.freeCreditsUsed as number) || 0
   const architectRefinementsUsed = (user?.publicMetadata?.architectRefinementsUsed as number) || 0
   
-  // NEW LOGIC:
-  // 1. Builds are generous (10 credits) to allow finishing a site.
-  // 2. Refinements are strictly limited (1 credit) for free users.
+  // TIERED LIMITS:
+  // - Guest (not signed in): 1 free build + 3 refinements, then sign up
+  // - Free user (signed in): 10 builds to experiment
+  // - Paid tiers: Unlimited
+  const GUEST_BUILD_LIMIT = 1
+  const GUEST_REFINE_LIMIT = 3
   const FREE_BUILD_LIMIT = 10
   const FREE_REFINE_LIMIT = 1
   
-  const isBuildLocked = !isPaidTier && freeCreditsUsed >= FREE_BUILD_LIMIT
-  const isRefineLocked = !isPaidTier && architectRefinementsUsed >= FREE_REFINE_LIMIT
+  // Check guest build count from localStorage
+  const getGuestBuilds = () => {
+    if (typeof window === 'undefined') return 0
+    try {
+      return parseInt(localStorage.getItem('hatch_guest_builds') || '0', 10)
+    } catch { return 0 }
+  }
+  const incrementGuestBuilds = () => {
+    if (typeof window === 'undefined') return
+    try {
+      const current = getGuestBuilds()
+      localStorage.setItem('hatch_guest_builds', String(current + 1))
+    } catch { /* ignore */ }
+  }
+  
+  // Check guest refinement count from localStorage
+  const getGuestRefinements = () => {
+    if (typeof window === 'undefined') return 0
+    try {
+      return parseInt(localStorage.getItem('hatch_guest_refinements') || '0', 10)
+    } catch { return 0 }
+  }
+  const incrementGuestRefinements = () => {
+    if (typeof window === 'undefined') return
+    try {
+      const current = getGuestRefinements()
+      localStorage.setItem('hatch_guest_refinements', String(current + 1))
+    } catch { /* ignore */ }
+  }
+  
+  const isGuestBuildLocked = guestMode && !isSignedIn && getGuestBuilds() >= GUEST_BUILD_LIMIT
+  const isGuestRefineLocked = guestMode && !isSignedIn && getGuestRefinements() >= GUEST_REFINE_LIMIT
+  const isBuildLocked = isGuestBuildLocked || (!isPaidTier && isSignedIn && freeCreditsUsed >= FREE_BUILD_LIMIT)
+  const isRefineLocked = isGuestRefineLocked || (!isPaidTier && isSignedIn && architectRefinementsUsed >= FREE_REFINE_LIMIT)
   
   // General lock for "Deploy" or extreme usage
   const isLocked = isBuildLocked && isRefineLocked
@@ -520,6 +598,21 @@ export default function SectionBuilder({
   const goToSignUp = (tier: string = 'pro') => {
     const currentUrl = window.location.href
     router.push(`/sign-up?upgrade=${tier}&redirect_url=${encodeURIComponent(currentUrl)}`)
+  }
+  
+  // Handle prompt submission from guest modal
+  const handleGuestPromptSubmit = (submittedPrompt: string) => {
+    setShowGuestPromptModal(false)
+    setPrompt(submittedPrompt)
+    setStage('generating')
+    // Save the prompt to localStorage for later retrieval
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('hatch_last_prompt', submittedPrompt)
+    }
+    // Trigger build with the new prompt
+    setTimeout(() => {
+      handleBuildSection({ overridePrompt: submittedPrompt, skipGuestCredit: true })
+    }, 100)
   }
 
   // Auto-start generation if prompt is pre-filled (e.g. from demo page)
@@ -985,18 +1078,36 @@ export default function SectionBuilder({
     }
   }
 
-  const handleBuildSection = async (options?: { skipGuestCredit?: boolean }) => {
+  const handleBuildSection = async (options?: { skipGuestCredit?: boolean; overridePrompt?: string }) => {
     const skipGuestCredit = options?.skipGuestCredit
+    const buildPrompt = options?.overridePrompt || prompt
+    
+    // Check localStorage again in case of back button navigation
+    if (guestMode && !generatedCode) {
+      const cached = getSavedPreview(buildPrompt)
+      if (cached?.code) {
+        setGeneratedCode(cached.code)
+        setReasoning(cached.reasoning || '')
+        setStage('complete')
+        return
+      }
+    }
+    
     if (isBuildLocked) {
       setMobileTab('preview')
-      // Show upgrade modal or toast
+      // Guest limit reached - redirect to signup
+      if (isGuestBuildLocked) {
+        goToSignUp('architect')
+        return
+      }
+      // Signed-in free user limit
       setError("Free build limit reached. Upgrade to continue building.")
       return
     }
     // NO MORE GENERATION LIMITS - free users can build unlimited
     // Paywall is at DEPLOY/EXPORT only
 
-    if (!prompt.trim()) {
+    if (!buildPrompt.trim()) {
       setError('Please describe what you want for this section')
       return
     }
@@ -1007,7 +1118,7 @@ export default function SectionBuilder({
     setReasoning('') // Clear previous reasoning
     setHasSelfHealed(false)
     
-    chronosphere.log('generation', { prompt, section: section.name }, section.id)
+    chronosphere.log('generation', { prompt: buildPrompt, section: section.name }, section.id)
 
     // Demo mode - simulate generation with mock code
     // DISABLED: We now use the real API for everyone (ungated)
@@ -1052,7 +1163,7 @@ export default function SectionBuilder({
           sectionName: section.name,
           sectionDescription: section.description,
           sectionPromptHint: section.prompt,
-          userPrompt: prompt,
+          userPrompt: buildPrompt,
           previousSections: allSectionsCode,
           brandConfig: brandConfig ? {
             brandName: brandConfig.brandName,
@@ -1097,6 +1208,15 @@ export default function SectionBuilder({
       setRefined(false)
       setRefinementChanges([])
       setStage('complete')
+      
+      // Save to localStorage for guest preview persistence
+      if (guestMode) {
+        savePreview(buildPrompt, generatedCode, aiReasoning || '')
+        // Also save the prompt so demo page can restore it
+        try { localStorage.setItem('hatch_last_prompt', buildPrompt) } catch { /* ignore */ }
+        // Note: Don't increment guest builds here - let them refine first
+        // The signup prompt comes after refinements are exhausted
+      }
 
       // Notify parent with generated code
       onComplete(generatedCode, false)
@@ -1115,6 +1235,11 @@ export default function SectionBuilder({
 
   const handleRebuild = () => {
     chronosphere.log('rejection', { section: section.name, reason: 'rebuild' }, section.id)
+    // Clear saved preview so user can regenerate fresh
+    if (guestMode) {
+      clearSavedPreview(prompt)
+      try { localStorage.removeItem('hatch_last_prompt') } catch { /* ignore */ }
+    }
     setStage('input')
     setGeneratedCode('')
     setRefined(false)
@@ -1243,7 +1368,12 @@ export default function SectionBuilder({
       setRefinementChanges([...refinementChanges, ...(changes || [refinePrompt])])
       setRefinePrompt('')
       setSelectedElement(null) // Clear selection after refine
-      // No more limits - unlimited refinements
+      
+      // Track guest refinements
+      if (guestMode && !isSignedIn) {
+        incrementGuestRefinements()
+      }
+      
       onComplete(refinedCode, true, [...refinementChanges, ...(changes || [refinePrompt])])
       
       // Evolve style DNA (background)
@@ -1372,6 +1502,12 @@ export default function SectionBuilder({
     
     return (
       <div className="relative h-screen w-full bg-zinc-950 overflow-hidden flex flex-col">
+        {/* Guest Prompt Modal - shows when guest has no prompt */}
+        <GuestPromptModal 
+          isOpen={showGuestPromptModal}
+          onSubmit={handleGuestPromptSubmit}
+        />
+        
         {/* Preview Area - takes full height minus bottom panel */}
         <div className="flex-1 flex flex-col min-h-0">
           {generatedCode ? (
@@ -1406,11 +1542,21 @@ export default function SectionBuilder({
                     animate={{ opacity: 1, scale: 1 }}
                     className="text-center px-6"
                   >
-                    <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-zinc-800/80 border border-zinc-700 flex items-center justify-center">
-                      <Eye className="w-5 h-5 text-zinc-400" />
-                    </div>
-                    <p className="text-sm font-medium text-white mb-1">Code generating...</p>
-                    <p className="text-xs text-zinc-500">Sign up to view & export</p>
+                    {/* Breathing logo animation */}
+                    <motion.div
+                      animate={{ scale: [1, 1.05, 1], opacity: [0.6, 0.9, 0.6] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      className="w-12 h-12 mx-auto mb-4"
+                    >
+                      <Image 
+                        src="/assets/hatchit_definitive.svg" 
+                        alt="Building" 
+                        width={48} 
+                        height={48}
+                        className="w-full h-full"
+                      />
+                    </motion.div>
+                    <p className="text-xs text-zinc-500">Sign up to view & export code</p>
                   </motion.div>
                 </div>
               </div>
@@ -1421,16 +1567,19 @@ export default function SectionBuilder({
                 <div className="p-6 border-b border-zinc-800/50">
                   {/* Spinning loader */}
                   <div className="flex items-center gap-4 mb-6">
-                    <div className="w-10 h-10 relative flex-shrink-0">
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                        className="absolute inset-0 rounded-full border-2 border-emerald-500/20 border-t-emerald-500"
+                    <motion.div
+                      animate={{ scale: [1, 1.08, 1], opacity: [0.7, 1, 0.7] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      className="w-10 h-10 flex-shrink-0"
+                    >
+                      <Image 
+                        src="/assets/hatchit_definitive.svg" 
+                        alt="Building" 
+                        width={40} 
+                        height={40}
+                        className="w-full h-full"
                       />
-                      <div className="absolute inset-1.5 rounded-full bg-zinc-900 flex items-center justify-center">
-                        <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
-                      </div>
-                    </div>
+                    </motion.div>
                     <div className="flex-1">
                       <motion.p 
                         key={loadingStage}
@@ -1516,7 +1665,24 @@ export default function SectionBuilder({
                 )}
               </div>
             </div>
-          ) : null}
+          ) : (
+            // Empty state when waiting for prompt modal
+            <div className="h-full flex items-center justify-center bg-zinc-950">
+              <motion.div
+                animate={{ scale: [1, 1.05, 1], opacity: [0.4, 0.6, 0.4] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                className="w-16 h-16"
+              >
+                <Image 
+                  src="/assets/hatchit_definitive.svg" 
+                  alt="Loading" 
+                  width={64} 
+                  height={64}
+                  className="w-full h-full"
+                />
+              </motion.div>
+            </div>
+          )}
         </div>
 
         {/* Bottom Panel - fixed at bottom (NO INPUT STAGE - prompt comes from /demo) */}
@@ -1998,11 +2164,19 @@ export default function SectionBuilder({
                   {guestMode ? (
                     <div className="p-4 flex items-center justify-center gap-3">
                       <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                        className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full"
-                      />
-                      <span className="text-sm text-zinc-400 font-mono">Building...</span>
+                        animate={{ scale: [1, 1.1, 1], opacity: [0.7, 1, 0.7] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                        className="w-6 h-6"
+                      >
+                        <Image 
+                          src="/assets/hatchit_definitive.svg" 
+                          alt="Building" 
+                          width={24} 
+                          height={24}
+                          className="w-full h-full"
+                        />
+                      </motion.div>
+                      <span className="text-sm text-zinc-400">Building...</span>
                     </div>
                   ) : (
                     <ThinkingLog />
