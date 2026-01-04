@@ -256,7 +256,7 @@ ${code}`
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
+        model: 'claude-sonnet-4-5-20250929',
         max_tokens: 8192,
         system: isUserDirected ? USER_REFINE_SYSTEM_PROMPT : REFINER_SYSTEM_PROMPT,
         messages: messages
