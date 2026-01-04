@@ -34,12 +34,24 @@ function BuilderContent() {
 
   // Local dev: always allow guest mode so testing skips auth
   const forceGuest = (process.env.NEXT_PUBLIC_APP_ENV || '').startsWith('local')
-  // Treat anyone not signed in as a guest automatically
-  const isGuest = forceGuest || mode === 'guest' || mode === 'demo' || !isSignedIn
+  
+  // Treat anyone not signed in as a guest automatically.
+  // If signed in, we ignore mode=guest (it's likely a leftover redirect param).
+  const isGuest = forceGuest || !isSignedIn
 
   // Get subscription from Clerk metadata
   const subscription = user?.publicMetadata?.accountSubscription as AccountSubscription | null
   const hasActiveSubscription = subscription?.status === 'active'
+
+  // Clean up URL: If signed in but URL has mode=guest, strip it
+  useEffect(() => {
+    if (isLoaded && isSignedIn && (mode === 'guest' || mode === 'demo')) {
+      const newParams = new URLSearchParams(searchParams.toString())
+      newParams.delete('mode')
+      const newPath = newParams.toString() ? `/builder?${newParams.toString()}` : '/builder'
+      router.replace(newPath)
+    }
+  }, [isLoaded, isSignedIn, mode, router, searchParams])
 
   // Handle upgrade param OR no subscription - redirect to Stripe checkout
   useEffect(() => {
