@@ -17,6 +17,7 @@ interface SectionPreviewProps {
   onTextEdit?: (oldText: string, newText: string) => void
   allowCodeView?: boolean
   onUpgradeClick?: () => void
+  hideToolbar?: boolean // Hide the toolbar for immersive views (guest mode)
 }
 
 type DeviceView = 'mobile' | 'tablet' | 'desktop'
@@ -43,7 +44,7 @@ const sanitizeLessThanInText = (input: string) => {
   return input.replace(/<\s+(\d)/g, '&lt; $1')
 }
 
-export default function SectionPreview({ code, darkMode = true, onRuntimeError, inspectorMode = false, onElementSelect, captureTrigger = 0, onScreenshotCaptured, editMode = false, onTextEdit, allowCodeView = false, onUpgradeClick }: SectionPreviewProps) {
+export default function SectionPreview({ code, darkMode = true, onRuntimeError, inspectorMode = false, onElementSelect, captureTrigger = 0, onScreenshotCaptured, editMode = false, onTextEdit, allowCodeView = false, onUpgradeClick, hideToolbar = false }: SectionPreviewProps) {
   // Default to desktop on desktop, mobile on mobile devices
   const [deviceView, setDeviceView] = useState<DeviceView>('desktop')
   const [viewMode, setViewMode] = useState<'preview' | 'code'>('preview')
@@ -613,76 +614,78 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
 
   return (
     <div className="flex-1 flex flex-col min-h-0">
-      {/* View + Device Bar */}
-      <div className="flex items-center justify-between gap-2 px-3 py-2 bg-zinc-900/60 border-b border-zinc-800">
-        {!isMobileDevice && (
-          <div className="inline-flex bg-zinc-900/70 border border-zinc-800 rounded-lg p-1 shadow-sm">
-            <button
-              onClick={() => setViewMode('preview')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
-                viewMode === 'preview'
-                  ? 'bg-gradient-to-r from-emerald-600/70 to-teal-500/70 text-white shadow-lg shadow-emerald-500/20'
-                  : 'text-zinc-500 hover:text-zinc-200'
-              }`}
-            >
-              Visual
-            </button>
-            <button
-              onClick={() => {
-                if (allowCodeView) {
-                  setViewMode('code')
-                } else {
-                  setShowCodePaywall(true)
-                }
-              }}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${
-                viewMode === 'code'
-                  ? 'bg-gradient-to-r from-emerald-600/70 to-teal-500/70 text-white shadow-lg shadow-emerald-500/20'
-                  : 'text-zinc-500 hover:text-zinc-200'
-              }`}
-            >
-              Code
-              {!allowCodeView && <span className="text-amber-400">🔒</span>}
-            </button>
-          </div>
-        )}
-
-        {!isMobileDevice && viewMode === 'preview' && (
-          <div className="flex items-center gap-2">
-            {/* Edit Mode Toggle */}
-            <button
-              onClick={() => setIsEditModeActive(!isEditModeActive)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 border ${
-                isEditModeActive
-                  ? 'bg-violet-500/20 text-violet-400 border-violet-500/50'
-                  : 'bg-zinc-900/70 text-zinc-500 border-zinc-800 hover:text-zinc-200 hover:border-zinc-700'
-              }`}
-              title="Double-click text to edit"
-            >
-              <Type className="w-3.5 h-3.5" />
-              <span>Edit Text</span>
-            </button>
-            
-            {/* Device Selector */}
-            <div className="flex items-center gap-1 bg-zinc-900/70 border border-zinc-800 rounded-lg p-1">
-              {(Object.keys(deviceSizes) as DeviceView[]).map((device) => (
-                <button
-                  key={device}
-                  onClick={() => setDeviceView(device)}
-                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                    deviceView === device
-                      ? 'bg-zinc-800 text-white border border-emerald-400/30'
-                      : 'text-zinc-500 hover:text-zinc-200'
-                  }`}
-                >
-                  <span>{deviceSizes[device].icon}</span>
-                  <span>{deviceSizes[device].label}</span>
-                </button>
-              ))}
+      {/* View + Device Bar - hidden when hideToolbar is true */}
+      {!hideToolbar && (
+        <div className="flex items-center justify-between gap-2 px-3 py-2 bg-zinc-900/60 border-b border-zinc-800">
+          {!isMobileDevice && (
+            <div className="inline-flex bg-zinc-900/70 border border-zinc-800 rounded-lg p-1 shadow-sm">
+              <button
+                onClick={() => setViewMode('preview')}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                  viewMode === 'preview'
+                    ? 'bg-gradient-to-r from-emerald-600/70 to-teal-500/70 text-white shadow-lg shadow-emerald-500/20'
+                    : 'text-zinc-500 hover:text-zinc-200'
+                }`}
+              >
+                Visual
+              </button>
+              <button
+                onClick={() => {
+                  if (allowCodeView) {
+                    setViewMode('code')
+                  } else {
+                    setShowCodePaywall(true)
+                  }
+                }}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${
+                  viewMode === 'code'
+                    ? 'bg-gradient-to-r from-emerald-600/70 to-teal-500/70 text-white shadow-lg shadow-emerald-500/20'
+                    : 'text-zinc-500 hover:text-zinc-200'
+                }`}
+              >
+                Code
+                {!allowCodeView && <span className="text-amber-400">🔒</span>}
+              </button>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+
+          {!isMobileDevice && viewMode === 'preview' && (
+            <div className="flex items-center gap-2">
+              {/* Edit Mode Toggle */}
+              <button
+                onClick={() => setIsEditModeActive(!isEditModeActive)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 border ${
+                  isEditModeActive
+                    ? 'bg-violet-500/20 text-violet-400 border-violet-500/50'
+                    : 'bg-zinc-900/70 text-zinc-500 border-zinc-800 hover:text-zinc-200 hover:border-zinc-700'
+                }`}
+                title="Double-click text to edit"
+              >
+                <Type className="w-3.5 h-3.5" />
+                <span>Edit Text</span>
+              </button>
+              
+              {/* Device Selector */}
+              <div className="flex items-center gap-1 bg-zinc-900/70 border border-zinc-800 rounded-lg p-1">
+                {(Object.keys(deviceSizes) as DeviceView[]).map((device) => (
+                  <button
+                    key={device}
+                    onClick={() => setDeviceView(device)}
+                    className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                      deviceView === device
+                        ? 'bg-zinc-800 text-white border border-emerald-400/30'
+                        : 'text-zinc-500 hover:text-zinc-200'
+                    }`}
+                  >
+                    <span>{deviceSizes[device].icon}</span>
+                    <span>{deviceSizes[device].label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
       
       {/* Code Paywall Modal */}
       {showCodePaywall && (
@@ -718,7 +721,7 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
       )}
       
       {/* Preview / Code Container */}
-      <div className="flex-1 flex items-start justify-center overflow-auto bg-zinc-950 p-4">
+      <div className={`flex-1 flex items-start justify-center overflow-auto bg-zinc-950 ${hideToolbar ? 'p-0' : 'p-4'}`}>
         {viewMode === 'code' && allowCodeView ? (
           <div className="w-full max-w-5xl h-full bg-zinc-900 border border-zinc-800 rounded-lg shadow-2xl overflow-auto">
             <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-800 bg-zinc-900/80">
@@ -731,16 +734,16 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
         ) : (
           <motion.div
             initial={false}
-            animate={{ width: deviceView === 'mobile' && isMobileDevice ? '100%' : deviceSizes[deviceView].width }}
+            animate={{ width: hideToolbar ? '100%' : (deviceView === 'mobile' && isMobileDevice ? '100%' : deviceSizes[deviceView].width) }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="h-full bg-zinc-900 rounded-lg overflow-hidden shadow-2xl"
+            className={`h-full overflow-hidden ${hideToolbar ? '' : 'bg-zinc-900 rounded-lg shadow-2xl'}`}
             style={{ 
               maxWidth: '100%',
-              minHeight: isMobileDevice ? '640px' : deviceView === 'desktop' ? '100%' : '600px',
+              minHeight: hideToolbar ? '100%' : (isMobileDevice ? '640px' : deviceView === 'desktop' ? '100%' : '600px'),
             }}
           >
-            {/* Device Frame */}
-            {deviceView !== 'desktop' && (
+            {/* Device Frame - hidden in guest mode */}
+            {!hideToolbar && deviceView !== 'desktop' && (
               <div className="h-6 bg-zinc-800 flex items-center justify-center gap-1 border-b border-zinc-700">
                 <div className="w-16 h-1 bg-zinc-600 rounded-full" />
               </div>
@@ -750,7 +753,7 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
               srcDoc={srcDoc}
               className="w-full border-0"
               style={{ 
-                height: deviceView === 'desktop' ? '100%' : 'calc(100% - 24px)',
+                height: hideToolbar ? '100%' : (deviceView === 'desktop' ? '100%' : 'calc(100% - 24px)'),
               }}
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
               title="Section Preview"

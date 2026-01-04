@@ -1276,6 +1276,7 @@ export default function SectionBuilder({
               onScreenshotCaptured={handleScreenshotCaptured}
               editMode={false}
               allowCodeView={false}
+              hideToolbar={true}
             />
           ) : (
             // Empty state - elegant placeholder
