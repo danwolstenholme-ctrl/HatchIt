@@ -125,6 +125,12 @@ ${Array.from(allLucideImports).map((name) => {
   ${seo?.title ? `<title>${seo.title}</title>` : ''}
   ${seo?.description ? `<meta name="description" content="${seo.description}">` : ''}
   ${seo?.keywords ? `<meta name="keywords" content="${seo.keywords}">` : ''}
+  
+  <!-- Singularity Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=JetBrains+Mono:wght@100..800&display=swap" rel="stylesheet">
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Load React first and expose globally IMMEDIATELY -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -140,6 +146,10 @@ ${Array.from(allLucideImports).map((name) => {
       darkMode: 'class',
       theme: {
         extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
           colors: {
             zinc: { 950: '#09090b', 900: '#18181b', 800: '#27272a', 700: '#3f3f46', 600: '#52525b', 500: '#71717a', 400: '#a1a1aa', 300: '#d4d4d8', 200: '#e4e4e7', 100: '#f4f4f5' }
           }
