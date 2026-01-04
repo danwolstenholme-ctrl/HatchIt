@@ -8,6 +8,9 @@ import { useUser } from '@clerk/nextjs'
 import { formatDistanceToNow } from 'date-fns'
 import { DbProject } from '@/lib/supabase'
 
+import GuestCreditBadge from '@/components/GuestCreditBadge'
+import PremiumFeaturesShowcase from '@/components/PremiumFeaturesShowcase'
+
 type ViewMode = 'grid' | 'list'
 
 export default function ProjectsPage() {
@@ -20,8 +23,13 @@ export default function ProjectsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
 
   const accountSubscription = user?.publicMetadata?.accountSubscription as any
+  
+  // Mock guest stats for the dashboard view (since this is authenticated, we'd normally pull real usage)
+  // For now, we'll show the components as "available upgrades"
+  const isFreeTier = !accountSubscription || accountSubscription.tier === 'free' || accountSubscription.tier === 'trial'
 
   // Fetch projects from Supabase + auto-migrate localStorage
   useEffect(() => {

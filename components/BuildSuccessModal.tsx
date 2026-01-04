@@ -27,6 +27,10 @@ export default function BuildSuccessModal({
   const isOut = buildsRemaining === 0
 
   if (!isOpen) return null
+  
+  // Only show for guests when they hit a limit or are very close
+  // The user wants the "experience" to be uninterrupted
+  if (isGuest && !isLow && !isOut) return null
 
   return (
     <AnimatePresence>
