@@ -77,9 +77,8 @@ type BuildPhase = 'initializing' | 'building' | 'review'
 
 interface BuildFlowControllerProps {
   existingProjectId?: string
-  demoMode?: boolean
   initialPrompt?: string
-  guestMode?: boolean
+  isDemo?: boolean // Demo mode: localStorage only, premium actions show signup
 }
 
 const generateId = () => Math.random().toString(36).substring(2, 15)
@@ -94,12 +93,12 @@ const SINGULARITY_TEMPLATE: Template = {
   sections: websiteTemplate.sections
 }
 
-export default function BuildFlowController({ existingProjectId, demoMode: forceDemoMode, initialPrompt, guestMode }: BuildFlowControllerProps) {
+export default function BuildFlowController({ existingProjectId, initialPrompt, isDemo = false }: BuildFlowControllerProps) {
   const { user, isLoaded, isSignedIn } = useUser()
   const { isPaidUser } = useSubscription()
   const router = useRouter()
   
-  const [demoMode, setDemoMode] = useState(forceDemoMode ?? false)
+  const [demoMode, setDemoMode] = useState(isDemo)
   const [phase, setPhase] = useState<BuildPhase>('initializing')
   const [selectedTemplate, setSelectedTemplate] = useState<Template>(SINGULARITY_TEMPLATE)
   const [customizedSections, setCustomizedSections] = useState<Section[]>(SINGULARITY_TEMPLATE.sections)
@@ -134,6 +133,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const [justCreatedProjectId, setJustCreatedProjectId] = useState<string | null>(null)
   const [showScorecard, setShowScorecard] = useState(false)
   const [showSignupGate, setShowSignupGate] = useState(false)
+  const [showDemoNudge, setShowDemoNudge] = useState(false)
+  const [demoSectionsBuilt, setDemoSectionsBuilt] = useState(0)
 
   // Reset legacy welcome flags so V2 intro shows for all users (esp. mobile)
   useEffect(() => {
@@ -159,7 +160,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
   // Sync guest credit counts from localStorage
   useEffect(() => {
-    if (!guestMode) return
+    if (!isDemo) return
     
     const syncCredits = () => {
       const builds = parseInt(localStorage.getItem('hatch_guest_builds') || '0', 10)
@@ -172,7 +173,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     // Listen for storage changes from SectionBuilder
     window.addEventListener('storage', syncCredits)
     return () => window.removeEventListener('storage', syncCredits)
-  }, [guestMode])
+  }, [isDemo])
 
   const handleSaveSettings = async (settings: SiteSettings) => {
     if (!project) return
@@ -208,11 +209,11 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       console.error('Error saving settings:', err)
     }
   }
-  const showUnlockBanner = useMemo(() => guestMode || (!isPaidUser && !demoMode), [guestMode, isPaidUser, demoMode])
+  const showUnlockBanner = useMemo(() => isDemo || (!isPaidUser && !demoMode), [isDemo, isPaidUser, demoMode])
   
   // Persist guest build locally for post-signup migration
   const persistGuestHandoff = useCallback((sectionsSnapshot?: DbSection[], codeSnapshot?: Record<string, string>) => {
-    if (!guestMode) return
+    if (!isDemo) return
     const payload = {
       templateId: selectedTemplate?.id || SINGULARITY_TEMPLATE.id,
       projectName: brandConfig?.brandName || 'Untitled Project',
@@ -230,7 +231,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     } catch (err) {
       console.warn('Failed to persist guest handoff', err)
     }
-  }, [guestMode, selectedTemplate?.id, brandConfig, dbSections, buildState])
+  }, [isDemo, selectedTemplate?.id, brandConfig, dbSections, buildState])
 
   // NO MORE GENERATION LIMITS - Paywall is at DEPLOY/EXPORT only
   // Free users can generate unlimited, they pay to ship
@@ -420,7 +421,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     initializeProject()
     
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [existingProjectId, justCreatedProjectId, isCreatingProject, isLoaded, isReplicationReady, guestMode])
+  }, [existingProjectId, justCreatedProjectId, isCreatingProject, isLoaded, isReplicationReady, isDemo])
 
   const initializeProject = async () => {
     setIsCreatingProject(true)
@@ -485,7 +486,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     // If user is not signed in, redirect to sign up - NO MORE DEMO MODE LOOPHOLE
     if (!isSignedIn || !user) {
       // ALLOW GUEST MODE IF EXPLICITLY REQUESTED
-      if (guestMode) {
+      if (isDemo) {
         // Run immediately to avoid stuck loading state
         setupDemoMode()
         return
@@ -686,19 +687,20 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       )
     )
 
-    // Persist guest progress for post-signup migration
-    if (guestMode) {
+    // Persist demo progress for post-signup migration
+    if (isDemo) {
       persistGuestHandoff(dbSections.map(s => s.id === dbSection.id ? { ...s, code, refined, refinement_changes: refinementChanges || null } : s), {
         ...(buildState?.sectionCode || {}),
         [currentSection.id]: code,
       })
+      
+      // Soft nudge after 3 sections built
+      const newCount = demoSectionsBuilt + 1
+      setDemoSectionsBuilt(newCount)
+      if (newCount === 3) {
+        setShowDemoNudge(true)
+      }
     }
-
-    // REMOVED: Signup gate after first section
-    // Guests can now build unlimited - paywall is at deploy/export only
-
-    // NO MORE GENERATION COUNTING - users can generate freely
-    // Paywall is at deploy/export only
 
     setBuildState(newState)
     
@@ -777,15 +779,6 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
   const handleNextSection = () => {
     if (!buildState) return
-
-    // Guest Mode: Force signup after Hero (or any section) to save progress
-    if (guestMode) {
-      track('Guest Handoff - Signup Triggered')
-      // Redirect back to builder so the migration logic in app/builder/page.tsx can run
-      const returnUrl = '/builder'
-      router.push(`/sign-up?redirect_url=${encodeURIComponent(returnUrl)}`)
-      return
-    }
 
     const nextIndex = buildState.currentSectionIndex + 1
     
@@ -874,6 +867,13 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
   const handleDeploy = async () => {
     if (!project || !assembledCode || isDeploying || !buildState) return
+    
+    // Demo mode: Always show signup modal for deploy
+    if (isDemo) {
+      setHatchModalReason('deploy')
+      setShowHatchModal(true)
+      return
+    }
     
     // Check if user has any paid subscription (Architect, Visionary, or Singularity can deploy)
     if (!canDeploy) {
@@ -1012,6 +1012,13 @@ export default function GeneratedPage() {
 
   const handleDownload = async () => {
     if (!project || !assembledCode || !buildState) return
+    
+    // Demo mode: Always show signup modal for download
+    if (isDemo) {
+      setHatchModalReason('download')
+      setShowHatchModal(true)
+      return
+    }
     
     // Only Visionary and Singularity can download code - Architect cannot
     if (!isProUser) {
@@ -1414,8 +1421,8 @@ export default function GeneratedPage() {
                 totalSections={sectionsForBuild.length}
                 isGenerating={false}
                 thought={getCurrentSection()?.name ? `Building ${getCurrentSection()?.name}...` : 'Analyzing...'}
-                promptsUsed={guestMode ? guestBuildsUsed : 0}
-                promptsLimit={guestMode ? 3 : -1}
+                promptsUsed={isDemo ? guestBuildsUsed : 0}
+                promptsLimit={isDemo ? 3 : -1}
                 isPaid={isPaid}
                 onUpgrade={() => {
                   setHatchModalReason('generation_limit')
@@ -1428,7 +1435,7 @@ export default function GeneratedPage() {
             {/* Main Build Area */}
             <div className="flex-1 flex flex-col overflow-hidden">
               {/* Section Progress - Hidden for Guests */}
-              {!guestMode && (
+              {!isDemo && (
                 <SectionProgress
                   template={templateForBuild}
                   buildState={buildState}
@@ -1450,7 +1457,7 @@ export default function GeneratedPage() {
                     demoMode={demoMode}
                     brandConfig={brandConfig}
                     isPaid={isPaid}
-                    guestMode={guestMode}
+                    isDemo={isDemo}
                     initialPrompt={buildState.currentSectionIndex === 0 ? initialPrompt : undefined}
                   />
                 )}
@@ -2023,7 +2030,7 @@ export default function GeneratedPage() {
         }}
         sectionName={lastCompletedSection}
         buildsRemaining={Math.max(0, 3 - guestBuildsUsed)}
-        isGuest={guestMode || false}
+        isGuest={isDemo || false}
       />
 
       <TheWitness
@@ -2042,6 +2049,60 @@ export default function GeneratedPage() {
           setShowSignupGate(false)
         }} 
       />
+
+      {/* Demo Soft Nudge - non-blocking prompt to sign up after 3 sections */}
+      <AnimatePresence>
+        {showDemoNudge && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowDemoNudge(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 max-w-md w-full shadow-2xl"
+            >
+              <div className="text-center mb-6">
+                <div className="w-12 h-12 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Sparkles className="w-6 h-6 text-emerald-400" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">You&apos;re on a roll! 🎉</h3>
+                <p className="text-zinc-400 text-sm">
+                  You&apos;ve built {demoSectionsBuilt} sections. Sign up to save your work and unlock deploy + download.
+                </p>
+              </div>
+              
+              <div className="space-y-3">
+                <button
+                  onClick={() => {
+                    setShowDemoNudge(false)
+                    router.push('/sign-up?redirect_url=/builder')
+                  }}
+                  className="w-full py-3 px-4 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+                >
+                  <span>Sign Up Free</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setShowDemoNudge(false)}
+                  className="w-full py-3 px-4 bg-zinc-800 hover:bg-zinc-700 text-white font-medium rounded-lg transition-colors"
+                >
+                  Keep Building
+                </button>
+              </div>
+              
+              <p className="text-xs text-zinc-500 text-center mt-4">
+                Your work is saved locally. Sign up anytime to keep it.
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <SiteSettingsModal
         isOpen={isSettingsOpen}

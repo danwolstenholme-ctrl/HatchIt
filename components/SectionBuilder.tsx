@@ -289,7 +289,7 @@ interface SectionBuilderProps {
   demoMode?: boolean // Local testing without API
   brandConfig?: DbBrandConfig | null // Brand styling from branding step
   isPaid?: boolean // Whether project is hatched (paid)
-  guestMode?: boolean // Simplified UI for unauthenticated users
+  isDemo?: boolean // Simplified UI for unauthenticated users
   initialPrompt?: string // Prompt passed from demo page - use this to skip empty state
 }
 
@@ -592,7 +592,7 @@ export default function SectionBuilder({
   demoMode = false,
   brandConfig = null,
   isPaid = false,
-  guestMode = false,
+  isDemo = false,
   initialPrompt,
 }: SectionBuilderProps) {
   const router = useRouter()
@@ -659,8 +659,8 @@ export default function SectionBuilder({
   
   // Check for saved preview on init (guest mode)
   // First try matching prompt, then fall back to ANY saved preview
-  const matchedPreview = guestMode ? getSavedPreview(effectivePrompt) : null
-  const anyPreview = guestMode && !matchedPreview ? getAnySavedPreview() : null
+  const matchedPreview = isDemo ? getSavedPreview(effectivePrompt) : null
+  const anyPreview = isDemo && !matchedPreview ? getAnySavedPreview() : null
   const savedPreview = matchedPreview || anyPreview
   
   // If we recovered a preview with a different prompt, use that prompt
@@ -696,7 +696,7 @@ export default function SectionBuilder({
   
   // Guest prompt modal - shows when guest arrives with no prompt
   const [showGuestPromptModal, setShowGuestPromptModal] = useState(
-    guestMode && !effectivePrompt && !savedPreview
+    isDemo && !effectivePrompt && !savedPreview
   )
 
   // Paywall Logic
@@ -747,8 +747,8 @@ export default function SectionBuilder({
     } catch { /* ignore */ }
   }
   
-  const isGuestBuildLocked = guestMode && !isSignedIn && getGuestBuilds() >= GUEST_BUILD_LIMIT
-  const isGuestRefineLocked = guestMode && !isSignedIn && getGuestRefinements() >= GUEST_REFINE_LIMIT
+  const isGuestBuildLocked = isDemo && !isSignedIn && getGuestBuilds() >= GUEST_BUILD_LIMIT
+  const isGuestRefineLocked = isDemo && !isSignedIn && getGuestRefinements() >= GUEST_REFINE_LIMIT
   const isBuildLocked = isGuestBuildLocked || (!isPaidTier && isSignedIn && freeCreditsUsed >= FREE_BUILD_LIMIT)
   const isRefineLocked = isGuestRefineLocked || (!isPaidTier && isSignedIn && architectRefinementsUsed >= FREE_REFINE_LIMIT)
   
@@ -1250,7 +1250,7 @@ export default function SectionBuilder({
     const buildPrompt = options?.overridePrompt || prompt
     
     // Check localStorage again in case of back button navigation
-    if (guestMode && !generatedCode) {
+    if (isDemo && !generatedCode) {
       const cached = getSavedPreview(buildPrompt)
       if (cached?.code) {
         setGeneratedCode(cached.code)
@@ -1377,7 +1377,7 @@ export default function SectionBuilder({
       setStage('complete')
       
       // Save to localStorage for guest preview persistence
-      if (guestMode) {
+      if (isDemo) {
         savePreview(buildPrompt, generatedCode, aiReasoning || '')
         // Also save the prompt so demo page can restore it
         try { localStorage.setItem('hatch_last_prompt', buildPrompt) } catch { /* ignore */ }
@@ -1403,7 +1403,7 @@ export default function SectionBuilder({
   const handleRebuild = () => {
     chronosphere.log('rejection', { section: section.name, reason: 'rebuild' }, section.id)
     // Clear saved preview so user can regenerate fresh
-    if (guestMode) {
+    if (isDemo) {
       clearSavedPreview(prompt)
       try { localStorage.removeItem('hatch_last_prompt') } catch { /* ignore */ }
     }
@@ -1539,7 +1539,7 @@ export default function SectionBuilder({
       setSelectedElement(null) // Clear selection after refine
       
       // Track guest refinements
-      if (guestMode && !isSignedIn) {
+      if (isDemo && !isSignedIn) {
         incrementGuestRefinements()
       }
       
@@ -1654,20 +1654,20 @@ export default function SectionBuilder({
   
   // Progress through loading stages (loop to fill long waits)
   useEffect(() => {
-    if (stage === 'generating' || (guestMode && !generatedCode && !!effectivePrompt)) {
+    if (stage === 'generating' || (isDemo && !generatedCode && !!effectivePrompt)) {
       setLoadingStage(0)
       const interval = setInterval(() => {
         setLoadingStage(prev => (prev + 1) % loadingStages.length) // Loop back to 0
       }, 8000) // Move to next stage every 8 seconds
       return () => clearInterval(interval)
     }
-  }, [stage, guestMode, generatedCode, effectivePrompt])
+  }, [stage, isDemo, generatedCode, effectivePrompt])
 
   // =============================================================================
   // GUEST MODE: Premium demo experience
   // Clean, minimal UI that shows our capability
   // =============================================================================
-  if (guestMode) {
+  if (isDemo) {
     // If we have an initial prompt from demo, always show generating (never empty state)
     const showGenerating = !generatedCode && (stage === 'generating' || !!effectivePrompt)
     
@@ -2249,10 +2249,10 @@ export default function SectionBuilder({
         <div className="flex-1 p-3 lg:p-4 flex flex-col min-h-0 overflow-auto">
           <div className="flex items-center justify-between mb-1.5">
             <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider flex items-center gap-2">
-              {guestMode ? 'Describe your section' : 'Directive'}
+              {isDemo ? 'Describe your section' : 'Directive'}
               {/* All tools unlocked */}
             </label>
-            {!guestMode && (
+            {!isDemo && (
               <motion.button 
                 onClick={() => initializePromptHelper()}
                 whileHover={{ scale: 1.02 }}
@@ -2286,7 +2286,7 @@ export default function SectionBuilder({
           {/* Smart Suggestions - scrollable row */}
           {stage === 'input' && (
             <div className="mt-2 flex flex-nowrap gap-1.5 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
-              {getSuggestions(section.id).slice(0, guestMode ? 3 : tier === 'free' ? 2 : 4).map((suggestion) => (
+              {getSuggestions(section.id).slice(0, isDemo ? 3 : tier === 'free' ? 2 : 4).map((suggestion) => (
                 <button
                   key={suggestion}
                   onClick={() => setPrompt(prev => prev.includes(suggestion) ? prev : (prev ? `${prev} ${suggestion}` : suggestion))}
@@ -2295,7 +2295,7 @@ export default function SectionBuilder({
                   + {suggestion}
                 </button>
               ))}
-              {!guestMode && tier === 'free' && (
+              {!isDemo && tier === 'free' && (
                  <button
                   onClick={() => goToSignUp()}
                   className="px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 text-[10px] text-amber-400 hover:text-amber-300 transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-1"
@@ -2345,7 +2345,7 @@ export default function SectionBuilder({
                   exit={{ opacity: 0 }}
                   className="w-full rounded-xl bg-zinc-900 border border-zinc-800 overflow-hidden relative"
                 >
-                  {guestMode ? (
+                  {isDemo ? (
                     <div className="p-4 flex items-center justify-center gap-3">
                       <motion.div
                         animate={{ scale: [1, 1.1, 1], opacity: [0.7, 1, 0.7] }}

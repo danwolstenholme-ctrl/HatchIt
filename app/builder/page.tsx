@@ -3,22 +3,17 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
-import { motion } from 'framer-motion'
-import { Lock, CreditCard, ArrowRight } from 'lucide-react'
 import BuildFlowController from '@/components/BuildFlowController'
 import { AccountSubscription } from '@/types/subscriptions'
 
 // =============================================================================
-// BUILDER PAGE WRAPPER
-// V3 Structured Build Flow - REQUIRES ACTIVE SUBSCRIPTION
-// URL: /builder
+// BUILDER PAGE - REQUIRES AUTHENTICATION
+// Unauthenticated users → /demo
+// Authenticated users → full builder with project persistence
 // =============================================================================
 
-// Seamless loading screen - matches builder background exactly
 function SeamlessLoader() {
-  return (
-    <div className="min-h-screen bg-zinc-950" />
-  )
+  return <div className="min-h-screen bg-zinc-950" />
 }
 
 function BuilderContent() {
@@ -27,56 +22,39 @@ function BuilderContent() {
   const { user, isSignedIn, isLoaded } = useUser()
   const projectId = searchParams.get('project')
   const upgrade = searchParams.get('upgrade')
-  const mode = searchParams.get('mode')
   const prompt = searchParams.get('prompt')
   const [isRedirecting, setIsRedirecting] = useState(false)
-  const [isImportingGuest, setIsImportingGuest] = useState(false)
-
-  // Local dev: always allow guest mode so testing skips auth
-  const forceGuest = (process.env.NEXT_PUBLIC_APP_ENV || '').startsWith('local')
-  
-  // Treat anyone not signed in as a guest automatically.
-  // If signed in, we ignore mode=guest (it's likely a leftover redirect param).
-  const isGuest = forceGuest || !isSignedIn
+  const [isImportingDemo, setIsImportingDemo] = useState(false)
 
   // Get subscription from Clerk metadata
   const subscription = user?.publicMetadata?.accountSubscription as AccountSubscription | null
-  const hasActiveSubscription = subscription?.status === 'active'
 
-  // Clean up URL: If signed in but URL has mode=guest, strip it
-  useEffect(() => {
-    if (isLoaded && isSignedIn && (mode === 'guest' || mode === 'demo')) {
-      const newParams = new URLSearchParams(searchParams.toString())
-      newParams.delete('mode')
-      const newPath = newParams.toString() ? `/builder?${newParams.toString()}` : '/builder'
-      router.replace(newPath)
-    }
-  }, [isLoaded, isSignedIn, mode, router, searchParams])
-
-  // Handle upgrade param OR no subscription - redirect to Stripe checkout
+  // Redirect unauthenticated users to demo
   useEffect(() => {
     if (!isLoaded) return
     
-    // Not signed in? Go to sign-up (unless guest)
-    if (!isSignedIn && !isGuest) {
-      router.push('/sign-up')
+    if (!isSignedIn) {
+      // Preserve prompt if they had one
+      const demoUrl = prompt ? `/demo?prompt=${encodeURIComponent(prompt)}` : '/demo'
+      router.replace(demoUrl)
       return
     }
+  }, [isLoaded, isSignedIn, router, prompt])
 
-    // Check URL param first, then localStorage fallback (for OAuth flows)
+  // Handle upgrade param - redirect to Stripe checkout
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn) return
+
     const pendingTier = upgrade || (typeof window !== 'undefined' ? localStorage.getItem('pendingUpgradeTier') : null)
     
-    // Has a pending tier to checkout
     if (pendingTier && ['architect', 'visionary', 'singularity'].includes(pendingTier)) {
       setIsRedirecting(true)
       
-      // Clear both URL param and localStorage
       const newUrl = new URL(window.location.href)
       newUrl.searchParams.delete('upgrade')
       window.history.replaceState({}, '', newUrl.toString())
       localStorage.removeItem('pendingUpgradeTier')
       
-      // Trigger checkout
       fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -92,22 +70,19 @@ function BuilderContent() {
           console.error('Checkout redirect failed:', err)
           setIsRedirecting(false)
         })
-      return
     }
+  }, [isLoaded, isSignedIn, upgrade])
 
-    // Free users can use the builder with limits - no redirect needed
-  }, [isLoaded, isSignedIn, upgrade, hasActiveSubscription, router, isGuest])
-
-  // Migrate guest build into a real project after signup
+  // Import demo work after signup
   useEffect(() => {
-    if (!isLoaded || !isSignedIn || isGuest || isRedirecting) return
+    if (!isLoaded || !isSignedIn || isRedirecting) return
 
     const payloadStr = typeof window !== 'undefined' ? localStorage.getItem('hatch_guest_handoff') : null
     if (!payloadStr) return
 
     const migrate = async () => {
       try {
-        setIsImportingGuest(true)
+        setIsImportingDemo(true)
         const payload = JSON.parse(payloadStr)
         const res = await fetch('/api/project/import', {
           method: 'POST',
@@ -122,38 +97,37 @@ function BuilderContent() {
           }
         }
       } catch (err) {
-        console.error('Guest import failed', err)
+        console.error('Demo import failed', err)
       } finally {
-        setIsImportingGuest(false)
+        setIsImportingDemo(false)
       }
     }
 
     migrate()
-  }, [isLoaded, isSignedIn, isGuest, isRedirecting, router])
+  }, [isLoaded, isSignedIn, isRedirecting, router])
 
-  // Loading state - seamless black screen (no flash)
-  if (!isLoaded || isRedirecting || isImportingGuest) {
+  // Loading states
+  if (!isLoaded || isRedirecting || isImportingDemo) {
     return <SeamlessLoader />
   }
 
-  // Not signed in and not guest - redirect handled above, show nothing
-  if (!isSignedIn && !isGuest) {
+  // Not signed in - redirect happening
+  if (!isSignedIn) {
     return <SeamlessLoader />
   }
 
-  // HAS SUBSCRIPTION, IS FREE USER, OR IS GUEST - show builder
+  // Authenticated user - show builder
   return (
     <div className="relative min-h-screen">
       <BuildFlowController 
-        existingProjectId={projectId || undefined} 
-        guestMode={isGuest}
+        existingProjectId={projectId || undefined}
         initialPrompt={prompt || undefined}
       />
     </div>
   )
 }
 
-export default function Home() {
+export default function BuilderPage() {
   return (
     <Suspense fallback={<SeamlessLoader />}>
       <BuilderContent />
