@@ -212,8 +212,8 @@ function GuestRefineBar({
       >
         <motion.div 
           className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0"
-          animate={isFocused ? { scale: [1, 1.1, 1] } : {}}
-          transition={{ duration: 1.5, repeat: Infinity }}
+          animate={{ scale: [1, 1.15, 1], opacity: [0.7, 1, 0.7] }}
+          transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
         >
           <Sparkles className="w-2.5 h-2.5 text-emerald-400" />
         </motion.div>
@@ -226,7 +226,7 @@ function GuestRefineBar({
             className="text-xs text-zinc-400"
           >
             <span className="text-emerald-400 font-medium">{message.prefix}</span>{' '}
-            {message.text}
+            <span className="text-zinc-500">{message.text}</span>
           </motion.p>
         </AnimatePresence>
       </motion.div>
