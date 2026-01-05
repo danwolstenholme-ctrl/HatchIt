@@ -1680,19 +1680,36 @@ export default function SectionBuilder({
         />
         
         {/* Preview Area - takes full height minus bottom panel */}
-        <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 flex flex-col min-h-0 relative">
           {generatedCode ? (
-            <SectionPreview 
-              code={generatedCode} 
-              darkMode={true}
-              onRuntimeError={handleRuntimeError}
-              inspectorMode={false}
-              captureTrigger={captureTrigger}
-              onScreenshotCaptured={handleScreenshotCaptured}
-              editMode={false}
-              allowCodeView={false}
-              hideToolbar={true}
-            />
+            <>
+              <SectionPreview 
+                code={generatedCode} 
+                darkMode={true}
+                onRuntimeError={handleRuntimeError}
+                inspectorMode={false}
+                captureTrigger={captureTrigger}
+                onScreenshotCaptured={handleScreenshotCaptured}
+                editMode={false}
+                allowCodeView={false}
+                hideToolbar={true}
+              />
+              {/* AI Presence Indicator - shows the system is alive */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="absolute top-3 right-3 z-20"
+              >
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/90 backdrop-blur-sm border border-zinc-800 rounded-full">
+                  <motion.div 
+                    animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                    className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]"
+                  />
+                  <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider">Live</span>
+                </div>
+              </motion.div>
+            </>
           ) : showGenerating ? (
             // Generating state - Full Studio Interface
             <div className="h-full flex relative overflow-hidden bg-zinc-950">
@@ -2856,19 +2873,38 @@ export default function SectionBuilder({
               <div ref={codeEndRef} />
             </div>
           ) : (
-            <SectionPreview 
-              code={generatedCode} 
-              darkMode={true}
-              onRuntimeError={handleRuntimeError}
-              inspectorMode={inspectorMode}
-              onElementSelect={handleElementSelect}
-              captureTrigger={captureTrigger}
-              onScreenshotCaptured={handleScreenshotCaptured}
-              editMode={true}
-              onTextEdit={handleTextEdit}
-              allowCodeView={canRevealRawCode}
-              onUpgradeClick={() => goToSignUp('pro')}
-            />
+            <>
+              <SectionPreview 
+                code={generatedCode} 
+                darkMode={true}
+                onRuntimeError={handleRuntimeError}
+                inspectorMode={inspectorMode}
+                onElementSelect={handleElementSelect}
+                captureTrigger={captureTrigger}
+                onScreenshotCaptured={handleScreenshotCaptured}
+                editMode={true}
+                onTextEdit={handleTextEdit}
+                allowCodeView={canRevealRawCode}
+                onUpgradeClick={() => goToSignUp('pro')}
+              />
+              {/* AI Presence Indicator */}
+              {generatedCode && !isUserRefining && !isArchitectPolishing && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="absolute top-3 right-3 z-20"
+                >
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/90 backdrop-blur-sm border border-zinc-800 rounded-full">
+                    <motion.div 
+                      animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]"
+                    />
+                    <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider">Live</span>
+                  </div>
+                </motion.div>
+              )}
+            </>
           )}
 
           {(((stage === 'generating' || stage === 'refining') && streamingCode) || ((isUserRefining || isArchitectPolishing) && streamingCode)) && !canRevealRawCode && (
