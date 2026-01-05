@@ -2842,7 +2842,7 @@ export default function SectionBuilder({
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="px-4 py-2 border-b border-zinc-800 bg-zinc-900/50 flex-shrink-0"
+              className="px-4 py-2 border-b border-white/10 bg-white/5 flex-shrink-0"
             >
               <div className="flex items-center gap-2">
                 {stage === 'generating' ? (
@@ -2934,7 +2934,7 @@ export default function SectionBuilder({
           )}
 
           {(((stage === 'generating' || stage === 'refining') && streamingCode) || ((isUserRefining || isArchitectPolishing) && streamingCode)) && !canRevealRawCode && (
-            <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur-sm flex flex-col items-center justify-center gap-3 text-center px-6">
+            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center gap-3 text-center px-6">
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
