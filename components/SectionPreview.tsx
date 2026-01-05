@@ -632,9 +632,9 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
     <div className="flex-1 flex flex-col min-h-0">
       {/* View + Device Bar - hidden when hideToolbar is true */}
       {!hideToolbar && (
-        <div className="flex items-center justify-between gap-2 px-3 py-2 bg-zinc-900/60 border-b border-zinc-800">
+        <div className="flex items-center justify-between gap-2 px-3 py-2 bg-black/60 border-b border-white/10">
           {!isMobileDevice && (
-            <div className="inline-flex bg-zinc-900/70 border border-zinc-800 rounded-lg p-1 shadow-sm">
+            <div className="inline-flex bg-white/5 border border-white/10 rounded-lg p-1 shadow-sm">
               <button
                 onClick={() => setViewMode('preview')}
                 className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
@@ -673,7 +673,7 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 border ${
                   isEditModeActive
                     ? 'bg-violet-500/20 text-violet-400 border-violet-500/50'
-                    : 'bg-zinc-900/70 text-zinc-500 border-zinc-800 hover:text-zinc-200 hover:border-zinc-700'
+                    : 'bg-white/5 text-zinc-500 border-white/10 hover:text-zinc-200 hover:border-white/20'
                 }`}
                 title="Double-click text to edit"
               >
@@ -682,14 +682,14 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
               </button>
               
               {/* Device Selector */}
-              <div className="flex items-center gap-1 bg-zinc-900/70 border border-zinc-800 rounded-lg p-1">
+              <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-lg p-1">
                 {(Object.keys(deviceSizes) as DeviceView[]).map((device) => (
                   <button
                     key={device}
                     onClick={() => setDeviceView(device)}
                     className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 ${
                       deviceView === device
-                        ? 'bg-zinc-800 text-white border border-emerald-400/30'
+                        ? 'bg-white/10 text-white border border-emerald-400/30'
                         : 'text-zinc-500 hover:text-zinc-200'
                     }`}
                   >
@@ -706,7 +706,7 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
       {/* Code Paywall Modal */}
       {showCodePaywall && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowCodePaywall(false)}>
-          <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-8 max-w-md mx-4 text-center" onClick={e => e.stopPropagation()}>
+          <div className="bg-black/90 border border-white/10 rounded-2xl p-8 max-w-md mx-4 text-center" onClick={e => e.stopPropagation()}>
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center">
               <span className="text-3xl">🔒</span>
             </div>
@@ -718,7 +718,7 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
             <div className="flex gap-3">
               <button
                 onClick={() => setShowCodePaywall(false)}
-                className="flex-1 px-4 py-2 text-sm font-medium text-zinc-400 border border-zinc-700 rounded-lg hover:bg-zinc-800 transition-colors"
+                className="flex-1 px-4 py-2 text-sm font-medium text-zinc-400 border border-white/10 rounded-lg hover:bg-white/5 transition-colors"
               >
                 Maybe later
               </button>
@@ -737,10 +737,10 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
       )}
       
       {/* Preview / Code Container */}
-      <div className={`flex-1 flex items-start justify-center overflow-auto bg-zinc-950 ${hideToolbar ? 'p-0' : 'p-4'}`}>
+      <div className={`flex-1 flex items-start justify-center overflow-auto bg-black ${hideToolbar ? 'p-0' : 'p-4'}`}>
         {viewMode === 'code' && allowCodeView ? (
-          <div className="w-full max-w-5xl h-full bg-zinc-900 border border-zinc-800 rounded-lg shadow-2xl overflow-auto">
-            <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-800 bg-zinc-900/80">
+          <div className="w-full max-w-5xl h-full bg-white/5 border border-white/10 rounded-lg shadow-2xl overflow-auto">
+            <div className="flex items-center justify-between px-4 py-2 border-b border-white/10 bg-white/5">
               <span className="text-xs font-mono text-emerald-300">Raw React + Tailwind (no wrappers)</span>
             </div>
             <pre className="p-4 text-xs font-mono text-zinc-100 whitespace-pre overflow-auto min-h-[320px]">
@@ -752,7 +752,7 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
             initial={false}
             animate={{ width: hideToolbar ? '100%' : (deviceView === 'mobile' && isMobileDevice ? '100%' : deviceSizes[deviceView].width) }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className={`h-full overflow-hidden ${hideToolbar ? '' : 'bg-zinc-900 rounded-lg shadow-2xl'}`}
+            className={`h-full overflow-hidden ${hideToolbar ? '' : 'bg-white/5 rounded-lg shadow-2xl'}`}
             style={{ 
               maxWidth: '100%',
               minHeight: hideToolbar ? '100%' : (isMobileDevice ? '640px' : deviceView === 'desktop' ? '100%' : '600px'),
@@ -760,8 +760,8 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
           >
             {/* Device Frame - hidden in guest mode */}
             {!hideToolbar && deviceView !== 'desktop' && (
-              <div className="h-6 bg-zinc-800 flex items-center justify-center gap-1 border-b border-zinc-700">
-                <div className="w-16 h-1 bg-zinc-600 rounded-full" />
+              <div className="h-6 bg-white/10 flex items-center justify-center gap-1 border-b border-white/10">
+                <div className="w-16 h-1 bg-white/20 rounded-full" />
               </div>
             )}
             <iframe
