@@ -4,6 +4,7 @@ import { Suspense, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
 import SingularityLoader from '@/components/singularity/SingularityLoader'
+import BuildFlowController from '@/components/BuildFlowController'
 
 // =============================================================================
 // DEMO PAGE - Full builder experience, localStorage only
