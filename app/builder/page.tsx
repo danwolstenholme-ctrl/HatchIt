@@ -141,36 +141,7 @@ function BuilderContent() {
     return <SeamlessLoader />
   }
 
-  // Signed in but no subscription - BLOCKED (unless guest)
-  if (!hasActiveSubscription && !isGuest) {
-    return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-md w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-8 text-center"
-        >
-          <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Lock className="w-8 h-8 text-zinc-500" />
-          </div>
-          <h1 className="text-2xl font-bold text-white mb-2">Subscription Required</h1>
-          <p className="text-zinc-400 mb-6">
-            Choose a plan to unlock the builder and start creating.
-          </p>
-          <button
-            onClick={() => router.push('/#pricing')}
-            className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
-          >
-            <CreditCard className="w-4 h-4" />
-            View Plans
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </motion.div>
-      </div>
-    )
-  }
-
-  // HAS ACTIVE SUBSCRIPTION OR GUEST - show builder
+  // HAS SUBSCRIPTION, IS FREE USER, OR IS GUEST - show builder
   return (
     <div className="relative min-h-screen">
       <BuildFlowController 
