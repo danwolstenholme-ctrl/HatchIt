@@ -143,6 +143,136 @@ import { useUser } from '@clerk/nextjs'
 // No more guest limits - unlimited for all
 
 // =============================================================================
+// GUEST REFINE BAR - Conversational refinement interface
+// =============================================================================
+const REFINE_PROMPTS = [
+  "What would you change?",
+  "Try: 'Make it darker'",
+  "Try: 'Add more spacing'",
+  "Try: 'Bigger headline'",
+  "Try: 'Add a gradient'",
+]
+
+function GuestRefineBar({
+  refinePrompt,
+  setRefinePrompt,
+  isUserRefining,
+  isGuestRefineLocked,
+  handleUserRefine,
+  goToSignUp,
+  reasoning,
+  refinementChanges,
+}: {
+  refinePrompt: string
+  setRefinePrompt: (v: string) => void
+  isUserRefining: boolean
+  isGuestRefineLocked: boolean
+  handleUserRefine: () => void
+  goToSignUp: () => void
+  reasoning: string
+  refinementChanges: string[]
+}) {
+  const [isFocused, setIsFocused] = useState(false)
+  const [promptIndex, setPromptIndex] = useState(0)
+  
+  // Cycle through prompts when focused
+  useEffect(() => {
+    if (!isFocused) return
+    const interval = setInterval(() => {
+      setPromptIndex(prev => (prev + 1) % REFINE_PROMPTS.length)
+    }, 2500)
+    return () => clearInterval(interval)
+  }, [isFocused])
+  
+  // Determine what message to show
+  const getMessage = () => {
+    if (isGuestRefineLocked) {
+      return { prefix: "Limit reached.", text: "Sign up to keep refining." }
+    }
+    if (refinementChanges.length > 0) {
+      return { prefix: "Done.", text: refinementChanges[refinementChanges.length - 1] }
+    }
+    if (reasoning) {
+      const short = reasoning.length > 60 ? reasoning.slice(0, 60) + '...' : reasoning
+      return { prefix: "Built.", text: short }
+    }
+    return { prefix: "Ready.", text: "Click below to refine this section." }
+  }
+  
+  const message = getMessage()
+  
+  return (
+    <div className="space-y-2">
+      {/* AI Message */}
+      <motion.div
+        initial={{ opacity: 0, y: 5 }}
+        animate={{ opacity: 1, y: 0 }}
+        key={refinementChanges.length}
+        className="flex items-center gap-2 px-1"
+      >
+        <motion.div 
+          className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0"
+          animate={isFocused ? { scale: [1, 1.1, 1] } : {}}
+          transition={{ duration: 1.5, repeat: Infinity }}
+        >
+          <Sparkles className="w-2.5 h-2.5 text-emerald-400" />
+        </motion.div>
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={message.text}
+            initial={{ opacity: 0, x: -5 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 5 }}
+            className="text-xs text-zinc-400"
+          >
+            <span className="text-emerald-400 font-medium">{message.prefix}</span>{' '}
+            {message.text}
+          </motion.p>
+        </AnimatePresence>
+      </motion.div>
+
+      {/* Input Row */}
+      <div className="flex items-center gap-2">
+        <div className="flex-1 flex items-center bg-zinc-950/90 backdrop-blur-xl border border-zinc-800 rounded-full overflow-hidden focus-within:border-emerald-500/50 transition-colors">
+          <input
+            type="text"
+            value={refinePrompt}
+            onChange={(e) => setRefinePrompt(e.target.value)}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            onKeyDown={(e) => e.key === 'Enter' && refinePrompt.trim() && !isGuestRefineLocked && handleUserRefine()}
+            disabled={isUserRefining || isGuestRefineLocked}
+            placeholder={isFocused ? REFINE_PROMPTS[promptIndex] : "What would you change?"}
+            className="flex-1 bg-transparent px-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none disabled:opacity-50"
+          />
+          <button
+            onClick={handleUserRefine}
+            disabled={!refinePrompt.trim() || isUserRefining || isGuestRefineLocked}
+            className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+          >
+            {isUserRefining ? (
+              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <>
+                <Wand2 className="w-3.5 h-3.5" />
+                <span>Refine</span>
+              </>
+            )}
+          </button>
+        </div>
+        
+        <button
+          onClick={goToSignUp}
+          className="flex-shrink-0 px-4 py-2.5 rounded-full bg-zinc-900/90 border border-zinc-800 hover:border-emerald-500/30 text-zinc-400 hover:text-white text-sm transition-all"
+        >
+          Sign up
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// =============================================================================
 // SECTION BUILDER
 // The actual interface for building one section at a time
 // Now with opt-in Opus refinement (not automatic)
@@ -472,6 +602,30 @@ export default function SectionBuilder({
   
   // localStorage helpers for guest preview persistence
   const getStorageKey = (p: string) => `hatch_preview_${btoa(p.slice(0, 100)).replace(/[^a-zA-Z0-9]/g, '')}`
+  
+  // Check for ANY saved guest preview (returns the most recent one)
+  const getAnySavedPreview = () => {
+    if (typeof window === 'undefined') return null
+    try {
+      // Look for any hatch_preview_ keys
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (key?.startsWith('hatch_preview_')) {
+          const saved = localStorage.getItem(key)
+          if (saved) {
+            const { code, reasoning, timestamp, prompt: savedPrompt } = JSON.parse(saved)
+            // Expire after 1 hour
+            if (Date.now() - timestamp < 60 * 60 * 1000) {
+              return { code, reasoning, prompt: savedPrompt }
+            }
+            localStorage.removeItem(key)
+          }
+        }
+      }
+    } catch { /* ignore */ }
+    return null
+  }
+  
   const getSavedPreview = (p: string) => {
     if (typeof window === 'undefined' || !p) return null
     try {
@@ -493,6 +647,7 @@ export default function SectionBuilder({
       localStorage.setItem(getStorageKey(p), JSON.stringify({
         code,
         reasoning: reason,
+        prompt: p, // Store the prompt too for recovery
         timestamp: Date.now()
       }))
     } catch { /* ignore */ }
@@ -503,9 +658,15 @@ export default function SectionBuilder({
   }
   
   // Check for saved preview on init (guest mode)
-  const savedPreview = guestMode ? getSavedPreview(effectivePrompt) : null
+  // First try matching prompt, then fall back to ANY saved preview
+  const matchedPreview = guestMode ? getSavedPreview(effectivePrompt) : null
+  const anyPreview = guestMode && !matchedPreview ? getAnySavedPreview() : null
+  const savedPreview = matchedPreview || anyPreview
   
-  const [prompt, setPrompt] = useState(effectivePrompt)
+  // If we recovered a preview with a different prompt, use that prompt
+  const recoveredPrompt = (anyPreview?.prompt as string | undefined) || effectivePrompt
+  
+  const [prompt, setPrompt] = useState<string>(recoveredPrompt)
   // If we have a prompt from demo page, start in generating state immediately (no empty state)
   // UNLESS we have a saved preview, then skip straight to complete
   const hasInitialPrompt = !!effectivePrompt && !dbSection.code && !savedPreview
@@ -595,8 +756,9 @@ export default function SectionBuilder({
   const isLocked = isBuildLocked && isRefineLocked
 
   // Guide State
-  // Only show guide if: first section (Hero), no code yet, AND not guest mode (guests see /demo page first)
-  const [showGuide, setShowGuide] = useState(section.id === 'hero' && !dbSection.code && !guestMode)
+  // DISABLED: Removed friction - users should go straight to building
+  // Previously showed for signed-in users on first hero section
+  const [showGuide, setShowGuide] = useState(false)
   const autoBuildRanRef = useRef(false)
 
   // Redirect to sign-up page when paywall is hit (deploy/export only)
@@ -1753,44 +1915,18 @@ export default function SectionBuilder({
               </div>
             )}
 
-            {/* Complete Stage - Guest Refine Bar */}
+            {/* Complete Stage - Guest Refine Bar (Conversational) */}
             {stage === 'complete' && (
-              <div className="flex items-center gap-3">
-                {/* Refine Input - pill style */}
-                <div className="flex-1 flex items-center bg-zinc-950/90 backdrop-blur-xl border border-zinc-800 rounded-full overflow-hidden group focus-within:border-emerald-500/50 transition-colors">
-                  <input
-                    type="text"
-                    value={refinePrompt}
-                    onChange={(e) => setRefinePrompt(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && refinePrompt.trim() && !isGuestRefineLocked && handleUserRefine()}
-                    disabled={isUserRefining || isGuestRefineLocked}
-                    placeholder={isGuestRefineLocked ? "Sign up to refine more" : "What would you change?"}
-                    className="flex-1 bg-transparent px-5 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none disabled:opacity-50"
-                  />
-                  <button
-                    onClick={handleUserRefine}
-                    disabled={!refinePrompt.trim() || isUserRefining || isGuestRefineLocked}
-                    className="px-5 py-3 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
-                  >
-                    {isUserRefining ? (
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <>
-                        <Wand2 className="w-4 h-4" />
-                        <span>Refine</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-                
-                {/* Signup CTA - compact pill */}
-                <button
-                  onClick={() => goToSignUp()}
-                  className="flex-shrink-0 px-5 py-3 rounded-full bg-zinc-900/90 backdrop-blur-xl border border-zinc-800 hover:border-emerald-500/30 text-zinc-300 hover:text-white text-sm font-medium transition-all"
-                >
-                  Sign up
-                </button>
-              </div>
+              <GuestRefineBar
+                refinePrompt={refinePrompt}
+                setRefinePrompt={setRefinePrompt}
+                isUserRefining={isUserRefining}
+                isGuestRefineLocked={isGuestRefineLocked}
+                handleUserRefine={handleUserRefine}
+                goToSignUp={goToSignUp}
+                reasoning={reasoning}
+                refinementChanges={refinementChanges}
+              />
             )}
 
             {/* Refining Stage */}
