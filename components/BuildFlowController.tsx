@@ -18,6 +18,7 @@ import {
   Eye, 
   RefreshCw, 
   Home,
+  Layers,
   Layout,
   Maximize2,
   Minimize2,
@@ -116,6 +117,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   const WELCOME_SEEN_KEY = 'hatch_intro_v2_seen'
   const OLD_WELCOME_KEYS = ['hatch_welcome_v1_seen', 'hatch_v1_welcome_seen']
   const skipFirstGuestCreditRef = useRef<boolean>(!!initialPrompt)
+  const skipLoadingScreen = !!initialPrompt
   
   const [dbSections, setDbSections] = useState<DbSection[]>([])
   const [isLoading, setIsLoading] = useState(true) // Start loading immediately
