@@ -225,22 +225,38 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   // Persist guest build locally for post-signup migration
   const persistGuestHandoff = useCallback((sectionsSnapshot?: DbSection[], codeSnapshot?: Record<string, string>) => {
     if (!isDemo) return
+    
+    const sectionsToUse = sectionsSnapshot || dbSections
     const payload = {
       templateId: selectedTemplate?.id || SINGULARITY_TEMPLATE.id,
       projectName: brandConfig?.brandName || 'Untitled Project',
       brand: brandConfig,
-      sections: (sectionsSnapshot || dbSections).map((s) => ({
-        sectionId: s.section_id,
-        code: codeSnapshot?.[s.section_id] || buildState?.sectionCode?.[s.section_id] || '',
-        userPrompt: s.user_prompt || '',
-        refined: s.refined || false,
-        refinementChanges: s.refinement_changes || [],
-      })),
+      sections: sectionsToUse.map((s) => {
+        const code = codeSnapshot?.[s.section_id] || buildState?.sectionCode?.[s.section_id] || s.code || ''
+        return {
+          sectionId: s.section_id,
+          code,
+          userPrompt: s.user_prompt || '',
+          refined: s.refined || false,
+          refinementChanges: s.refinement_changes || [],
+        }
+      }),
     }
+    
+    // Debug logging
+    console.log('[GuestHandoff] Persisting:', {
+      projectName: payload.projectName,
+      templateId: payload.templateId,
+      sectionsCount: payload.sections.length,
+      sectionsWithCode: payload.sections.filter(s => s.code && s.code.length > 0).length,
+      sectionIds: payload.sections.map(s => s.sectionId),
+    })
+    
     try {
       localStorage.setItem('hatch_guest_handoff', JSON.stringify(payload))
+      console.log('[GuestHandoff] Saved to localStorage successfully')
     } catch (err) {
-      console.warn('Failed to persist guest handoff', err)
+      console.error('[GuestHandoff] Failed to persist:', err)
     }
   }, [isDemo, selectedTemplate?.id, brandConfig, dbSections, buildState])
 

@@ -36,7 +36,15 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { templateId, projectName, brand, sections } = body || {}
 
+    console.log('[Import] Received payload:', {
+      templateId,
+      projectName,
+      sectionsCount: sections?.length || 0,
+      sectionsWithCode: sections?.filter((s: any) => s.code && s.code.length > 0).length || 0,
+    })
+
     if (!templateId || !projectName || !Array.isArray(sections)) {
+      console.log('[Import] Missing required fields:', { templateId: !!templateId, projectName: !!projectName, sectionsIsArray: Array.isArray(sections) })
       return NextResponse.json({ error: 'Missing required fields: templateId, projectName, sections' }, { status: 400 })
     }
 
