@@ -103,7 +103,7 @@ export default function PaywallTransition({ reason, onClose, onUpgrade }: Paywal
 
   const handleSelectTier = (tierId: string) => {
     // Navigate to signup with the selected tier
-    router.push(`/sign-up?tier=${tierId}&redirect_url=/builder`)
+    router.push(`/sign-up?tier=${tierId}&redirect_url=/dashboard`)
   }
 
   return (

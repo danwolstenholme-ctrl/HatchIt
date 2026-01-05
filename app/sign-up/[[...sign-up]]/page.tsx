@@ -7,7 +7,7 @@ import { Terminal } from 'lucide-react'
 
 export default function SignUpPage() {
   const searchParams = useSearchParams()
-  const redirectUrl = searchParams.get('redirect_url') || '/builder'
+  const redirectUrl = searchParams.get('redirect_url') || '/dashboard'
   
   return (
     <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center relative overflow-hidden p-4">

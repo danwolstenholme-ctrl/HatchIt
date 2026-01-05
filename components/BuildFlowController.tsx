@@ -644,7 +644,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       // Redirect to sign up page instead of entering demo mode
       // Preserving intent to return to builder AND keeping any replication/template params
       const currentParams = window.location.search
-      const returnUrl = '/builder' + currentParams
+      const returnUrl = '/dashboard' + currentParams
       router.push(`/sign-up?redirect_url=${encodeURIComponent(returnUrl)}`)
       
       // ROLLBACK PLAN: Uncomment this block to restore Demo Mode
@@ -763,12 +763,13 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       const response = await fetch(`/api/project/${projectId}`, { signal: controller.signal })
       clearTimeout(timeoutId)
       
-      if (response.status === 403 || response.status === 404) {
+      if (response.status === 401 || response.status === 403 || response.status === 404) {
         localStorage.removeItem('hatch_current_project')
         
-        // Only redirect if we are not already at /builder (to avoid loop)
-        if (window.location.pathname !== '/builder' || window.location.search) {
-           router.replace('/builder', { scroll: false })
+        if (response.status === 401) {
+          router.replace('/dashboard', { scroll: false })
+        } else if (window.location.pathname !== '/builder' || window.location.search) {
+          router.replace('/builder', { scroll: false })
         }
         
         setJustCreatedProjectId(null)
@@ -2171,7 +2172,7 @@ export default function GeneratedPage() {
                 <button
                   onClick={() => {
                     setShowDemoNudge(false)
-                    router.push('/sign-up?redirect_url=/builder')
+                    router.push('/sign-up?redirect_url=/dashboard')
                   }}
                   className="w-full py-3 px-4 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
                 >
