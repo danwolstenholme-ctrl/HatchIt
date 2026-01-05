@@ -29,8 +29,8 @@ export async function createProject(
   brandConfig?: DbBrandConfig | null
 ): Promise<DbProject | null> {
   if (!supabaseAdmin) {
-    console.error('Supabase admin client not configured')
-    return null
+    console.error('Supabase admin client not configured (createProject)')
+    throw new Error('Supabase admin client not configured')
   }
 
   const slug = generateSlug(name)
@@ -49,8 +49,9 @@ export async function createProject(
     .single()
 
   if (error) {
-    console.error('Error creating project:', error)
-    return null
+    console.error('Error creating project:', JSON.stringify(error, null, 2))
+    // Throw error so we can catch it in the API route and return it to client
+    throw new Error(`Database error: ${error.message || error.details || JSON.stringify(error)}`)
   }
 
   return data as DbProject

@@ -94,7 +94,7 @@ const SINGULARITY_TEMPLATE: Template = {
   sections: websiteTemplate.sections
 }
 
-export default function BuildFlowController({ existingProjectId, initialPrompt, isDemo = false }: BuildFlowControllerProps) {
+export default function BuildFlowControllerLive({ existingProjectId, initialPrompt, isDemo = false }: BuildFlowControllerProps) {
   const { user, isLoaded, isSignedIn } = useUser()
   const { isPaidUser } = useSubscription()
   const router = useRouter()
@@ -162,16 +162,16 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
 
   // Show builder welcome for authenticated users (first time only)
   useEffect(() => {
-    if (!isSignedIn) return // Only show welcome for signed-in users
+    if (isDemo || !isSignedIn) return
     const hasSeen = localStorage.getItem('hatch_builder_welcome_seen')
     if (!hasSeen) {
       setShowBuilderWelcome(true)
     }
-  }, [isSignedIn])
+  }, [isDemo, isSignedIn])
 
-  // Sync guest credit counts from localStorage (only for guests)
+  // Sync guest credit counts from localStorage
   useEffect(() => {
-    if (isSignedIn) return // Signed in users don't use guest credits
+    if (!isDemo) return
     
     const syncCredits = () => {
       const builds = parseInt(localStorage.getItem('hatch_guest_builds') || '0', 10)
@@ -184,7 +184,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
     // Listen for storage changes from SectionBuilder
     window.addEventListener('storage', syncCredits)
     return () => window.removeEventListener('storage', syncCredits)
-  }, [isSignedIn])
+  }, [isDemo])
 
   const handleSaveSettings = async (settings: SiteSettings) => {
     if (!project) return
@@ -220,13 +220,11 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       console.error('Error saving settings:', err)
     }
   }
-  // Show unlock banner for guests or free users
-  const showUnlockBanner = useMemo(() => !isSignedIn || (!isPaidUser && !demoMode), [isSignedIn, isPaidUser, demoMode])
+  const showUnlockBanner = useMemo(() => isDemo || (!isPaidUser && !demoMode), [isDemo, isPaidUser, demoMode])
   
   // Persist guest build locally for post-signup migration
   const persistGuestHandoff = useCallback((sectionsSnapshot?: DbSection[], codeSnapshot?: Record<string, string>) => {
-    // Only persist for guests (not signed in) - signed in users save to Supabase
-    if (isSignedIn) return
+    if (!isDemo) return
     
     const sectionsToUse = sectionsSnapshot || dbSections
     const payload = {
@@ -260,7 +258,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
     } catch (err) {
       console.error('[GuestHandoff] Failed to persist:', err)
     }
-  }, [isSignedIn, selectedTemplate?.id, brandConfig, dbSections, buildState])
+  }, [isDemo, selectedTemplate?.id, brandConfig, dbSections, buildState])
 
   // NO MORE GENERATION LIMITS - Paywall is at DEPLOY/EXPORT only
   // Free users can generate unlimited, they pay to ship
@@ -716,8 +714,8 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       )
     )
 
-    // Persist demo progress for post-signup migration (only for guests)
-    if (!isSignedIn) {
+    // Persist demo progress for post-signup migration
+    if (isDemo) {
       persistGuestHandoff(dbSections.map(s => s.id === dbSection.id ? { ...s, code, refined, refinement_changes: refinementChanges || null } : s), {
         ...(buildState?.sectionCode || {}),
         [currentSection.id]: code,
@@ -897,8 +895,8 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   const handleDeploy = async () => {
     if (!project || !assembledCode || isDeploying || !buildState) return
     
-    // Guests: Always show signup modal for deploy
-    if (!isSignedIn) {
+    // Demo mode: Always show signup modal for deploy
+    if (isDemo) {
       setHatchModalReason('deploy')
       setShowHatchModal(true)
       return
@@ -1042,8 +1040,8 @@ export default function GeneratedPage() {
   const handleDownload = async () => {
     if (!project || !assembledCode || !buildState) return
     
-    // Guests: Always show signup modal for download
-    if (!isSignedIn) {
+    // Demo mode: Always show signup modal for download
+    if (isDemo) {
       setHatchModalReason('download')
       setShowHatchModal(true)
       return
@@ -1450,8 +1448,8 @@ export default function GeneratedPage() {
                 totalSections={sectionsForBuild.length}
                 isGenerating={false}
                 thought={getCurrentSection()?.name ? `Building ${getCurrentSection()?.name}...` : 'Analyzing...'}
-                promptsUsed={!isSignedIn ? guestBuildsUsed : 0}
-                promptsLimit={!isSignedIn ? 3 : -1}
+                promptsUsed={isDemo ? guestBuildsUsed : 0}
+                promptsLimit={isDemo ? 3 : -1}
                 isPaid={isPaid}
                 onUpgrade={() => {
                   setHatchModalReason('generation_limit')
@@ -1463,13 +1461,15 @@ export default function GeneratedPage() {
 
             {/* Main Build Area */}
             <div className="flex-1 flex flex-col overflow-hidden">
-              {/* Section Progress - Now shown for everyone */}
-              <SectionProgress
-                template={templateForBuild}
-                buildState={buildState}
-                onSectionClick={handleSectionClick}
-                onSkip={handleSkipSection}
-              />
+              {/* Section Progress - Hidden for Guests */}
+              {!isDemo && (
+                <SectionProgress
+                  template={templateForBuild}
+                  buildState={buildState}
+                  onSectionClick={handleSectionClick}
+                  onSkip={handleSkipSection}
+                />
+              )}
 
               <div className="flex-1 flex min-h-0 overflow-hidden">
                 {getCurrentSection() && getCurrentDbSection() && (project?.id || getCurrentDbSection()!.project_id) && (
@@ -2062,7 +2062,7 @@ export default function GeneratedPage() {
         }}
         sectionName={lastCompletedSection}
         buildsRemaining={Math.max(0, 3 - guestBuildsUsed)}
-        isGuest={!isSignedIn}
+        isGuest={isDemo || false}
       />
 
       <TheWitness

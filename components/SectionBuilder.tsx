@@ -657,10 +657,10 @@ export default function SectionBuilder({
     try { localStorage.removeItem(getStorageKey(p)) } catch { /* ignore */ }
   }
   
-  // Check for saved preview on init (guest mode)
+  // Check for saved preview on init (guest mode only - signed in users use database)
   // First try matching prompt, then fall back to ANY saved preview
-  const matchedPreview = isDemo ? getSavedPreview(effectivePrompt) : null
-  const anyPreview = isDemo && !matchedPreview ? getAnySavedPreview() : null
+  const matchedPreview = !isSignedIn ? getSavedPreview(effectivePrompt) : null
+  const anyPreview = !isSignedIn && !matchedPreview ? getAnySavedPreview() : null
   const savedPreview = matchedPreview || anyPreview
   
   // If we recovered a preview with a different prompt, use that prompt
@@ -694,9 +694,9 @@ export default function SectionBuilder({
   const [isExplaining, setIsExplaining] = useState(false)
   const [isDreaming, setIsDreaming] = useState(false)
   
-  // Guest prompt modal - shows when guest arrives with no prompt
+  // Guest prompt modal - shows when guest arrives with no prompt (actual guests only)
   const [showGuestPromptModal, setShowGuestPromptModal] = useState(
-    isDemo && !effectivePrompt && !savedPreview
+    !isSignedIn && !effectivePrompt && !savedPreview
   )
 
   // Paywall Logic
@@ -764,9 +764,9 @@ export default function SectionBuilder({
   // Redirect to sign-up page when paywall is hit (deploy/export only)
   const goToSignUp = (tier: string = 'visionary') => {
     // Persist guest work before redirecting (for post-signup migration)
-    if (isDemo && generatedCode) {
+    if (!isSignedIn && generatedCode) {
       const handoffPayload = {
-        templateId: 'single-page',
+        templateId: 'landing-page',
         projectName: brandConfig?.brandName || 'My Demo Project',
         brand: brandConfig,
         sections: [{
@@ -1269,8 +1269,8 @@ export default function SectionBuilder({
     const skipGuestCredit = options?.skipGuestCredit
     const buildPrompt = options?.overridePrompt || prompt
     
-    // Check localStorage again in case of back button navigation
-    if (isDemo && !generatedCode) {
+    // Check localStorage again in case of back button navigation (guests only)
+    if (!isSignedIn && !generatedCode) {
       const cached = getSavedPreview(buildPrompt)
       if (cached?.code) {
         setGeneratedCode(cached.code)
@@ -1396,8 +1396,8 @@ export default function SectionBuilder({
       setRefinementChanges([])
       setStage('complete')
       
-      // Save to localStorage for guest preview persistence
-      if (isDemo) {
+      // Save to localStorage for guest preview persistence (guests only)
+      if (!isSignedIn) {
         savePreview(buildPrompt, generatedCode, aiReasoning || '')
         // Also save the prompt so demo page can restore it
         try { localStorage.setItem('hatch_last_prompt', buildPrompt) } catch { /* ignore */ }
@@ -1422,8 +1422,8 @@ export default function SectionBuilder({
 
   const handleRebuild = () => {
     chronosphere.log('rejection', { section: section.name, reason: 'rebuild' }, section.id)
-    // Clear saved preview so user can regenerate fresh
-    if (isDemo) {
+    // Clear saved preview so user can regenerate fresh (guests only)
+    if (!isSignedIn) {
       clearSavedPreview(prompt)
       try { localStorage.removeItem('hatch_last_prompt') } catch { /* ignore */ }
     }
@@ -1558,8 +1558,8 @@ export default function SectionBuilder({
       setRefinePrompt('')
       setSelectedElement(null) // Clear selection after refine
       
-      // Track guest refinements
-      if (isDemo && !isSignedIn) {
+      // Track guest refinements (guests only)
+      if (!isSignedIn) {
         incrementGuestRefinements()
       }
       
@@ -1681,7 +1681,7 @@ export default function SectionBuilder({
       }, 8000) // Move to next stage every 8 seconds
       return () => clearInterval(interval)
     }
-  }, [stage, isDemo, generatedCode, effectivePrompt])
+  }, [stage, isDemo, generatedCode, effectivePrompt, loadingStages.length])
 
   // =============================================================================
   // GUEST MODE: Premium demo experience

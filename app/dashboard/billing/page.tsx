@@ -75,23 +75,23 @@ export default function BillingPage() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-12">
       <div className="mb-12">
-        <h1 className="text-2xl font-semibold text-white mb-2">Billing</h1>
+        <h1 className="text-2xl font-semibold text-zinc-100 mb-2">Billing</h1>
         <p className="text-zinc-500 text-sm">
           Manage your subscription and billing details
         </p>
       </div>
 
       {/* Current plan info */}
-      <div className="mb-10 p-5 bg-white/[0.02] border border-white/[0.06] rounded-xl">
+      <div className="mb-10 p-5 bg-zinc-900 border border-zinc-800 rounded-md">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs text-zinc-500 uppercase tracking-wide mb-1">Current plan</p>
-            <p className="text-lg font-medium text-white capitalize">{currentTier}</p>
+            <p className="text-lg font-medium text-zinc-200 capitalize">{currentTier}</p>
           </div>
           {currentTier !== 'free' && (
             <a 
               href="/api/subscription/portal"
-              className="text-sm text-zinc-400 hover:text-white transition-colors"
+              className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
             >
               Manage subscription →
             </a>
@@ -104,33 +104,33 @@ export default function BillingPage() {
         {plans.map((plan) => (
           <div
             key={plan.id}
-            className={`relative p-6 rounded-xl border transition-all ${
+            className={`relative p-6 rounded-md border transition-all ${
               plan.current
-                ? 'bg-emerald-500/5 border-emerald-500/30'
+                ? 'bg-emerald-900/10 border-emerald-500/30'
                 : plan.recommended
-                ? 'bg-white/[0.02] border-emerald-500/20 hover:border-emerald-500/40'
-                : 'bg-white/[0.02] border-white/[0.06] hover:border-white/[0.12]'
+                ? 'bg-zinc-900 border-emerald-500/30 hover:border-emerald-500/50'
+                : 'bg-zinc-900 border-zinc-800 hover:border-zinc-700'
             }`}
           >
             {plan.recommended && !plan.current && (
-              <div className="absolute -top-2.5 left-4 px-2 py-0.5 bg-emerald-500 text-black text-[10px] font-semibold rounded">
+              <div className="absolute -top-2.5 left-4 px-2 py-0.5 bg-emerald-600 text-white text-[10px] font-semibold rounded">
                 RECOMMENDED
               </div>
             )}
 
             <div className="mb-5">
-              <h3 className="text-lg font-medium text-white mb-1">{plan.name}</h3>
+              <h3 className="text-lg font-medium text-zinc-200 mb-1">{plan.name}</h3>
               <p className="text-sm text-zinc-500">{plan.description}</p>
             </div>
 
             <div className="flex items-baseline gap-1 mb-6">
-              <span className="text-3xl font-semibold text-white">${plan.price}</span>
+              <span className="text-3xl font-semibold text-zinc-200">${plan.price}</span>
               <span className="text-zinc-500 text-sm">/month</span>
             </div>
 
             <ul className="space-y-3 mb-6">
               {plan.features.map((feature, i) => (
-                <li key={i} className="flex items-start gap-2.5 text-sm text-zinc-300">
+                <li key={i} className="flex items-start gap-2.5 text-sm text-zinc-400">
                   <Check className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
                   <span>{feature}</span>
                 </li>
@@ -138,16 +138,16 @@ export default function BillingPage() {
             </ul>
 
             {plan.current ? (
-              <div className="w-full py-2.5 text-center text-sm text-emerald-400 border border-emerald-500/30 rounded-lg">
+              <div className="w-full py-2.5 text-center text-sm text-emerald-500 border border-emerald-500/30 rounded-md">
                 Current plan
               </div>
             ) : (
               <a
                 href={`/api/checkout?tier=${plan.id}`}
-                className={`block w-full py-2.5 text-center text-sm font-medium rounded-lg transition-colors ${
+                className={`block w-full py-2.5 text-center text-sm font-medium rounded-md transition-colors ${
                   plan.recommended
-                    ? 'bg-emerald-500 hover:bg-emerald-400 text-black'
-                    : 'bg-white/[0.06] hover:bg-white/[0.1] text-white'
+                    ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                    : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-200'
                 }`}
               >
                 {plan.cta}

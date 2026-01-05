@@ -48,11 +48,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields: templateId, projectName, sections' }, { status: 400 })
     }
 
-    const template = getTemplateById(templateId)
+    // Handle legacy/invalid template IDs gracefully
+    let template = getTemplateById(templateId)
+    if (!template) {
+      // Fallback to landing-page for invalid template IDs
+      console.log('[Import] Invalid templateId, falling back to landing-page:', templateId)
+      template = getTemplateById('landing-page')
+    }
     if (!template) return NextResponse.json({ error: 'Invalid template' }, { status: 400 })
 
-    const project = await createProject(dbUser.id, projectName, templateId, brand || null)
-    if (!project) return NextResponse.json({ error: 'Failed to create project' }, { status: 500 })
+    // Use template.id to ensure we're using a valid ID (e.g. if fallback occurred)
+    let project
+    try {
+      project = await createProject(dbUser.id, projectName, template.id, brand || null)
+    } catch (e: any) {
+      console.error('[Import] Create project failed:', e)
+      return NextResponse.json({ error: `Failed to create project: ${e.message}` }, { status: 500 })
+    }
+    
+    if (!project) return NextResponse.json({ error: 'Failed to create project (IMPORT_ROUTE_NULL_RESULT)' }, { status: 500 })
 
     await createSectionsFromTemplate(project.id, template.sections)
     const dbSections = await getSectionsByProjectId(project.id)

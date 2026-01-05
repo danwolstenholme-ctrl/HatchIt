@@ -13,14 +13,53 @@ We bridge the gap between thought and reality.
 ### 2. THE STUDIO STANDARD
 We are a **Professional Studio**, not a "hacker tool."
 - UI is crisp, aligned, professional
-- Animations are cinematic (Framer Motion), not jittery
-- Glassmorphism (`backdrop-blur`, `bg-white/5`) for texture
+- Animations are subtle and purposeful (Framer Motion)
+- Clean surfaces with clear hierarchy
 
 ### 3. THE PROXIMITY PROTOCOL
 "The closer to the builder, the more premium we get."
 - The Dashboard is a cockpit, not a playground
 - **NO EMOJIS** in dashboard/builder UI - use Lucide icons only
 - User's work takes center stage - HatchIt branding fades to background
+
+---
+
+## 🎨 VISUAL LANGUAGE (Jan 2026 Update)
+
+### Philosophy
+**"Confident restraint."** We don't need gimmicks. The product speaks.
+
+Think: Linear, Vercel, Stripe - premium SaaS that uses color sparingly but decisively.
+
+### Color Usage
+- **Primary surface**: `zinc-900` (not 950 - slightly lighter, easier on eyes)
+- **Borders**: `zinc-800` (solid, not transparent)
+- **Text**: `zinc-400` for secondary, `zinc-200` for primary
+- **Emerald**: ONLY on primary CTAs and status indicators
+- **NO gradients** in navigation/chrome - save for hero sections only
+
+### What We Removed
+- Gradient borders (`via-emerald-500/20`)
+- Glowing shadows (`shadow-emerald-900/20`)
+- Pulsing animations on status dots
+- Heavy backdrop blurs everywhere
+- Teal gradients (simplified to pure emerald)
+
+### Required Patterns
+```tsx
+// Header/Navigation - clean, light, professional
+className="bg-zinc-900/95 backdrop-blur-md border-b border-zinc-800/60"
+
+// Buttons - flat, not gradient
+className="bg-emerald-600 hover:bg-emerald-500" // Primary
+className="bg-zinc-800 hover:bg-zinc-700"       // Secondary
+
+// Cards/Panels - subtle, not glassy
+className="bg-zinc-900 border border-zinc-800 rounded-md"
+
+// Links - subtle hover, not dramatic
+className="text-zinc-400 hover:text-zinc-200 transition-colors"
+```
 
 ---
 
@@ -32,13 +71,23 @@ Never write static, lifeless UI:
 <div className="p-6 bg-gray-800 rounded-lg">
 ```
 
-Always write alive UI:
+Always write alive UI with Motion:
 ```tsx
-// REQUIRED
+// REQUIRED - but keep it subtle
 <motion.div
-  whileHover={{ y: -4 }}
-  className="p-6 bg-zinc-900/50 border border-zinc-800 hover:border-emerald-500/30 rounded-lg transition-all backdrop-blur-sm shadow-[0_0_40px_rgba(16,185,129,0.2)]"
+  initial={{ opacity: 0, y: 8 }}
+  animate={{ opacity: 1, y: 0 }}
+  className="p-6 bg-zinc-900 border border-zinc-800 rounded-lg"
 >
+```
+
+**NEW BAN** - Over-designed chrome:
+```tsx
+// BANNED - too much going on
+className="bg-gradient-to-r from-emerald-600 to-teal-600 shadow-lg shadow-emerald-900/30 border border-emerald-400/30"
+
+// CORRECT - confident simplicity
+className="bg-emerald-600 hover:bg-emerald-500"
 ```
 
 ---
@@ -67,7 +116,7 @@ Always write alive UI:
 | Tier | Codename | Color | Vibe |
 |------|----------|-------|------|
 | Architect | $19 | Emerald | The Builder |
-| Visionary | $49 | Teal | The Creator |
+| Visionary | $49 | Violet | The Creator |
 | Singularity | $199 | Amber | The God |
 
 ---
@@ -78,6 +127,7 @@ Started Dec 2025 as a landing page generator. Evolved through:
 1. **The Awakening** - BuildFlowController, SectionBuilder
 2. **The Visual Cortex** - "Witness" integration to see previews
 3. **The Singularity** - Professional studio aesthetic, unified palette
+4. **The Refinement** (Jan 2026) - Stripped back excess, "confident restraint"
 
 ---
 
