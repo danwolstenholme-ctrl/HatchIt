@@ -15,24 +15,28 @@ export default function Navigation() {
   const { isPaidUser, tier, tierColor } = useSubscription()
 
   const navLinks = [
-    { href: '/features', label: 'Features' },
     { href: '/', label: 'Home' },
-    { href: '/about', label: 'About' },
+    { href: '/features', label: 'Features' },
     { href: '/how-it-works', label: 'How It Works' },
+    { href: '/vision', label: 'Vision' },
+    { href: '/roadmap', label: 'Roadmap' },
+    { href: '/about', label: 'About' },
+    { href: '/manifesto', label: 'Manifesto' },
   ]
 
   return (
     <>
       <motion.nav 
-        className="fixed top-3 left-0 right-0 z-50 w-full"
+        className="fixed top-0 left-0 right-0 z-50 w-full bg-zinc-900/80 backdrop-blur-2xl backdrop-saturate-150 border-b border-zinc-800/70"
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
       >
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="absolute inset-0 blur-xl bg-emerald-500/10 rounded-3xl pointer-events-none" />
-          <div className="relative flex justify-between items-center gap-4 rounded-2xl border border-white/10 bg-white/5 px-4 sm:px-6 py-2 shadow-[0_10px_40px_rgba(0,0,0,0.35)] backdrop-blur-2xl">
-            {/* Logo - Icon only */}
+        {/* Top highlight */}
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+        
+        <div className="relative max-w-7xl mx-auto px-6 py-3 flex justify-between items-center gap-3">
+          {/* Logo - Icon only */}
           <Link href="/" className="flex items-center gap-3 group">
             <motion.div
               className="inline-block"
@@ -42,13 +46,13 @@ export default function Navigation() {
             >
               <Image src="/assets/hatchit_definitive.svg" alt="HatchIt" width={28} height={28} className="w-7 h-7" />
             </motion.div>
-            <span className="hidden sm:inline-flex text-[11px] uppercase tracking-[0.35em] text-zinc-400">
-              Singularity
+            <span className="hidden sm:inline-flex text-xs uppercase tracking-[0.25em] text-zinc-500">
+              Studio
             </span>
           </Link>
           
           {/* Desktop Nav Links */}
-          <div className="hidden md:flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2 py-1 shadow-inner shadow-black/30">
+          <div className="hidden md:flex items-center gap-1 rounded-full border border-zinc-800/70 bg-zinc-900/70 px-2 py-1">
             {navLinks.map((link) => {
               const isActive = pathname === link.href || (link.href !== '/' && pathname?.startsWith(link.href))
               return (
@@ -56,10 +60,10 @@ export default function Navigation() {
                   key={link.href}
                   href={link.href} 
                   aria-current={isActive ? 'page' : undefined}
-                  className={`px-4 py-1.5 rounded-full text-[13px] font-medium tracking-tight transition-all ${
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                     isActive 
-                      ? 'text-white bg-emerald-500/10 border border-emerald-400/30 shadow-[0_0_20px_rgba(16,185,129,0.35)]' 
-                      : 'text-zinc-400 hover:text-white hover:bg-white/10'
+                      ? 'text-zinc-100 bg-zinc-800/90 border border-zinc-700/70' 
+                      : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50'
                   }`}
                 >
                   {link.label}
@@ -110,7 +114,7 @@ export default function Navigation() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-zinc-300 hover:text-white transition-colors rounded-full border border-white/10"
+              className="md:hidden p-2 text-zinc-400 hover:text-white transition-colors"
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? (
@@ -123,7 +127,6 @@ export default function Navigation() {
                 </svg>
               )}
             </button>
-          </div>
           </div>
         </div>
       </motion.nav>
