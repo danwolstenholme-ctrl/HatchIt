@@ -83,10 +83,10 @@ export default function Navigation() {
             <SignedIn>
               <div className="flex items-center gap-2 sm:gap-3">
                 <Link
-                  href="/dashboard/studio"
+                  href="/dashboard"
                   className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md bg-zinc-800 text-zinc-200 hover:bg-zinc-700 hover:text-white transition-colors"
                 >
-                  Studio
+                  Dashboard
                 </Link>
                 {/* Subscription badge */}
                 <div className="hidden sm:block">
@@ -186,15 +186,15 @@ export default function Navigation() {
                 })}
               </div>
               
-              {/* Mobile Studio - for signed in users */}
+              {/* Mobile Dashboard - for signed in users */}
               <SignedIn>
                 <div className="p-3 border-t border-zinc-800">
                   <Link
-                    href="/dashboard/studio"
+                    href="/dashboard"
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center justify-center gap-2 w-full py-2.5 text-center bg-zinc-800 hover:bg-zinc-700 text-white rounded-md font-medium transition-colors"
                   >
-                    Studio
+                    Dashboard
                   </Link>
                 </div>
               </SignedIn>

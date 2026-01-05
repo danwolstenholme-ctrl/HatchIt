@@ -108,7 +108,7 @@ function StreamingCodeEffect() {
   }, [])
   
   return (
-    <div className="text-[11px] leading-5">
+    <div className="text-[11px] leading-5 font-mono bg-black/50 p-4 rounded-lg border border-white/5 backdrop-blur-sm">
       {FAKE_CODE_LINES.slice(0, visibleLines).map((line, i) => (
         <motion.div
           key={i}
@@ -123,7 +123,7 @@ function StreamingCodeEffect() {
         <motion.span
           animate={{ opacity: [1, 0] }}
           transition={{ duration: 0.5, repeat: Infinity }}
-          className="inline-block w-2 h-4 bg-emerald-500 ml-0.5"
+          className="inline-block w-2 h-4 bg-emerald-500 ml-0.5 shadow-[0_0_10px_rgba(16,185,129,0.8)]"
         />
       )}
     </div>
@@ -233,7 +233,7 @@ function GuestRefineBar({
 
       {/* Input Row */}
       <div className="flex items-center gap-2">
-        <div className="flex-1 flex items-center bg-zinc-950/90 backdrop-blur-xl border border-zinc-800 rounded-full overflow-hidden focus-within:border-emerald-500/50 transition-colors">
+        <div className="flex-1 flex items-center bg-white/5 backdrop-blur-xl border border-white/10 rounded-full overflow-hidden focus-within:border-emerald-500/50 transition-colors shadow-lg shadow-black/20">
           <input
             type="text"
             value={refinePrompt}
@@ -248,7 +248,7 @@ function GuestRefineBar({
           <button
             onClick={handleUserRefine}
             disabled={!refinePrompt.trim() || isUserRefining || isGuestRefineLocked}
-            className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+            className="px-4 py-2.5 bg-emerald-600/80 hover:bg-emerald-500 text-white text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 backdrop-blur-sm"
           >
             {isUserRefining ? (
               <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -263,7 +263,7 @@ function GuestRefineBar({
         
         <button
           onClick={goToSignUp}
-          className="flex-shrink-0 px-4 py-2.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 text-sm font-medium transition-all"
+          className="flex-shrink-0 px-4 py-2.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 text-sm font-medium transition-all backdrop-blur-sm shadow-[0_0_15px_-5px_rgba(16,185,129,0.3)]"
         >
           Deploy
         </button>

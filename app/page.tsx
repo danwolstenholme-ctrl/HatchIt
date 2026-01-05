@@ -8,7 +8,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
-import { Cpu, Terminal, Layers, Shield, Zap, Code2, Globe, ArrowRight, CheckCircle2, Layout, Wand2, Smartphone, Brain } from 'lucide-react'
+import { Terminal, Layers, Shield, Zap, Code2, Globe, ArrowRight, CheckCircle2, Layout, Smartphone } from 'lucide-react'
 import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime'
 import HomepageWelcome from '@/components/HomepageWelcome'
 import SingularityTransition from '@/components/singularity/SingularityTransition'
@@ -33,10 +33,10 @@ function VoidButton({ isSignedIn, router, onLaunch }: { isSignedIn: boolean | un
   return (
     <button
       onClick={handleClick}
-      className="group relative w-full sm:w-auto inline-flex justify-center items-center gap-3 px-8 sm:px-10 py-4 sm:py-5 bg-zinc-900/80 hover:bg-zinc-900 border border-emerald-500/30 hover:border-emerald-500/60 rounded-md font-bold text-lg transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_0_60px_rgba(16,185,129,0.15)] hover:shadow-[0_0_80px_rgba(16,185,129,0.25)] overflow-hidden"
+      className="group relative w-full sm:w-auto inline-flex justify-center items-center gap-3 px-8 sm:px-10 py-4 sm:py-5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-500/50 backdrop-blur-md rounded-xl font-bold text-lg transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_0_30px_-10px_rgba(16,185,129,0.3)] hover:shadow-[0_0_50px_-10px_rgba(16,185,129,0.5)] overflow-hidden"
     >
       {/* Glow ring on hover - Always active on mobile via CSS animation */}
-      <div className="absolute -inset-[2px] rounded-md bg-gradient-to-r from-emerald-500/40 via-teal-500/40 to-emerald-500/40 opacity-50 sm:opacity-0 sm:group-hover:opacity-100 blur-md transition-opacity duration-500 animate-pulse sm:animate-none" />
+      <div className="absolute -inset-[2px] rounded-xl bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-emerald-500/20 opacity-0 group-hover:opacity-100 blur-md transition-opacity duration-500" />
       
       <div className="relative z-10 flex items-center gap-3">
         <span className="text-white tracking-wide font-semibold">Try the Demo</span>
@@ -86,8 +86,6 @@ function AnimatedCard({ children, delay = 0, className = '' }: { children: React
 }
 
 
-
-// FloatingNodes removed to reduce background layering and potential scroll jank
 
 // Typewriter effect for hero code preview
 function TypewriterCode() {
@@ -155,11 +153,12 @@ export default function Home() {
   }
   
   return (
-    <main className="min-h-screen bg-zinc-950 text-white relative overflow-hidden">
+    <main className="min-h-screen bg-black text-white relative overflow-hidden">
       {/* Ambient void background - Global */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[150px]" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-teal-500/5 rounded-full blur-[150px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)]" />
       </div>
 
       {/* Scanline Effect - Global */}
@@ -170,7 +169,6 @@ export default function Home() {
       </AnimatePresence>
       
       <HomepageWelcome onStart={triggerTransition} />
-      {/* LaunchAnimation removed for faster flow */}
       
       {/* CSS for smooth scroll */}
       <style jsx global>{`
@@ -195,7 +193,7 @@ export default function Home() {
       {/* HERO SECTION - Clean and confident */}
       <section className="relative min-h-[90vh] flex flex-col justify-center items-center pt-28 sm:pt-32 pb-12 px-4 sm:px-6 overflow-hidden">
         {/* Layered depth background */}
-        <div className="absolute inset-0 bg-zinc-950" />
+        <div className="absolute inset-0 bg-black/50" />
         
         {/* Perspective grid - fades into distance */}
         <div className="absolute inset-0 overflow-hidden">
@@ -299,14 +297,14 @@ export default function Home() {
               transition={{ delay: 0.6 }}
               className="relative w-full max-w-lg mb-10 hidden sm:block"
             >
-              <div className="bg-zinc-900/80 border border-zinc-800 rounded-md p-4 font-mono text-sm overflow-hidden backdrop-blur-sm">
-                <div className="flex items-center gap-2 mb-3 text-zinc-500">
+              <div className="bg-white/5 border border-white/10 rounded-xl p-5 font-mono text-sm overflow-hidden backdrop-blur-md shadow-2xl shadow-black/50">
+                <div className="flex items-center gap-2 mb-4 text-zinc-500 border-b border-white/5 pb-3">
                   <div className="flex gap-1.5">
-                    <div className="w-2 h-2 rounded-full bg-zinc-700" />
-                    <div className="w-2 h-2 rounded-full bg-zinc-700" />
-                    <div className="w-2 h-2 rounded-full bg-zinc-700" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-500/20 border border-red-500/50" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-amber-500/20 border border-amber-500/50" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/20 border border-emerald-500/50" />
                   </div>
-                  <span className="text-xs uppercase tracking-wider">HeroSection.tsx</span>
+                  <span className="text-[10px] uppercase tracking-widest ml-2 opacity-50">HeroSection.tsx</span>
                 </div>
                 <motion.div
                   initial={{ opacity: 0 }}
@@ -317,7 +315,7 @@ export default function Home() {
                 </motion.div>
               </div>
               {/* Glow effect */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-md blur-xl opacity-50 -z-10" />
+              <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 rounded-xl blur-2xl opacity-50 -z-10" />
             </motion.div>
 
             {/* CTA */}
@@ -368,7 +366,7 @@ export default function Home() {
       </section>
 
       {/* THE STACK */}
-      <Section className="px-6 py-20 relative overflow-hidden border-t border-zinc-900">
+      <Section className="px-6 py-20 relative overflow-hidden border-t border-white/5">
         <div className="max-w-6xl mx-auto relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-5xl font-bold mb-4 tracking-tight">
@@ -381,25 +379,25 @@ export default function Home() {
 
           {/* Key differentiators */}
           <div className="grid md:grid-cols-3 gap-6 mb-16">
-            <div className="p-6 bg-zinc-900/50 border border-zinc-800 sm:border-zinc-800 border-emerald-500/20 rounded-md hover:border-emerald-500/30 transition-all group">
-              <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Zap className="w-6 h-6 text-emerald-400" />
+            <div className="p-8 bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl hover:bg-white/10 hover:border-emerald-500/30 transition-all duration-300 group shadow-lg shadow-black/20">
+              <div className="w-14 h-14 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-[0_0_30px_-10px_rgba(16,185,129,0.3)]">
+                <Zap className="w-7 h-7 text-emerald-400" />
               </div>
-              <h3 className="text-xl font-bold mb-2 text-white">Live Preview</h3>
+              <h3 className="text-xl font-bold mb-3 text-white">Live Preview</h3>
               <p className="text-zinc-400 text-sm leading-relaxed">Watch your React components render in real-time. Refine with words until it&apos;s exactly right.</p>
             </div>
-            <div className="p-6 bg-zinc-900/50 border border-zinc-800 sm:border-zinc-800 border-teal-500/20 rounded-md hover:border-teal-500/30 transition-all group">
-              <div className="w-12 h-12 bg-teal-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Code2 className="w-6 h-6 text-teal-400" />
+            <div className="p-8 bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl hover:bg-white/10 hover:border-teal-500/30 transition-all duration-300 group shadow-lg shadow-black/20">
+              <div className="w-14 h-14 bg-teal-500/10 border border-teal-500/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-[0_0_30px_-10px_rgba(20,184,166,0.3)]">
+                <Code2 className="w-7 h-7 text-teal-400" />
               </div>
-              <h3 className="text-xl font-bold mb-2 text-white">Real Code</h3>
+              <h3 className="text-xl font-bold mb-3 text-white">Real Code</h3>
               <p className="text-zinc-400 text-sm leading-relaxed">Not mockups. Actual React + Tailwind components you can download and use anywhere.</p>
             </div>
-            <div className="p-6 bg-zinc-900/50 border border-zinc-800 sm:border-zinc-800 border-teal-500/20 rounded-md hover:border-teal-500/30 transition-all group">
-              <div className="w-12 h-12 bg-teal-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Globe className="w-6 h-6 text-teal-400" />
+            <div className="p-8 bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl hover:bg-white/10 hover:border-emerald-500/30 transition-all duration-300 group shadow-lg shadow-black/20">
+              <div className="w-14 h-14 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-[0_0_30px_-10px_rgba(16,185,129,0.3)]">
+                <Globe className="w-7 h-7 text-emerald-400" />
               </div>
-              <h3 className="text-xl font-bold mb-2 text-white">Your Choice</h3>
+              <h3 className="text-xl font-bold mb-3 text-white">Your Choice</h3>
               <p className="text-zinc-400 text-sm leading-relaxed">Deploy to our hosting for quick sharing, or export the source and host it yourself.</p>
             </div>
           </div>
@@ -474,9 +472,9 @@ export default function Home() {
             ].map((tech, i) => (
               <div 
                 key={i} 
-                className={`group p-4 bg-gradient-to-br ${tech.bg} to-transparent border border-zinc-800 rounded-md text-center transition-all duration-300 cursor-default hover:scale-[1.02] hover:shadow-lg ${tech.hover}`}
+                className={`group p-4 bg-white/5 border border-white/5 rounded-xl text-center transition-all duration-300 cursor-default hover:scale-[1.02] hover:bg-white/10 ${tech.hover}`}
               >
-                <div className={`w-10 h-10 mx-auto bg-zinc-900/80 rounded-lg flex items-center justify-center mb-2 text-zinc-400 ${tech.text} transition-colors`}>
+                <div className={`w-10 h-10 mx-auto bg-white/5 rounded-lg flex items-center justify-center mb-2 text-zinc-400 ${tech.text} transition-colors border border-white/5`}>
                   {tech.icon}
                 </div>
                 <div className="font-semibold text-sm text-white">{tech.name}</div>
@@ -499,26 +497,26 @@ export default function Home() {
 
           {/* 3-step process */}
           <div className="grid md:grid-cols-3 gap-6">
-            <div className="text-center p-6">
-              <div className="w-14 h-14 mx-auto bg-emerald-500/10 border border-emerald-500/20 rounded-md flex items-center justify-center mb-4">
+            <div className="text-center p-8 bg-white/5 border border-white/10 backdrop-blur-sm rounded-2xl hover:bg-white/10 transition-all duration-300">
+              <div className="w-16 h-16 mx-auto bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-center mb-6 shadow-[0_0_30px_-10px_rgba(16,185,129,0.3)]">
                 <span className="text-2xl font-bold text-emerald-400">1</span>
               </div>
-              <h3 className="text-lg font-bold mb-2">Describe a section</h3>
-              <p className="text-zinc-400 text-sm">&quot;A pricing table with 3 tiers and a monthly/yearly toggle&quot;</p>
+              <h3 className="text-lg font-bold mb-2 text-white">Describe a section</h3>
+              <p className="text-zinc-400 text-sm leading-relaxed">&quot;A pricing table with 3 tiers and a monthly/yearly toggle&quot;</p>
             </div>
-            <div className="text-center p-6">
-              <div className="w-14 h-14 mx-auto bg-teal-500/10 border border-teal-500/20 rounded-md flex items-center justify-center mb-4">
+            <div className="text-center p-8 bg-white/5 border border-white/10 backdrop-blur-sm rounded-2xl hover:bg-white/10 transition-all duration-300">
+              <div className="w-16 h-16 mx-auto bg-teal-500/10 border border-teal-500/20 rounded-2xl flex items-center justify-center mb-6 shadow-[0_0_30px_-10px_rgba(20,184,166,0.3)]">
                 <span className="text-2xl font-bold text-teal-400">2</span>
               </div>
-              <h3 className="text-lg font-bold mb-2">Preview and refine</h3>
-              <p className="text-zinc-400 text-sm">See it render live. Say &quot;make the buttons rounder&quot; — watch it update.</p>
+              <h3 className="text-lg font-bold mb-2 text-white">Preview and refine</h3>
+              <p className="text-zinc-400 text-sm leading-relaxed">See it render live. Say &quot;make the buttons rounder&quot; — watch it update.</p>
             </div>
-            <div className="text-center p-6">
-              <div className="w-14 h-14 mx-auto bg-amber-500/10 border border-amber-500/20 rounded-md flex items-center justify-center mb-4">
+            <div className="text-center p-8 bg-white/5 border border-white/10 backdrop-blur-sm rounded-2xl hover:bg-white/10 transition-all duration-300">
+              <div className="w-16 h-16 mx-auto bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-center justify-center mb-6 shadow-[0_0_30px_-10px_rgba(245,158,11,0.3)]">
                 <span className="text-2xl font-bold text-amber-400">3</span>
               </div>
-              <h3 className="text-lg font-bold mb-2">Ship it</h3>
-              <p className="text-zinc-400 text-sm">Deploy to share instantly, or download the React code and own it forever.</p>
+              <h3 className="text-lg font-bold mb-2 text-white">Ship it</h3>
+              <p className="text-zinc-400 text-sm leading-relaxed">Deploy to share instantly, or download the React code and own it forever.</p>
             </div>
           </div>
         </div>
@@ -563,7 +561,7 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-sm sm:max-w-none mx-auto">
             {/* Starter ($19/mo) */}
             <motion.div 
-              className="group relative p-8 bg-zinc-950 border border-zinc-800 rounded-md hover:border-emerald-500/30 transition-all duration-500 flex flex-col overflow-hidden"
+              className="group relative p-8 bg-white/5 border border-white/10 backdrop-blur-sm rounded-2xl hover:bg-white/10 hover:border-emerald-500/30 transition-all duration-500 flex flex-col overflow-hidden"
               whileHover={{ y: -4 }}
             >
               <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -576,7 +574,7 @@ export default function Home() {
                   <span className="text-zinc-600 font-mono text-sm">/mo</span>
                 </div>
                 
-                <div className="h-px w-full bg-zinc-900 mb-6" />
+                <div className="h-px w-full bg-white/10 mb-6" />
                 
                 <ul className="space-y-4 mb-8">
                   {[
@@ -587,7 +585,7 @@ export default function Home() {
                     { text: 'Download source code', included: false },
                     { text: 'Custom domain', included: false },
                   ].map((item, i) => (
-                    <li key={i} className={`flex items-center gap-3 text-sm ${item.included ? 'text-zinc-300' : 'text-zinc-700'}`}>
+                    <li key={i} className={`flex items-center gap-3 text-sm ${item.included ? 'text-zinc-300' : 'text-zinc-600'}`}>
                       <div className={`w-1.5 h-1.5 rounded-full ${item.included ? 'bg-emerald-500' : 'bg-zinc-800'}`} />
                       <span className={item.included ? '' : 'line-through decoration-zinc-800'}>{item.text}</span>
                     </li>
@@ -598,7 +596,7 @@ export default function Home() {
 
             {/* Pro ($49) */}
             <motion.div 
-              className="group relative p-8 bg-zinc-950 border border-emerald-500/50 rounded-md shadow-[0_0_50px_rgba(16,185,129,0.1)] hover:shadow-[0_0_80px_rgba(16,185,129,0.2)] transition-all duration-500 flex flex-col overflow-hidden lg:-translate-y-4"
+              className="group relative p-8 bg-emerald-500/10 border border-emerald-500/30 backdrop-blur-md rounded-2xl shadow-[0_0_50px_-10px_rgba(16,185,129,0.2)] hover:shadow-[0_0_80px_-10px_rgba(16,185,129,0.3)] transition-all duration-500 flex flex-col overflow-hidden lg:-translate-y-4"
               whileHover={{ y: -12 }}
             >
               <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/10 via-emerald-500/5 to-transparent opacity-100" />
@@ -607,7 +605,7 @@ export default function Home() {
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-4">
                   <div className="text-xs font-mono text-emerald-400 uppercase tracking-widest">Recommended</div>
-                  <div className="px-2 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/30 text-[10px] font-mono text-emerald-300 uppercase">Unlimited</div>
+                  <div className="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-[10px] font-mono text-emerald-300 uppercase">Unlimited</div>
                 </div>
                 
                 <h3 className="text-3xl font-bold text-white mb-2">Visionary</h3>
@@ -638,7 +636,7 @@ export default function Home() {
 
             {/* Agency ($199) */}
             <motion.div 
-              className="group relative p-8 bg-zinc-950 border border-zinc-800 rounded-md hover:border-amber-500/30 transition-all duration-500 flex flex-col overflow-hidden"
+              className="group relative p-8 bg-white/5 border border-white/10 backdrop-blur-sm rounded-2xl hover:bg-white/10 hover:border-amber-500/30 transition-all duration-500 flex flex-col overflow-hidden"
               whileHover={{ y: -4 }}
             >
               <div className="absolute inset-0 bg-gradient-to-b from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -651,7 +649,7 @@ export default function Home() {
                   <span className="text-zinc-600 font-mono text-sm">/mo</span>
                 </div>
                 
-                <div className="h-px w-full bg-zinc-900 mb-6" />
+                <div className="h-px w-full bg-white/10 mb-6" />
                 
                 <ul className="space-y-4 mb-8">
                   {[
@@ -695,7 +693,7 @@ export default function Home() {
       </Section>
 
       {/* FINAL CTA */}
-      <Section className="px-4 sm:px-6 py-24 relative overflow-hidden border-t border-zinc-900">
+      <Section className="px-4 sm:px-6 py-24 relative overflow-hidden border-t border-white/5">
         <div className="max-w-3xl mx-auto text-center relative z-10">
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">Ready to try it?</h2>
           <p className="text-lg text-zinc-400 mb-8">Build your first section in under a minute. No signup required.</p>

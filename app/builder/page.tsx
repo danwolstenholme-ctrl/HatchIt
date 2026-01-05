@@ -4,6 +4,7 @@ import { Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
 import BuildFlowController from '@/components/BuildFlowController'
+import SingularityLoader from '@/components/singularity/SingularityLoader'
 
 // =============================================================================
 // BUILDER PAGE - Same as demo but with auth + persistence
@@ -22,12 +23,12 @@ function BuilderContent() {
   if (isLoaded && !isSignedIn) {
     const demoUrl = prompt ? `/demo?prompt=${encodeURIComponent(prompt)}` : '/demo'
     router.replace(demoUrl)
-    return <div className="min-h-screen bg-zinc-950" />
+    return <SingularityLoader text="REDIRECTING TO DEMO" />
   }
 
   // Show loading while checking auth
   if (!isLoaded) {
-    return <div className="min-h-screen bg-zinc-950" />
+    return <SingularityLoader text="VERIFYING IDENTITY" />
   }
 
   // Authenticated user - same UI as demo, just with persistence
@@ -35,14 +36,14 @@ function BuilderContent() {
     <BuildFlowController 
       existingProjectId={projectId || undefined}
       initialPrompt={prompt || undefined}
-      isDemo={true}
+      isDemo={false} // Explicitly NOT demo mode for authenticated users
     />
   )
 }
 
 export default function BuilderPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-zinc-950" />}>
+    <Suspense fallback={<SingularityLoader text="LOADING BUILDER" />}>
       <BuilderContent />
     </Suspense>
   )

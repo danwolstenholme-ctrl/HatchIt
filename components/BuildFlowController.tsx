@@ -7,9 +7,6 @@ import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
-  Layers, 
-  Box, 
-  Cpu, 
   Smartphone, 
   Tablet, 
   Monitor, 
@@ -41,7 +38,6 @@ import {
 } from 'lucide-react'
 import Image from 'next/image'
 import { track } from '@vercel/analytics'
-// TemplateSelector and BrandingStep removed - system drives decisions now.
 import SectionProgress from './SectionProgress'
 import SectionBuilder from './SectionBuilder'
 import SingularitySidebar from './singularity/SingularitySidebar'
@@ -55,6 +51,7 @@ import FullSitePreviewFrame from './builder/FullSitePreviewFrame'
 import GuestCreditBadge from './GuestCreditBadge'
 import PremiumFeaturesShowcase from './PremiumFeaturesShowcase'
 import BuildSuccessModal from './BuildSuccessModal'
+import SingularityLoader from './singularity/SingularityLoader'
 import { chronosphere } from '@/lib/chronosphere'
 import { Template, Section, getTemplateById, getSectionById, createInitialBuildState, BuildState, websiteTemplate } from '@/lib/templates'
 import { DbProject, DbSection, DbBrandConfig } from '@/lib/supabase'
@@ -1237,82 +1234,14 @@ export default function GeneratedPage() {
   }
 
   // Only show loading screen if NOT coming from FirstContact
-  /*
   if (isLoading && !skipLoadingScreen) {
     // Show different message depending on if we're loading existing vs creating new
     let loadingMessage = 'Initializing the build system...'
     if (existingProjectId) loadingMessage = 'Resuming your project...'
     else if (!isLoaded) loadingMessage = 'Connecting to neural network...'
     
-    return (
-      <div className="min-h-screen relative overflow-hidden bg-zinc-950 flex items-center justify-center px-6">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,0.08),transparent_45%),radial-gradient(circle_at_80%_10%,rgba(124,58,237,0.08),transparent_40%),radial-gradient(circle_at_50%_80%,rgba(6,182,212,0.08),transparent_50%)]" />
-        <div className="absolute inset-0 pointer-events-none">
-          {[...Array(12)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-2 h-2 bg-emerald-400/30 rounded-full blur-[2px]"
-              initial={{
-                x: Math.random() * 100 + '%',
-                y: Math.random() * 100 + '%',
-                opacity: 0.2
-              }}
-              animate={{
-                y: ['0%', '-12%', '0%'],
-                opacity: [0.15, 0.5, 0.15]
-              }}
-              transition={{ duration: 4 + i * 0.2, repeat: Infinity, ease: 'easeInOut' }}
-            />
-          ))}
-        </div>
-
-        <div className="relative z-10 text-center space-y-6 max-w-md">
-          <motion.div
-            className="relative mb-4"
-            animate={{ 
-              scale: [1, 1.05, 1],
-              opacity: [0.8, 1, 0.8]
-            }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <div className="relative w-20 h-20 flex items-center justify-center mx-auto">
-              <div className="absolute inset-0 bg-emerald-500/20 blur-2xl rounded-full" />
-              <Image 
-                src="/assets/hatchit_definitive.svg" 
-                alt="HatchIt" 
-                width={48} 
-                height={48} 
-                className="w-12 h-12 relative z-10"
-              />
-            </div>
-          </motion.div>
-
-          <div className="space-y-2">
-            <p className="text-xs font-mono text-emerald-300 tracking-[0.2em]">SINGULARITY SPIN-UP</p>
-            <h2 className="text-2xl font-bold text-white">Preparing your build space</h2>
-            <p className="text-sm text-zinc-400">{loadingMessage}</p>
-          </div>
-
-          {showReset && (
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center space-y-2"
-            >
-              <p className="text-xs text-zinc-500">If it feels stuck, hard reset the session.</p>
-              <button
-                onClick={hardReset}
-                className="px-3 py-1.5 text-xs rounded-md border border-zinc-800 text-zinc-400 hover:text-white hover:border-emerald-500/50"
-              >
-                Reset session
-              </button>
-            </motion.div>
-          )}
-        </div>
-      </div>
-    )
+    return <SingularityLoader text={loadingMessage.toUpperCase()} />
   }
-  */
 
   if (error) {
     return (
@@ -1340,41 +1269,7 @@ export default function GeneratedPage() {
   
   // Show simple loading state while initializing (especially for guest mode)
   if (phase === 'initializing' || isLoading) {
-    return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-6">
-        <motion.div
-          animate={{ scale: [1, 1.05, 1], opacity: [0.6, 0.9, 0.6] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <Image 
-            src="/assets/hatchit_definitive.svg" 
-            alt="Loading" 
-            width={48} 
-            height={48}
-          />
-        </motion.div>
-        
-        {/* Escape hatch for stuck states */}
-        {showReset && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center"
-          >
-            <button
-              onClick={() => {
-                localStorage.removeItem('hatch_current_project')
-                localStorage.removeItem('hatch_guest_handoff')
-                window.location.href = '/builder?mode=guest'
-              }}
-              className="text-xs text-zinc-500 hover:text-zinc-300 underline decoration-zinc-700 underline-offset-4 transition-colors"
-            >
-              Taking too long? Start fresh
-            </button>
-          </motion.div>
-        )}
-      </div>
-    )
+    return <SingularityLoader text="INITIALIZING SINGULARITY" />
   }
 
   return (
@@ -1388,53 +1283,6 @@ export default function GeneratedPage() {
       )}
       
       <AnimatePresence mode="wait">
-        {/*
-        {phase === 'initializing' && (
-          <motion.div
-            key="initializing"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-center h-screen bg-zinc-950"
-          >
-            <div className="relative mb-8">
-              <div className="absolute inset-0 bg-emerald-500/20 blur-3xl rounded-full animate-pulse" />
-              <div className="relative w-20 h-20 bg-zinc-900 border border-emerald-500/30 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.2)]">
-                <Terminal className="w-8 h-8 text-emerald-400" />
-              </div>
-            </div>
-            
-            <h2 className="text-xl font-bold text-white mb-2">Setting up your workspace</h2>
-            
-            <div className="flex items-center gap-2 text-emerald-400/80 font-mono text-sm mb-6">
-              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-              <span>Connecting to AI...</span>
-            </div>
-            
-            <p className="text-zinc-500 text-sm max-w-xs text-center">
-              First build takes ~30 seconds. After that, iterations are faster.
-            </p>
-            
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 5 }}
-              className="mt-8"
-            >
-              <button 
-                onClick={() => {
-                  localStorage.removeItem('hatch_current_project')
-                  window.location.href = '/builder'
-                }}
-                className="text-xs text-zinc-500 hover:text-zinc-300 underline decoration-zinc-700 underline-offset-4 transition-colors"
-              >
-                Taking too long? Start over
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-        */}
-
         {phase === 'building' && templateForBuild && buildState && (
           <motion.div
             key="building"

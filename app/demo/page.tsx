@@ -3,7 +3,7 @@
 import { Suspense, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
-import BuildFlowController from '@/components/BuildFlowController'
+import SingularityLoader from '@/components/singularity/SingularityLoader'
 
 // =============================================================================
 // DEMO PAGE - Full builder experience, localStorage only
@@ -20,23 +20,19 @@ function DemoContent() {
   // If user is signed in, redirect to studio to migrate their demo work
   useEffect(() => {
     if (isLoaded && isSignedIn) {
-      // Always go to studio - that's where migration logic lives
-      router.replace('/dashboard/studio')
+      // Always go to dashboard - that's where migration logic lives
+      router.replace('/dashboard')
     }
   }, [isLoaded, isSignedIn, router])
   
   // Show loading while checking auth
   if (!isLoaded) {
-    return <div className="min-h-screen bg-zinc-950" />
+    return <SingularityLoader text="INITIALIZING SYSTEM" />
   }
   
   // If signed in, don't render - we're redirecting
   if (isSignedIn) {
-    return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <div className="w-12 h-12 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
+    return <SingularityLoader text="AUTHENTICATING" />
   }
   
   return (
@@ -49,7 +45,7 @@ function DemoContent() {
 
 export default function DemoPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-zinc-950" />}>
+    <Suspense fallback={<SingularityLoader text="LOADING CORE" />}>
       <DemoContent />
     </Suspense>
   )
