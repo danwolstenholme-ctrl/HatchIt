@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Type } from 'lucide-react'
+import { Type, Smartphone, Tablet, Monitor } from 'lucide-react'
 import Image from 'next/image'
 
 interface SectionPreviewProps {
@@ -22,10 +22,10 @@ interface SectionPreviewProps {
 
 type DeviceView = 'mobile' | 'tablet' | 'desktop'
 
-const deviceSizes: Record<DeviceView, { width: string; icon: string; label: string }> = {
-  mobile: { width: '375px', icon: '📱', label: 'Mobile' },
-  tablet: { width: '768px', icon: '📱', label: 'Tablet' },
-  desktop: { width: '100%', icon: '🖥️', label: 'Desktop' },
+const deviceSizes: Record<DeviceView, { width: string; icon: any; label: string }> = {
+  mobile: { width: '375px', icon: Smartphone, label: 'Mobile' },
+  tablet: { width: '768px', icon: Tablet, label: 'Tablet' },
+  desktop: { width: '100%', icon: Monitor, label: 'Desktop' },
 }
 
 // Encode unescaped quotes inside Tailwind data-URI utilities to keep Babel happy
@@ -683,20 +683,23 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
               
               {/* Device Selector */}
               <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-lg p-1">
-                {(Object.keys(deviceSizes) as DeviceView[]).map((device) => (
-                  <button
-                    key={device}
-                    onClick={() => setDeviceView(device)}
-                    className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                      deviceView === device
-                        ? 'bg-white/10 text-white border border-emerald-400/30'
-                        : 'text-zinc-500 hover:text-zinc-200'
-                    }`}
-                  >
-                    <span>{deviceSizes[device].icon}</span>
-                    <span>{deviceSizes[device].label}</span>
-                  </button>
-                ))}
+                {(Object.keys(deviceSizes) as DeviceView[]).map((device) => {
+                  const Icon = deviceSizes[device].icon
+                  return (
+                    <button
+                      key={device}
+                      onClick={() => setDeviceView(device)}
+                      className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                        deviceView === device
+                          ? 'bg-white/10 text-white border border-emerald-400/30'
+                          : 'text-zinc-500 hover:text-zinc-200'
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      <span>{deviceSizes[device].label}</span>
+                    </button>
+                  )
+                })}
               </div>
             </div>
           )}

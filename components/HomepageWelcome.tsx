@@ -94,14 +94,11 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
     }
     
     if (!hasSeen) {
-      // Open after a brief delay to let the homepage load first
-      const timer = setTimeout(() => {
-        setIsOpen(true)
-        // Progress to ready phase after typing animation
-        setTimeout(() => setPhase('ready'), 1500)
-      }, 800)
-
-      return () => clearTimeout(timer)
+      // Open immediately for instant impact
+      setIsOpen(true)
+      // Progress to ready phase after typing animation
+      const phaseTimer = setTimeout(() => setPhase('ready'), 1500)
+      return () => clearTimeout(phaseTimer)
     }
   }, [router])
 

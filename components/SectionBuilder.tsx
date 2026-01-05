@@ -262,7 +262,7 @@ function GuestRefineBar({
         </div>
         
         <button
-          onClick={goToSignUp}
+          onClick={() => goToSignUp()}
           className="flex-shrink-0 px-4 py-2.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 text-sm font-medium transition-all backdrop-blur-sm shadow-[0_0_15px_-5px_rgba(16,185,129,0.3)]"
         >
           Deploy
@@ -781,10 +781,10 @@ export default function SectionBuilder({
       localStorage.setItem('hatch_guest_handoff', JSON.stringify(handoffPayload))
     }
     
-    // Always redirect to studio after signup - that's where migration happens
-    const redirectUrl = '/dashboard/studio'
+    // Always redirect to dashboard after signup - that's where migration happens
+    const redirectUrl = '/dashboard'
     console.log('[goToSignUp] tier:', tier, 'type:', typeof tier)
-    router.push(`/sign-up?upgrade=${tier}&redirect_url=${encodeURIComponent(redirectUrl)}`)
+    router.push(`/sign-up?upgrade=${typeof tier === 'string' ? tier : 'visionary'}&redirect_url=${encodeURIComponent(redirectUrl)}`)
   }
   
   // Handle prompt submission from guest modal

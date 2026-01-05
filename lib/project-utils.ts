@@ -181,12 +181,12 @@ export const formatRelativeTime = (timestamp: string): string => {
 }
 
 // Get device info from preview width
-export const getDevice = (width: number): { name: string; icon: string } => {
-  if (width < 375) return { name: 'iPhone SE', icon: '📱' }
-  if (width < 430) return { name: 'iPhone', icon: '📱' }
-  if (width < 640) return { name: 'Mobile', icon: '📱' }
-  if (width < 768) return { name: 'iPad Mini', icon: '📱' }
-  if (width < 1024) return { name: 'iPad', icon: '⬛' }
-  if (width < 1280) return { name: 'Laptop', icon: '💻' }
-  return { name: 'Desktop', icon: '🖥️' }
+export const getDevice = (width: number): { name: string; icon: 'smartphone' | 'tablet' | 'monitor' } => {
+  if (width < 375) return { name: 'iPhone SE', icon: 'smartphone' }
+  if (width < 430) return { name: 'iPhone', icon: 'smartphone' }
+  if (width < 640) return { name: 'Mobile', icon: 'smartphone' }
+  if (width < 768) return { name: 'iPad Mini', icon: 'tablet' }
+  if (width < 1024) return { name: 'iPad', icon: 'tablet' }
+  if (width < 1280) return { name: 'Laptop', icon: 'monitor' }
+  return { name: 'Desktop', icon: 'monitor' }
 }

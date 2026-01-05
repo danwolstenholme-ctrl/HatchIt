@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSubscription } from '@/contexts/SubscriptionContext'
+import { Crown, Zap, Hammer, Ghost } from 'lucide-react'
 
 /**
  * Subtle glow border effect that wraps the page for paid users
@@ -71,13 +72,13 @@ export function SubscriptionBadge({ showRenewal = false, compact = false }: { sh
 
   if (!isPaidUser) return null
 
-  const tierEmoji = tier === 'singularity' ? '👑' : tier === 'visionary' ? '⚡' : tier === 'architect' ? '🏗️' : '🥚'
+  const TierIcon = tier === 'singularity' ? Crown : tier === 'visionary' ? Zap : tier === 'architect' ? Hammer : Ghost
   const tierName = tier === 'singularity' ? 'Singularity' : tier === 'visionary' ? 'Visionary' : tier === 'architect' ? 'Architect' : 'Free'
 
   if (compact) {
     return (
       <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r ${tierColor.gradient} text-xs font-semibold text-white`}>
-        <span>{tierEmoji}</span>
+        <TierIcon className="w-3 h-3" />
         <span>{tierName}</span>
       </div>
     )
@@ -89,7 +90,7 @@ export function SubscriptionBadge({ showRenewal = false, compact = false }: { sh
       animate={{ opacity: 1, scale: 1 }}
       className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg ${tierColor.bgSubtle} border ${tierColor.border}`}
     >
-      <span className="text-sm">{tierEmoji}</span>
+      <TierIcon className={`w-3.5 h-3.5 ${tier === 'singularity' ? 'text-amber-400' : tier === 'visionary' ? 'text-violet-400' : 'text-emerald-400'}`} />
       <div className="flex flex-col leading-tight">
         <span className={`text-xs font-semibold bg-gradient-to-r ${tierColor.gradient} bg-clip-text text-transparent`}>
           {tierName}

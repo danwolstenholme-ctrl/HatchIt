@@ -1655,7 +1655,7 @@ export default function GeneratedPage() {
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <p className="text-base text-white font-semibold">🎉 Your Hero is Live!</p>
+                      <p className="text-base text-white font-semibold">Hero Section Deployed</p>
                     </div>
                     <p className="text-sm text-zinc-400">Don't lose your progress. Start your 14-day trial to keep building.</p>
                   </div>
@@ -2103,7 +2103,7 @@ export default function GeneratedPage() {
                 <div className="w-12 h-12 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Sparkles className="w-6 h-6 text-emerald-400" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">You&apos;re on a roll! 🎉</h3>
+                <h3 className="text-xl font-bold text-white mb-2">Momentum Building</h3>
                 <p className="text-zinc-400 text-sm">
                   You&apos;ve built {demoSectionsBuilt} sections. Sign up to save your work and unlock deploy + download.
                 </p>

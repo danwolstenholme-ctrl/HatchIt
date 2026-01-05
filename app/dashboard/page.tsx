@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, ArrowRight, Trash2, Search, Globe, LayoutGrid, List, ExternalLink, MoreHorizontal, Clock, ChevronRight, Zap, Crown, Check, Code2, CreditCard, Home } from 'lucide-react'
 import { useUser, UserButton } from '@clerk/nextjs'
@@ -11,6 +12,7 @@ import { DbProject } from '@/lib/supabase'
 
 export default function StudioPage() {
   const { user } = useUser()
+  const router = useRouter()
   const [projects, setProjects] = useState<DbProject[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isMigrating, setIsMigrating] = useState(false)
@@ -104,7 +106,8 @@ export default function StudioPage() {
       })
       if (res.ok) {
         const data = await res.json()
-        setProjects(prev => [data.project, ...prev])
+        // Redirect to builder immediately
+        router.push(`/builder?project=${data.project.id}`)
       }
     } finally {
       setIsCreating(false)
@@ -129,85 +132,67 @@ export default function StudioPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 relative overflow-hidden selection:bg-emerald-500/30">
-      {/* Ambient Background */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#27272a_1px,transparent_1px),linear-gradient(to_bottom,#27272a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20 pointer-events-none" />
-      <div className="scanline-overlay pointer-events-none" />
+    <>
+    <div className="p-8 w-full">
+      {/* Page Title */}
+      <motion.div 
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+        className="flex items-start justify-between mb-8"
+      >
+        <div>
+          <h1 className="text-xl font-semibold text-zinc-100 mb-1">Studio</h1>
+          <p className="text-zinc-500 text-sm">
+            Build and deploy React components with AI
+          </p>
+        </div>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={handleCreate}
+          disabled={isCreating}
+          className="group relative flex items-center gap-2 px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-400 text-sm font-medium rounded-lg backdrop-blur-md transition-all shadow-[0_0_20px_-5px_rgba(16,185,129,0.1)] hover:shadow-[0_0_25px_-5px_rgba(16,185,129,0.3)] overflow-hidden"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/0 via-emerald-500/10 to-emerald-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+          {isCreating ? (
+            <div className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
+          ) : (
+            <Plus className="w-4 h-4" />
+          )}
+          <span>New Project</span>
+        </motion.button>
+      </motion.div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 py-8">
-          {/* Top Navigation Bar */}
-          <motion.div 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-between mb-12"
+      {/* Empty State */}
+      {!isLoading && projects.length === 0 && (
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex flex-col items-center justify-center py-20 border border-dashed border-zinc-800 rounded-2xl bg-zinc-900/30"
+        >
+          <div className="w-16 h-16 bg-zinc-900 rounded-2xl flex items-center justify-center mb-6 border border-zinc-800 shadow-xl">
+            <Zap className="w-8 h-8 text-zinc-600" />
+          </div>
+          <h3 className="text-xl font-semibold text-zinc-200 mb-2">Ready to build?</h3>
+          <p className="text-zinc-500 max-w-md text-center mb-8">
+            Create your first project to start generating React components with AI.
+          </p>
+          <button
+            onClick={handleCreate}
+            disabled={isCreating}
+            className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium transition-all shadow-lg shadow-emerald-900/20 flex items-center gap-2"
           >
-            <div className="flex items-center gap-8">
-              <Link href="/" className="block hover:opacity-80 transition-opacity">
-                <Image 
-                  src="/assets/hatchit_definitive.svg" 
-                  alt="Logo" 
-                  width={32}
-                  height={32}
-                  className="w-8 h-8"
-                />
-              </Link>
-              
-              <nav className="flex items-center gap-1 bg-white/5 p-1 rounded-lg border border-white/10">
-                <Link 
-                  href="/dashboard"
-                  className="px-3 py-1.5 rounded-md text-sm font-medium text-white bg-white/10 shadow-sm transition-all"
-                >
-                  Dashboard
-                </Link>
-                <Link 
-                  href="/dashboard/billing"
-                  className="px-3 py-1.5 rounded-md text-sm font-medium text-zinc-500 hover:text-zinc-300 transition-colors"
-                >
-                  Billing
-                </Link>
-              </nav>
-            </div>
+            {isCreating ? (
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <Plus className="w-5 h-5" />
+            )}
+            <span>Create New Project</span>
+          </button>
+        </motion.div>
+      )}
 
-            <div className="flex items-center gap-4">
-               <UserButton 
-                 appearance={{
-                   elements: {
-                     avatarBox: "w-8 h-8 ring-2 ring-white/10 hover:ring-white/20 transition-all"
-                   }
-                 }}
-               />
-            </div>
-          </motion.div>
-
-          {/* Page Title */}
-          <motion.div 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.1 }}
-            className="flex items-start justify-between mb-8"
-          >
-            <div>
-              <h1 className="text-xl font-semibold text-zinc-100 mb-1">Studio</h1>
-              <p className="text-zinc-500 text-sm">
-                Build and deploy React components with AI
-              </p>
-            </div>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleCreate}
-              disabled={isCreating}
-              className="group relative flex items-center gap-2 px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-400 text-sm font-medium rounded-lg backdrop-blur-md transition-all shadow-[0_0_20px_-5px_rgba(16,185,129,0.1)] hover:shadow-[0_0_25px_-5px_rgba(16,185,129,0.3)] overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/0 via-emerald-500/10 to-emerald-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-              {isCreating ? (
-                <div className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
-              ) : (
-                <Plus className="w-4 h-4" />
-              )}
-              <span className="relative z-10">New Project</span>
-            </motion.button>
-          </motion.div>
 
           {/* Subtle upgrade hint for free users */}
           {isFreeTier && (
@@ -578,7 +563,7 @@ export default function StudioPage() {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </>
   )
 }
 

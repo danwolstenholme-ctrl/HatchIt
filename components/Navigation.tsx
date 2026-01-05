@@ -41,7 +41,6 @@ export default function Navigation() {
             >
               <Image src="/assets/hatchit_definitive.svg" alt="HatchIt" width={26} height={26} className="w-[26px] h-[26px]" />
             </motion.div>
-            <span className="text-sm font-semibold text-white hidden sm:inline">HatchIt</span>
           </Link>
           
           {/* Desktop Nav Links */}
@@ -153,7 +152,6 @@ export default function Navigation() {
               <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Image src="/assets/hatchit_definitive.svg" alt="HatchIt" width={24} height={24} className="w-6 h-6" />
-                  <span className="text-sm font-medium text-zinc-300">HatchIt</span>
                 </div>
                 <button
                   onClick={() => setMobileMenuOpen(false)}

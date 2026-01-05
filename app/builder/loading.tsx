@@ -1,5 +1,7 @@
 'use client'
 
+import SingularityLoader from '@/components/singularity/SingularityLoader'
+
 export default function BuilderLoading() {
-  return <div className="h-screen bg-zinc-950" />
+  return <SingularityLoader text="LOADING BUILDER" />
 }
