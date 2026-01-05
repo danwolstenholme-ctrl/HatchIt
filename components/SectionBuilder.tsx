@@ -765,6 +765,7 @@ export default function SectionBuilder({
   const goToSignUp = (tier: string = 'visionary') => {
     // Always redirect to studio after signup - that's where migration happens
     const redirectUrl = '/dashboard/studio'
+    console.log('[goToSignUp] tier:', tier, 'type:', typeof tier)
     router.push(`/sign-up?upgrade=${tier}&redirect_url=${encodeURIComponent(redirectUrl)}`)
   }
   
