@@ -123,72 +123,43 @@ export default function ProjectsPage() {
         <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-emerald-500/[0.02] rounded-full blur-[100px]" />
       </div>
 
-      <div className="relative max-w-7xl mx-auto">
-        {/* Top bar */}
-        <div className="border-b border-white/[0.06] px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              <Link href="/" className="flex items-center gap-2">
-                <Image src="/assets/hatchit_definitive.svg" alt="HatchIt" width={24} height={24} />
-              </Link>
-              <nav className="hidden md:flex items-center gap-1 text-sm">
-                <Link href="/dashboard/projects" className="px-3 py-1.5 text-white bg-white/[0.06] rounded-md">
-                  Projects
-                </Link>
-                <Link href="/builder" className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors">
-                  Builder
-                </Link>
-                <Link href="/#pricing" className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors">
-                  Pricing
-                </Link>
-              </nav>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              {!isFreeTier && (
-                <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${tierConfig.bg} ${tierConfig.color}`}>
-                  {tierConfig.name}
-                </span>
-              )}
-              <button
-                onClick={handleCreate}
-                disabled={isCreating}
-                className="flex items-center gap-2 px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-medium rounded-lg transition-colors"
-              >
-                {isCreating ? (
-                  <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-                ) : (
-                  <Plus className="w-4 h-4" />
-                )}
-                <span className="hidden sm:inline">New Project</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="px-6 py-8">
+      <div className="relative max-w-7xl mx-auto px-6 py-8">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-2xl font-semibold text-white mb-2">Projects</h1>
-            <p className="text-zinc-500 text-sm">
-              Build and deploy React components with AI
-              {tierConfig.limit !== Infinity && (
-                <span className="text-zinc-600"> · {projects.length}/{tierConfig.limit} projects</span>
+          <div className="flex items-start justify-between mb-8">
+            <div>
+              <h1 className="text-2xl font-semibold text-white mb-2">Projects</h1>
+              <p className="text-zinc-500 text-sm">
+                Build and deploy React components with AI
+                {tierConfig.limit !== Infinity && (
+                  <span className="text-zinc-600"> · {projects.length}/{tierConfig.limit} projects</span>
+                )}
+              </p>
+            </div>
+            <button
+              onClick={handleCreate}
+              disabled={isCreating}
+              className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-medium rounded-lg transition-colors"
+            >
+              {isCreating ? (
+                <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+              ) : (
+                <Plus className="w-4 h-4" />
               )}
-            </p>
+              New Project
+            </button>
           </div>
 
           {/* Upgrade banner for free users */}
           {isFreeTier && (
-            <div className="mb-8 p-5 bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent border border-emerald-500/20 rounded-xl">
+            <div className="mb-8 p-5 bg-white/[0.02] border border-white/[0.06] rounded-xl">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-white font-medium mb-1">Upgrade to unlock more</h3>
-                  <p className="text-zinc-400 text-sm">Get unlimited projects, deploys, and code export.</p>
+                  <h3 className="text-white font-medium mb-1">Upgrade your plan</h3>
+                  <p className="text-zinc-500 text-sm">Get unlimited projects, code export, and custom domains.</p>
                 </div>
                 <Link
-                  href="/#pricing"
-                  className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-black text-sm font-medium rounded-lg hover:bg-zinc-100 transition-colors whitespace-nowrap"
+                  href="/dashboard/billing"
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-medium rounded-lg transition-colors whitespace-nowrap"
                 >
                   View plans
                   <ArrowRight className="w-4 h-4" />
