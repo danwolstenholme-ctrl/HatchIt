@@ -71,7 +71,7 @@ export default function FeaturesPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white overflow-hidden relative">
+    <div className="min-h-screen bg-black text-white overflow-hidden relative">
       {/* Scanline Overlay */}
       <div className="fixed inset-0 pointer-events-none z-50 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDIiLz4KPC9zdmc+')] opacity-20 mix-blend-overlay" />
       
@@ -133,7 +133,7 @@ export default function FeaturesPage() {
             </Link>
             <Link
               href="/roadmap"
-              className="px-8 py-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-emerald-500/30 rounded-md font-semibold text-lg transition-all text-zinc-300 hover:text-white"
+              className="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-500/30 rounded-md font-semibold text-lg transition-all text-zinc-300 hover:text-white"
             >
               View Evolution Log
             </Link>
@@ -152,13 +152,13 @@ export default function FeaturesPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="group relative p-6 md:p-8 rounded-md bg-zinc-900/50 border border-zinc-800 hover:border-emerald-500/30 transition-all duration-300 hover:bg-zinc-900/80"
+                className="group relative p-6 md:p-8 rounded-md bg-white/5 border border-white/10 hover:border-emerald-500/30 transition-all duration-300 hover:bg-white/10"
               >
                 <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-5 rounded-md transition-opacity duration-500`} />
                 
                 <div className="relative z-10">
                   <div className="flex justify-between items-start mb-6">
-                    <div className="p-3 rounded-md bg-zinc-950 border border-zinc-800 text-emerald-400 group-hover:scale-110 transition-transform duration-300">
+                    <div className="p-3 rounded-md bg-black border border-white/10 text-emerald-400 group-hover:scale-110 transition-transform duration-300">
                       {feature.icon}
                     </div>
                     {feature.badge && (
@@ -188,7 +188,7 @@ export default function FeaturesPage() {
       </section>
 
       {/* The Neural Network (AI Models) */}
-      <section className="py-24 px-6 relative z-10 bg-zinc-900/10">
+      <section className="py-24 px-6 relative z-10 bg-transparent">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">The Neural Network</h2>

@@ -117,7 +117,7 @@ function PostPaymentContent() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white relative overflow-hidden selection:bg-emerald-500/30">
+    <div className="min-h-screen bg-black text-white relative overflow-hidden selection:bg-emerald-500/30">
       {/* Ambient void background */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[150px]" />
@@ -149,7 +149,7 @@ function PostPaymentContent() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45 }}
-          className="p-6 sm:p-8 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 shadow-[0_0_50px_rgba(16,185,129,0.18)]"
+          className="p-6 sm:p-8 rounded-sm border border-white/10 bg-white/5 shadow-[0_0_50px_rgba(16,185,129,0.18)]"
         >
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
@@ -186,7 +186,7 @@ function PostPaymentContent() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.35 }}
-              className="p-5 rounded-xl border border-zinc-800 bg-zinc-900/70"
+              className="p-5 rounded-sm border border-white/10 bg-white/5"
             >
               <div className="flex items-center gap-2 text-sm text-emerald-200 mb-2">
                 <action.icon className="w-4 h-4" />
@@ -205,7 +205,7 @@ function PostPaymentContent() {
         </div>
 
         <div className="mt-10 grid md:grid-cols-[1.2fr_1fr] gap-5">
-          <div className="p-6 rounded-2xl border border-zinc-800 bg-zinc-900/70">
+          <div className="p-6 rounded-sm border border-white/10 bg-white/5">
             <div className="flex items-center gap-2 text-sm text-emerald-200 mb-3">
               <Zap className="w-4 h-4" />
               Post-purchase autopilot
@@ -218,7 +218,7 @@ function PostPaymentContent() {
             </ul>
           </div>
 
-          <div className="p-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/10">
+          <div className="p-6 rounded-sm border border-white/10 bg-white/5">
             <div className="flex items-center gap-2 text-sm text-emerald-100 mb-2">
               <ShoppingBag className="w-4 h-4" />
               Launch Pack (one-time)
@@ -227,7 +227,7 @@ function PostPaymentContent() {
             <button
               onClick={startLaunchPackCheckout}
               disabled={isLaunchingPack}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white text-black rounded-lg font-semibold hover:bg-emerald-100 transition disabled:opacity-60"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 text-zinc-950 rounded-sm font-semibold hover:bg-emerald-400 transition disabled:opacity-60"
             >
               {isLaunchingPack ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
               Purchase $199
@@ -242,7 +242,7 @@ function PostPaymentContent() {
 
 export default function PostPaymentPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-zinc-950" />}> 
+    <Suspense fallback={<div className="min-h-screen bg-black" />}> 
       <PostPaymentContent />
     </Suspense>
   )

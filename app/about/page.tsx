@@ -23,7 +23,7 @@ export default function AboutPage() {
   const storyInView = useInView(storyRef, { once: true, margin: "-100px" })
 
   return (
-    <div className="bg-zinc-950 text-white min-h-screen overflow-hidden relative selection:bg-emerald-500/30">
+    <div className="bg-black text-white min-h-screen overflow-hidden relative selection:bg-emerald-500/30">
       {/* Ambient void background */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[150px]" />

@@ -6,7 +6,7 @@ import Link from 'next/link'
 
 export default function ManifestoPage() {
   return (
-    <div className="min-h-screen bg-zinc-950 text-white selection:bg-emerald-900 selection:text-white overflow-x-hidden relative">
+    <div className="min-h-screen bg-black text-white selection:bg-emerald-900 selection:text-white overflow-x-hidden relative">
       {/* Subtle grid pattern */}
       <div className="fixed inset-0 pointer-events-none z-0 opacity-[0.02]">
         <div className="absolute inset-0" style={{ 
@@ -57,7 +57,7 @@ export default function ManifestoPage() {
           {/* Section 1 */}
           <section className="relative">
             <div className="flex items-start gap-6">
-              <div className="shrink-0 w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center">
+              <div className="shrink-0 w-12 h-12 bg-white/5 rounded-sm flex items-center justify-center">
                 <Zap className="w-6 h-6 text-emerald-400" />
               </div>
               <div>
@@ -83,7 +83,7 @@ export default function ManifestoPage() {
           {/* Section 2 */}
           <section className="relative">
             <div className="flex items-start gap-6">
-              <div className="shrink-0 w-12 h-12 bg-cyan-500/10 rounded-xl flex items-center justify-center">
+              <div className="shrink-0 w-12 h-12 bg-white/5 rounded-sm flex items-center justify-center">
                 <Code2 className="w-6 h-6 text-cyan-400" />
               </div>
               <div>
@@ -108,7 +108,7 @@ export default function ManifestoPage() {
           {/* Section 3 */}
           <section className="relative">
             <div className="flex items-start gap-6">
-              <div className="shrink-0 w-12 h-12 bg-violet-500/10 rounded-xl flex items-center justify-center">
+              <div className="shrink-0 w-12 h-12 bg-white/5 rounded-sm flex items-center justify-center">
                 <Eye className="w-6 h-6 text-violet-400" />
               </div>
               <div>
@@ -131,7 +131,7 @@ export default function ManifestoPage() {
           {/* Section 4 */}
           <section className="relative">
             <div className="flex items-start gap-6">
-              <div className="shrink-0 w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center">
+              <div className="shrink-0 w-12 h-12 bg-white/5 rounded-sm flex items-center justify-center">
                 <Layers className="w-6 h-6 text-amber-400" />
               </div>
               <div>
@@ -150,7 +150,7 @@ export default function ManifestoPage() {
           </section>
 
           {/* CTA */}
-          <div className="p-8 border border-emerald-500/20 bg-emerald-500/5 rounded-xl mt-12 text-center">
+          <div className="p-8 border border-white/10 bg-white/5 rounded-sm mt-12 text-center">
             <h3 className="text-xl text-white font-bold mb-4">Ready to Build?</h3>
             <p className="text-zinc-400 mb-6 max-w-md mx-auto">
               Stop reading manifestos. Start building. Your first component is free—no credit card required.
@@ -158,14 +158,14 @@ export default function ManifestoPage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link 
                 href="/demo" 
-                className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg hover:scale-105 transition-all flex items-center gap-2"
+                className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold rounded-sm hover:scale-105 transition-all flex items-center gap-2"
               >
                 Try the Demo
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link 
                 href="/builder" 
-                className="px-6 py-3 border border-zinc-700 hover:border-zinc-600 text-zinc-300 font-medium rounded-lg transition-colors"
+                className="px-6 py-3 border border-white/10 hover:border-emerald-500/30 text-white font-medium rounded-sm transition-colors"
               >
                 Go to Builder
               </Link>

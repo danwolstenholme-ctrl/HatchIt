@@ -171,14 +171,14 @@ function RoadmapCard({ item, sectionIndex, itemIndex }: { item: RoadmapItem; sec
 
   return (
     <motion.div
-      className={`relative p-4 rounded-sm border ${config.bg} ${config.border} ${hasDetails ? 'cursor-pointer hover:bg-zinc-900/50 transition-colors' : ''}`}
+      className={`relative p-4 rounded-sm border ${config.bg} ${config.border} ${hasDetails ? 'cursor-pointer hover:bg-white/5 transition-colors' : ''}`}
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.3, delay: sectionIndex * 0.1 + itemIndex * 0.05 }}
       onClick={() => hasDetails && setExpanded(!expanded)}
     >
       {/* Timeline connector */}
-      <div className="absolute -left-[41px] top-5 w-px h-full bg-zinc-800 last:hidden"></div>
+      <div className="absolute -left-[41px] top-5 w-px h-full border-l border-white/10 last:hidden"></div>
       <div className={`absolute -left-[45px] top-5 w-2 h-2 rounded-full ${item.status === 'deployed' ? 'bg-emerald-500' : item.status === 'compiling' ? 'bg-amber-500 animate-pulse' : 'bg-zinc-700'}`}></div>
       
       <div className="flex items-start justify-between gap-4">
@@ -216,12 +216,12 @@ function RoadmapCard({ item, sectionIndex, itemIndex }: { item: RoadmapItem; sec
             transition={{ duration: 0.3 }}
             className="overflow-hidden"
           >
-            <div className="mt-4 pt-4 border-t border-zinc-800/50">
+            <div className="mt-4 pt-4 border-t border-white/10">
               <div className="flex items-center gap-2 mb-2">
                 <Terminal className="w-3 h-3 text-emerald-500" />
                 <span className="text-[10px] font-mono text-emerald-500 uppercase tracking-wider">System Logs</span>
               </div>
-              <div className="text-xs text-zinc-400 font-mono bg-black/50 border border-zinc-800 rounded-sm p-3 whitespace-pre-line leading-relaxed">
+              <div className="text-xs text-zinc-400 font-mono bg-black/50 border border-white/10 rounded-sm p-3 whitespace-pre-line leading-relaxed">
                 {item.technicalDetails}
               </div>
             </div>
@@ -234,7 +234,7 @@ function RoadmapCard({ item, sectionIndex, itemIndex }: { item: RoadmapItem; sec
 
 export default function RoadmapPage() {
   return (
-    <div className="min-h-screen bg-zinc-950 text-white selection:bg-emerald-500/30 relative overflow-hidden">
+    <div className="min-h-screen bg-black text-white selection:bg-emerald-500/30 relative overflow-hidden">
       {/* Ambient void background */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[150px]" />
@@ -276,10 +276,10 @@ export default function RoadmapPage() {
           </motion.div>
 
           {/* Roadmap */}
-          <div className="space-y-16 pl-4 border-l border-zinc-800 ml-2 md:ml-0">
+          <div className="space-y-16 pl-4 border-l border-white/10 ml-2 md:ml-0">
             {roadmap.map((section, index) => (
               <div key={index} className="relative">
-                <div className="absolute -left-[21px] top-1 w-3 h-3 bg-zinc-950 border border-zinc-700 rounded-full"></div>
+                <div className="absolute -left-[21px] top-1 w-3 h-3 bg-black border border-zinc-700 rounded-full"></div>
                 
                 <div className="mb-8">
                   <h2 className="text-xl font-bold text-white font-mono mb-1">{section.title}</h2>

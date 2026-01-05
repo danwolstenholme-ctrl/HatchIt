@@ -38,7 +38,7 @@ const Phase = ({ icon: Icon, phase, title, description, delay = 0 }: { icon: any
 
 export default function HowItWorksPage() {
   return (
-    <div className="min-h-screen bg-zinc-950 text-white selection:bg-emerald-500/30 relative overflow-hidden">
+    <div className="min-h-screen bg-black text-white selection:bg-emerald-500/30 relative overflow-hidden">
       {/* Ambient void background */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[150px]" />
@@ -93,7 +93,7 @@ export default function HowItWorksPage() {
       </div>
 
       {/* Phases */}
-      <div className="px-6 py-24 border-y border-zinc-800/50 bg-black/20">
+      <div className="px-6 py-24 border-y border-white/10 bg-white/5">
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-3 gap-12 md:gap-16 items-start relative">
             {/* Connecting Line */}
@@ -141,7 +141,7 @@ export default function HowItWorksPage() {
             </div>
 
             <div className="grid gap-6">
-              <div className="group p-6 bg-zinc-900/30 border border-zinc-800 hover:border-emerald-500/30 transition-colors rounded-sm">
+              <div className="group p-6 bg-white/5 border border-white/10 hover:border-emerald-500/30 transition-colors rounded-sm">
                 <div className="flex items-start gap-4">
                   <div className="mt-1 font-mono text-emerald-500 text-xs">[01]</div>
                   <div>
@@ -153,7 +153,7 @@ export default function HowItWorksPage() {
                 </div>
               </div>
 
-              <div className="group p-6 bg-zinc-900/30 border border-zinc-800 hover:border-emerald-500/30 transition-colors rounded-sm">
+              <div className="group p-6 bg-white/5 border border-white/10 hover:border-emerald-500/30 transition-colors rounded-sm">
                 <div className="flex items-start gap-4">
                   <div className="mt-1 font-mono text-emerald-500 text-xs">[02]</div>
                   <div>
@@ -165,7 +165,7 @@ export default function HowItWorksPage() {
                 </div>
               </div>
 
-              <div className="group p-6 bg-zinc-900/30 border border-zinc-800 hover:border-emerald-500/30 transition-colors rounded-sm">
+              <div className="group p-6 bg-white/5 border border-white/10 hover:border-emerald-500/30 transition-colors rounded-sm">
                 <div className="flex items-start gap-4">
                   <div className="mt-1 font-mono text-emerald-500 text-xs">[03]</div>
                   <div>
@@ -177,7 +177,7 @@ export default function HowItWorksPage() {
                 </div>
               </div>
 
-              <div className="group p-6 bg-zinc-900/30 border border-zinc-800 hover:border-emerald-500/30 transition-colors rounded-sm">
+              <div className="group p-6 bg-white/5 border border-white/10 hover:border-emerald-500/30 transition-colors rounded-sm">
                 <div className="flex items-start gap-4">
                   <div className="mt-1 font-mono text-emerald-500 text-xs">[04]</div>
                   <div>
@@ -194,10 +194,10 @@ export default function HowItWorksPage() {
       </div>
 
       {/* Final CTA */}
-      <div className="px-6 py-24 border-t border-zinc-800/50">
+      <div className="px-6 py-24 border-t border-white/10">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div 
-            className="relative p-12 bg-zinc-900/30 border border-zinc-800 rounded-sm overflow-hidden group"
+            className="relative p-12 bg-white/5 border border-white/10 rounded-sm overflow-hidden group"
             variants={sectionVariants}
             initial="hidden"
             whileInView="visible"

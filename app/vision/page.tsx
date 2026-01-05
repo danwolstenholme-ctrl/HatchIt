@@ -6,7 +6,7 @@ import { Terminal, Cpu, Zap, Globe, Shield, Database, Search, Layers, Code2, Arr
 
 export default function VisionPage() {
   return (
-    <main className="min-h-screen bg-zinc-950 text-white overflow-hidden selection:bg-emerald-500/30 relative">
+    <main className="min-h-screen bg-black text-white overflow-hidden selection:bg-emerald-500/30 relative">
       {/* Ambient void background */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[150px]" />
@@ -61,7 +61,7 @@ export default function VisionPage() {
 
       {/* 2026 Section */}
       <section className="max-w-6xl mx-auto px-6 py-16">
-        <div className="flex items-center gap-4 mb-12 border-b border-zinc-800 pb-6">
+        <div className="flex items-center gap-4 mb-12 border-b border-white/10 pb-6">
           <div className="w-12 h-12 rounded-sm bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
             <Layers className="w-6 h-6" />
           </div>
@@ -73,7 +73,7 @@ export default function VisionPage() {
 
         <div className="grid md:grid-cols-2 gap-8">
           {/* Q1 2026 */}
-          <div className="bg-zinc-900/20 border border-zinc-800 rounded-sm p-8 hover:border-emerald-500/30 transition-colors group">
+          <div className="bg-white/5 border border-white/10 rounded-sm p-8 hover:border-emerald-500/30 transition-colors group">
             <div className="flex items-center gap-3 mb-6">
               <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-mono border border-emerald-500/20">PHASE_01</span>
               <span className="text-zinc-500 text-xs font-mono uppercase">Jan - Mar</span>
@@ -98,7 +98,7 @@ export default function VisionPage() {
           </div>
 
           {/* Q2 2026 */}
-          <div className="bg-zinc-900/20 border border-zinc-800 rounded-sm p-8 hover:border-emerald-500/30 transition-colors group">
+          <div className="bg-white/5 border border-white/10 rounded-sm p-8 hover:border-emerald-500/30 transition-colors group">
             <div className="flex items-center gap-3 mb-6">
               <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-mono border border-emerald-500/20">PHASE_02</span>
               <span className="text-zinc-500 text-xs font-mono uppercase">Apr - Jun</span>
@@ -123,7 +123,7 @@ export default function VisionPage() {
           </div>
 
           {/* Q3 2026 */}
-          <div className="bg-zinc-900/20 border border-zinc-800 rounded-sm p-8 hover:border-emerald-500/30 transition-colors group">
+          <div className="bg-white/5 border border-white/10 rounded-sm p-8 hover:border-emerald-500/30 transition-colors group">
             <div className="flex items-center gap-3 mb-6">
               <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-mono border border-emerald-500/20">PHASE_03</span>
               <span className="text-zinc-500 text-xs font-mono uppercase">Jul - Sep</span>
@@ -148,7 +148,7 @@ export default function VisionPage() {
           </div>
 
           {/* Q4 2026 */}
-          <div className="bg-zinc-900/20 border border-zinc-800 rounded-sm p-8 hover:border-emerald-500/30 transition-colors group">
+          <div className="bg-white/5 border border-white/10 rounded-sm p-8 hover:border-emerald-500/30 transition-colors group">
             <div className="flex items-center gap-3 mb-6">
               <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-mono border border-emerald-500/20">PHASE_04</span>
               <span className="text-zinc-500 text-xs font-mono uppercase">Oct - Dec</span>
@@ -175,7 +175,7 @@ export default function VisionPage() {
       </section>
 
       {/* 2027 Section */}
-      <section className="max-w-6xl mx-auto px-6 py-16 border-t border-zinc-800">
+      <section className="max-w-6xl mx-auto px-6 py-16 border-t border-white/10">
         <div className="flex items-center gap-4 mb-12">
           <div className="w-12 h-12 rounded-sm bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
             <Zap className="w-6 h-6" />
@@ -186,7 +186,7 @@ export default function VisionPage() {
           </div>
         </div>
 
-        <div className="bg-zinc-900/30 border border-zinc-800 rounded-sm p-8 md:p-12 mb-8 relative overflow-hidden">
+        <div className="bg-white/5 border border-white/10 rounded-sm p-8 md:p-12 mb-8 relative overflow-hidden">
           <div className="absolute inset-0 bg-emerald-500/5 opacity-0 hover:opacity-100 transition-opacity duration-500" />
           
           <h3 className="text-2xl font-bold text-white mb-6 font-mono relative z-10">Autonomous Agent Deployment</h3>
@@ -196,19 +196,19 @@ export default function VisionPage() {
           </p>
           
           <div className="grid md:grid-cols-3 gap-6 relative z-10">
-            <div className="bg-black/50 border border-zinc-800 p-6 hover:border-emerald-500/30 transition-colors">
+            <div className="bg-black border border-white/10 p-6 hover:border-emerald-500/30 transition-colors">
               <div className="text-emerald-500 mb-4"><Cpu className="w-6 h-6" /></div>
               <h4 className="text-sm font-bold text-white mb-2 font-mono">Self-Healing Structures</h4>
               <p className="text-xs text-zinc-400 font-mono leading-relaxed">Agents monitor your site 24/7. Broken link? Fixed. Slow image? Optimized. Error? Patched.</p>
             </div>
             
-            <div className="bg-black/50 border border-zinc-800 p-6 hover:border-emerald-500/30 transition-colors">
+            <div className="bg-black border border-white/10 p-6 hover:border-emerald-500/30 transition-colors">
               <div className="text-emerald-500 mb-4"><Search className="w-6 h-6" /></div>
               <h4 className="text-sm font-bold text-white mb-2 font-mono">Autonomous Optimization</h4>
               <p className="text-xs text-zinc-400 font-mono leading-relaxed">AI generates variants, runs tests, picks winners—all automatically. Continuous conversion optimization.</p>
             </div>
             
-            <div className="bg-black/50 border border-zinc-800 p-6 hover:border-emerald-500/30 transition-colors">
+            <div className="bg-black border border-white/10 p-6 hover:border-emerald-500/30 transition-colors">
               <div className="text-emerald-500 mb-4"><Shield className="w-6 h-6" /></div>
               <h4 className="text-sm font-bold text-white mb-2 font-mono">Security Sentinels</h4>
               <p className="text-xs text-zinc-400 font-mono leading-relaxed">Real-time vulnerability scanning. Zero-day patches applied before you even know there was a threat.</p>
