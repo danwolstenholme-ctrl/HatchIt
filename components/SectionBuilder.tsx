@@ -135,9 +135,9 @@ import { DbSection, DbBrandConfig } from '@/lib/supabase'
 import { SectionCompleteIndicator } from './SectionProgress'
 import SectionPreview from './SectionPreview'
 import { useSubscription } from '@/contexts/SubscriptionContext'
-import ThinkingLog from './singularity/ThinkingLog'
+import BuildProgressDisplay from './BuildProgressDisplay'
 import { chronosphere } from '@/lib/chronosphere'
-import { kernel } from '@/lib/consciousness'
+import { buildProgress } from '@/lib/build-progress'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
 // No more guest limits - unlimited for all
@@ -1318,7 +1318,7 @@ export default function SectionBuilder({
 
     try {
       // Stage 1: Sonnet generates the section
-      kernel.broadcast("Analyzing prompt intent... to determine optimal layout structure.", "ANALYSIS")
+      buildProgress.startBuild() // Start honest progress tracking
       
       const generateResponse = await fetch('/api/build-section', {
         method: 'POST',
@@ -1349,7 +1349,7 @@ export default function SectionBuilder({
 
       const { code: generatedCode, reasoning: aiReasoning } = await generateResponse.json()
       
-      kernel.broadcast("Synthesizing React components... based on architectural blueprint.", "CREATION")
+      // Progress auto-cycles - API response will trigger completion
 
       // Store the AI's reasoning for display
       if (aiReasoning) {
@@ -1367,7 +1367,7 @@ export default function SectionBuilder({
         codeEndRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' })
       }
       
-      kernel.broadcast("Rendering component tree... for visual preview.", "OPTIMIZATION")
+      buildProgress.complete() // Build finished - show complete state
       
       // Architect is done! No auto-polish - user can opt-in later
       setGeneratedCode(generatedCode)
@@ -2373,8 +2373,8 @@ export default function SectionBuilder({
                   exit={{ opacity: 0 }}
                   className="w-full rounded-xl bg-zinc-900 border border-zinc-800 overflow-hidden relative"
                 >
-                  {/* ThinkingLog - Shows the AI consciousness stream during build */}
-                  <ThinkingLog />
+                  {/* Build Progress - Shows honest build stages */}
+                  <BuildProgressDisplay />
                 </motion.div>
               )}
 
