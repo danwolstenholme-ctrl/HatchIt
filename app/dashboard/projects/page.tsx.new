@@ -1,0 +1,484 @@
+'use client'
+
+import { useState, useMemo, useEffect } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { motion, AnimatePresence } from 'framer-motion'
+import { 
+  Plus, Box, ArrowRight, Trash2, Crown, Zap, Star, Search, Globe, 
+  Sparkles, LayoutGrid, List, Rocket, ExternalLink, Code2, 
+  Layers, TrendingUp, Clock, Activity, Play, ChevronRight
+} from 'lucide-react'
+import { useUser } from '@clerk/nextjs'
+import { formatDistanceToNow } from 'date-fns'
+import { DbProject } from '@/lib/supabase'
+
+export default function ProjectsPage() {
+  const { user } = useUser()
+  const [projects, setProjects] = useState<DbProject[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isMigrating, setIsMigrating] = useState(false)
+  const [isCreating, setIsCreating] = useState(false)
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+
+  const accountSubscription = user?.publicMetadata?.accountSubscription as any
+  const tier = accountSubscription?.tier
+
+  // Fetch projects + import guest work
+  useEffect(() => {
+    async function initProjects() {
+      try {
+        // Import guest handoff if exists
+        const guestHandoff = localStorage.getItem('hatch_guest_handoff')
+        if (guestHandoff) {
+          setIsMigrating(true)
+          try {
+            const payload = JSON.parse(guestHandoff)
+            const res = await fetch('/api/project/import', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            })
+            if (res.ok) {
+              localStorage.removeItem('hatch_guest_handoff')
+              localStorage.removeItem('hatch_last_prompt')
+            }
+          } catch (err) {
+            console.error('Failed to import guest work:', err)
+          }
+          setIsMigrating(false)
+        }
+
+        const res = await fetch('/api/project/list')
+        if (res.ok) {
+          const data = await res.json()
+          setProjects(data.projects || [])
+        }
+      } catch (error) {
+        console.error('Error loading projects:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    initProjects()
+  }, [])
+
+  // Tier config
+  const tierConfig = useMemo(() => {
+    if (tier === 'singularity') return { name: 'Singularity', color: 'amber', icon: Crown, limit: Infinity, badge: 'bg-amber-500/10 text-amber-400 border-amber-500/20' }
+    if (tier === 'visionary') return { name: 'Visionary', color: 'teal', icon: Zap, limit: Infinity, badge: 'bg-teal-500/10 text-teal-400 border-teal-500/20' }
+    if (tier === 'architect') return { name: 'Architect', color: 'emerald', icon: Star, limit: 3, badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' }
+    return { name: 'Free', color: 'zinc', icon: Sparkles, limit: 1, badge: 'bg-zinc-800 text-zinc-400 border-zinc-700' }
+  }, [tier])
+
+  const isAtLimit = tierConfig.limit !== Infinity && projects.length >= tierConfig.limit
+  const deployedCount = projects.filter(p => p.slug).length
+
+  const filteredProjects = useMemo(() => {
+    if (!searchQuery) return projects
+    return projects.filter(p => 
+      p.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  }, [projects, searchQuery])
+
+  const handleCreate = async () => {
+    if (isAtLimit) {
+      setShowUpgradeModal(true)
+      return
+    }
+    setIsCreating(true)
+    try {
+      const res = await fetch('/api/project', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'Untitled Project', templateId: 'single-page' })
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setProjects(prev => [data.project, ...prev])
+      }
+    } catch (error) {
+      console.error('Error creating project:', error)
+    } finally {
+      setIsCreating(false)
+    }
+  }
+
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (confirm('Delete this project?')) {
+      try {
+        const res = await fetch(`/api/project/${id}`, { method: 'DELETE' })
+        if (res.ok) setProjects(prev => prev.filter(p => p.id !== id))
+      } catch (error) {
+        console.error('Error deleting project:', error)
+      }
+    }
+  }
+
+  // Loading
+  if (isLoading || isMigrating) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-10 h-10 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-zinc-500 text-sm">{isMigrating ? 'Importing your work...' : 'Loading...'}</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-zinc-950">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        
+        {/* Header Row */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-semibold text-white">Projects</h1>
+            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium ${tierConfig.badge}`}>
+              <tierConfig.icon className="w-3 h-3" />
+              {tierConfig.name}
+            </div>
+          </div>
+          
+          <button
+            onClick={handleCreate}
+            disabled={isCreating}
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-black rounded-lg font-medium text-sm transition-colors"
+          >
+            {isCreating ? (
+              <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+            ) : (
+              <Plus className="w-4 h-4" />
+            )}
+            New Project
+          </button>
+        </div>
+
+        {/* Stats Row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-zinc-800 rounded-lg flex items-center justify-center">
+                <Layers className="w-5 h-5 text-zinc-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-semibold text-white">{projects.length}</p>
+                <p className="text-xs text-zinc-500">Projects</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center">
+                <Globe className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-semibold text-white">{deployedCount}</p>
+                <p className="text-xs text-zinc-500">Live Sites</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-zinc-800 rounded-lg flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-zinc-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-semibold text-white">
+                  {tierConfig.limit === Infinity ? '∞' : `${projects.length}/${tierConfig.limit}`}
+                </p>
+                <p className="text-xs text-zinc-500">Capacity</p>
+              </div>
+            </div>
+          </div>
+          
+          <Link 
+            href="/#pricing"
+            className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 rounded-xl p-4 hover:border-emerald-500/40 transition-colors group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-emerald-500/20 rounded-lg flex items-center justify-center">
+                <Rocket className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-white group-hover:text-emerald-400 transition-colors">Upgrade</p>
+                <p className="text-xs text-zinc-500">Unlock more</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-emerald-400 transition-colors" />
+            </div>
+          </Link>
+        </div>
+
+        {/* Search & View Toggle */}
+        {projects.length > 0 && (
+          <div className="flex items-center gap-3 mb-6">
+            <div className="relative flex-1 max-w-xs">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+              <input 
+                type="text"
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-10 pr-4 py-2 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-zinc-700"
+              />
+            </div>
+            <div className="flex items-center bg-zinc-900 border border-zinc-800 rounded-lg p-1">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-1.5 rounded transition-colors ${viewMode === 'grid' ? 'bg-zinc-800 text-white' : 'text-zinc-500'}`}
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-1.5 rounded transition-colors ${viewMode === 'list' ? 'bg-zinc-800 text-white' : 'text-zinc-500'}`}
+              >
+                <List className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Empty State - Make it compelling */}
+        {projects.length === 0 ? (
+          <div className="mt-8">
+            {/* Hero empty state */}
+            <div className="text-center py-16 px-6 bg-gradient-to-b from-zinc-900/50 to-transparent border border-zinc-800 rounded-2xl mb-8">
+              <div className="w-20 h-20 bg-zinc-900 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-zinc-800">
+                <Code2 className="w-10 h-10 text-emerald-500" />
+              </div>
+              <h2 className="text-2xl font-semibold text-white mb-3">Build your first site</h2>
+              <p className="text-zinc-400 max-w-md mx-auto mb-8">
+                Describe what you want in plain English. AI generates production-ready React code in seconds.
+              </p>
+              <div className="flex items-center justify-center gap-4">
+                <button
+                  onClick={handleCreate}
+                  className="flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-black rounded-xl font-semibold transition-colors"
+                >
+                  <Plus className="w-5 h-5" />
+                  Create Project
+                </button>
+                <Link
+                  href="/builder?mode=guest"
+                  className="flex items-center gap-2 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl font-medium transition-colors"
+                >
+                  <Play className="w-4 h-4" />
+                  Try Demo
+                </Link>
+              </div>
+            </div>
+
+            {/* Feature cards */}
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-5">
+                <div className="w-10 h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center mb-4">
+                  <Sparkles className="w-5 h-5 text-emerald-400" />
+                </div>
+                <h3 className="text-white font-medium mb-1">AI-Powered Building</h3>
+                <p className="text-zinc-500 text-sm">Describe any section. Hero, pricing, features, testimonials - generated instantly.</p>
+              </div>
+              
+              <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-5">
+                <div className="w-10 h-10 bg-teal-500/10 rounded-lg flex items-center justify-center mb-4">
+                  <Globe className="w-5 h-5 text-teal-400" />
+                </div>
+                <h3 className="text-white font-medium mb-1">One-Click Deploy</h3>
+                <p className="text-zinc-500 text-sm">Deploy to your own subdomain instantly. No config, no waiting.</p>
+              </div>
+              
+              <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-5">
+                <div className="w-10 h-10 bg-violet-500/10 rounded-lg flex items-center justify-center mb-4">
+                  <Code2 className="w-5 h-5 text-violet-400" />
+                </div>
+                <h3 className="text-white font-medium mb-1">Export Source Code</h3>
+                <p className="text-zinc-500 text-sm">Download clean React/Next.js code. Your code, your control.</p>
+              </div>
+            </div>
+          </div>
+        ) : viewMode === 'grid' ? (
+          /* Grid View */
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <AnimatePresence mode="popLayout">
+              {filteredProjects.map((project, index) => (
+                <motion.div
+                  key={project.id}
+                  layout
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ delay: index * 0.03 }}
+                >
+                  <Link
+                    href={`/builder?project=${project.id}`}
+                    className="group block bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-xl overflow-hidden transition-all"
+                  >
+                    {/* Preview area */}
+                    <div className="h-32 bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center relative">
+                      {project.slug ? (
+                        <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2 py-1 bg-emerald-500/20 rounded-full">
+                          <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                          <span className="text-[10px] font-medium text-emerald-400">LIVE</span>
+                        </div>
+                      ) : null}
+                      <Box className="w-8 h-8 text-zinc-700" />
+                    </div>
+                    
+                    <div className="p-4">
+                      <h3 className="font-medium text-white truncate group-hover:text-emerald-400 transition-colors">
+                        {project.name || 'Untitled Project'}
+                      </h3>
+                      <div className="flex items-center justify-between mt-2">
+                        <p className="text-xs text-zinc-500">
+                          {project.updated_at 
+                            ? formatDistanceToNow(new Date(project.updated_at), { addSuffix: true })
+                            : 'Just created'}
+                        </p>
+                        <div className="flex items-center gap-1">
+                          {project.slug && (
+                            <a
+                              href={`https://${project.slug}.hatchitsites.dev`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="p-1 text-zinc-500 hover:text-emerald-400 rounded transition-colors"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </a>
+                          )}
+                          <button 
+                            onClick={(e) => handleDelete(e, project.id)}
+                            className="p-1 text-zinc-500 hover:text-red-400 rounded transition-colors opacity-0 group-hover:opacity-100"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        ) : (
+          /* List View */
+          <div className="space-y-2">
+            {filteredProjects.map((project, index) => (
+              <motion.div
+                key={project.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: index * 0.02 }}
+              >
+                <Link
+                  href={`/builder?project=${project.id}`}
+                  className="group flex items-center gap-4 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-lg px-4 py-3 transition-all"
+                >
+                  <div className="w-10 h-10 bg-zinc-800 rounded-lg flex items-center justify-center">
+                    <Box className="w-5 h-5 text-zinc-500 group-hover:text-emerald-400 transition-colors" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-white text-sm truncate group-hover:text-emerald-400 transition-colors">
+                      {project.name || 'Untitled Project'}
+                    </h3>
+                    <p className="text-xs text-zinc-500">
+                      {project.updated_at ? formatDistanceToNow(new Date(project.updated_at), { addSuffix: true }) : 'Just created'}
+                    </p>
+                  </div>
+                  {project.slug && (
+                    <span className="flex items-center gap-1.5 px-2 py-1 bg-emerald-500/10 rounded-full">
+                      <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
+                      <span className="text-[10px] font-medium text-emerald-400">Live</span>
+                    </span>
+                  )}
+                  <ArrowRight className="w-4 h-4 text-zinc-600 group-hover:text-emerald-400 transition-colors" />
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        )}
+      
+        {/* Upgrade Modal */}
+        <AnimatePresence>
+          {showUpgradeModal && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" 
+              onClick={() => setShowUpgradeModal(false)}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-zinc-900 rounded-2xl p-6 w-full max-w-lg border border-zinc-800"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="text-center mb-6">
+                  <div className="w-14 h-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <Rocket className="w-7 h-7 text-emerald-400" />
+                  </div>
+                  <h2 className="text-xl font-semibold text-white mb-2">Upgrade to continue</h2>
+                  <p className="text-zinc-400 text-sm">
+                    You've hit the {tierConfig.limit} project limit. Upgrade to unlock more.
+                  </p>
+                </div>
+                
+                <div className="space-y-3 mb-6">
+                  <a href="/api/checkout?tier=architect" className="flex items-center justify-between p-4 bg-zinc-800 hover:bg-zinc-700 rounded-xl transition-colors">
+                    <div className="flex items-center gap-3">
+                      <Star className="w-5 h-5 text-emerald-400" />
+                      <div>
+                        <p className="text-white font-medium">Architect</p>
+                        <p className="text-zinc-500 text-xs">3 projects</p>
+                      </div>
+                    </div>
+                    <p className="text-white font-semibold">$19<span className="text-zinc-500 text-sm">/mo</span></p>
+                  </a>
+
+                  <a href="/api/checkout?tier=visionary" className="flex items-center justify-between p-4 bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 rounded-xl transition-colors relative">
+                    <div className="absolute -top-2 left-4 px-2 py-0.5 bg-emerald-500 text-black text-[10px] font-bold rounded">POPULAR</div>
+                    <div className="flex items-center gap-3">
+                      <Zap className="w-5 h-5 text-emerald-400" />
+                      <div>
+                        <p className="text-white font-medium">Visionary</p>
+                        <p className="text-zinc-400 text-xs">Unlimited + export</p>
+                      </div>
+                    </div>
+                    <p className="text-white font-semibold">$49<span className="text-zinc-400 text-sm">/mo</span></p>
+                  </a>
+
+                  <a href="/api/checkout?tier=singularity" className="flex items-center justify-between p-4 bg-zinc-800 hover:bg-zinc-700 rounded-xl transition-colors">
+                    <div className="flex items-center gap-3">
+                      <Crown className="w-5 h-5 text-amber-400" />
+                      <div>
+                        <p className="text-white font-medium">Singularity</p>
+                        <p className="text-zinc-500 text-xs">Everything + API</p>
+                      </div>
+                    </div>
+                    <p className="text-white font-semibold">$199<span className="text-zinc-500 text-sm">/mo</span></p>
+                  </a>
+                </div>
+
+                <button
+                  onClick={() => setShowUpgradeModal(false)}
+                  className="w-full py-2 text-zinc-500 hover:text-white text-sm transition-colors"
+                >
+                  Maybe later
+                </button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  )
+}
