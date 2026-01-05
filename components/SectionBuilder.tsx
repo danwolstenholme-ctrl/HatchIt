@@ -263,9 +263,9 @@ function GuestRefineBar({
         
         <button
           onClick={goToSignUp}
-          className="flex-shrink-0 px-4 py-2.5 rounded-full bg-zinc-900/90 border border-zinc-800 hover:border-emerald-500/30 text-zinc-400 hover:text-white text-sm transition-all"
+          className="flex-shrink-0 px-4 py-2.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 text-sm font-medium transition-all"
         >
-          Sign up
+          Deploy
         </button>
       </div>
     </div>

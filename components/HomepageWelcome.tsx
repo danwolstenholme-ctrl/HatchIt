@@ -190,9 +190,9 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
                   animate={{ opacity: phase === 'ready' ? 1 : 0, y: phase === 'ready' ? 0 : 10 }}
                   className="text-zinc-400 text-lg leading-relaxed max-w-sm mx-auto"
                 >
-                  Describe your vision in plain English.
+                  Describe it. Watch it build.
                   <br />
-                  <span className="text-zinc-200">We generate the code instantly.</span>
+                  <span className="text-zinc-200">Live preview. One-click deploy.</span>
                 </motion.p>
               </div>
 

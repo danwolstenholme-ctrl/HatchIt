@@ -94,10 +94,17 @@ function BuilderContent() {
           const data = await res.json()
           if (data?.projectId) {
             router.replace(`/builder?project=${data.projectId}`)
+            return // Don't turn off loader, redirect will handle it
           }
+        } else {
+          // Import failed - clear handoff and continue to builder anyway
+          console.error('Demo import failed with status:', res.status)
+          localStorage.removeItem('hatch_guest_handoff')
         }
       } catch (err) {
         console.error('Demo import failed', err)
+        // Clear handoff on error so user doesn't get stuck
+        localStorage.removeItem('hatch_guest_handoff')
       } finally {
         setIsImportingDemo(false)
       }
