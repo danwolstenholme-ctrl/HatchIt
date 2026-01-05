@@ -152,10 +152,10 @@ export default function StudioPage() {
                 />
               </Link>
               
-              <nav className="flex items-center gap-1 bg-zinc-900/50 p-1 rounded-lg border border-zinc-800/50">
+              <nav className="flex items-center gap-1 bg-white/5 p-1 rounded-lg border border-white/10">
                 <Link 
                   href="/dashboard"
-                  className="px-3 py-1.5 rounded-md text-sm font-medium text-zinc-200 bg-zinc-800 shadow-sm transition-all"
+                  className="px-3 py-1.5 rounded-md text-sm font-medium text-white bg-white/10 shadow-sm transition-all"
                 >
                   Dashboard
                 </Link>
@@ -172,7 +172,7 @@ export default function StudioPage() {
                <UserButton 
                  appearance={{
                    elements: {
-                     avatarBox: "w-8 h-8 ring-2 ring-zinc-800 hover:ring-zinc-700 transition-all"
+                     avatarBox: "w-8 h-8 ring-2 ring-white/10 hover:ring-white/20 transition-all"
                    }
                  }}
                />

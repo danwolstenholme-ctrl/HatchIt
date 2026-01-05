@@ -80,20 +80,20 @@ export default function RootLayout({
         baseTheme: dark,
         variables: {
           colorPrimary: '#10b981', // emerald-500
-          colorBackground: '#18181b', // zinc-900
+          colorBackground: '#09090b', // zinc-950
           colorText: '#f4f4f5', // zinc-100
           colorTextSecondary: '#a1a1aa', // zinc-400
-          colorInputBackground: '#09090b', // zinc-950
+          colorInputBackground: '#000000', // black
           colorInputText: '#fff',
           borderRadius: '0.75rem',
         },
         elements: {
           rootBox: 'font-sans',
-          card: 'bg-zinc-900 border border-zinc-800 shadow-[0_0_50px_rgba(16,185,129,0.05)]',
+          card: 'bg-black border border-white/10 shadow-[0_0_50px_rgba(16,185,129,0.1)]',
           headerTitle: 'text-white font-mono font-bold',
           headerSubtitle: 'text-zinc-400 font-mono text-xs',
           formButtonPrimary: 'bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold shadow-[0_0_20px_-5px_rgba(16,185,129,0.5)] transition-all',
-          formFieldInput: 'bg-zinc-950 border-zinc-800 focus:border-emerald-500 text-white font-mono',
+          formFieldInput: 'bg-zinc-950 border-white/10 focus:border-emerald-500 text-white font-mono',
           formFieldLabel: 'text-zinc-400 font-mono text-xs uppercase tracking-wider',
           footerActionLink: 'text-emerald-500 hover:text-emerald-400 font-mono',
           identityPreviewText: 'text-zinc-300 font-mono',

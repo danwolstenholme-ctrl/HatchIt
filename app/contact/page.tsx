@@ -92,7 +92,7 @@ function ContactForm() {
         <div className="shrink-0 mb-8">
           <Link 
             href={returnUrl}
-            className="inline-flex items-center gap-2 text-zinc-500 hover:text-white transition-colors group text-sm font-medium px-4 py-2 rounded-full hover:bg-zinc-900/50 border border-transparent hover:border-zinc-800"
+            className="inline-flex items-center gap-2 text-zinc-500 hover:text-white transition-colors group text-sm font-medium px-4 py-2 rounded-full hover:bg-white/5 border border-transparent hover:border-white/10"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             <span>Back</span>
@@ -127,7 +127,7 @@ function ContactForm() {
                     onChange={handleChange}
                     required
                     placeholder="Jane Doe"
-                    className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl px-4 py-2.5 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all placeholder:text-zinc-600 hover:border-zinc-700"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all placeholder:text-zinc-600 hover:border-white/20"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -139,7 +139,7 @@ function ContactForm() {
                     onChange={handleChange}
                     required
                     placeholder="jane@example.com"
-                    className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl px-4 py-2.5 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all placeholder:text-zinc-600 hover:border-zinc-700"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all placeholder:text-zinc-600 hover:border-white/20"
                   />
                 </div>
               </div>
@@ -151,7 +151,7 @@ function ContactForm() {
                     name="topic"
                     value={form.topic}
                     onChange={handleChange}
-                    className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl px-4 py-2.5 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all appearance-none cursor-pointer hover:border-zinc-700"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all appearance-none cursor-pointer hover:border-white/20"
                   >
                     <option>General Inquiry</option>
                     <option>Technical Support</option>
@@ -184,7 +184,7 @@ function ContactForm() {
                   required
                   minLength={10}
                   placeholder="How can we help you?"
-                  className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all h-32 resize-none placeholder:text-zinc-600 hover:border-zinc-700"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all h-32 resize-none placeholder:text-zinc-600 hover:border-white/20"
                 />
               </div>
 
@@ -241,7 +241,7 @@ function ContactForm() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="space-y-6 lg:pt-0 flex flex-col justify-center"
           >
-            <div className="bg-zinc-900/20 border border-zinc-800/50 rounded-2xl p-6 backdrop-blur-sm">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm">
               <h3 className="font-semibold text-white mb-6 flex items-center gap-2">
                 <HelpCircle className="w-5 h-5 text-emerald-500" />
                 Support Channels
@@ -252,7 +252,7 @@ function ContactForm() {
                   href="mailto:support@hatchit.dev" 
                   className="flex items-start gap-4 group"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-zinc-800/50 flex items-center justify-center group-hover:bg-zinc-800 transition-colors border border-zinc-700/50">
+                  <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors border border-white/10">
                     <Mail className="w-5 h-5 text-zinc-400 group-hover:text-white transition-colors" />
                   </div>
                   <div>
@@ -267,7 +267,7 @@ function ContactForm() {
                   rel="noopener noreferrer"
                   className="flex items-start gap-4 group"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-zinc-800/50 flex items-center justify-center group-hover:bg-zinc-800 transition-colors border border-zinc-700/50">
+                  <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors border border-white/10">
                     <MessageSquare className="w-5 h-5 text-zinc-400 group-hover:text-white transition-colors" />
                   </div>
                   <div>
@@ -278,7 +278,7 @@ function ContactForm() {
               </div>
             </div>
 
-            <div className="p-6 rounded-2xl bg-gradient-to-br from-zinc-900/50 to-zinc-900/10 border border-zinc-800/50">
+            <div className="p-6 rounded-2xl bg-gradient-to-br from-white/5 to-transparent border border-white/10">
               <h3 className="font-medium text-white mb-2">Response Time</h3>
               <p className="text-sm text-zinc-400 leading-relaxed">
                 We're a small team but we move fast. Expect a response within 24 hours on business days.

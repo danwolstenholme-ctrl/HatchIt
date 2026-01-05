@@ -23,7 +23,7 @@ export default function SignInPage() {
       >
         {/* Header Branding */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800 mb-4 shadow-lg shadow-emerald-500/10">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/5 border border-white/10 mb-4 shadow-lg shadow-emerald-500/10">
             <Sparkles className="w-6 h-6 text-emerald-500" />
           </div>
           <h1 className="text-2xl font-bold text-white tracking-tight mb-2">
@@ -41,12 +41,12 @@ export default function SignInPage() {
             appearance={{
               elements: {
                 rootBox: 'w-full',
-                card: 'bg-zinc-900 border border-zinc-800 shadow-2xl shadow-black/50',
+                card: 'bg-black border border-white/10 shadow-2xl shadow-black/50',
                 headerTitle: 'text-white',
                 headerSubtitle: 'text-zinc-400',
-                socialButtonsBlockButton: 'bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700',
+                socialButtonsBlockButton: 'bg-white/5 border-white/10 text-white hover:bg-white/10',
                 formFieldLabel: 'text-zinc-300',
-                formFieldInput: 'bg-zinc-800 border-zinc-700 text-white',
+                formFieldInput: 'bg-white/5 border-white/10 text-white',
                 footerActionLink: 'text-emerald-400 hover:text-emerald-300',
                 identityPreviewText: 'text-zinc-300',
                 identityPreviewEditButton: 'text-emerald-400',

@@ -25,7 +25,7 @@ export default function Navigation() {
   return (
     <>
       <motion.nav 
-        className="fixed top-0 left-0 right-0 z-50 w-full bg-zinc-900/95 backdrop-blur-md border-b border-zinc-800/60"
+        className="fixed top-0 left-0 right-0 z-50 w-full bg-black/80 backdrop-blur-md border-b border-white/10"
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
@@ -41,7 +41,7 @@ export default function Navigation() {
             >
               <Image src="/assets/hatchit_definitive.svg" alt="HatchIt" width={26} height={26} className="w-[26px] h-[26px]" />
             </motion.div>
-            <span className="text-sm font-semibold text-zinc-200 hidden sm:inline">HatchIt</span>
+            <span className="text-sm font-semibold text-white hidden sm:inline">HatchIt</span>
           </Link>
           
           {/* Desktop Nav Links */}
@@ -54,8 +54,8 @@ export default function Navigation() {
                   href={link.href} 
                   className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
                     isActive 
-                      ? 'text-white bg-zinc-800/60' 
-                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+                      ? 'text-white bg-white/10' 
+                      : 'text-zinc-400 hover:text-white hover:bg-white/5'
                   }`}
                 >
                   {link.label}

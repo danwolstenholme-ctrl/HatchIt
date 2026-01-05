@@ -31,7 +31,7 @@ export default function Footer() {
   }
 
   return (
-    <footer className="bg-zinc-900 border-t border-zinc-800">
+    <footer className="bg-black border-t border-white/10">
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 md:gap-10">
           {/* Brand Column */}
@@ -44,7 +44,7 @@ export default function Footer() {
                 height={28} 
                 className="w-7 h-7" 
               />
-              <span className="text-sm font-medium text-zinc-300">HatchIt</span>
+              <span className="text-sm font-medium text-white">HatchIt</span>
             </Link>
             <p className="text-sm text-zinc-500 leading-relaxed">
               Ship real websites with AI.<br />React + Tailwind code you own.
@@ -53,13 +53,13 @@ export default function Footer() {
 
           {/* Product */}
           <div>
-            <h4 className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-3">Product</h4>
+            <h4 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-3">Product</h4>
             <ul className="space-y-2">
               {footerLinks.product.map((link) => (
                 <li key={link.href}>
                   <Link 
                     href={link.href} 
-                    className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
+                    className="text-sm text-zinc-400 hover:text-white transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -70,13 +70,13 @@ export default function Footer() {
 
           {/* Company */}
           <div>
-            <h4 className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-3">Company</h4>
+            <h4 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-3">Company</h4>
             <ul className="space-y-2">
               {footerLinks.company.map((link) => (
                 <li key={link.href}>
                   <Link 
                     href={link.href} 
-                    className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
+                    className="text-sm text-zinc-400 hover:text-white transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -87,13 +87,13 @@ export default function Footer() {
 
           {/* Legal */}
           <div>
-            <h4 className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-3">Legal</h4>
+            <h4 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-3">Legal</h4>
             <ul className="space-y-2">
               {footerLinks.legal.map((link) => (
                 <li key={link.href}>
                   <Link 
                     href={link.href} 
-                    className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
+                    className="text-sm text-zinc-400 hover:text-white transition-colors"
                   >
                     {link.label}
                   </Link>
