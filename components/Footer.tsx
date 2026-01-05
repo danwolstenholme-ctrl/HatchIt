@@ -16,6 +16,7 @@ export default function Footer() {
     company: [
       { href: '/about', label: 'About' },
       { href: '/vision', label: 'Vision' },
+      { href: '/manifesto', label: 'Manifesto' },
       { href: '/contact', label: 'Contact' },
       { href: '/changelog', label: 'Changelog' },
     ],

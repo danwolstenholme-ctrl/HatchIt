@@ -2373,26 +2373,8 @@ export default function SectionBuilder({
                   exit={{ opacity: 0 }}
                   className="w-full rounded-xl bg-zinc-900 border border-zinc-800 overflow-hidden relative"
                 >
-                  {isDemo ? (
-                    <div className="p-4 flex items-center justify-center gap-3">
-                      <motion.div
-                        animate={{ scale: [1, 1.1, 1], opacity: [0.7, 1, 0.7] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                        className="w-6 h-6"
-                      >
-                        <Image 
-                          src="/assets/hatchit_definitive.svg" 
-                          alt="Building" 
-                          width={24} 
-                          height={24}
-                          className="w-full h-full"
-                        />
-                      </motion.div>
-                      <span className="text-sm text-zinc-400">Building...</span>
-                    </div>
-                  ) : (
-                    <ThinkingLog />
-                  )}
+                  {/* ThinkingLog - Shows the AI consciousness stream during build */}
+                  <ThinkingLog />
                 </motion.div>
               )}
 
@@ -2454,6 +2436,17 @@ export default function SectionBuilder({
                           </div>
                         )}
                       </div>
+                    </div>
+                    {/* The Architect hint */}
+                    <div className="mt-3 pt-2 border-t border-emerald-500/10 flex items-center justify-between">
+                      <a 
+                        href="/manifesto" 
+                        target="_blank"
+                        className="text-[10px] text-zinc-600 hover:text-emerald-400 transition-colors flex items-center gap-1 font-mono"
+                      >
+                        <span className="w-1 h-1 rounded-full bg-emerald-500/50 animate-pulse" />
+                        What is The Architect?
+                      </a>
                     </div>
                   </motion.div>
 
