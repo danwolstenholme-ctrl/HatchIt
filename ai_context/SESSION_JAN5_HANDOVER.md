@@ -158,3 +158,11 @@ Console logs to watch for during testing:
 - **Supabase** stores projects/sections
 - **Stripe** handles payments, webhook updates Clerk metadata
 - User tier stored in `user.publicMetadata.accountSubscription.tier`
+
+### Clerk Redirect Config (Added This Session)
+Added to Vercel env vars:
+```
+NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/dashboard/studio
+NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/dashboard/studio
+```
+This ensures ALL sign-ins/sign-ups land at Studio, even if no redirect_url param is passed.
