@@ -1945,16 +1945,18 @@ export default function SectionBuilder({
 
             {/* Complete Stage - Guest Refine Bar (Conversational) */}
             {stage === 'complete' && (
-              <GuestRefineBar
-                refinePrompt={refinePrompt}
-                setRefinePrompt={setRefinePrompt}
-                isUserRefining={isUserRefining}
-                isGuestRefineLocked={isGuestRefineLocked}
-                handleUserRefine={handleUserRefine}
-                goToSignUp={goToSignUp}
-                reasoning={reasoning}
-                refinementChanges={refinementChanges}
-              />
+              <div className="bg-zinc-950/90 backdrop-blur-xl border border-zinc-800/50 rounded-2xl shadow-[0_0_30px_rgba(0,0,0,0.5)] p-4">
+                <GuestRefineBar
+                  refinePrompt={refinePrompt}
+                  setRefinePrompt={setRefinePrompt}
+                  isUserRefining={isUserRefining}
+                  isGuestRefineLocked={isGuestRefineLocked}
+                  handleUserRefine={handleUserRefine}
+                  goToSignUp={goToSignUp}
+                  reasoning={reasoning}
+                  refinementChanges={refinementChanges}
+                />
+              </div>
             )}
 
             {/* Refining Stage */}

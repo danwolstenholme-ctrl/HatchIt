@@ -70,9 +70,9 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
     // If not signed in, go to split-screen sign-up page with tier pre-selected
     if (!isSignedIn) {
       onClose()
-      const currentUrl = new URL(window.location.href)
-      currentUrl.searchParams.set('upgrade', selectedTier)
-      router.push(`/sign-up?upgrade=${selectedTier}&redirect_url=${encodeURIComponent(currentUrl.toString())}`)
+      // Always redirect to /builder after signup (not /demo) so work gets migrated
+      const redirectUrl = '/builder'
+      router.push(`/sign-up?upgrade=${selectedTier}&redirect_url=${encodeURIComponent(redirectUrl)}`)
       return
     }
 
