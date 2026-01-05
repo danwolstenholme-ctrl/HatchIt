@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
+import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
 import { SubscriptionBadge } from './SubscriptionIndicator'
@@ -69,14 +69,12 @@ export default function Navigation() {
           {/* Auth & CTA */}
           <div className="flex items-center gap-2 sm:gap-3">
             <SignedOut>
-              <SignInButton mode="modal" forceRedirectUrl="/dashboard/studio">
-                <button className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-900/20 hover:from-emerald-500 hover:to-teal-500 transition-colors">
+              <Link href="/sign-in" className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-900/20 hover:from-emerald-500 hover:to-teal-500 transition-colors">
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                   </svg>
                   Studio
-                </button>
-              </SignInButton>
+              </Link>
             </SignedOut>
             <SignedIn>
               <div className="flex items-center gap-2 sm:gap-3">
@@ -204,11 +202,9 @@ export default function Navigation() {
               {/* Mobile Sign In */}
               <SignedOut>
                 <div className="p-4 mt-auto border-t border-emerald-500/15 bg-zinc-900/40">
-                  <SignInButton mode="modal" forceRedirectUrl="/dashboard/studio">
-                    <button className="w-full py-3.5 text-center bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl font-semibold transition-all shadow-lg shadow-emerald-900/20">
-                      Sign in to Studio
-                    </button>
-                  </SignInButton>
+                  <Link href="/sign-in" className="block w-full py-3.5 text-center bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl font-semibold transition-all shadow-lg shadow-emerald-900/20">
+                    Sign in to Studio
+                  </Link>
                 </div>
               </SignedOut>
               
