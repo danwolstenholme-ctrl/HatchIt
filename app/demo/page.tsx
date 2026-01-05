@@ -9,7 +9,7 @@ import BuildFlowController from '@/components/BuildFlowController'
 // =============================================================================
 // DEMO PAGE - Full builder experience, localStorage only
 // Premium actions (deploy, download) show signup modal
-// If signed in, redirect to /dashboard/studio to migrate guest work
+// If signed in, redirect to /dashboard to migrate guest work
 // =============================================================================
 
 function DemoContent() {
@@ -18,7 +18,7 @@ function DemoContent() {
   const { isSignedIn, isLoaded } = useUser()
   const prompt = searchParams.get('prompt')
   
-  // If user is signed in, redirect to studio to migrate their demo work
+  // If user is signed in, redirect to dashboard to migrate their demo work
   useEffect(() => {
     if (isLoaded && isSignedIn) {
       // Always go to dashboard - that's where migration logic lives
