@@ -1903,30 +1903,41 @@ export default function SectionBuilder({
             transition={{ duration: 0.4, delay: 0.2 }}
             className="mx-auto max-w-2xl"
           >
-            {/* Generating Stage - minimal bottom bar */}
+            {/* Generating Stage - bottom bar that matches complete stage size */}
             {(stage === 'generating' || showGenerating) && (
-              <div className="bg-zinc-950/90 backdrop-blur-xl border border-emerald-500/20 rounded-full shadow-[0_0_30px_rgba(16,185,129,0.1)] px-6 py-4 relative overflow-hidden group">
+              <div className="bg-zinc-950/90 backdrop-blur-xl border border-emerald-500/20 rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.1)] p-4 relative overflow-hidden group">
                 {/* Animated border gradient */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                 
-                <div className="flex items-center justify-center gap-4 relative z-10">
-                  <div className="relative">
-                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping absolute inset-0" />
-                    <div className="w-2 h-2 bg-emerald-500 rounded-full relative" />
-                  </div>
-                  <div className="flex flex-col items-start">
-                    <p className="text-sm font-medium text-white tracking-wide">
+                {/* Placeholder for AI message area - matches GuestRefineBar height */}
+                <div className="mb-2 flex items-center gap-2 px-1 h-5">
+                  <motion.div 
+                    className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0"
+                    animate={{ scale: [1, 1.15, 1], opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <Sparkles className="w-2.5 h-2.5 text-emerald-400" />
+                  </motion.div>
+                  <p className="text-xs text-zinc-500">
+                    <span className="text-emerald-400 font-medium">Building.</span>{' '}
+                    <span className="text-zinc-500">{loadingStages[loadingStage]}...</span>
+                  </p>
+                </div>
+
+                {/* Input row placeholder - matches refine bar */}
+                <div className="flex items-center gap-2 relative z-10">
+                  <div className="flex-1 flex items-center bg-zinc-950/90 backdrop-blur-xl border border-zinc-800 rounded-full overflow-hidden h-[42px]">
+                    <div className="flex-1 px-4 py-2.5 text-sm text-zinc-600">
                       Constructing Reality...
-                    </p>
-                    <p className="text-[10px] text-emerald-500/70 font-mono uppercase tracking-wider">
-                      {loadingStages[loadingStage]}
-                    </p>
+                    </div>
+                    <div className="px-4 py-2.5 bg-zinc-800 text-zinc-600 text-sm font-medium flex items-center gap-1.5">
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Building</span>
+                    </div>
                   </div>
-                  <div className="ml-4 flex gap-1">
-                    <div className="w-1 h-4 bg-emerald-500/20 rounded-full animate-pulse" style={{ animationDelay: '0ms' }} />
-                    <div className="w-1 h-4 bg-emerald-500/40 rounded-full animate-pulse" style={{ animationDelay: '150ms' }} />
-                    <div className="w-1 h-4 bg-emerald-500/60 rounded-full animate-pulse" style={{ animationDelay: '300ms' }} />
-                    <div className="w-1 h-4 bg-emerald-500/80 rounded-full animate-pulse" style={{ animationDelay: '450ms' }} />
+                  
+                  <div className="flex-shrink-0 px-4 py-2.5 rounded-full bg-zinc-800/50 border border-zinc-700 text-zinc-600 text-sm font-medium">
+                    Deploy
                   </div>
                 </div>
               </div>
