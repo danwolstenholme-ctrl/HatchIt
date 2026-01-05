@@ -763,6 +763,24 @@ export default function SectionBuilder({
 
   // Redirect to sign-up page when paywall is hit (deploy/export only)
   const goToSignUp = (tier: string = 'visionary') => {
+    // Persist guest work before redirecting (for post-signup migration)
+    if (isDemo && generatedCode) {
+      const handoffPayload = {
+        templateId: 'single-page',
+        projectName: brandConfig?.brandName || 'My Demo Project',
+        brand: brandConfig,
+        sections: [{
+          sectionId: dbSection.section_id,
+          code: generatedCode,
+          userPrompt: prompt || effectivePrompt,
+          refined: refined,
+          refinementChanges: refinementChanges,
+        }],
+      }
+      console.log('[goToSignUp] Persisting guest handoff:', handoffPayload.projectName, handoffPayload.sections.length, 'sections')
+      localStorage.setItem('hatch_guest_handoff', JSON.stringify(handoffPayload))
+    }
+    
     // Always redirect to studio after signup - that's where migration happens
     const redirectUrl = '/dashboard/studio'
     console.log('[goToSignUp] tier:', tier, 'type:', typeof tier)
