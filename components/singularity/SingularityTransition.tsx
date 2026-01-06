@@ -2,91 +2,95 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, useState } from 'react'
-import Image from 'next/image'
 
-const LOADING_MESSAGES = [
-  "Preparing your workspace...",
-  "Loading design engine...",
-  "Setting up the studio...",
-  "Ready to build."
+// Singularity-branded transition - confident, minimal, fast
+const TRANSITION_STATES = [
+  { text: "CONNECTING", progress: 25 },
+  { text: "INITIALIZING", progress: 50 },
+  { text: "LOADING CANVAS", progress: 75 },
+  { text: "READY", progress: 100 }
 ]
 
 export default function SingularityTransition({ onComplete }: { onComplete: () => void }) {
-  const [index, setIndex] = useState(0)
+  const [stateIndex, setStateIndex] = useState(0)
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setIndex(prev => {
-        if (prev >= LOADING_MESSAGES.length - 1) {
+      setStateIndex(prev => {
+        if (prev >= TRANSITION_STATES.length - 1) {
           clearInterval(interval)
-          setTimeout(onComplete, 800)
+          setTimeout(onComplete, 400)
           return prev
         }
         return prev + 1
       })
-    }, 800)
+    }, 500) // Faster transitions
 
     return () => clearInterval(interval)
   }, [onComplete])
 
+  const currentState = TRANSITION_STATES[stateIndex]
+
   return (
     <motion.div
-      className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center"
+      className="fixed inset-0 z-[9999] bg-zinc-950 flex flex-col items-center justify-center"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }}
+      exit={{ opacity: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } }}
     >
-      {/* Subtle Background Gradient */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-emerald-500/5 rounded-full blur-[120px] animate-pulse-slow" />
-      </div>
+      {/* Subtle grid background */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px]" />
+      
+      {/* Top accent line */}
+      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
 
       <div className="relative z-10 flex flex-col items-center">
-        {/* Breathing Logo */}
-        <motion.div
-          className="relative mb-12"
-          animate={{ 
-            scale: [1, 1.05, 1],
-            opacity: [0.8, 1, 0.8]
-          }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        {/* Geometric H mark - animated */}
+        <motion.div 
+          className="relative w-16 h-16 mb-10"
+          animate={{ opacity: [0.6, 1, 0.6] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         >
-          <div className="relative w-20 h-20 flex items-center justify-center">
-            {/* Soft Glow behind logo */}
-            <div className="absolute inset-0 bg-emerald-500/20 blur-2xl rounded-full" />
-            <Image 
-              src="/assets/hatchit_definitive.svg" 
-              alt="HatchIt" 
-              width={48} 
-              height={48} 
-              className="w-12 h-12 relative z-10"
-            />
+          {/* Outer ring */}
+          <motion.div 
+            className="absolute inset-0 border border-zinc-800 rounded-full"
+            animate={{ scale: [1, 1.05, 1], opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          />
+          {/* Inner mark */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-6 h-6 relative">
+              {/* H shape abstracted */}
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-400 to-emerald-600 rounded-full" />
+              <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-400 to-emerald-600 rounded-full" />
+              <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full" />
+            </div>
           </div>
         </motion.div>
 
-        {/* Human-Readable Text */}
-        <div className="h-12 flex flex-col items-center justify-center text-center">
+        {/* Status text - mono, uppercase, tracked */}
+        <div className="h-8 flex items-center justify-center">
           <AnimatePresence mode="wait">
             <motion.p
-              key={index}
-              initial={{ opacity: 0, y: 10 }}
+              key={stateIndex}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
-              className="text-zinc-400 text-sm font-medium tracking-wide"
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="text-zinc-500 text-xs font-mono tracking-[0.2em] uppercase"
             >
-              {LOADING_MESSAGES[index]}
+              {currentState.text}
             </motion.p>
           </AnimatePresence>
         </div>
 
-        {/* Minimal Progress Line */}
-        <div className="mt-8 w-48 h-0.5 bg-white/5 rounded-full overflow-hidden">
+        {/* Progress bar - clean, emerald accent */}
+        <div className="mt-8 w-48 h-px bg-zinc-800 overflow-hidden">
           <motion.div
-            className="h-full bg-emerald-500/80"
+            className="h-full bg-emerald-500"
             initial={{ width: "0%" }}
-            animate={{ width: `${((index + 1) / LOADING_MESSAGES.length) * 100}%` }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
+            animate={{ width: `${currentState.progress}%` }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
           />
         </div>
       </div>

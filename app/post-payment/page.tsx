@@ -117,11 +117,11 @@ function PostPaymentContent() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white relative overflow-hidden selection:bg-emerald-500/30">
+    <div className="min-h-screen bg-zinc-950 text-white relative overflow-hidden selection:bg-emerald-500/30">
       {/* Ambient void background */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[150px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-teal-500/5 rounded-full blur-[150px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[150px]" />
       </div>
 
       {/* Scanline Effect */}
@@ -242,7 +242,7 @@ function PostPaymentContent() {
 
 export default function PostPaymentPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-black" />}> 
+    <Suspense fallback={<div className="min-h-screen bg-zinc-950" />}> 
       <PostPaymentContent />
     </Suspense>
   )

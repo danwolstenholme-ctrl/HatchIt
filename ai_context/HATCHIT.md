@@ -1,16 +1,47 @@
-# HATCHIT - AI Context
-> **Read this first.** This is the single source of truth.
-> **Last Updated:** January 5, 2026
+# HATCHIT
+> Tech stack, design system, and build rules.
+> **Last Updated:** January 6, 2026
 
 ---
 
-## What Is HatchIt?
+## AI Rules
 
-**Text to React.** Users describe what they want, we generate production-ready React + Tailwind components with live preview.
+1. **Stack is locked.** Do not suggest, reference, or use any libraries/tools not listed below.
+2. **Modern syntax only.** Use patterns from 2025+. No deprecated APIs, no legacy approaches.
+3. **Tailwind 4.** Uses `@theme` directive. No `tailwind.config.js`, no `@apply` in components.
+4. **React 19.** Server components default. Use `'use client'` only when needed.
+5. **No explanations unless asked.** Just write the code.
+6. **Read this file completely before making changes.** All patterns, bans, and implementations are documented here.
 
 ---
 
-## Tech Stack
+## Philosophy: Match The Product
+
+**"Build this into the same quality as our users' sites."**
+
+HatchIt generates premium React components for users. Our own UI (homepage, welcome modal, navigation) must match that quality. No shortcuts, no lazy static SVGs, no mismatched aesthetics.
+
+When users see HatchIt, they should think: *"This is what I'm getting."*
+
+### The Architect's Method
+1. Read `/app/api/build-section/route.ts` - see how we instruct Claude
+2. Apply those same principles to our own components
+3. Test at 60fps - no performance compromises
+4. Layer gradients for depth (0.05-0.08 opacity)
+5. Motion with purpose - shimmer, pulse, lift, stagger
+6. One focal animation per section - the rest supports
+
+If we wouldn't generate it for a user, we don't build it for ourselves.
+
+---
+
+## What Is It?
+
+**Text to React.** Users describe what they want → we generate production-ready React + Tailwind with live preview.
+
+---
+
+## Stack (Locked)
 
 | Layer | Tech | Version |
 |-------|------|---------|
@@ -26,7 +57,7 @@
 | Icons | Lucide React | 0.562.0 |
 | Hosting | Vercel |
 
-**Note:** These are bleeding-edge versions. Tailwind 4 uses `@theme` directive, not `tailwind.config.js`.
+**Tailwind 4** uses `@theme` directive, not `tailwind.config.js`.
 
 ---
 
@@ -34,255 +65,789 @@
 
 | Route | Auth | Purpose |
 |-------|------|---------|
-| `/` | No | Homepage with pricing |
-| `/demo` | No | **Sandbox builder** - localStorage only, premium actions show signup modal |
-| `/builder` | **Yes** | **Real builder** - projects persist to Supabase |
-| `/dashboard` | Yes | Project list / studio |
-| `/dashboard/billing` | Yes | Subscription management |
-| `/sign-up`, `/sign-in` | No | Clerk auth |
-
-**Key Flow:**
-```
-Homepage CTA → /demo (unauthenticated) OR /builder (authenticated)
-Demo user builds → Clicks Deploy → Signup modal → Signs up → Work migrates to real project
-```
+| `/` | No | Homepage |
+| `/demo` | No | Guest sandbox (localStorage) |
+| `/builder` | Yes | Real builder (Supabase) |
+| `/dashboard/studio` | Yes | Project list + migration |
+| `/dashboard/billing` | Yes | Subscription |
 
 ---
 
-## Pricing Tiers
+## Critical Files
 
-| Tier | Price | Limits |
-|------|-------|--------|
-| Free | $0 | 3 builds, 0 refinements, 1 project |
-| Architect | $19/mo | Unlimited builds, 3 projects, deploy |
-| Visionary | $49/mo | + Code download, custom domain, 10 projects |
-| Singularity | $199/mo | Unlimited everything |
-
-**Type:** `types/subscriptions.ts` → `tier: 'free' | 'trial' | 'architect' | 'visionary' | 'singularity'`
+| File | Lines | Risk |
+|------|-------|------|
+| `BuildFlowController.tsx` | ~2100 | HIGH |
+| `SectionBuilder.tsx` | ~2900 | HIGH |
+| `SectionPreview.tsx` | ~800 | Medium |
+| `app/page.tsx` | ~700 | Medium |
 
 ---
 
-## Critical Files (Handle With Care)
+## Design System
 
-| File | Lines | Risk | Notes |
-|------|-------|------|-------|
-| `components/BuildFlowController.tsx` | ~2100 | ⚠️ HIGH | "God component" - orchestrates entire builder |
-| `components/SectionBuilder.tsx` | ~2900 | ⚠️ HIGH | Section input/output UI |
-| `components/SectionPreview.tsx` | ~800 | Medium | Live preview iframe |
-| `app/page.tsx` | ~700 | Medium | Homepage - lots of animation |
+### Philosophy
+**Confident restraint.** Linear, Vercel, Stripe energy. Emerald is our accent - not our identity.
 
----
-
-## Design System - THE RULES
-
-### Colors (The Singularity Palette)
+### Colors
 ```
-bg-zinc-950      # The Void (primary background)
+# Surfaces
+bg-zinc-950      # Primary background
 bg-zinc-900      # Cards, panels
 bg-zinc-800      # Inputs, hover states
 
-text-white       # Primary text
+# Text
+text-white       # Headings
+text-zinc-200    # Body
 text-zinc-400    # Secondary
 text-zinc-500    # Muted
 
-text-emerald-400 # Success, CTAs, "alive" accents
-text-teal-400    # Flow, energy
-text-amber-500   # Premium/Singularity tier
+# Borders
+border-zinc-800  # Default
+border-zinc-700  # Hover
+
+# Accent (USE SPARINGLY)
+bg-emerald-600   # Primary CTA only
+bg-emerald-500   # CTA hover
+text-emerald-400 # Success, active states
+
+# Tier Colors
+emerald-400      # Architect
+violet-400       # Visionary
+amber-500        # Singularity
 ```
 
-### ⚠️ THE "2007 TRAP" - Don't Make The Site Look Dead
+### Emerald Rules
 
-**ALWAYS use these patterns:**
+**Use for:** Primary CTA (1-2 per page), success states, active states, key indicators.
 
-1. **Framer Motion for interactive elements**
-   ```tsx
-   // ❌ BAD - static div
-   <div className="card">...</div>
-   
-   // ✅ GOOD - alive
-   <motion.div 
-     whileHover={{ y: -4 }}
-     whileInView={{ opacity: 1, y: 0 }}
-     transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-   >
-   ```
+**Don't use for:** Every hover, background washes, multiple elements in same view, decorative.
 
-2. **Glow effects on buttons/cards**
-   ```tsx
-   // ❌ BAD - flat
-   className="bg-emerald-500"
-   
-   // ✅ GOOD - depth
-   className="bg-emerald-500 shadow-[0_0_40px_rgba(16,185,129,0.3)]"
-   ```
+```tsx
+// BAD: Emerald overload
+<div className="border-emerald-500/30 bg-emerald-500/10 text-emerald-400">
 
-3. **Group hover coordination**
-   ```tsx
-   // ✅ Parent has "group", children react
-   <div className="group">
-     <Icon className="group-hover:translate-x-1 transition-transform" />
-   </div>
-   ```
+// GOOD: Restrained
+<div className="border-zinc-800 bg-zinc-900 text-zinc-200">
+  <button className="bg-emerald-600 hover:bg-emerald-500 text-white">
+```
 
-4. **Gradients with opacity**
-   ```tsx
-   // ❌ BAD - flat solid
-   className="bg-emerald-500"
-   
-   // ✅ GOOD - depth
-   className="bg-gradient-to-r from-emerald-500/20 to-teal-500/10"
-   ```
+### Motion
 
-5. **Blur/backdrop effects**
-   ```tsx
-   className="backdrop-blur-xl bg-zinc-900/80"
-   ```
+Subtle, not showy.
 
-6. **Transitions on EVERYTHING interactive**
-   ```tsx
-   className="transition-all duration-300"
-   ```
+```tsx
+// GOOD: Subtle entrance
+initial={{ opacity: 0, y: 8 }}
+animate={{ opacity: 1, y: 0 }}
+transition={{ duration: 0.3 }}
 
-### Typography
-- **Headings:** Bold, tight tracking (`font-bold tracking-tight`)
-- **Body:** `text-zinc-400` for secondary, `text-white` for primary
-- **Mono:** For code/technical elements (`font-mono`)
+// GOOD: Gentle hover
+whileHover={{ y: -2 }}
 
-### Shapes
-- Sharp corners: `rounded-md` or `rounded-lg` (not `rounded-xl` or `rounded-full` for cards)
-- Borders: `border-zinc-800` default, `border-emerald-500/30` for accent
+// BAD: Over the top
+whileHover={{ y: -8, scale: 1.05, rotate: 2 }}
+```
+
+### Components
+
+```tsx
+// Primary button
+className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg transition-colors"
+
+// Secondary button
+className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg transition-colors"
+
+// Card
+className="p-6 bg-zinc-900 border border-zinc-800 rounded-lg"
+
+// Interactive card
+className="p-6 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-lg transition-colors"
+```
 
 ---
 
-## Component Patterns
+## Design System Components
 
-### Buttons
+Use the Singularity component library:
 ```tsx
-<motion.button
-  whileHover={{ scale: 1.02 }}
-  whileTap={{ scale: 0.98 }}
-  className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold rounded-lg transition-colors shadow-[0_0_30px_rgba(16,185,129,0.3)]"
->
+import { Button, Card, Input, Badge, Modal } from '@/components/singularity'
 ```
 
-### Cards
+| Component | Variants |
+|-----------|----------|
+| Button | primary, secondary, ghost, danger |
+| Card | default, elevated, interactive, glass |
+| Input | With label, error, hint |
+| Badge | default, success, warning, error, architect, visionary, singularity |
+| Modal | sm, md, lg, xl sizes |
+
+---
+
+## Animation Hierarchy
+
+When multiple elements need motion, follow this priority:
+1. **Primary** - The most important interaction (1 element)
+2. **Secondary** - Supporting motion (subtle)
+3. **Tertiary** - Background/ambient (barely noticeable)
+4. **Static** - CTAs should be confident, not desperate
+
+```tsx
+// BAD: Competing animations
+<Logo animate={{ scale: [1, 1.1, 1] }} />
+<Arrow animate={{ x: [0, 5, 0] }} />
+<Button animate={{ glow: [...] }} />  // Too much!
+
+// GOOD: Clear hierarchy
+<Logo />  // Static or very subtle breathing
+<Arrow className="text-zinc-500" />  // Static, neutral
+<Text animate={...} />  // ONE animated element
+<Button />  // Static, strong
+```
+
+---
+
+## Hard Bans
+
+```tsx
+// BANNED: SCALE ON HOVER - feels cheap
+whileHover={{ scale: 1.05 }}
+hover:scale-105
+
+// BANNED: GLOW SHADOWS - 2024 energy
+shadow-[0_0_20px_rgba(16,185,129,0.3)]
+shadow-emerald-500/30 (on large elements)
+
+// BANNED: BLUR BACKGROUNDS (100px+) - performance killer
+blur-[100px]
+blur-[120px]
+
+// BANNED: EMERALD WASH - not our identity
+bg-emerald-500/10
+bg-emerald-500/20
+border-emerald-500/30 (unless tier badge)
+
+// BANNED: WHITE OPACITY PATTERNS
+bg-white/5
+bg-white/10
+
+// BANNED: OFF-BRAND COLORS
+cyan, teal (not in palette)
+bg-gradient-to-r from-emerald-400 via-cyan-400 (wrong)
+
+// BANNED: gray-* (use zinc-*)
+className="bg-gray-800"
+
+// BANNED: Gradient borders everywhere
+className="bg-gradient-to-r from-emerald-500/20 via-teal-500/20"
+
+// BANNED: Old Tailwind (v3 patterns)
+tailwind.config.js
+@apply in components
+
+// BANNED: Deprecated React
+useEffect for data fetching (use Server Components)
+getServerSideProps / getStaticProps (use app router)
+className={styles.x} (CSS modules - use Tailwind)
+
+// BANNED: Wrong libraries
+styled-components, emotion, sass, less
+axios (use fetch)
+moment (use date-fns or native)
+lodash (use native methods)
+redux (use zustand if needed, prefer server state)
+```
+
+---
+
+## Premium Feel Without Flash
+
+```tsx
+// GOOD: Layered depth - multiple gradients stacked
+<div className="relative bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(16,185,129,0.08),transparent_50%)]" />
+  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(16,185,129,0.05),transparent_60%)]" />
+  <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
+  {/* Content here */}
+</div>
+
+// GOOD: Hero section backdrop - layered for depth
+<section className="relative">
+  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.08),transparent_50%)]" />
+  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(16,185,129,0.05),transparent_60%)]" />
+  <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/50 via-transparent to-zinc-950/80" />
+  <div className="relative z-10">{/* Content */}</div>
+</section>
+
+// GOOD: Subtle card depth
+className="bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl shadow-black/50"
+
+// GOOD: Top highlight for glass effect
+<div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent" />
+
+// GOOD: Button shimmer effect (perpetual)
+<button className="relative overflow-hidden bg-gradient-to-r from-emerald-600 to-emerald-500">
+  <motion.div
+    className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
+    animate={{ x: ['-200%', '200%'] }}
+    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+  />
+  <span className="relative">Button Text</span>
+</button>
+
+// GOOD: Pulsing status badge
+<div className="inline-flex items-center gap-2 px-4 py-2 bg-zinc-900/50 border border-zinc-800 rounded-full backdrop-blur-sm">
+  <motion.span 
+    animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+    transition={{ duration: 2, repeat: Infinity }}
+    className="w-1.5 h-1.5 bg-emerald-400 rounded-full" 
+  />
+  Status Text
+</div>
+
+// GOOD: Card lift on hover
+whileHover={{ y: -8, scale: 1.02, transition: { duration: 0.3 } }}
+className="... hover:shadow-2xl hover:shadow-black/20 transition-all"
+
+// GOOD: Staggered reveal
+{items.map((item, i) => (
+  <motion.div
+    key={item.id}
+    initial={{ opacity: 0, y: 40 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true }}
+    transition={{ delay: i * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+  >
+    {item.content}
+  </motion.div>
+))}
+```
+
+---
+
+## The Architect's Method (Treat Your Own UI Like User Components)
+
+When building internal pages (homepage, welcome modal, etc), **use the same quality standards our AI generates for users**.
+
+### Process:
+1. **Read `/app/api/build-section/route.ts`** - See how we instruct Claude Sonnet 4.5
+2. **Apply those principles** - Layered gradients, depth, premium feel, motion
+3. **Test at 60fps** - No heavy animated orbs (blur-[120px] with scale/position animation = 4fps death)
+4. **Layer gradients** - Stack 2-3 radial gradients at low opacity (0.05-0.08) for depth
+5. **Add subtle overlays** - `from-white/[0.02]` or `from-zinc-950/50` for richness
+6. **Motion with purpose** - Shimmer buttons, pulsing badges, lift on hover, staggered reveals
+
+### Gradient Opacity Rules:
+```
+0.08 = Primary focal point (hero top gradient)
+0.05 = Secondary depth layer
+0.02-0.03 = Subtle overlay for texture
+```
+
+### Performance Rules:
+- BAD: `animate={{ scale/x/y }}` on `blur-[100px+]` elements = FPS death
+- GOOD: Static radial gradients with layering = 60fps + depth
+- GOOD: Shimmer effects (translate only) on small elements = performant
+- GOOD: `whileHover` lift on cards = smooth
+
+### Motion Timing:
+```tsx
+// Entry animations - ease out
+transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+
+// Hover states - quick
+transition={{ duration: 0.3 }}
+
+// Perpetual shimmer - slow and linear
+transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+
+// Pulsing badge - breathing rhythm
+transition={{ duration: 2, repeat: Infinity }}
+```
+
+### Glassmorphism (Apple/Google Style):
+```tsx
+// GOOD: Primary CTA with glassmorphism + shimmer (hero, demo, welcome modal only)
+<button className="relative px-8 py-4 bg-emerald-500/15 backdrop-blur-2xl border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white rounded-xl overflow-hidden">
+  {/* Glass refraction overlay */}
+  <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent rounded-xl pointer-events-none" />
+  {/* Shimmer effect - PRIMARY CTAs ONLY */}
+  <motion.div
+    animate={{ x: ['-200%', '200%'] }}
+    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+    className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0"
+  />
+  <span className="relative">Button Text</span>
+</button>
+
+// GOOD: Secondary CTA (no shimmer - for less critical actions)
+<button className="px-6 py-3 bg-zinc-800/50 backdrop-blur-xl hover:bg-zinc-800/60 text-zinc-200 border border-zinc-700/50 hover:border-zinc-600 rounded-xl transition-all">
+  Button Text
+</button>
+
+// GOOD: Tertiary/Ghost button (navigation links)
+<button className="px-4 py-2 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-900/50 transition-all">
+
+// GOOD: Feature pills with glass
+<div className="bg-zinc-900/40 backdrop-blur-xl border border-zinc-800/50 hover:bg-zinc-900/50 hover:border-zinc-700/50 rounded-lg px-4 py-3">
+
+// GOOD: Navigation bar with glass
+<nav className="bg-zinc-950/70 backdrop-blur-xl border-b border-zinc-800/50">
+
+// GOOD: Tight button glow (PRIMARY only)
+shadow-[0_0_15px_rgba(16,185,129,0.15)] hover:shadow-[0_0_20px_rgba(16,185,129,0.25)]
+
+// GOOD: Arrow icon hover glow
+<ArrowRight className="group-hover:drop-shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+```
+
+**Button Hierarchy:**
+- **Primary (shimmer):** "Try Demo", Welcome Modal CTAs, Final CTA - max 1-2 per page
+- **Secondary (no shimmer):** "See how it works", "Get Started" on pricing, Portal button
+- **Tertiary (ghost):** "Sign In", navigation links, less critical actions
+
+**Glassmorphism Rules:**
+- Background: `/15` base → `/20` hover (very low opacity)
+- Blur: `backdrop-blur-2xl` for buttons, `backdrop-blur-xl` for cards
+- Borders: `/40` base → `/50` hover (visible glass edge)
+- Overlay: `from-white/[0.08]` gradient for refraction effect
+- Glow: Custom shadows `[0_0_15px_rgba(...)]` - PRIMARY buttons only
+- Shimmer: PRIMARY buttons only (hero, demo, welcome)
+
+### Brand Animation Signature (2026):
+
+#### Logo: Isometric Hatching Cube (replaces static SVG)
+**Location:** [components/Navigation.tsx](components/Navigation.tsx)
+
+4-layer animated isometric cube based on original "hatching egg" SVG:
+
+```tsx
+<div className="relative flex items-center gap-3 group">
+  {/* LOGO: 4-layer isometric cube */}
+  <div className="relative w-7 h-7" style={{ 
+    transformStyle: 'preserve-3d',
+    transform: 'rotateX(30deg) rotateZ(-45deg)'
+  }}>
+    {/* Layer 1: Outer glow (breathing pulse) */}
+    <motion.div
+      animate={{ 
+        scale: [1, 1.15, 1],
+        opacity: [0.2, 0.4, 0.2]
+      }}
+      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+      className="absolute inset-0 bg-emerald-400/20 rounded-sm blur-md"
+    />
+
+    {/* Layer 2: Left face (skewed left, pulsing opacity) */}
+    <motion.div
+      animate={{ opacity: [0.4, 0.7, 0.4] }}
+      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+      className="absolute inset-0 bg-gradient-to-br from-emerald-500/40 to-emerald-600/60 rounded-sm"
+      style={{ 
+        transformOrigin: 'left center',
+        transform: 'skewY(-30deg) scaleX(0.866)'
+      }}
+    />
+
+    {/* Layer 3: Right face (skewed right, pulsing opacity offset) */}
+    <motion.div
+      animate={{ opacity: [0.6, 0.9, 0.6] }}
+      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+      className="absolute inset-0 bg-gradient-to-bl from-teal-500/50 to-emerald-500/70 rounded-sm"
+      style={{ 
+        transformOrigin: 'right center',
+        transform: 'skewY(30deg) scaleX(0.866)'
+      }}
+    />
+
+    {/* Center seam */}
+    <div className="absolute inset-0 flex items-center justify-center">
+      <div className="w-[1px] h-full bg-gradient-to-b from-transparent via-zinc-800 to-transparent" />
+    </div>
+
+    {/* Layer 4: Lifting lid (top section with clip) */}
+    <motion.div
+      animate={{ 
+        y: [-1, -2.5, -1],
+        opacity: [0.6, 0.85, 0.6]
+      }}
+      transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+      className="absolute inset-0 bg-gradient-to-b from-emerald-400/70 via-emerald-500/50 to-transparent rounded-sm"
+      style={{ 
+        clipPath: 'polygon(0 0, 100% 0, 90% 40%, 10% 40%)'
+      }}
+    />
+
+    {/* Core: Pulsing egg center */}
+    <div className="absolute inset-0 flex items-center justify-center">
+      <motion.div
+        animate={{ 
+          scale: [1, 1.1, 1],
+          opacity: [0.7, 1, 0.7]
+        }}
+        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        className="w-2 h-2.5 bg-gradient-to-b from-amber-300 to-amber-500 rounded-full shadow-[0_0_8px_rgba(251,191,36,0.4)]"
+        style={{ borderRadius: '50% 50% 50% 50% / 40% 40% 60% 60%' }}
+      />
+    </div>
+  </div>
+
+  {/* WORDMARK */}
+  <div className="flex items-center gap-2">
+    <span className="font-bold text-lg text-white">HatchIt</span>
+    <div className="h-4 w-[1px] bg-zinc-700" />
+    <motion.span 
+      animate={{ opacity: [0.5, 1, 0.5] }}
+      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+      className="text-sm font-medium text-emerald-400"
+    >
+      Text → React
+    </motion.span>
+  </div>
+</div>
+```
+
+**Animation Timing:**
+- Glow: 3s breathing
+- Left face: 4s opacity pulse
+- Right face: 4s opacity pulse (2s delay offset)
+- Lid: 5s lift cycle (-1px → -2.5px → -1px)
+- Core egg: 3s scale/opacity pulse
+
+**Transforms:**
+- Isometric view: `rotateX(30deg) rotateZ(-45deg)` on container
+- Left face: `skewY(-30deg) scaleX(0.866)`
+- Right face: `skewY(30deg) scaleX(0.866)`
+- Lid: `clipPath: polygon(0 0, 100% 0, 90% 40%, 10% 40%)`
+
+---
+
+#### Logo Implementation Notes:
+- New geometric "H" lettermark at `/public/icon.svg`
+- Emerald gradient with diagonal slash representing code/build
+- Three animated indicator dots for "output" metaphor
+- Clean, minimal, professional design
+- Favicon at `/public/favicon.svg`
+
+---
+
+#### Welcome Modal: Synchronized Text Loading
+**Location:** [components/HomepageWelcome.tsx](components/HomepageWelcome.tsx)
+
+**Problem:** Text loaded at different times (typewriter effect delayed "React" text)
+
+**Solution:** All text wrapped in single motion.div, synchronized timing
+
 ```tsx
 <motion.div
-  whileHover={{ y: -4 }}
-  className="p-6 bg-zinc-900/50 border border-zinc-800 hover:border-emerald-500/30 rounded-lg transition-all backdrop-blur-sm"
+  initial={{ opacity: 0, y: 10 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 0.1, duration: 0.6 }}
+  className="space-y-6"
 >
+  {/* All text loads together - no phase state, no typewriter */}
+  <div className="space-y-3">
+    <h2 className="text-4xl font-bold text-white">
+      Turn text into{' '}
+      <span className="bg-gradient-to-r from-emerald-400 via-emerald-500 to-teal-400 bg-clip-text text-transparent">
+        React
+      </span>
+    </h2>
+    <p className="text-lg text-zinc-300">
+      Describe what you want. We'll generate it.
+    </p>
+  </div>
+
+  {/* Feature grid - slight stagger */}
+  <motion.div 
+    className="grid grid-cols-2 gap-3"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ delay: 0.3 }}
+  >
+    {features.map((feature, i) => (
+      <motion.div
+        key={i}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 + (i * 0.05), duration: 0.4 }}
+        className="bg-zinc-900/40 backdrop-blur-xl border border-zinc-800/50 hover:bg-zinc-900/50 hover:border-zinc-700/50 rounded-lg px-4 py-3"
+      >
+        {/* Feature content */}
+      </motion.div>
+    ))}
+  </motion.div>
+
+  {/* Buttons - load last */}
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ delay: 0.5 }}
+    className="flex flex-col gap-3"
+  >
+    {/* Primary button with shimmer */}
+    <button className="relative overflow-hidden px-8 py-4 bg-emerald-500/15 backdrop-blur-2xl border border-emerald-500/40">
+      {/* Glass refraction */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent" />
+      {/* Shimmer */}
+      <motion.div
+        animate={{ x: ['-200%', '200%'] }}
+        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+        className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0"
+      />
+      <span className="relative">Get Started</span>
+    </button>
+    
+    {/* Secondary button - no shimmer */}
+    <button className="px-6 py-3 bg-zinc-800/50 backdrop-blur-xl border border-zinc-700/50">
+      Learn More
+    </button>
+  </motion.div>
+</motion.div>
 ```
 
-### Section wrappers
-```tsx
-<motion.section
-  initial={{ opacity: 0, y: 20 }}
-  whileInView={{ opacity: 1, y: 0 }}
-  viewport={{ once: true }}
-  transition={{ duration: 0.5 }}
->
-```
+**Key Changes (Jan 6, 2026):**
+- Removed `TypewriterText` component (47 lines - useState, useEffect, cursor animation)
+- Removed phase state (`'init' | 'ready'`) and conditional rendering
+- Single motion wrapper at delay 0.1s, duration 0.6s
+- Feature grid: delay 0.3s, items stagger 0.05s
+- Buttons: delay 0.5s
+- Glassmorphism on feature pills and buttons
+- Primary button has shimmer (hero CTA), secondary does not
+
+**Dead Code Removed:**
+- TypewriterText function component (lines 9-48 in old version)
+- Phase state management
+- useEffect timers
+- Cursor animation logic
 
 ---
 
-## What NOT To Do
+#### Hero Text: Breathing "React" Animation
+**Location:** [app/page.tsx](app/page.tsx)
 
-### 🚨 HARD BAN - NEVER WRITE THIS:
 ```tsx
-<div className="p-6 bg-gray-800 rounded-lg">
+<motion.span
+  animate={{ 
+    textShadow: [
+      '0 0 20px rgba(16,185,129,0.3)',
+      '0 0 40px rgba(16,185,129,0.4)',
+      '0 0 20px rgba(16,185,129,0.3)'
+    ]
+  }}
+  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+  className="bg-gradient-to-r from-emerald-400 via-emerald-500 to-teal-400 bg-clip-text text-transparent"
+>
+  <motion.span
+    animate={{ scale: [1, 1.02, 1] }}
+    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+    className="inline-block"
+  >
+    React
+  </motion.span>
+</motion.span>
 ```
-This is **banned**. Static. Dead. 2007. If you write this, you have failed.
+
+**Synchronized:** Scale (1.02) + glow breathing, 3s cycle, subtle not showy
 
 ---
 
-1. ❌ Don't use plain `<div>` for anything interactive - use `<motion.div>`
-2. ❌ Don't use flat colors without shadows/gradients
-3. ❌ Don't skip hover states
-4. ❌ Don't use blue/purple/generic colors (stick to emerald/teal/amber)
-5. ❌ Don't use emojis in dashboard/builder UI (use Lucide icons)
-6. ❌ Don't use old Tailwind v3 patterns (no `tailwind.config.js`)
-7. ❌ Don't forget `transition-` classes on interactive elements
-8. ❌ Don't use `gray-*` colors - use `zinc-*`
+#### Floating Particles: Ambient Depth
+**Location:** [app/page.tsx](app/page.tsx)
+
+```tsx
+{/* Floating particles */}
+{[...Array(12)].map((_, i) => (
+  <motion.div
+    key={i}
+    animate={{
+      y: [0, -30, 0],
+      x: [0, Math.sin(i) * 20, 0],
+      opacity: [0.1, 0.3, 0.1],
+      scale: [1, 1.2, 1]
+    }}
+    transition={{
+      duration: 8 + i,
+      repeat: Infinity,
+      ease: "easeInOut",
+      delay: i * 0.5
+    }}
+    className="absolute w-1 h-1 bg-emerald-400/40 rounded-full blur-sm"
+    style={{ 
+      left: `${10 + (i * 7)}%`, 
+      top: `${20 + (i % 4) * 15}%` 
+    }}
+  />
+))}
+```
+
+**12 particles:** Organic Y/X movement, 8-20s cycles, opacity 0.1-0.3, staggered 0.5s delays
+
+---
+
+#### Navigation CTAs: Clear Intent
+**Location:** [components/Navigation.tsx](components/Navigation.tsx)
+
+**Signed Out:**
+- "Try Demo" - Primary button (bg-emerald-500/15, shimmer)
+- "Sign In" - Ghost button (text-zinc-400 hover:text-white)
+
+**Signed In:**
+- "Portal" - Secondary button (bg-zinc-800/50, no shimmer)
+- User button with subscription badge
+
+**Logic:**
+- Portal = Secure access to `/dashboard/studio` (Supabase projects)
+- Demo = Guest sandbox `/demo` (localStorage)
+
+---
+
+// GOOD: Hero brand word breathing (synchronized scale + glow)
+<motion.span
+  animate={{ 
+    textShadow: [
+      '0 0 20px rgba(16,185,129,0.3)',
+      '0 0 40px rgba(16,185,129,0.4)',
+      '0 0 20px rgba(16,185,129,0.3)'
+    ]
+  }}
+  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+  className="bg-gradient-to-r from-emerald-400 via-emerald-500 to-teal-400 bg-clip-text text-transparent"
+>
+  <motion.span
+    animate={{ scale: [1, 1.02, 1] }}
+    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+    className="inline-block"
+  >
+    React
+  </motion.span>
+</motion.span>
+
+// GOOD: Floating particles for ambient depth
+{[...Array(12)].map((_, i) => (
+  <motion.div
+    key={i}
+    animate={{
+      y: [0, -30, 0],
+      x: [0, Math.sin(i) * 20, 0],
+      opacity: [0.1, 0.3, 0.1],
+      scale: [1, 1.2, 1]
+    }}
+    transition={{
+      duration: 8 + i,
+      repeat: Infinity,
+      ease: "easeInOut",
+      delay: i * 0.5
+    }}
+    className="absolute w-1 h-1 bg-emerald-400/40 rounded-full blur-sm"
+    style={{ left: `${10 + (i * 7)}%`, top: `${20 + (i % 4) * 15}%` }}
+  />
+))}
+
+// GOOD: Navigation link micro-interactions
+<motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }}>
+  <Link href="/demo" className="group">
+    <Zap className="group-hover:text-emerald-400 transition-colors" />
+    Demo
+  </Link>
+</motion.div>
+
+// GOOD: Shimmer with rhythm (repeatDelay for pacing)
+<motion.div
+  animate={{ x: ['-200%', '200%'] }}
+  transition={{ duration: 2.5, repeat: Infinity, ease: "linear", repeatDelay: 1 }}
+  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+/>
+```
+
+**Brand Animation Identity:**
+- Logo: 3s breathing cycle, emerald pulse blur
+- Hero brand word: Synchronized scale (1.02) + glow breathing
+- Particles: 8-16s cycles, staggered 0.5s delays, opacity 0.1-0.3
+- Nav links: -1px lift, 0.98 tap scale
+- Shimmer: 2-3s with 1s repeatDelay for rhythm
+- All use `ease: "easeInOut"` for organic breathing feel
+- Never more than ONE focal animation per screen section
+
+---
+
+## Premium Feel Without Flash
+
+```tsx
+// GOOD: Subtle card depth
+className="bg-zinc-900 border border-zinc-700/50 rounded-2xl shadow-2xl shadow-black/50"
+
+// GOOD: Top highlight for glass effect
+<div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+
+// GOOD: Subtle gradient overlay
+<div className="absolute inset-0 bg-gradient-to-b from-white/[0.03] to-transparent pointer-events-none" />
+
+// GOOD: Button with depth (not glow)
+className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/20"
+
+// GOOD: Noise texture for premium feel
+style={{ backgroundImage: 'url("data:image/svg+xml,...")' }}
+```
 
 ---
 
 ## Quick Reference
 
-**Demo mode prop:**
 ```tsx
-<BuildFlowController isDemo={true} />  // Sandbox, localStorage
-<BuildFlowController />                 // Auth required, Supabase
-```
+// Demo vs Auth
+<BuildFlowController isDemo={true} />   // localStorage
+<BuildFlowController />                  // Supabase
 
-**Premium action gates:**
-```tsx
+// Premium gate
 if (isDemo) {
   setHatchModalReason('deploy')
-  setShowHatchModal(true)  // Shows signup modal
+  setShowHatchModal(true)
   return
 }
-```
 
-**localStorage keys:**
-- `hatch_guest_handoff` - Demo work to migrate after signup
-- `hatch_guest_builds` - Build count in demo
-- `hatch_guest_refinements` - Refinement count in demo
+// Import design system
+import { Button, Card, Modal } from '@/components/singularity'
+```
 
 ---
 
-## ⚠️ TECH DEBT: Layout Duplication
+## Glass Style Audit (Jan 6, 2026)
 
-**Problem:** SectionBuilder has TWO separate layouts - one for demo, one for auth. They look similar but are maintained separately. This causes:
-- Layout shifts when states change
-- Bugs fixed in one place but not the other
-- Double work for every UI change
-
-**Correct Architecture (TODO):**
+**All public pages now use the CORRECT glass style:**
 ```tsx
-// ONE layout, conditional behavior
-<BottomBar
-  isDemo={isDemo}
-  stage={stage}
-  onRefine={isDemo ? showSignupModal : handleRealRefine}
-  onDeploy={isDemo ? showSignupModal : handleRealDeploy}
-/>
-
-// Buttons check isDemo internally:
-<Button 
-  disabled={isDemo && feature === 'premium'}
-  onClick={isDemo ? () => showUpgrade(feature) : realAction}
->
-  {children}
-</Button>
+// CORRECT - Use this for all cards/modals
+bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 shadow-2xl shadow-black/50
 ```
 
-**Rule:** ONE layout. `isDemo` changes behavior, not structure.
+**Pages FIXED:**
+- `/faq` - FAQ cards
+- `/features` - Core Modules, Neural Network, Tech Stack
+- `/how-it-works` - System Architecture cards, CTA
+- `/about` - Stats cards, founder quote, CTA
+- `/roadmap` - Timeline cards, technical details
+- `/changelog` - Entry cards, header icon
+- `/manifesto` - Section icons, CTA card
+- `/contact` - Form inputs, support channels
+
+**BANNED patterns (removed):**
+```tsx
+// BANNED: NEVER USE
+bg-white/5    // Use bg-zinc-900/70 instead
+border-white/10   // Use border-zinc-800/50 instead
+bg-zinc-900 (solid)  // Add /70 opacity + backdrop-blur
+backdrop-blur-sm  // Use backdrop-blur-xl
+```
+
+**EXCEPTION:** Clerk sign-in/sign-up pages use `bg-white/5` for Clerk's internal styling. This is acceptable.
 
 ---
 
-## File Structure
+## Tech Debt
 
-```
-app/
-  page.tsx           # Homepage
-  demo/page.tsx      # Sandbox builder entry
-  builder/page.tsx   # Auth builder entry
-  dashboard/
-    projects/        # Project list
-    billing/         # Subscription
-  api/
-    build-section/   # AI generation
-    refine-section/  # AI refinement
-    checkout/        # Stripe
-    
-components/
-  BuildFlowController.tsx  # Main builder orchestrator
-  SectionBuilder.tsx       # Section input UI
-  SectionPreview.tsx       # Live preview
-  HatchModal.tsx           # Upgrade/paywall modal
-  singularity/             # UI components with the aesthetic
-```
+**Layout duplication:** SectionBuilder has separate demo/auth layouts. Should be ONE layout, `isDemo` changes behavior only.
 
 ---
 
-*This file is the truth. When in doubt, read this.*
+*"God is in the details. Make it feel expensive."*
+*This is the build truth.*

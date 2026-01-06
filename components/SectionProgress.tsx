@@ -54,7 +54,7 @@ export function SectionCompleteIndicator({
       animate={{ opacity: 1, scale: 1 }}
       className="flex items-center gap-3 bg-zinc-900/50 rounded-lg px-4 py-3 border border-zinc-800"
     >
-      <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+      <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center">
         <CheckCircle2 className="w-4 h-4 text-emerald-400" />
       </div>
       

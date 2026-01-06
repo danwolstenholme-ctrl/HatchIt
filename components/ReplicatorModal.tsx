@@ -109,7 +109,7 @@ export default function ReplicatorModal({ isOpen, onClose, onReplicate }: Replic
                   <p className="text-xs text-zinc-400">Clone any website's DNA instantly</p>
                 </div>
               </div>
-              <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors">
+              <button onClick={onClose} aria-label="Close replicator" className="text-zinc-500 hover:text-white transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -132,7 +132,7 @@ export default function ReplicatorModal({ isOpen, onClose, onReplicate }: Replic
                 </div>
               ) : status === 'complete' ? (
                 <div className="text-center py-4">
-                  <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                  <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center">
                     <CheckCircle2 className="w-6 h-6 text-emerald-500" />
                   </div>
                   <h3 className="text-white font-medium mb-1">DNA Extracted</h3>

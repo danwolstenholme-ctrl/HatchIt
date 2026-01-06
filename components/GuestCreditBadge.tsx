@@ -52,29 +52,22 @@ export default function GuestCreditBadge({
     >
       {/* Main Badge */}
       <div className={`
-        relative overflow-hidden rounded-xl border backdrop-blur-sm
-        ${color === 'emerald' ? 'bg-emerald-500/[0.02] border-emerald-500/20' : ''}
-        ${color === 'amber' ? 'bg-amber-500/[0.02] border-amber-500/30' : ''}
-        ${color === 'orange' ? 'bg-orange-500/[0.02] border-orange-500/40' : ''}
-        ${color === 'red' ? 'bg-red-500/[0.02] border-red-500/30' : ''}
+        relative overflow-hidden rounded-xl border
+        ${color === 'emerald' ? 'bg-zinc-900 border-emerald-500/30' : ''}
+        ${color === 'amber' ? 'bg-zinc-900 border-amber-500/40' : ''}
+        ${color === 'orange' ? 'bg-zinc-900 border-orange-500/50' : ''}
+        ${color === 'red' ? 'bg-zinc-900 border-red-500/40' : ''}
       `}>
-        {/* Ambient Glow - More Subtle */}
-        <div className={`absolute inset-0 opacity-[0.08] blur-2xl
-          ${color === 'emerald' ? 'bg-emerald-500' : ''}
-          ${color === 'amber' ? 'bg-amber-500' : ''}
-          ${color === 'orange' ? 'bg-orange-500' : ''}
-          ${color === 'red' ? 'bg-red-500' : ''}
-        `} />
 
         <div className="relative p-4">
           {/* Header */}
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <div className={`w-6 h-6 rounded-lg flex items-center justify-center
-                ${color === 'emerald' ? 'bg-emerald-500/10' : ''}
-                ${color === 'amber' ? 'bg-amber-500/10' : ''}
-                ${color === 'orange' ? 'bg-orange-500/10' : ''}
-                ${color === 'red' ? 'bg-red-500/10' : ''}
+                ${color === 'emerald' ? 'bg-zinc-800' : ''}
+                ${color === 'amber' ? 'bg-zinc-800' : ''}
+                ${color === 'orange' ? 'bg-zinc-800' : ''}
+                ${color === 'red' ? 'bg-zinc-800' : ''}
               `}>
                 <Zap className={`w-3.5 h-3.5
                   ${color === 'emerald' ? 'text-emerald-400' : ''}
@@ -155,15 +148,14 @@ export default function GuestCreditBadge({
               })
               onUpgrade()
             }}
-            whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className={`
               w-full py-2.5 px-3 rounded-lg font-semibold text-xs
               flex items-center justify-center gap-2
-              transition-all duration-200
+              transition-colors
               ${isOut || isCritical 
-                ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:from-violet-500 hover:to-fuchsia-500 shadow-lg shadow-violet-500/25' 
-                : 'bg-white/5 hover:bg-white/10 text-white border border-white/10'
+                ? 'bg-emerald-600 text-white hover:bg-emerald-500' 
+                : 'bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700'
               }
             `}
           >

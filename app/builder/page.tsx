@@ -29,7 +29,7 @@ function BuilderContent() {
 
   // Show loading while checking auth or redirecting
   if (!isLoaded || (isLoaded && !isSignedIn)) {
-    return <SingularityLoader text={!isLoaded ? "VERIFYING IDENTITY" : "REDIRECTING TO DEMO"} />
+    return <SingularityLoader text={!isLoaded ? "AUTHENTICATING" : "REDIRECTING"} />
   }
 
   // Authenticated user - same UI as demo, just with persistence
@@ -44,7 +44,7 @@ function BuilderContent() {
 
 export default function BuilderPage() {
   return (
-    <Suspense fallback={<SingularityLoader text="LOADING BUILDER" />}>
+    <Suspense fallback={<SingularityLoader text="LOADING" />}>
       <BuilderContent />
     </Suspense>
   )

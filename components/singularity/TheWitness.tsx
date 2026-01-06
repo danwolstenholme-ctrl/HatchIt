@@ -48,6 +48,7 @@ export default function TheWitness({ isOpen, onClose, note, isLoading }: TheWitn
               </div>
               <button 
                 onClick={onClose}
+                aria-label="Close observation"
                 className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />

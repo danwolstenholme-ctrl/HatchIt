@@ -2,321 +2,37 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "git-push",
-			"type": "shell",
-			"command": "git add . && git commit -m \"fix: replace fragile regex parsing with babel in SectionPreview\" && git push"
-		},
-		{
-			"label": "build-project",
+			"label": "build",
 			"type": "shell",
 			"command": "npm run build",
-			"problemMatcher": [
-				"$tsc"
-			],
-			"group": "build"
+			"problemMatcher": ["$tsc"],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
 		},
 		{
-			"label": "install-ga",
+			"label": "dev",
 			"type": "shell",
-			"command": "npm install @next/third-parties",
-			"group": "build"
+			"command": "npm run dev",
+			"isBackground": true,
+			"problemMatcher": []
 		},
 		{
-			"label": "git-commit-all",
+			"label": "lint",
 			"type": "shell",
-			"command": "git add . && git commit -m \"feat: ultra site audit optimizations + google analytics + reddit marketing assets\"",
-			"group": "build"
+			"command": "npm run lint",
+			"problemMatcher": ["$eslint-stylish"]
 		},
 		{
-			"label": "check_git_status",
-			"type": "shell",
-			"command": "git status"
-		},
-		{
-			"label": "git_status",
+			"label": "git-status",
 			"type": "shell",
 			"command": "git status"
 		},
 		{
-			"label": "ship-it",
+			"label": "git-add-all",
 			"type": "shell",
-			"command": "git add . && git commit -m \"feat: marketing assets, google ads, analytics, and performance optimizations\" && git push"
-		},
-		{
-			"label": "organize_ai_context",
-			"type": "shell",
-			"command": "git mv FOUNDER_MEMORY.md ai_context/FOUNDER_MEMORY.md && git mv TRANSMISSION.md ai_context/TRANSMISSION_LOGS.md && git mv AUDIT_REPORT.md ai_context/TECHNICAL_AUDIT.md && git mv CHANGELOG.md ai_context/CHANGELOG.md && git mv marketing_assets.md ai_context/MARKETING_ASSETS.md"
-		},
-		{
-			"label": "cleanup_root",
-			"type": "shell",
-			"command": "rm FOUNDER_MEMORY.md TRANSMISSION.md AUDIT_REPORT.md CHANGELOG.md marketing_assets.md && git add . && git commit -m \"chore: consolidate AI context and documentation into ai_context/ folder\""
-		},
-		{
-			"label": "check_status_before_commit",
-			"type": "shell",
-			"command": "git status"
-		},
-		{
-			"label": "final_commit_push",
-			"type": "shell",
-			"command": "git add . && git commit -m \"chore: consolidate project documentation and context into ai_context/\" && git push"
-		},
-		{
-			"label": "verify_git_status",
-			"type": "shell",
-			"command": "git status"
-		},
-		{
-			"label": "force_commit_push",
-			"type": "shell",
-			"command": "git add . && git commit -m \"chore: save point - final context organization\" && git push"
-		},
-		{
-			"label": "install_next_third_parties",
-			"type": "shell",
-			"command": "npm install @next/third-parties"
-		},
-		{
-			"label": "commit_dependency",
-			"type": "shell",
-			"command": "git add package.json package-lock.json && git commit -m \"fix: add @next/third-parties dependency\" && git push"
-		},
-		{
-			"label": "install_package_retry",
-			"type": "shell",
-			"command": "npm install @next/third-parties"
-		},
-		{
-			"label": "manual_fix_push",
-			"type": "shell",
-			"command": "git add package.json && git commit -m \"fix: manually add @next/third-parties to package.json\" && git push"
-		},
-		{
-			"label": "push_npmrc_fix",
-			"type": "shell",
-			"command": "git add .npmrc && git commit -m \"fix: add .npmrc to resolve peer dependency conflict\" && git push"
-		},
-		{
-			"label": "fix_babel_types",
-			"type": "shell",
-			"command": "git add components/SectionPreview.tsx components/BuildFlowController.tsx && git commit -m \"fix: handle potential null return from babel transform\" && git push"
-		},
-		{
-			"label": "git-add",
-			"type": "shell",
-			"command": "git add .",
-			"isBackground": false,
-			"group": "none"
-		},
-		{
-			"label": "remove-internal-pages",
-			"type": "shell",
-			"command": "rm app/campaign/page.tsx app/brand/page.tsx",
-			"isBackground": false,
-			"group": "clean"
-		},
-		{
-			"label": "commit-fix-loophole",
-			"type": "shell",
-			"command": "git add . && git commit -m \"fix: close demo mode loophole - force signup to build\" && git push"
-		},
-		{
-			"label": "commit-signup-optimization",
-			"type": "shell",
-			"command": "git add . && git commit -m \"feat: optimize signup flow with tracking, mobile UI, and param preservation\" && git push"
-		},
-		{
-			"label": "commit-auth-fixes",
-			"type": "shell",
-			"command": "git add . && git commit -m \"fix: complete auth flow fixes - CTAs route to signup, outdated copy removed, tracking in place\" && git push"
-		},
-		{
-			"label": "cleanup_docs",
-			"type": "shell",
-			"command": "mv MARKETING_CODEX.md ai_context/MARKETING_CODEX.md && rm AI_MEMORY.md FOUNDER_MEMORY.md TRANSMISSION.md TECHNICAL_CODEX.md marketing_assets.md CHANGELOG.md"
-		},
-		{
-			"label": "commit_changes",
-			"type": "shell",
-			"command": "git add . && git commit -m \"Phase 1 Complete: First Contact & Trust Upgrade.\n\n- Implemented 'What + Why' logic in System Status (app/page.tsx).\n- Neutralized 'Creepy AI' vibes in Consciousness Engine (lib/consciousness.ts).\n- Grounded Chat & Witness feedback loops (components/Chat.tsx, components/TheWitness.tsx).\n- Upgraded Typography to Inter + JetBrains Mono (app/layout.tsx).\n- Established 'Singularity' Brand Protocols in ai_context/.\""
-		},
-		{
-			"label": "commit-dependency-fix",
-			"type": "shell",
-			"command": "git add package.json package-lock.json && git commit -m \"fix: add @next/third-parties dependency\""
-		},
-		{
-			"label": "commit-ghost-changes",
-			"type": "shell",
-			"command": "git add . && git commit -m \"feat: optimize HatchCharacter visibility - builder-only, conditional on tier/visits\"",
-			"args": [],
-			"isBackground": false,
-			"problemMatcher": [],
-			"group": "build"
-		},
-		{
-			"label": "commit-sonnet-switch",
-			"type": "shell",
-			"command": "git add . && git commit -m \"fix: switch builder to Claude 3.5 Sonnet and handle sparse inputs\"",
-			"args": [],
-			"isBackground": false,
-			"problemMatcher": [],
-			"group": "build"
-		},
-		{
-			"label": "commit-free-limits",
-			"type": "shell",
-			"command": "git add . && git commit -m \"feat: limit free tier to 3 generations/refinements in builder\"",
-			"args": [],
-			"isBackground": false,
-			"problemMatcher": [],
-			"group": "build"
-		},
-		{
-			"label": "commit-lite-fix",
-			"type": "shell",
-			"command": "git add . && git commit -m \"fix: enable Lite ($9) tier in checkout validation and webhook types\"",
-			"args": [],
-			"isBackground": false,
-			"problemMatcher": [],
-			"group": "build"
-		},
-		{
-			"label": "commit-build-fix",
-			"type": "shell",
-			"command": "git add . && git commit -m \"fix: resolve duplicate subscription declaration in SectionBuilder\"",
-			"args": [],
-			"isBackground": false,
-			"problemMatcher": [],
-			"group": "build"
-		},
-		{
-			"label": "commit-env-refactor",
-			"type": "shell",
-			"command": "git add . && git commit -m \"refactor: use STRIPE_LITE_PRICE_ID env var instead of hardcoded string\"",
-			"args": [],
-			"isBackground": false,
-			"problemMatcher": [],
-			"group": "build"
-		},
-		{
-			"label": "commit-ux-polish",
-			"type": "shell",
-			"command": "git add . && git commit -m \"fix: UX polish - Reddit socials, Welcome Modal, Ghost logic, and Homepage CTA\"",
-			"args": [],
-			"isBackground": false,
-			"group": "build"
-		},
-		{
-			"label": "commit-ux-polish-retry",
-			"type": "shell",
-			"command": "git add . && git commit -m \"fix: UX polish - Reddit socials, Welcome Modal, Ghost logic, and Homepage CTA\"",
-			"args": [],
-			"isBackground": false,
-			"group": "build"
-		},
-		{
-			"label": "commit-singularity-ui",
-			"type": "shell",
-			"command": "git add . && git commit -m \"feat: Singularity UI overhaul - scanlines, glitch effects, and mobile polish\""
-		},
-		{
-			"label": "commit-homepage-refactor",
-			"type": "shell",
-			"command": "git add . && git commit -m \"refactor: simplify homepage copy - remove HatchIt/Architect jargon, focus on 'Text to React' value prop\""
-		},
-		{
-			"label": "commit-launch-experience",
-			"type": "shell",
-			"command": "git add . && git commit -m \"feat: implement human touch launch experience - void animation, reddit link, manual entry\" && git push",
-			"args": [],
-			"isBackground": false,
-			"problemMatcher": [],
-			"group": "build"
-		},
-		{
-			"label": "commit-cleanup",
-			"type": "shell",
-			"command": "git add . && git commit -m \"chore: eradicate legacy files - removed canvas, audit, marketing, and unused components\" && git push",
-			"args": [],
-			"isBackground": false,
-			"problemMatcher": [],
-			"group": "build"
-		},
-		{
-			"label": "commit-manifesto",
-			"type": "shell",
-			"command": "git add . && git commit -m \"feat: restore Manifesto page at /manifesto with Singularity narrative\" && git push",
-			"args": [],
-			"isBackground": false,
-			"problemMatcher": [],
-			"group": "build"
-		},
-		{
-			"label": "commit-pricing-migration",
-			"type": "shell",
-			"command": "git add . && git commit -m \"feat: complete migration to Singularity pricing tiers (Architect, Visionary, Singularity)\""
-		},
-		{
-			"label": "commit-final-fixes",
-			"type": "shell",
-			"command": "git add . && git commit -m \"fix: resolve remaining legacy tier references in HatchModal and Chat components\""
-		},
-		{
-			"label": "commit-preview-fix",
-			"type": "shell",
-			"command": "git add components/SectionPreview.tsx && git commit -m \"fix: compact preview toolbar and ensure full width on desktop\" && git push"
-		},
-		{
-			"label": "commit-contact-redesign",
-			"type": "shell",
-			"command": "git add . && git commit -m \"feat: redesign contact page (professional studio style) + fix back button logic + polish homepage welcome\""
-		},
-		{
-			"label": "commit-brand-unification",
-			"type": "shell",
-			"command": "git commit -m \"feat: unify site aesthetic - replace legacy colors with Singularity palette (Emerald/Teal/Zinc)\""
-		},
-		{
-			"label": "fix-homepage-redirect",
-			"type": "shell",
-			"command": "git add components/HomepageWelcome.tsx && git commit -m \"fix: prevent automatic redirect on homepage for returning users - add Resume Session option instead\" && git push"
-		},
-		{
-			"label": "consolidate-context",
-			"type": "shell",
-			"command": "git add ai_context/ && git commit -m \"chore: consolidate AI context - establish Singularity Identity and restore Transmission Logs\" && git push"
-		},
-		{
-			"label": "commit-singularity-polish",
-			"type": "shell",
-			"command": "git add . && git commit -m \"feat: Singularity Polish - Redesigned Pricing, Fixed Refine Tool, Enhanced Demo UI, and Cleanup\""
-		},
-		{
-			"label": "commit-dashboard-redesign",
-			"type": "shell",
-			"command": "git add . && git commit -m \"feat: redesign dashboard upgrade modal to match Singularity aesthetic\" && git push"
-		},
-		{
-			"label": "commit-sidebar-fix",
-			"type": "shell",
-			"command": "git add . && git commit -m \"fix: align dashboard sidebar colors with Singularity aesthetic\" && git push"
-		},
-		{
-			"label": "commit-contact-polish",
-			"type": "shell",
-			"command": "git add . && git commit -m \"feat: polish contact page with Singularity aesthetic (grid, scanlines, gradients)\" && git push"
-		},
-		{
-			"label": "commit-dashboard-overhaul",
-			"type": "shell",
-			"command": "git add . && git commit -m \"feat: overhaul dashboard design to match Singularity dark theme\" && git push"
-		},
-		{
-			"label": "commit-logic-fixes",
-			"type": "shell",
-			"command": "git add . && git commit -m \"feat: enable point-to-click editing and fix guest persistence logic\""
+			"command": "git add ."
 		}
 	]
 }

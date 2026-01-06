@@ -113,7 +113,7 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))', paddingBottom: 'max(1rem, env(safe-area-inset-bottom))', paddingLeft: 'max(1rem, env(safe-area-inset-left))', paddingRight: 'max(1rem, env(safe-area-inset-right))' }}>
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 safe-area-modal">
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -171,7 +171,7 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
                     { text: 'Live Preview', included: true },
                     { text: 'Deploy to subdomain', included: true },
                     { text: '3 Active Projects', included: true },
-                    { text: 'Download Source Code', included: false },
+                    { text: 'Download Source Code', included: true },
                     { text: 'Custom Domain', included: false },
                     { text: 'Remove Branding', included: false },
                   ].map((feature, i) => (
@@ -231,7 +231,7 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
                 <button
                   onClick={() => handleHatch('visionary')}
                   disabled={isLoading || isSyncing}
-                  className="w-full mt-6 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-all shadow-lg shadow-emerald-500/20"
+                  className="w-full mt-6 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-colors"
                 >
                   {isLoading ? 'Processing...' : 'Become Visionary'}
                 </button>
@@ -290,7 +290,7 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-4 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-center"
+                className="mb-4 p-4 bg-zinc-900 border border-zinc-700 rounded-xl text-center"
               >
                 <p className="text-emerald-400 font-semibold mb-1">You&apos;re already a {tier === 'singularity' ? 'Singularity' : tier === 'visionary' ? 'Visionary' : 'Architect'} member!</p>
                 <p className="text-zinc-400 text-sm">You have full access to all features.</p>

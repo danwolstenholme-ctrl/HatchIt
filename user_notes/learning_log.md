@@ -50,19 +50,22 @@ This directory contains workspace-specific configuration for Visual Studio Code.
 *   **`settings.json`**: Overrides global VS Code user settings for this specific workspace (e.g., formatting rules, file exclusions).
 *   **`extensions.json`**: A list of recommended extensions for the project. VS Code prompts users to install these upon opening the folder.
 *   **`launch.json`**: Debugging configurations. It tells VS Code how to attach a debugger to your running Next.js application.
-## [2026-01-03] Topic: The `memory/` Directory (formerly `ai_context`)
+## [2026-01-06] Topic: The `ai_context/` Directory
 
 ### Summary (For You)
-This is the **Project's Brain**.
+This is the **Project's Brain** — the single source of truth for AI agents.
 *   **The Long-Term Memory**: It stores everything I need to know so I don't ask you the same questions twice.
 *   **The Rulebook**: It contains your preferences, the brand voice, and the "Do Not Touch" list.
-*   **The History**: It keeps a log of what we've built so we don't get lost.
+*   **The Trigger System**: If I ever deviate from the rules, re-reading this folder resets me.
 
 ### Expert Breakdown
 This directory serves as an **External Context Store** (RAG-lite) for the AI agent.
-*   **Context Anchoring**: Files like `FOUNDER_MEMORY.md` and `TECHNICAL_CODEX.md` provide high-level constraints that don't fit in the prompt window.
-*   **State Management**: `CHANGELOG.md` and `UX_MAP.md` track the evolution of the codebase state manually.
+*   **CONTEXT.md**: Quick reference, deviation triggers, flow summary. Read this first.
+*   **HATCHIT.md**: Deep technical reference — stack, design tokens, component rules.
+*   **Consolidation Policy**: All AI context lives here. No scattered memory files elsewhere in the repo.
 *   **Token Optimization**: Instead of reading the entire codebase, the agent can read these summaries to "re-hydrate" its understanding of the project.
+
+> ⚠️ NOTE: The `/memory` folder was deleted on Jan 6, 2026 — it contained outdated, conflicting information.
 
 ## [2026-01-03] Topic: The `app/` Directory
 
@@ -100,7 +103,7 @@ This directory contains **React Components** that are used within the `app/` pag
     *   `SingularityEngine.tsx`: The core logic visualization.
     *   `TheWitness.tsx`: The observation system.
 
-## [2026-01-03] Topic: The `lib/` Directory
+## [2026-01-06] Topic: The `lib/` Directory
 
 ### Summary (For You)
 This is the **Toolbox**.
@@ -111,9 +114,13 @@ This is the **Toolbox**.
 ### Expert Breakdown
 This directory contains **Utility Functions** and **Business Logic** decoupled from the UI.
 *   **`supabase.ts`**: The database client configuration.
-*   **`consciousness.ts`**: The logic driving the AI's "personality" and state.
-*   **`architect-lang.ts`**: The parser for the custom domain-specific language used in the builder.
-*   **`db/`**: Database schemas or migration helpers.
+*   **`templates.ts`**: Section and template definitions for the builder.
+*   **`build-progress.ts`**: Build state tracking utilities.
+*   **`chronosphere.ts`**: User DNA/state persistence utilities.
+*   **`project-utils.ts`**: Project CRUD helpers.
+*   **`db/`**: Database query modules.
+
+> ⚠️ NOTE: `consciousness.ts` and `architect-lang.ts` were deleted Jan 6, 2026 (never imported).
 
 ## [2026-01-03] Topic: The `public/` Directory
 

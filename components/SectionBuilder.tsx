@@ -36,9 +36,10 @@ import {
   Code2 as Code,
   Smartphone,
   Tablet,
-  Monitor
+  Monitor,
+  Command,
+  AlertCircle
 } from 'lucide-react'
-import GuestPromptModal from './GuestPromptModal'
 import GeneratingModal from './builder/GeneratingModal'
 
 // Suggestions based on section type
@@ -127,9 +128,147 @@ function StreamingCodeEffect() {
         <motion.span
           animate={{ opacity: [1, 0] }}
           transition={{ duration: 0.5, repeat: Infinity }}
-          className="inline-block w-2 h-4 bg-emerald-500 ml-0.5 shadow-[0_0_10px_rgba(16,185,129,0.8)]"
+          className="inline-block w-2 h-4 bg-emerald-500 ml-0.5"
         />
       )}
+    </div>
+  )
+}
+
+// =============================================================================
+// INLINE PROMPT INPUT - Integrated into main content area (replaces modal)
+// =============================================================================
+function InlinePromptInput({ onSubmit }: { onSubmit: (prompt: string) => void }) {
+  const [prompt, setPrompt] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const isValid = prompt.trim().length >= 10
+
+  const handleSubmit = () => {
+    if (!isValid) return
+    setIsSubmitting(true)
+    setTimeout(() => {
+      onSubmit(prompt)
+    }, 300)
+  }
+
+  const suggestions = [
+    'Hero with animated gradient background',
+    'Pricing table with 3 tiers',
+    'Testimonial carousel with avatars',
+  ]
+
+  return (
+    <div className="h-full flex items-center justify-center bg-zinc-950 p-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="w-full max-w-2xl"
+      >
+        {/* Header */}
+        <div className="relative overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-950/70 backdrop-blur-xl shadow-2xl shadow-black/40 px-6 py-8 md:px-10 md:py-10">
+          <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent" />
+          <div className="flex flex-col items-center text-center gap-4">
+            <motion.div
+              initial={{ scale: 0.85, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.1, duration: 0.4 }}
+              className="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center shadow-inner shadow-black/60"
+            >
+              <Image src="/icon.svg" alt="HatchIt" width={36} height={36} className="w-9 h-9" />
+            </motion.div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.4em] text-zinc-600">Builder</p>
+              <h1 className="text-3xl md:text-4xl font-semibold text-white mt-2">
+                Text to React generation surface
+              </h1>
+            </div>
+            <p className="text-sm md:text-base text-zinc-400 max-w-xl leading-relaxed">
+              Describe the component or page in plain English. We assemble the React tree, Tailwind styling, and deployment wiring in one pass.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-zinc-500">
+              {['Live preview', 'Production React + Tailwind', 'Supabase-ready deploy'].map(item => (
+                <span key={item} className="inline-flex items-center gap-2 rounded-full border border-zinc-800/80 px-3 py-1 bg-zinc-900/40">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Input Area */}
+        <div className="mt-6 bg-zinc-950/70 border border-zinc-800/60 rounded-2xl overflow-hidden backdrop-blur-xl transition-colors focus-within:border-emerald-500/30">
+          <textarea
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey && isValid) {
+                e.preventDefault()
+                handleSubmit()
+              }
+            }}
+            placeholder="e.g. A futuristic landing page for a space tourism agency..."
+            className="w-full h-32 bg-transparent p-5 text-base text-white placeholder-zinc-600 resize-none focus:outline-none font-medium"
+            autoFocus
+          />
+          
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-5 py-4 bg-zinc-900/40 border-t border-zinc-800/60">
+            <div className="flex items-center gap-2 text-xs text-zinc-500">
+              <Command className="w-3 h-3" />
+              <span>Shift + Enter for newline</span>
+              {!isValid && prompt.trim().length > 0 && (
+                <span className="text-amber-500 ml-2">
+                  ({10 - prompt.trim().length} more chars)
+                </span>
+              )}
+            </div>
+            
+            <motion.button
+              whileTap={{ scale: isValid && !isSubmitting ? 0.97 : 1 }}
+              onClick={handleSubmit}
+              disabled={!isValid || isSubmitting}
+              className={`relative inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all overflow-hidden
+                ${isValid && !isSubmitting
+                  ? 'bg-emerald-500/15 border border-emerald-500/40 text-white shadow-[0_0_20px_rgba(16,185,129,0.25)]'
+                  : 'bg-zinc-900/60 border border-zinc-800 text-zinc-500 cursor-not-allowed'}`}
+            >
+              {isValid && !isSubmitting && (
+                <motion.span
+                  className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/15 to-white/0"
+                  animate={{ x: ['-200%', '200%'] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                />
+              )}
+              {isSubmitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span className="relative">Building...</span>
+                </>
+              ) : (
+                <>
+                  <span className="relative">Generate section</span>
+                  <ArrowRight className="relative w-4 h-4" />
+                </>
+              )}
+            </motion.button>
+          </div>
+        </div>
+
+        {/* Suggestions */}
+        <div className="flex flex-wrap justify-center gap-2 mt-4">
+          {suggestions.map((s) => (
+            <button
+              key={s}
+              onClick={() => setPrompt(s)}
+              className="px-3 py-1.5 text-xs text-zinc-400 border border-zinc-800/60 rounded-full bg-zinc-950/50 hover:bg-zinc-900/60 hover:text-white transition-colors"
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      </motion.div>
     </div>
   )
 }
@@ -229,20 +368,20 @@ function GuestRefineBar({
   const message = getMessage()
   
   return (
-    <div className="space-y-2">
-      {/* AI Message */}
+    <div className="space-y-3">
+      {/* AI Message - subtle presence */}
       <motion.div
         initial={{ opacity: 0, y: 5 }}
         animate={{ opacity: 1, y: 0 }}
         key={refinementChanges.length}
-        className="flex items-center gap-2 px-1"
+        className="flex items-center gap-2.5 px-1"
       >
         <motion.div 
-          className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0"
-          animate={{ scale: [1, 1.15, 1], opacity: [0.7, 1, 0.7] }}
-          transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+          className="w-6 h-6 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0"
+          animate={{ scale: [1, 1.1, 1], opacity: [0.8, 1, 0.8] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
         >
-          <Sparkles className="w-2.5 h-2.5 text-emerald-400" />
+          <Sparkles className="w-3 h-3 text-emerald-400" />
         </motion.div>
         <AnimatePresence mode="wait">
           <motion.p
@@ -250,51 +389,56 @@ function GuestRefineBar({
             initial={{ opacity: 0, x: -5 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 5 }}
-            className="text-xs text-zinc-400"
+            className="text-sm"
           >
             <span className="text-emerald-400 font-medium">{message.prefix}</span>{' '}
-            <span className="text-zinc-500">{message.text}</span>
+            <span className="text-zinc-400">{message.text}</span>
           </motion.p>
         </AnimatePresence>
       </motion.div>
 
-      {/* Input Row */}
+      {/* Input Row - Premium Glass */}
       <div className="flex items-center gap-3">
-        <div className="flex-1 flex items-center bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden focus-within:border-emerald-500/50 transition-all shadow-[0_0_20px_-10px_rgba(0,0,0,0.5)]">
-          <input
-            type="text"
-            value={refinePrompt}
-            onChange={(e) => setRefinePrompt(e.target.value)}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            onKeyDown={(e) => e.key === 'Enter' && refinePrompt.trim() && !isGuestRefineLocked && handleUserRefine()}
-            disabled={isUserRefining || isGuestRefineLocked}
-            placeholder={isFocused ? REFINE_PROMPTS[promptIndex] : "What would you change?"}
-            className="flex-1 bg-transparent px-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none disabled:opacity-50"
-          />
-          <button
-            onClick={handleUserRefine}
-            disabled={!refinePrompt.trim() || isUserRefining || isGuestRefineLocked}
-            className="group relative px-5 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            {isUserRefining ? (
-              <RefreshCw className="w-4 h-4 animate-spin" />
-            ) : (
-              <>
-                <Wand2 className="w-4 h-4 text-emerald-400" />
-                <span>Refine</span>
-              </>
-            )}
-          </button>
+        {/* Main Input Container */}
+        <div className="relative flex-1 group">
+          {/* Input wrapper */}
+          <div className="relative flex items-center bg-zinc-900/50 border border-zinc-800/50 rounded-xl overflow-hidden transition-all duration-300 focus-within:border-emerald-500/30">
+            <input
+              type="text"
+              value={refinePrompt}
+              onChange={(e) => setRefinePrompt(e.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              onKeyDown={(e) => e.key === 'Enter' && refinePrompt.trim() && !isGuestRefineLocked && handleUserRefine()}
+              disabled={isUserRefining || isGuestRefineLocked}
+              placeholder={isFocused ? REFINE_PROMPTS[promptIndex] : "What would you change?"}
+              className="flex-1 bg-transparent px-4 py-3.5 text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none disabled:opacity-50"
+            />
+            <button
+              onClick={handleUserRefine}
+              disabled={!refinePrompt.trim() || isUserRefining || isGuestRefineLocked}
+              className="relative px-5 py-3.5 bg-zinc-900/50 hover:bg-zinc-800/50 border-l border-zinc-800/50 text-zinc-300 hover:text-zinc-100 text-sm font-medium transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {isUserRefining ? (
+                <RefreshCw className="w-4 h-4 animate-spin text-emerald-400" />
+              ) : (
+                <>
+                  <Wand2 className="w-4 h-4 text-emerald-400" />
+                  <span>Refine</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
         
+        {/* Save CTA - Sign up button */}
         <button
           onClick={() => goToSignUp()}
-          className="group relative flex-shrink-0 px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-500/50 backdrop-blur-md text-white text-sm font-semibold transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_0_30px_-10px_rgba(16,185,129,0.3)] hover:shadow-[0_0_50px_-10px_rgba(16,185,129,0.5)] overflow-hidden"
+          className="group relative flex-shrink-0 px-6 py-3.5 rounded-xl overflow-hidden transition-all duration-300"
         >
-          {/* Glow ring on hover */}
-          <div className="absolute -inset-[2px] rounded-xl bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-emerald-500/20 opacity-0 group-hover:opacity-100 blur-md transition-opacity duration-500" />
-          <span className="relative z-10">Deploy</span>
+          {/* Button glass background */}
+          <div className="absolute inset-0 bg-emerald-500/15 border border-emerald-500/30 rounded-xl transition-all duration-300 group-hover:bg-emerald-500/25 group-hover:border-emerald-500/40" />
+          <span className="relative z-10 text-zinc-100 text-sm font-semibold">Save & Continue</span>
         </button>
       </div>
     </div>
@@ -377,21 +521,21 @@ const generateMockCode = (sectionType: string, sectionName: string, userPrompt: 
       ${userPrompt.slice(0, 200)}${userPrompt.length > 200 ? '...' : ''}
     </p>
     <div className="mt-10 grid md:grid-cols-3 gap-6">
-      <div className="p-6 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
+      <div className="p-6 bg-zinc-900 rounded-2xl border border-zinc-800">
         <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center mb-4">
           <span className="text-2xl">✨</span>
         </div>
         <h3 className="text-lg font-semibold text-white mb-2">Feature One</h3>
         <p className="text-zinc-400 text-sm">Demo content for ${sectionType}</p>
       </div>
-      <div className="p-6 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
+      <div className="p-6 bg-zinc-900 rounded-2xl border border-zinc-800">
         <div className="w-12 h-12 bg-violet-500/20 rounded-xl flex items-center justify-center mb-4">
           <span className="text-2xl">🚀</span>
         </div>
         <h3 className="text-lg font-semibold text-white mb-2">Feature Two</h3>
         <p className="text-zinc-400 text-sm">Placeholder for your content</p>
       </div>
-      <div className="p-6 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
+      <div className="p-6 bg-zinc-900 rounded-2xl border border-zinc-800">
         <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mb-4">
           <span className="text-2xl">💡</span>
         </div>
@@ -403,18 +547,34 @@ const generateMockCode = (sectionType: string, sectionName: string, userPrompt: 
 </section>`
 }
 
+// Color swatch component - uses CSS variable to avoid inline style linter warning
+const ColorDot = ({ color, size = 'sm', title }: { color: string; size?: 'sm' | 'md'; title?: string }) => {
+  const dimensionClass = size === 'sm' ? 'w-3 h-3' : 'w-4 h-4'
+
+  return (
+    <span
+      title={title}
+      className={`${dimensionClass} inline-flex items-center justify-center rounded-full border border-white/20`}
+    >
+      <svg viewBox="0 0 16 16" className="w-full h-full" aria-hidden="true" focusable="false">
+        <circle cx="8" cy="8" r="7" fill={color} />
+      </svg>
+    </span>
+  )
+}
+
 // Brand Quick Reference - Shows current brand settings in the builder
 function BrandQuickReference({ brandConfig }: { brandConfig: DbBrandConfig }) {
   const [expanded, setExpanded] = useState(false)
   
   return (
     <motion.div 
-      className="mt-4 bg-white/5 border border-white/10 rounded-xl overflow-hidden"
+      className="mt-4 bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden"
       initial={false}
     >
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full px-3 py-2 flex items-center justify-between text-left hover:bg-white/5 transition-colors"
+        className="w-full px-3 py-2 flex items-center justify-between text-left hover:bg-zinc-800 transition-colors"
       >
         <div className="flex items-center gap-2">
           <span className="text-sm">🎨</span>
@@ -423,21 +583,9 @@ function BrandQuickReference({ brandConfig }: { brandConfig: DbBrandConfig }) {
           </span>
           {/* Color dots preview */}
           <div className="flex items-center gap-1 ml-2">
-            <span 
-              className="w-3 h-3 rounded-full border border-white/20" 
-              style={{ backgroundColor: brandConfig.colors.primary }}
-              title="Primary"
-            />
-            <span 
-              className="w-3 h-3 rounded-full border border-white/20" 
-              style={{ backgroundColor: brandConfig.colors.secondary }}
-              title="Secondary"
-            />
-            <span 
-              className="w-3 h-3 rounded-full border border-white/20" 
-              style={{ backgroundColor: brandConfig.colors.accent }}
-              title="Accent"
-            />
+            <ColorDot color={brandConfig.colors.primary} title="Primary" />
+            <ColorDot color={brandConfig.colors.secondary} title="Secondary" />
+            <ColorDot color={brandConfig.colors.accent} title="Accent" />
           </div>
         </div>
         <motion.span 
@@ -472,26 +620,17 @@ function BrandQuickReference({ brandConfig }: { brandConfig: DbBrandConfig }) {
                 <span className="text-zinc-500 block mb-1.5">Colors:</span>
                 <div className="flex gap-2 flex-wrap">
                   <div className="flex items-center gap-1.5 bg-zinc-900/50 px-2 py-1 rounded">
-                    <span 
-                      className="w-4 h-4 rounded border border-white/20" 
-                      style={{ backgroundColor: brandConfig.colors.primary }}
-                    />
+                    <ColorDot color={brandConfig.colors.primary} size="md" />
                     <span className="text-zinc-300">Primary</span>
                     <span className="text-zinc-500 font-mono text-[10px]">{brandConfig.colors.primary}</span>
                   </div>
                   <div className="flex items-center gap-1.5 bg-zinc-900/50 px-2 py-1 rounded">
-                    <span 
-                      className="w-4 h-4 rounded border border-white/20" 
-                      style={{ backgroundColor: brandConfig.colors.secondary }}
-                    />
+                    <ColorDot color={brandConfig.colors.secondary} size="md" />
                     <span className="text-zinc-300">Secondary</span>
                     <span className="text-zinc-500 font-mono text-[10px]">{brandConfig.colors.secondary}</span>
                   </div>
                   <div className="flex items-center gap-1.5 bg-zinc-900/50 px-2 py-1 rounded">
-                    <span 
-                      className="w-4 h-4 rounded border border-white/20" 
-                      style={{ backgroundColor: brandConfig.colors.accent }}
-                    />
+                    <ColorDot color={brandConfig.colors.accent} size="md" />
                     <span className="text-zinc-300">Accent</span>
                     <span className="text-zinc-500 font-mono text-[10px]">{brandConfig.colors.accent}</span>
                   </div>
@@ -554,8 +693,6 @@ const BuilderGuide = ({ onClose }: { onClose: () => void }) => (
       animate={{ scale: 1, y: 0 }}
       className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-md w-full shadow-2xl relative overflow-hidden"
     >
-      {/* Background Glow */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
       
       <div className="relative z-10">
         <div className="w-12 h-12 bg-zinc-800 rounded-xl flex items-center justify-center mb-4 border border-zinc-700">
@@ -569,7 +706,7 @@ const BuilderGuide = ({ onClose }: { onClose: () => void }) => (
         
         <div className="space-y-4 mb-8">
           <div className="flex gap-3">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center shrink-0">
               <Wand2 className="w-4 h-4 text-emerald-400" />
             </div>
             <div>
@@ -594,7 +731,7 @@ const BuilderGuide = ({ onClose }: { onClose: () => void }) => (
             </div>
             <div>
               <h4 className="text-sm font-medium text-zinc-200">Deploy</h4>
-              <p className="text-xs text-zinc-500">Export or deploy live. Requires Architect plan.</p>
+              <p className="text-xs text-zinc-500">Export or deploy live. Requires an upgrade.</p>
             </div>
           </div>
         </div>
@@ -703,6 +840,7 @@ export default function SectionBuilder({
     savedPreview ? 'complete' : (dbSection.status === 'complete' ? 'complete' : (hasInitialPrompt ? 'generating' : 'input'))
   )
   const [generatedCode, setGeneratedCode] = useState(savedPreview?.code || dbSection.code || '')
+  const [isPreviewReady, setIsPreviewReady] = useState(false)
   const [streamingCode, setStreamingCode] = useState('') // For real-time display
   const [reasoning, setReasoning] = useState(savedPreview?.reasoning || '') // AI's design reasoning
   const [refined, setRefined] = useState(dbSection.refined)
@@ -727,6 +865,10 @@ export default function SectionBuilder({
   const [showGuestPromptModal, setShowGuestPromptModal] = useState(
     !isSignedIn && !effectivePrompt && !savedPreview
   )
+
+  useEffect(() => {
+    setIsPreviewReady(false)
+  }, [generatedCode])
 
   // Paywall Logic
   const { subscription, tier } = useSubscription()
@@ -814,9 +956,9 @@ export default function SectionBuilder({
     }
     
     // Always redirect to dashboard after signup - that's where migration happens
-    const redirectUrl = '/builder'
+    const redirectUrl = '/dashboard'
     console.log('[goToSignUp] tier:', tier, 'type:', typeof tier)
-    router.push(`/sign-up?upgrade=${typeof tier === 'string' ? tier : 'visionary'}&redirect_url=${encodeURIComponent(redirectUrl)}`)
+    router.push(`/sign-up?redirect_url=${encodeURIComponent(redirectUrl)}`)
   }
   
   // Handle prompt submission from guest modal
@@ -857,7 +999,7 @@ export default function SectionBuilder({
     if (stage !== 'input') return
     
     const placeholders = [
-      "Describe the architecture of this section...",
+      "Describe the layout of this section...",
       "e.g. A minimalist hero with large typography...",
       "e.g. A dark mode features grid with glowing cards...",
       "e.g. A contact form with a map on the right...",
@@ -1397,7 +1539,25 @@ export default function SectionBuilder({
       })
 
       if (!generateResponse.ok) {
-        throw new Error('Generation failed')
+        buildProgress.reset()
+        let detailedError = 'Failed to build section. Please try again.'
+        try {
+          const errorPayload = await generateResponse.json()
+          if (errorPayload?.error) {
+            detailedError = errorPayload.error
+          }
+        } catch {
+          try {
+            const fallbackText = await generateResponse.text()
+            if (fallbackText) {
+              detailedError = fallbackText
+            }
+          } catch { /* ignore */ }
+        }
+        console.error('[SectionBuilder] Build API error', generateResponse.status, detailedError)
+        setError(detailedError)
+        setStage('input')
+        return
       }
 
       const { code: rawCode, reasoning: aiReasoning } = await generateResponse.json()
@@ -1447,7 +1607,8 @@ export default function SectionBuilder({
 
     } catch (err) {
       console.error('Build error:', err)
-      setError('Failed to build section. Please try again.')
+      buildProgress.reset()
+      setError(err instanceof Error ? err.message : 'Failed to build section. Please try again.')
       setStreamingCode('')
       setStage('input')
     }
@@ -1743,19 +1904,15 @@ export default function SectionBuilder({
   // Demo users get signup CTAs, auth users get full functionality
   // =============================================================================
   
-  // Show generating state when building (for both demo and auth)
-  const showGenerating = !generatedCode && (stage === 'generating' || !!effectivePrompt)
+  // Show generating state ONLY when actively building (stage === 'generating') AND no code yet
+  // Once we have code, NEVER show generating - let the preview render even if iframe is loading
+  const showGenerating = stage === 'generating' && !generatedCode
   
-  // Show prompt modal for demo users OR auth users with no prompt yet
-  const showPromptModal = isDemo ? showGuestPromptModal : (isInitialState && !effectivePrompt)
+  // Show inline prompt input for demo users OR auth users with no prompt yet
+  const showInlinePromptInput = isDemo ? showGuestPromptModal : (isInitialState && !effectivePrompt)
   
   return (
     <div className="relative w-full flex-1 min-h-0 bg-zinc-950 overflow-hidden flex flex-col">
-      {/* Prompt Modal - shows when user needs to enter a prompt */}
-      <GuestPromptModal 
-        isOpen={showPromptModal}
-        onSubmit={handleGuestPromptSubmit}
-      />
       
       {/* Generating Modal - keeps users engaged during the wait */}
         <GeneratingModal 
@@ -1766,6 +1923,26 @@ export default function SectionBuilder({
         
         {/* Preview Area - takes full height minus bottom panel */}
         <div className="flex-1 flex flex-col min-h-0 relative">
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="absolute top-4 left-1/2 z-30 w-[90%] max-w-2xl -translate-x-1/2"
+            >
+              <div className="flex items-start gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-300" />
+                <div className="flex-1 text-left leading-relaxed">
+                  {error}
+                </div>
+                <button
+                  onClick={() => setError(null)}
+                  className="text-xs font-medium text-red-200 underline-offset-2 hover:underline"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </motion.div>
+          )}
           {generatedCode ? (
             <>
               <SectionPreview 
@@ -1779,6 +1956,7 @@ export default function SectionBuilder({
                 onTextEdit={handleTextEdit}
                 allowCodeView={false}
                 hideToolbar={false}
+                onReady={() => setIsPreviewReady(true)}
               />
               {/* AI Presence Indicator - shows the system is alive */}
               <motion.div 
@@ -1790,7 +1968,7 @@ export default function SectionBuilder({
                   <motion.div 
                     animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
                     transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                    className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]"
+                    className="w-2 h-2 rounded-full bg-emerald-500"
                   />
                   <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider">Live</span>
                 </div>
@@ -1835,7 +2013,7 @@ export default function SectionBuilder({
                   ))}
                 </div>
                 <div className="p-1.5 border-t border-zinc-800/50">
-                  <button className="w-9 h-9 rounded-md flex items-center justify-center text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 transition-all">
+                  <button aria-label="Settings" className="w-9 h-9 rounded-md flex items-center justify-center text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 transition-all">
                     <Settings className="w-4 h-4" />
                   </button>
                 </div>
@@ -1897,7 +2075,7 @@ export default function SectionBuilder({
                         className="w-12 h-12 mx-auto mb-3"
                       >
                         <Image 
-                          src="/assets/hatchit_definitive.svg" 
+                          src="/icon.svg" 
                           alt="Building" 
                           width={48} 
                           height={48}
@@ -1993,8 +2171,11 @@ export default function SectionBuilder({
                 )}
               </div>
             </div>
+          ) : showInlinePromptInput ? (
+            // Inline Prompt Input - integrated into main content area (not a modal)
+            <InlinePromptInput onSubmit={handleGuestPromptSubmit} />
           ) : (
-            // Empty state when waiting for prompt modal
+            // Fallback empty state
             <div className="h-full flex items-center justify-center bg-zinc-950">
               <motion.div
                 animate={{ scale: [1, 1.05, 1], opacity: [0.4, 0.6, 0.4] }}
@@ -2002,7 +2183,7 @@ export default function SectionBuilder({
                 className="w-16 h-16"
               >
                 <Image 
-                  src="/assets/hatchit_definitive.svg" 
+                  src="/icon.svg" 
                   alt="Loading" 
                   width={64} 
                   height={64}
@@ -2013,80 +2194,107 @@ export default function SectionBuilder({
           )}
         </div>
 
-        {/* Bottom Panel - fixed at bottom (NO INPUT STAGE - prompt comes from /demo) */}
-        <div className="flex-shrink-0 p-3 sm:p-4 bg-zinc-950 border-t border-zinc-800/50">
+        {/* Bottom Panel - Floating Glass Command Bar */}
+        <div className="flex-shrink-0 p-3 sm:p-4">
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.3 }}
-            className="mx-auto w-full max-w-3xl"
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="mx-auto w-full max-w-3xl relative"
           >
-            {/* Generating Stage - bottom bar that matches complete stage size */}
+            {/* Generating Stage */}
             {(stage === 'generating' || showGenerating) && (
-              <div className="bg-zinc-950/90 backdrop-blur-xl border border-emerald-500/20 rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.1)] p-4 relative overflow-hidden group">
-                {/* Animated border gradient */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+              <div className="relative rounded-2xl overflow-hidden">
+                {/* Glass layers - matches sidebar exactly */}
+                <div className="absolute inset-0 bg-zinc-900/70 backdrop-blur-xl" />
+                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
+                <div className="absolute inset-0 border border-zinc-800/50 rounded-2xl" />
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent" />
                 
-                {/* Placeholder for AI message area - matches GuestRefineBar height */}
-                <div className="mb-2 flex items-center gap-2 px-1 h-5">
-                  <motion.div 
-                    className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0"
-                    animate={{ scale: [1, 1.15, 1], opacity: [0.5, 1, 0.5] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                  >
-                    <Sparkles className="w-2.5 h-2.5 text-emerald-400" />
-                  </motion.div>
-                  <p className="text-xs text-zinc-500">
-                    <span className="text-emerald-400 font-medium">Building.</span>{' '}
-                    <span className="text-zinc-500">{loadingStages[loadingStage]}...</span>
-                  </p>
-                </div>
-
-                {/* Input row placeholder - matches refine bar */}
-                <div className="flex items-center gap-3 relative z-10">
-                  <div className="flex-1 flex items-center bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden">
-                    <div className="flex-1 px-4 py-3 text-sm text-zinc-500 font-mono">
-                      Constructing Reality...
-                    </div>
-                    <div className="px-5 py-3 bg-zinc-800 text-zinc-400 text-sm font-semibold flex items-center gap-2">
-                      <RefreshCw className="w-4 h-4 animate-spin text-emerald-400" />
-                      <span>Building</span>
-                    </div>
+                {/* Content */}
+                <div className="relative p-4 space-y-3">
+                  {/* AI Status */}
+                  <div className="flex items-center gap-2.5 px-1">
+                    <motion.div 
+                      className="w-6 h-6 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center"
+                      animate={{ scale: [1, 1.1, 1], opacity: [0.8, 1, 0.8] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      <Sparkles className="w-3 h-3 text-emerald-400" />
+                    </motion.div>
+                    <p className="text-sm">
+                      <span className="text-emerald-400 font-medium">Building.</span>{' '}
+                      <span className="text-zinc-400">{loadingStages[loadingStage]}...</span>
+                    </p>
                   </div>
-                  
-                  <div className="flex-shrink-0 px-6 py-3 rounded-xl bg-zinc-800/50 border border-zinc-700 text-zinc-500 text-sm font-semibold">
-                    Deploy
+
+                  {/* Input placeholder */}
+                  <div className="flex items-center gap-3">
+                    <div className="relative flex-1">
+                      <div className="relative flex items-center bg-zinc-900/50 border border-zinc-800/50 rounded-xl overflow-hidden">
+                        <div className="flex-1 px-4 py-3.5 text-sm text-zinc-500">
+                          Constructing Reality...
+                        </div>
+                        <div className="px-5 py-3.5 bg-zinc-900/50 border-l border-zinc-800/50 text-zinc-500 text-sm font-medium flex items-center gap-2">
+                          <RefreshCw className="w-4 h-4 animate-spin text-emerald-400" />
+                          <span>Building</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="relative px-7 py-3.5 rounded-xl">
+                      <div className="absolute inset-0 bg-zinc-900/50 border border-zinc-800/50 rounded-xl" />
+                      <span className="relative text-zinc-500 text-sm font-medium">Deploy</span>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Complete Stage - Guest Refine Bar (Conversational) */}
+            {/* Complete Stage */}
             {stage === 'complete' && (
-              <div className="bg-zinc-950/90 backdrop-blur-xl border border-zinc-800/50 rounded-2xl shadow-[0_0_30px_rgba(0,0,0,0.5)] p-4">
-                <GuestRefineBar
-                  refinePrompt={refinePrompt}
-                  setRefinePrompt={setRefinePrompt}
-                  isUserRefining={isUserRefining}
-                  isGuestRefineLocked={isGuestRefineLocked}
-                  handleUserRefine={handleUserRefine}
-                  goToSignUp={goToSignUp}
-                  reasoning={reasoning}
-                  refinementChanges={refinementChanges}
-                />
+              <div className="relative rounded-2xl overflow-hidden">
+                {/* Glass layers - matches sidebar exactly */}
+                <div className="absolute inset-0 bg-zinc-900/70 backdrop-blur-xl" />
+                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
+                <div className="absolute inset-0 border border-zinc-800/50 rounded-2xl" />
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent" />
+                
+                {/* Content */}
+                <div className="relative p-4">
+                  <GuestRefineBar
+                    refinePrompt={refinePrompt}
+                    setRefinePrompt={setRefinePrompt}
+                    isUserRefining={isUserRefining}
+                    isGuestRefineLocked={isGuestRefineLocked}
+                    handleUserRefine={handleUserRefine}
+                    goToSignUp={goToSignUp}
+                    reasoning={reasoning}
+                    refinementChanges={refinementChanges}
+                  />
+                </div>
               </div>
             )}
 
             {/* Refining Stage */}
             {stage === 'refining' && (
-              <div className="bg-zinc-900/90 backdrop-blur-xl border border-emerald-500/30 rounded-2xl shadow-2xl shadow-black/60 p-5">
-                <div className="flex items-center gap-4">
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                    className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full"
-                  />
-                  <p className="text-sm font-medium text-white">Refining...</p>
+              <div className="relative rounded-2xl overflow-hidden">
+                {/* Glass layers - matches sidebar with emerald accent */}
+                <div className="absolute inset-0 bg-zinc-900/70 backdrop-blur-xl" />
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.06),transparent_60%)]" />
+                <div className="absolute inset-0 border border-emerald-500/20 rounded-2xl" />
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent" />
+                
+                {/* Content */}
+                <div className="relative p-4">
+                  <div className="flex items-center gap-3">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      className="w-6 h-6 border-2 border-emerald-500/60 border-t-emerald-400 rounded-full"
+                    />
+                    <p className="text-sm font-medium text-white">Refining your section...</p>
+                  </div>
                 </div>
               </div>
             )}

@@ -18,6 +18,7 @@ interface SectionPreviewProps {
   allowCodeView?: boolean
   onUpgradeClick?: () => void
   hideToolbar?: boolean // Hide the toolbar for immersive views (guest mode)
+  onReady?: () => void
 }
 
 type DeviceView = 'mobile' | 'tablet' | 'desktop'
@@ -44,13 +45,14 @@ const sanitizeSvgDataUrls = (input: string) => {
 //   return input.replace(/<\s+(\d)/g, '&lt; $1')
 // }
 
-export default function SectionPreview({ code, darkMode = true, onRuntimeError, inspectorMode = false, onElementSelect, captureTrigger = 0, onScreenshotCaptured, editMode = false, onTextEdit, allowCodeView = false, onUpgradeClick, hideToolbar = false }: SectionPreviewProps) {
+export default function SectionPreview({ code, darkMode = true, onRuntimeError, inspectorMode = false, onElementSelect, captureTrigger = 0, onScreenshotCaptured, editMode = false, onTextEdit, allowCodeView = false, onUpgradeClick, hideToolbar = false, onReady }: SectionPreviewProps) {
   // Default to desktop on desktop, mobile on mobile devices
   const [deviceView, setDeviceView] = useState<DeviceView>('desktop')
   const [viewMode, setViewMode] = useState<'preview' | 'code'>('preview')
   const [isMobileDevice, setIsMobileDevice] = useState(false)
   const [isEditModeActive, setIsEditModeActive] = useState(false)
   const [showCodePaywall, setShowCodePaywall] = useState(false)
+  const [isPreviewHydrating, setIsPreviewHydrating] = useState(false)
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
   // Handle screenshot trigger
@@ -59,6 +61,14 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
       iframeRef.current.contentWindow.postMessage({ type: 'capture-screenshot' }, '*')
     }
   }, [captureTrigger])
+
+  useEffect(() => {
+    if (code && code.trim().length > 0) {
+      setIsPreviewHydrating(true)
+    } else {
+      setIsPreviewHydrating(false)
+    }
+  }, [code])
 
   // Send edit mode state to iframe
   useEffect(() => {
@@ -114,6 +124,11 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
 
   const [srcDoc, setSrcDoc] = useState('')
   const displayCode = sanitizeSvgDataUrls(code?.trim() || '')
+
+  const handleIframeLoad = () => {
+    setIsPreviewHydrating(false)
+    onReady?.()
+  }
 
   useEffect(() => {
     let isMounted = true;
@@ -213,10 +228,15 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
   </script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    html, body, #root { min-height: 100%; width: 100%; }
-    body { background: ${darkMode ? '#09090b' : '#ffffff'}; color: ${darkMode ? '#ffffff' : '#18181b'}; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
+    html, body, #root { min-height: 100%; width: 100%; overflow-x: hidden; }
+    body { background: ${darkMode ? '#09090b' : '#ffffff'}; color: ${darkMode ? '#ffffff' : '#18181b'}; overflow-x: hidden; }
     .error-display { color: #f87171; padding: 2rem; font-family: ui-monospace, monospace; font-size: 0.75rem; white-space: pre-wrap; background: #18181b; border-radius: 0.5rem; margin: 1rem; }
+    /* Hide scrollbar but keep scroll functionality */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #52525b; }
   </style>
 </head>
 <body class="${darkMode ? 'dark' : ''}">
@@ -595,22 +615,19 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
     return (
       <div className="flex-1 flex items-center justify-center bg-zinc-950">
         <div className="relative flex flex-col items-center">
-          {/* Subtle Background Glow */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] bg-emerald-500/5 rounded-full blur-[60px]" />
           
           {/* Breathing Logo */}
           <motion.div
             className="relative mb-8"
             animate={{ 
-              scale: [1, 1.05, 1],
+              scale: [1, 1.02, 1],
               opacity: [0.8, 1, 0.8]
             }}
             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
           >
             <div className="relative w-16 h-16 flex items-center justify-center">
-              <div className="absolute inset-0 bg-emerald-500/20 blur-2xl rounded-full" />
               <Image 
-                src="/assets/hatchit_definitive.svg" 
+                src="/icon.svg" 
                 alt="HatchIt" 
                 width={40} 
                 height={40} 
@@ -630,87 +647,94 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
 
   return (
     <div className="flex-1 flex flex-col min-h-0">
-      {/* View + Device Bar - hidden when hideToolbar is true */}
+      {/* View + Device Bar - Premium Glass Toolbar */}
       {!hideToolbar && (
-        <div className="flex items-center justify-between gap-2 px-3 py-2 bg-zinc-900/95 border-b border-zinc-800">
-          {!isMobileDevice && (
-            <div className="inline-flex bg-zinc-800/50 border border-zinc-700/50 rounded-lg p-0.5">
-              <button
-                onClick={() => setViewMode('preview')}
-                className={`px-3 py-1.5 text-xs font-mono uppercase tracking-wider rounded-md transition-all ${
-                  viewMode === 'preview'
-                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                    : 'text-zinc-500 hover:text-zinc-300'
-                }`}
-              >
-                Visual
-              </button>
-              <button
-                onClick={() => {
-                  if (allowCodeView) {
-                    setViewMode('code')
-                  } else {
-                    setShowCodePaywall(true)
-                  }
-                }}
-                className={`px-3 py-1.5 text-xs font-mono uppercase tracking-wider rounded-md transition-all flex items-center gap-1.5 ${
-                  viewMode === 'code'
-                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                    : 'text-zinc-500 hover:text-zinc-300'
-                }`}
-              >
-                Code
-                {!allowCodeView && <span className="text-amber-500/80 text-[10px]">PRO</span>}
-              </button>
-            </div>
-          )}
-
-          {!isMobileDevice && viewMode === 'preview' && (
-            <div className="flex items-center gap-2">
-              {/* Edit Mode Toggle */}
-              <button
-                onClick={() => setIsEditModeActive(!isEditModeActive)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-mono uppercase tracking-wider transition-all flex items-center gap-1.5 border ${
-                  isEditModeActive
-                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50'
-                    : 'bg-zinc-800/50 text-zinc-500 border-zinc-700/50 hover:text-zinc-300 hover:border-zinc-600'
-                }`}
-                title="Double-click text to edit"
-              >
-                <Type className="w-3.5 h-3.5" />
-                <span>Edit Text</span>
-              </button>
-              
-              {/* Device Selector */}
-              <div className="flex items-center gap-0.5 bg-zinc-800/50 border border-zinc-700/50 rounded-lg p-0.5">
-                {(Object.keys(deviceSizes) as DeviceView[]).map((device) => {
-                  const Icon = deviceSizes[device].icon
-                  return (
-                    <button
-                      key={device}
-                      onClick={() => setDeviceView(device)}
-                      className={`px-2.5 py-1.5 rounded-md text-xs font-mono transition-all flex items-center gap-1.5 ${
-                        deviceView === device
-                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                          : 'text-zinc-500 hover:text-zinc-300'
-                      }`}
-                    >
-                      <Icon className="w-3.5 h-3.5" />
-                      <span className="hidden lg:inline">{deviceSizes[device].label}</span>
-                    </button>
-                  )
-                })}
+        <div className="relative">
+          {/* Glass background layers - matches sidebar exactly */}
+          <div className="absolute inset-0 bg-zinc-900/70 backdrop-blur-xl" />
+          <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
+          <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-zinc-700/50 to-transparent" />
+          
+          <div className="relative flex items-center justify-between gap-2 px-4 py-2.5">
+            {!isMobileDevice && (
+              <div className="inline-flex bg-zinc-900/50 border border-zinc-800/50 rounded-xl p-1">
+                <button
+                  onClick={() => setViewMode('preview')}
+                  className={`px-3.5 py-2 text-xs font-medium tracking-wide rounded-lg transition-all ${
+                    viewMode === 'preview'
+                      ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                      : 'text-zinc-400 hover:text-zinc-200'
+                  }`}
+                >
+                  Visual
+                </button>
+                <button
+                  onClick={() => {
+                    if (allowCodeView) {
+                      setViewMode('code')
+                    } else {
+                      setShowCodePaywall(true)
+                    }
+                  }}
+                  className={`px-3.5 py-2 text-xs font-medium tracking-wide rounded-lg transition-all flex items-center gap-1.5 ${
+                    viewMode === 'code'
+                      ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                      : 'text-zinc-400 hover:text-zinc-200'
+                  }`}
+                >
+                  Code
+                  {!allowCodeView && <span className="text-amber-400/80 text-[10px] font-semibold">PRO</span>}
+                </button>
               </div>
-            </div>
-          )}
+            )}
+
+            {!isMobileDevice && viewMode === 'preview' && (
+              <div className="flex items-center gap-3">
+                {/* Edit Mode Toggle */}
+                <button
+                  onClick={() => setIsEditModeActive(!isEditModeActive)}
+                  className={`px-3.5 py-2 rounded-lg text-xs font-medium tracking-wide transition-all flex items-center gap-2 ${
+                    isEditModeActive
+                      ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                      : 'bg-zinc-900/50 text-zinc-400 border border-zinc-800/50 hover:text-zinc-200 hover:border-zinc-700/50'
+                  }`}
+                  title="Double-click text to edit"
+                >
+                  <Type className="w-3.5 h-3.5" />
+                  <span>Edit Text</span>
+                </button>
+                
+                {/* Device Selector */}
+                <div className="flex items-center gap-1 bg-zinc-900/50 border border-zinc-800/50 rounded-xl p-1">
+                  {(Object.keys(deviceSizes) as DeviceView[]).map((device) => {
+                    const Icon = deviceSizes[device].icon
+                    return (
+                      <button
+                        key={device}
+                        onClick={() => setDeviceView(device)}
+                        className={`px-3 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
+                          deviceView === device
+                            ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                            : 'text-zinc-400 hover:text-zinc-200'
+                        }`}
+                      >
+                        <Icon className="w-3.5 h-3.5" />
+                        <span className="hidden lg:inline">{deviceSizes[device].label}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
       
       {/* Code Paywall Modal */}
       {showCodePaywall && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowCodePaywall(false)}>
-          <div className="bg-black/90 border border-white/10 rounded-2xl p-8 max-w-md mx-4 text-center" onClick={e => e.stopPropagation()}>
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center">
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-8 max-w-md mx-4 text-center" onClick={e => e.stopPropagation()}>
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center">
               <span className="text-3xl">🔒</span>
             </div>
             <h3 className="text-xl font-bold text-white mb-2">Code Access Locked</h3>
@@ -721,7 +745,7 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
             <div className="flex gap-3">
               <button
                 onClick={() => setShowCodePaywall(false)}
-                className="flex-1 px-4 py-2 text-sm font-medium text-zinc-400 border border-white/10 rounded-lg hover:bg-white/5 transition-colors"
+                className="flex-1 px-4 py-2 text-sm font-medium text-zinc-400 border border-zinc-700 rounded-lg hover:bg-zinc-800 transition-colors"
               >
                 Maybe later
               </button>
@@ -740,11 +764,11 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
       )}
       
       {/* Preview / Code Container */}
-      <div className={`flex-1 flex items-start justify-center overflow-auto bg-black ${hideToolbar ? 'p-0' : 'p-4'}`}>
+      <div className="flex-1 flex items-start justify-center overflow-auto bg-zinc-950 p-0">
         {viewMode === 'code' && allowCodeView ? (
-          <div className="w-full max-w-5xl h-full bg-white/5 border border-white/10 rounded-lg shadow-2xl overflow-auto">
-            <div className="flex items-center justify-between px-4 py-2 border-b border-white/10 bg-white/5">
-              <span className="text-xs font-mono text-emerald-300">Raw React + Tailwind (no wrappers)</span>
+          <div className="w-full h-full bg-zinc-900/70 border border-zinc-800/50 shadow-2xl shadow-black/50 overflow-auto scrollbar-thin">
+            <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-800/50 bg-zinc-900/50">
+              <span className="text-xs font-mono text-emerald-400">Raw React + Tailwind (no wrappers)</span>
             </div>
             <pre className="p-4 text-xs font-mono text-zinc-100 whitespace-pre overflow-auto min-h-[320px]">
               {displayCode || '// Generate a section to see code'}
@@ -753,30 +777,31 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
         ) : (
           <motion.div
             initial={false}
-            animate={{ width: hideToolbar ? '100%' : (deviceView === 'mobile' && isMobileDevice ? '100%' : deviceSizes[deviceView].width) }}
+            animate={{ width: hideToolbar ? '100%' : deviceSizes[deviceView].width }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className={`h-full overflow-hidden ${hideToolbar ? '' : 'bg-white/5 rounded-lg shadow-2xl'}`}
-            style={{ 
-              maxWidth: '100%',
-              minHeight: hideToolbar ? '100%' : (isMobileDevice ? '640px' : deviceView === 'desktop' ? '100%' : '600px'),
-            }}
+            className="h-full overflow-hidden"
+            style={{ maxWidth: '100%' }}
           >
-            {/* Device Frame - hidden in guest mode */}
-            {!hideToolbar && deviceView !== 'desktop' && (
-              <div className="h-6 bg-white/10 flex items-center justify-center gap-1 border-b border-white/10">
-                <div className="w-16 h-1 bg-white/20 rounded-full" />
-              </div>
-            )}
-            <iframe
-              ref={iframeRef}
-              srcDoc={srcDoc}
-              className="w-full border-0"
-              style={{ 
-                height: hideToolbar ? '100%' : (deviceView === 'desktop' ? '100%' : 'calc(100% - 24px)'),
-              }}
-              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
-              title="Section Preview"
-            />
+            <div className="relative h-full w-full bg-zinc-950">
+              <iframe
+                ref={iframeRef}
+                srcDoc={srcDoc}
+                onLoad={handleIframeLoad}
+                className="w-full h-full border-0"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
+                title="Section Preview"
+                style={{ minHeight: '100%' }}
+              />
+              {isPreviewHydrating && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-zinc-950/95 backdrop-blur-xl">
+                  <div className="w-12 h-12 rounded-full border-2 border-zinc-700 border-t-emerald-500 animate-spin" />
+                  <div className="text-center text-xs text-zinc-400 leading-relaxed px-6">
+                    <p className="font-semibold text-white tracking-wide uppercase text-[11px]">Warming live preview</p>
+                    <p className="mt-1 text-zinc-500">Compiling React canvas...</p>
+                  </div>
+                </div>
+              )}
+            </div>
           </motion.div>
         )}
       </div>

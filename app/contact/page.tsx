@@ -58,33 +58,15 @@ function ContactForm() {
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Perspective Grid */}
         <div 
-          className="absolute inset-0 opacity-[0.15] bg-grid-flow"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(16,185,129,0.3) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(16,185,129,0.3) 1px, transparent 1px)
-            `,
-            backgroundSize: '60px 60px',
-            maskImage: 'linear-gradient(to bottom, transparent, black 20%, black 50%, transparent 90%)',
-            WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 20%, black 50%, transparent 90%)',
-            transform: 'perspective(500px) rotateX(60deg) translateY(-50%)',
-            transformOrigin: 'center top',
-            height: '200%',
-            top: '30%',
-          }}
+          className="absolute left-0 right-0 opacity-[0.15] contact-perspective-grid"
         />
         
         {/* Scanlines */}
-        <div className="absolute inset-0 opacity-[0.03]" 
-             style={{ 
-               backgroundImage: 'linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06))',
-               backgroundSize: '100% 2px, 3px 100%'
-             }} 
-        />
+        <div className="absolute inset-0 opacity-[0.03] contact-scanlines" />
 
         {/* Ambient Glows */}
         <div className="absolute top-[-20%] right-[-10%] w-[800px] h-[800px] bg-emerald-500/5 rounded-full blur-[100px]" />
-        <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] bg-teal-500/5 rounded-full blur-[100px]" />
+        <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[100px]" />
       </div>
 
       <div className="flex-1 flex flex-col max-w-6xl mx-auto w-full px-6 py-8 relative z-10 h-full">
@@ -92,7 +74,7 @@ function ContactForm() {
         <div className="shrink-0 mb-8">
           <Link 
             href={returnUrl}
-            className="inline-flex items-center gap-2 text-zinc-500 hover:text-white transition-colors group text-sm font-medium px-4 py-2 rounded-full hover:bg-white/5 border border-transparent hover:border-white/10"
+            className="inline-flex items-center gap-2 text-zinc-500 hover:text-white transition-colors group text-sm font-medium px-4 py-2 rounded-full hover:bg-zinc-900/70 border border-transparent hover:border-zinc-800/50"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             <span>Back</span>
@@ -120,38 +102,42 @@ function ContactForm() {
             <form onSubmit={handleSubmit} className="space-y-5 shrink-0">
               <div className="grid md:grid-cols-2 gap-5">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Name</label>
+                  <label htmlFor="contact-name" className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Name</label>
                   <input
+                    id="contact-name"
                     name="name"
                     value={form.name}
                     onChange={handleChange}
                     required
                     placeholder="Jane Doe"
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all placeholder:text-zinc-600 hover:border-white/20"
+                    className="w-full bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-xl px-4 py-2.5 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all placeholder:text-zinc-600 hover:border-zinc-700/50"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Email</label>
+                  <label htmlFor="contact-email" className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Email</label>
                   <input
+                    id="contact-email"
                     name="email"
                     type="email"
                     value={form.email}
                     onChange={handleChange}
                     required
                     placeholder="jane@example.com"
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all placeholder:text-zinc-600 hover:border-white/20"
+                    className="w-full bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-xl px-4 py-2.5 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all placeholder:text-zinc-600 hover:border-zinc-700/50"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Topic</label>
+                <label htmlFor="contact-topic" className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Topic</label>
                 <div className="relative">
                   <select
+                    id="contact-topic"
                     name="topic"
                     value={form.topic}
                     onChange={handleChange}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all appearance-none cursor-pointer hover:border-white/20"
+                    title="Select a topic"
+                    className="w-full bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-xl px-4 py-2.5 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all appearance-none cursor-pointer hover:border-zinc-700/50"
                   >
                     <option>General Inquiry</option>
                     <option>Technical Support</option>
@@ -172,19 +158,22 @@ function ContactForm() {
                   value={form.website}
                   onChange={handleChange}
                   autoComplete="off"
+                  aria-label="Website (do not fill)"
+                  tabIndex={-1}
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Message</label>
+                <label htmlFor="contact-message" className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Message</label>
                 <textarea
+                  id="contact-message"
                   name="message"
                   value={form.message}
                   onChange={handleChange}
                   required
                   minLength={10}
                   placeholder="How can we help you?"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all h-32 resize-none placeholder:text-zinc-600 hover:border-white/20"
+                  className="w-full bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-xl px-4 py-3 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all h-32 resize-none placeholder:text-zinc-600 hover:border-zinc-700/50"
                 />
               </div>
 
@@ -216,7 +205,7 @@ function ContactForm() {
                 <button
                   type="submit"
                   disabled={status === 'sending'}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:-translate-y-0.5"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-500 hover:from-emerald-400 hover:to-emerald-400 text-white font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:-translate-y-0.5"
                 >
                   {status === 'sending' ? (
                     <>
@@ -241,7 +230,7 @@ function ContactForm() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="space-y-6 lg:pt-0 flex flex-col justify-center"
           >
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm">
+            <div className="bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-2xl p-6 shadow-2xl shadow-black/50">
               <h3 className="font-semibold text-white mb-6 flex items-center gap-2">
                 <HelpCircle className="w-5 h-5 text-emerald-500" />
                 Support Channels
@@ -252,7 +241,7 @@ function ContactForm() {
                   href="mailto:support@hatchit.dev" 
                   className="flex items-start gap-4 group"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors border border-white/10">
+                  <div className="w-10 h-10 rounded-lg bg-zinc-800/70 flex items-center justify-center group-hover:bg-zinc-700/70 transition-colors border border-zinc-700/50">
                     <Mail className="w-5 h-5 text-zinc-400 group-hover:text-white transition-colors" />
                   </div>
                   <div>
@@ -267,7 +256,7 @@ function ContactForm() {
                   rel="noopener noreferrer"
                   className="flex items-start gap-4 group"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors border border-white/10">
+                  <div className="w-10 h-10 rounded-lg bg-zinc-800/70 flex items-center justify-center group-hover:bg-zinc-700/70 transition-colors border border-zinc-700/50">
                     <MessageSquare className="w-5 h-5 text-zinc-400 group-hover:text-white transition-colors" />
                   </div>
                   <div>
@@ -278,7 +267,7 @@ function ContactForm() {
               </div>
             </div>
 
-            <div className="p-6 rounded-2xl bg-gradient-to-br from-white/5 to-transparent border border-white/10">
+            <div className="p-6 rounded-2xl bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 shadow-lg shadow-black/30">
               <h3 className="font-medium text-white mb-2">Response Time</h3>
               <p className="text-sm text-zinc-400 leading-relaxed">
                 We're a small team but we move fast. Expect a response within 24 hours on business days.

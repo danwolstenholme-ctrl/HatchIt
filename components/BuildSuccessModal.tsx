@@ -49,9 +49,6 @@ export default function BuildSuccessModal({
             onClick={(e) => e.stopPropagation()}
             className="relative bg-zinc-900 border border-zinc-800 rounded-2xl p-8 w-full max-w-md overflow-hidden shadow-2xl"
           >
-            {/* Ambient Glow */}
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-zinc-500/5 pointer-events-none" />
-            
             {/* Success Icon */}
             <motion.div
               initial={{ scale: 0 }}
@@ -59,9 +56,8 @@ export default function BuildSuccessModal({
               transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
               className="relative mx-auto w-16 h-16 mb-6"
             >
-              <div className="absolute inset-0 bg-emerald-500/20 rounded-2xl blur-xl animate-pulse" />
-              <div className="relative w-16 h-16 bg-zinc-900 border border-emerald-500/30 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/10">
-                <Check className="w-8 h-8 text-emerald-400" strokeWidth={2} />
+              <div className="w-16 h-16 bg-zinc-800 border border-zinc-700 rounded-2xl flex items-center justify-center">
+                <Check className="w-8 h-8 text-emerald-500" strokeWidth={2} />
               </div>
             </motion.div>
 
@@ -164,7 +160,7 @@ export default function BuildSuccessModal({
                       })
                       onUpgrade()
                     }}
-                    className="group w-full py-3.5 px-6 bg-zinc-900 border border-emerald-500/50 hover:border-emerald-500 hover:bg-emerald-500/10 text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.1)] hover:shadow-[0_0_30px_rgba(16,185,129,0.2)]"
+                    className="group w-full py-3.5 px-6 bg-zinc-900 border border-zinc-700 hover:border-zinc-600 hover:bg-zinc-800 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
                   >
                     <Sparkles className="w-4 h-4 text-emerald-400" />
                     <span>{isOut ? 'Unlock Unlimited' : 'Upgrade Now'}</span>
@@ -218,6 +214,7 @@ export default function BuildSuccessModal({
             {/* Close Button */}
             <button
               onClick={onClose}
+              aria-label="Close success modal"
               className="absolute top-4 right-4 w-8 h-8 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-all flex items-center justify-center"
             >
               <X className="w-4 h-4" />

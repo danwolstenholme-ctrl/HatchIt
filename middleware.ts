@@ -1,9 +1,14 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 
+// PROTECTED: Everything behind the gate
+// Keep build/refine APIs public so /demo guests can generate sections.
 const isProtectedRoute = createRouteMatcher([
+  '/builder(.*)',
   '/dashboard(.*)',
+  '/api/project(.*)',
   '/api/generate(.*)',
-  '/api/project(.*)'
+  '/api/export(.*)',
+  '/api/deploy(.*)',
 ])
 
 export default clerkMiddleware(async (auth, req) => {

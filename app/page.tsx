@@ -1,60 +1,26 @@
 'use client'
 
-/* eslint-disable react/no-unescaped-entities */
-// Deploy trigger: 2026-01-02
-
-import { useEffect, useState, useRef, useSyncExternalStore } from 'react'
+import { useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
 import { Terminal, Layers, Shield, Zap, Code2, Globe, ArrowRight, CheckCircle2, Layout, Smartphone } from 'lucide-react'
-import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime'
 import HomepageWelcome from '@/components/HomepageWelcome'
 import SingularityTransition from '@/components/singularity/SingularityTransition'
 
-// Client-side check to prevent hydration mismatch
-const emptySubscribe = () => () => {}
-function useIsClient() {
-  return useSyncExternalStore(
-    emptySubscribe,
-    () => true,
-    () => false
-  )
-}
-
-// The Void Button - hands off to launch page for the immersive experience
-function VoidButton({ isSignedIn, router, onLaunch }: { isSignedIn: boolean | undefined, router: AppRouterInstance, onLaunch: () => void }) {
-  
-  const handleClick = () => {
-    onLaunch()
-  }
-  
-  return (
-    <button
-      onClick={handleClick}
-      className="group relative w-full sm:w-auto inline-flex justify-center items-center gap-3 px-8 sm:px-10 py-4 sm:py-5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-lg transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 shadow-lg shadow-emerald-900/20"
-    >
-      <div className="relative z-10 flex items-center gap-3">
-        <span className="tracking-wide">Try the Demo</span>
-        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-      </div>
-    </button>
-  )
-}
-
-// Section wrapper - simple fade-in on scroll
-function Section({ children, className = '', id = '' }: { children: React.ReactNode; className?: string; id?: string }) {
+// Section wrapper - staggered fade-in with depth
+function Section({ children, className = '', id = '', delay = 0 }: { children: React.ReactNode; className?: string; id?: string; delay?: number }) {
   const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: "-50px" })
+  const isInView = useInView(ref, { once: true, margin: "-100px" })
   
   return (
     <motion.section
       ref={ref}
       id={id}
-      initial={{ opacity: 0, y: 20 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-      transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+      initial={{ opacity: 0, y: 40 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+      transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
       className={className}
     >
       {children}
@@ -62,86 +28,12 @@ function Section({ children, className = '', id = '' }: { children: React.ReactN
   )
 }
 
-// Animated card that prevents hydration flash
-function AnimatedCard({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
-  const isClient = useIsClient()
-  if (!isClient) return <div className={className}>{children}</div>
-  
-  return (
-    <motion.div 
-      className={className}
-      style={{ willChange: 'transform, opacity' }}
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5, delay, ease: [0.25, 0.1, 0.25, 1] }}
-      whileHover={{ y: -8, transition: { type: 'spring', stiffness: 400, damping: 17 } }}
-    >
-      {children}
-    </motion.div>
-  )
-}
-
-
-
-// Typewriter effect for hero code preview
-function TypewriterCode() {
-  const [displayedText, setDisplayedText] = useState('')
-  const [currentPromptIndex, setCurrentPromptIndex] = useState(0)
-  
-  const prompts = [
-    '"A modern hero with gradient background and CTA"',
-    '"Pricing table with 3 tiers and toggle"',
-    '"Testimonial carousel with avatars"',
-    '"Feature grid with icons and hover effects"',
-  ]
-  
-  useEffect(() => {
-    const currentPrompt = prompts[currentPromptIndex]
-    let charIndex = 0
-    
-    // Type out
-    const typeInterval = setInterval(() => {
-      if (charIndex <= currentPrompt.length) {
-        setDisplayedText(currentPrompt.slice(0, charIndex))
-        charIndex++
-      } else {
-        clearInterval(typeInterval)
-        // Wait, then clear and move to next
-        setTimeout(() => {
-          setDisplayedText('')
-          setCurrentPromptIndex((prev) => (prev + 1) % prompts.length)
-        }, 2000)
-      }
-    }, 50)
-    
-    return () => clearInterval(typeInterval)
-  }, [currentPromptIndex])
-  
-  return (
-    <div className="text-left">
-      <span className="text-zinc-500">{'> '}</span>
-      <span className="text-emerald-400">{displayedText}</span>
-      <motion.span
-        animate={{ opacity: [1, 0] }}
-        transition={{ duration: 0.5, repeat: Infinity }}
-        className="text-emerald-400"
-      >
-        |
-      </motion.span>
-    </div>
-  )
-}
-
 export default function Home() {
   const { isSignedIn } = useUser()
   const router = useRouter()
-  const [showLaunch, setShowLaunch] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
 
   const handleTransitionComplete = () => {
-    // Signed in users → /builder (with project persistence)
-    // Everyone else → /demo (localStorage only, upgrade prompts)
     router.push(isSignedIn ? '/builder' : '/demo')
   }
 
@@ -150,557 +42,584 @@ export default function Home() {
   }
   
   return (
-    <main className="min-h-screen bg-zinc-950 text-zinc-200 relative overflow-hidden selection:bg-emerald-500/30 selection:text-emerald-50">
-      {/* Ambient void background - Global */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-teal-500/5 rounded-full blur-[120px]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(9,9,11,0.8)_100%)]" />
-      </div>
-
-      {/* Scanline Effect - Global */}
-      <div className="fixed inset-0 pointer-events-none z-50 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDIiLz4KPC9zdmc+')] opacity-20 mix-blend-overlay" />
-
+    <main className="min-h-screen bg-zinc-950 text-zinc-200">
       <AnimatePresence>
         {isTransitioning && <SingularityTransition onComplete={handleTransitionComplete} />}
       </AnimatePresence>
       
       <HomepageWelcome onStart={triggerTransition} />
-      
-      {/* CSS for smooth scroll */}
-      <style jsx global>{`
-        html { scroll-behavior: smooth; }
-        @keyframes gradient-shift {
-          0%, 100% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-        }
-        @keyframes grid-flow {
-          0% { background-position: 0px 0px; }
-          100% { background-position: 0px 60px; }
-        }
-        .animate-gradient {
-          background-size: 200% 200%;
-          animation: gradient-shift 8s ease infinite;
-        }
-        .bg-grid-flow {
-          animation: grid-flow 3s linear infinite;
-        }
-      `}</style>
 
-      {/* HERO SECTION - Clean and confident */}
-      <section className="relative min-h-[90vh] flex flex-col justify-center items-center pt-28 sm:pt-32 pb-12 px-4 sm:px-6 overflow-hidden">
-        {/* Layered depth background */}
-        <div className="absolute inset-0 bg-zinc-950/50" />
+      {/* HERO */}
+      <section className="relative min-h-[90vh] flex items-center px-4 sm:px-6 pt-32 pb-24 border-b border-zinc-900 overflow-hidden">
+        {/* Refined gradient backdrop - GitHub-inspired subtlety */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.08),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(16,185,129,0.05),transparent_70%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/40 via-transparent to-zinc-950/90" />
         
-        {/* Perspective grid - fades into distance */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div 
-            className="absolute inset-0 opacity-[0.1] bg-grid-flow"
-            style={{
-              backgroundImage: `
-                linear-gradient(rgba(16,185,129,0.2) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(16,185,129,0.2) 1px, transparent 1px)
-              `,
-              backgroundSize: '60px 60px',
-              maskImage: 'linear-gradient(to bottom, transparent, black 20%, black 50%, transparent 90%)',
-              WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 20%, black 50%, transparent 90%)',
-              transform: 'perspective(500px) rotateX(60deg) translateY(-50%)',
-              transformOrigin: 'center top',
-              height: '200%',
-              top: '30%',
-            }}
-          />
-        </div>
-        
-        {/* Scanline Overlay */}
-        <div className="absolute inset-0 pointer-events-none opacity-[0.03]" 
-             style={{ 
-               backgroundImage: 'linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06))',
-               backgroundSize: '100% 2px, 3px 100%'
-             }} 
-        />
-        
-        {/* Radial depth layers */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-emerald-500/[0.08] rounded-full blur-[150px]" />
-        <div className="absolute top-1/3 left-1/3 w-[400px] h-[400px] bg-teal-500/[0.05] rounded-full blur-[100px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] bg-emerald-600/[0.04] rounded-full blur-[80px]" />
-        
-        {/* Subtle vignette */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(9,9,11,0.6)_70%,rgba(9,9,11,0.9)_100%)]" />
-        
-        {/* Floating particles */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(8)].map((_, i) => (
+          <div className="relative z-10 max-w-5xl mx-auto w-full text-center">
+            {/* Floating particles - refined for elegance */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              {[...Array(12)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  animate={{
+                    y: [0, -40, 0],
+                    x: [0, Math.sin(i) * 15, 0],
+                    opacity: [0.05, 0.2, 0.05],
+                    scale: [1, 1.3, 1]
+                  }}
+                  transition={{
+                    duration: 10 + i * 1.5,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                    delay: i * 0.8
+                  }}
+                  className="absolute w-1 h-1 rounded-full bg-emerald-400/30"
+                  style={{
+                    left: `${15 + (i * 10)}%`,
+                    top: `${25 + (i % 3) * 20}%`,
+                    filter: 'blur(1px)'
+                  }}
+                />
+              ))}
+            </div>
+
             <motion.div
-              key={i}
-              className="absolute rounded-full"
-              style={{
-                left: `${10 + i * 12}%`,
-                top: `${15 + (i % 4) * 20}%`,
-                width: i % 2 === 0 ? '3px' : '2px',
-                height: i % 2 === 0 ? '3px' : '2px',
-                background: i % 3 === 0 ? 'rgba(16,185,129,0.4)' : 'rgba(20,184,166,0.3)',
-              }}
-              animate={{
-                y: [0, -40, 0],
-                opacity: [0.2, 0.6, 0.2],
-                scale: [1, 1.2, 1],
-              }}
-              transition={{
-                duration: 4 + i * 0.7,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: i * 0.4,
-              }}
-            />
-          ))}
-        </div>
-        
-        <div className="max-w-4xl mx-auto w-full relative z-10 flex flex-col items-center text-center">
-            
-            {/* Main headline - clean, no gimmicks */}
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="space-y-8"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1, duration: 0.6 }}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-zinc-900/50 border border-zinc-800 rounded-full text-xs text-zinc-400 backdrop-blur-sm"
+            >
+              <motion.span 
+                animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="w-1.5 h-1.5 bg-emerald-400 rounded-full" 
+              />
+              Production-ready React components
+            </motion.div>
+
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.6 }}
-              className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tight leading-[1.1] mb-6"
+              transition={{ delay: 0.2, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight text-white leading-[1.1]"
             >
-              <span className="block text-white">Describe it.</span>
-              <motion.span 
-                className="block bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400 bg-clip-text text-transparent animate-gradient"
-                animate={{ 
-                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-                }}
-                transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+              Text to{' '}
+              <motion.span
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.6 }}
+                className="relative inline-flex items-center px-4 py-1.5 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 shadow-[0_10px_50px_rgba(16,185,129,0.25)]"
               >
-                Watch it build.
+                <span className="relative bg-gradient-to-r from-emerald-400 to-emerald-500 bg-clip-text text-transparent tracking-tight">
+                  React
+                </span>
+                <motion.span
+                  className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white/0 via-white/20 to-white/0"
+                  animate={{ x: ['-150%', '150%'] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                  aria-hidden="true"
+                />
+              </motion.span>.<br />
+              <motion.span 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.8 }}
+                className="bg-gradient-to-r from-zinc-200 via-zinc-400 to-zinc-500 bg-clip-text text-transparent"
+              >
+                Instant preview.
               </motion.span>
             </motion.h1>
 
-            {/* Subheadline - let it breathe */}
             <motion.p 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="text-lg sm:text-xl text-zinc-400 max-w-xl mx-auto leading-relaxed mb-10"
-            >
-              Describe what you need. Preview it live. Deploy to your domain or ours.
-            </motion.p>
-            
-            {/* Mini code preview - shows what you're building */}
-            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-              className="relative w-full max-w-lg mb-10 hidden sm:block"
+              transition={{ delay: 0.5, duration: 0.6 }}
+              className="text-lg sm:text-xl md:text-2xl text-zinc-400 max-w-3xl mx-auto leading-relaxed px-2"
             >
-              <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5 font-mono text-sm overflow-hidden shadow-xl shadow-black/20">
-                <div className="flex items-center gap-2 mb-4 text-zinc-600 border-b border-zinc-800 pb-3">
-                  <div className="flex gap-1.5">
-                    <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
-                  </div>
-                  <span className="text-[10px] uppercase tracking-widest ml-2 opacity-50">HeroSection.tsx</span>
-                </div>
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.8 }}
-                >
-                  <TypewriterCode />
-                </motion.div>
-              </div>
-              {/* Glow effect */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 rounded-xl blur-2xl opacity-50 -z-10" />
-            </motion.div>
+              Describe your vision in plain English. Watch production-ready React + Tailwind materialize in real-time.
+            </motion.p>
 
-            {/* CTA */}
             <motion.div 
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7 }}
-              className="mb-16"
+              transition={{ delay: 0.7, duration: 0.6 }}
+              className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-4 px-2"
             >
-              <VoidButton isSignedIn={isSignedIn} router={router} onLaunch={triggerTransition} />
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={triggerTransition}
+                className="group relative w-full sm:w-auto inline-flex justify-center items-center gap-2 sm:gap-3 px-6 sm:px-8 py-3.5 sm:py-4 bg-emerald-500/15 backdrop-blur-2xl border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white text-center rounded-xl font-semibold transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)] overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent rounded-xl pointer-events-none" />
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
+                  animate={{ x: ['-200%', '200%'] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                />
+                <span className="relative">Try the Demo</span>
+                <ArrowRight className="relative w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
+              </motion.button>
+              <Link
+                href="/how-it-works"
+                className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-zinc-800/50 backdrop-blur-xl hover:bg-zinc-800/60 border border-zinc-700/50 hover:border-zinc-600 px-6 sm:px-8 py-3.5 sm:py-4 font-medium text-zinc-200 transition-all"
+              >
+                See how it works
+              </Link>
             </motion.div>
 
-            {/* Trust signals - simple row */}
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.9 }}
-              className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs font-mono text-zinc-500 uppercase tracking-wider"
+              transition={{ delay: 0.9, duration: 0.6 }}
+              className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs sm:text-sm text-zinc-500 pt-6 sm:pt-8 px-2"
             >
-              <motion.span 
-                className="flex items-center gap-2"
-                whileHover={{ scale: 1.05, color: '#10b981' }}
-                transition={{ type: 'spring', stiffness: 400 }}
-              >
-                <Zap className="w-3 h-3 text-emerald-500/70" />
-                Live Preview
-              </motion.span>
-              <span className="w-0.5 h-3 bg-zinc-800 hidden sm:block" />
-              <motion.span 
-                className="flex items-center gap-2"
-                whileHover={{ scale: 1.05, color: '#10b981' }}
-                transition={{ type: 'spring', stiffness: 400 }}
-              >
-                <Code2 className="w-3 h-3 text-emerald-500/70" />
-                Real React + Tailwind
-              </motion.span>
-              <span className="w-0.5 h-3 bg-zinc-800 hidden sm:block" />
-              <motion.span 
-                className="flex items-center gap-2"
-                whileHover={{ scale: 1.05, color: '#10b981' }}
-                transition={{ type: 'spring', stiffness: 400 }}
-              >
-                <Globe className="w-3 h-3 text-emerald-500/70" />
-                Deploy Anywhere
-              </motion.span>
+              {[
+                { label: 'Live preview', delay: 0, icon: '\u26a1' },
+                { label: 'Point-and-click editing', delay: 0.1, icon: '\ud83c\udfaf' },
+                { label: 'Real React + Tailwind', delay: 0.2, icon: '\u269b\ufe0f' },
+                { label: 'Deploy or download', delay: 0.3 },
+              ].map((item, i) => (
+                <motion.div
+                  key={item.label}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1 + item.delay, duration: 0.4 }}
+                  className="flex items-center gap-2"
+                >
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  {item.label}
+                </motion.div>
+              ))}
             </motion.div>
-        </div>
+          </motion.div>
+          </div>
       </section>
 
       {/* THE STACK */}
-      <Section className="px-6 py-20 relative overflow-hidden border-t border-white/5">
-        <div className="max-w-6xl mx-auto relative z-10">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-5xl font-bold mb-4 tracking-tight">
-              See it <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">before you ship it.</span>
+      <Section id="stack" className="px-6 py-24 border-y border-zinc-900 bg-zinc-950/50 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.05),transparent_70%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/30 to-transparent" />
+        
+        <div className="relative max-w-6xl mx-auto">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
+              Real code. Not screenshots.
             </h2>
-            <p className="text-lg text-zinc-400 max-w-2xl mx-auto">
-              Live preview of real React components. Iterate until it&apos;s perfect, then deploy or download the code.
+            <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
+              Every component is production-ready React + Tailwind. No magic, no mockups.
             </p>
-          </div>
+          </motion.div>
 
-          {/* Key differentiators */}
-          <div className="grid md:grid-cols-3 gap-6 mb-16">
-            <div className="p-8 bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl hover:bg-white/10 hover:border-emerald-500/30 transition-all duration-300 group shadow-lg shadow-black/20">
-              <div className="w-14 h-14 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-[0_0_30px_-10px_rgba(16,185,129,0.3)]">
-                <Zap className="w-7 h-7 text-emerald-400" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-white">Live Preview</h3>
-              <p className="text-zinc-400 text-sm leading-relaxed">Watch your React components render in real-time. Refine with words until it&apos;s exactly right.</p>
-            </div>
-            <div className="p-8 bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl hover:bg-white/10 hover:border-teal-500/30 transition-all duration-300 group shadow-lg shadow-black/20">
-              <div className="w-14 h-14 bg-teal-500/10 border border-teal-500/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-[0_0_30px_-10px_rgba(20,184,166,0.3)]">
-                <Code2 className="w-7 h-7 text-teal-400" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-white">Real Code</h3>
-              <p className="text-zinc-400 text-sm leading-relaxed">Not mockups. Actual React + Tailwind components you can download and use anywhere.</p>
-            </div>
-            <div className="p-8 bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl hover:bg-white/10 hover:border-emerald-500/30 transition-all duration-300 group shadow-lg shadow-black/20">
-              <div className="w-14 h-14 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-[0_0_30px_-10px_rgba(16,185,129,0.3)]">
-                <Globe className="w-7 h-7 text-emerald-400" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-white">Your Choice</h3>
-              <p className="text-zinc-400 text-sm leading-relaxed">Deploy to our hosting for quick sharing, or export the source and host it yourself.</p>
-            </div>
-          </div>
-
-          {/* Tech badges */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { 
-                name: 'React 19', 
-                icon: <Code2 className="w-5 h-5" />, 
-                desc: 'Latest', 
-                bg: 'from-emerald-500/10', 
-                text: 'group-hover:text-emerald-400', 
-                hover: 'hover:border-emerald-400/50 hover:shadow-emerald-500/20' 
-              },
-              { 
-                name: 'Tailwind', 
-                icon: <Layout className="w-5 h-5" />, 
-                desc: 'Utility-first', 
-                bg: 'from-teal-500/10', 
-                text: 'group-hover:text-teal-400', 
-                hover: 'hover:border-teal-400/50 hover:shadow-teal-500/20' 
-              },
-              { 
-                name: 'TypeScript', 
-                icon: <Terminal className="w-5 h-5" />, 
-                desc: 'Type-safe', 
-                bg: 'from-emerald-500/10', 
-                text: 'group-hover:text-emerald-400', 
-                hover: 'hover:border-emerald-400/50 hover:shadow-emerald-500/20' 
-              },
-              { 
-                name: 'Framer Motion', 
-                icon: <Layers className="w-5 h-5" />, 
-                desc: 'Cinematic', 
-                bg: 'from-teal-500/10', 
-                text: 'group-hover:text-teal-400', 
-                hover: 'hover:border-teal-400/50 hover:shadow-teal-500/20' 
-              },
-              { 
-                name: 'Responsive', 
-                icon: <Smartphone className="w-5 h-5" />, 
-                desc: 'Mobile-first', 
-                bg: 'from-emerald-500/10', 
-                text: 'group-hover:text-emerald-400', 
-                hover: 'hover:border-emerald-400/50 hover:shadow-emerald-500/20' 
-              },
-              { 
-                name: 'Accessible', 
-                icon: <CheckCircle2 className="w-5 h-5" />, 
-                desc: 'WCAG', 
-                bg: 'from-teal-500/10', 
-                text: 'group-hover:text-teal-400', 
-                hover: 'hover:border-teal-400/50 hover:shadow-teal-500/20' 
-              },
-              { 
-                name: 'SEO Ready', 
-                icon: <Globe className="w-5 h-5" />, 
-                desc: 'Optimized', 
-                bg: 'from-emerald-500/10', 
-                text: 'group-hover:text-emerald-400', 
-                hover: 'hover:border-emerald-400/50 hover:shadow-emerald-500/20' 
-              },
-              { 
-                name: 'Yours', 
-                icon: <Shield className="w-5 h-5" />, 
-                desc: '100%', 
-                bg: 'from-teal-500/10', 
-                text: 'group-hover:text-teal-400', 
-                hover: 'hover:border-teal-400/50 hover:shadow-teal-500/20' 
-              },
+              { name: 'React 19', icon: Code2 },
+              { name: 'Tailwind 4', icon: Layout },
+              { name: 'TypeScript', icon: Terminal },
+              { name: 'Framer Motion', icon: Layers },
+              { name: 'Responsive', icon: Smartphone },
+              { name: 'Accessible', icon: CheckCircle2 },
+              { name: 'SEO Ready', icon: Globe },
+              { name: 'Own the code', icon: Shield },
             ].map((tech, i) => (
-              <div 
-                key={i} 
-                className={`group p-4 bg-white/5 border border-white/5 rounded-xl text-center transition-all duration-300 cursor-default hover:scale-[1.02] hover:bg-white/10 ${tech.hover}`}
+              <motion.div 
+                key={tech.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05, duration: 0.4 }}
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                className="flex items-center gap-3 px-4 py-4 bg-zinc-900/60 backdrop-blur-xl border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/80 rounded-xl transition-all group"
               >
-                <div className={`w-10 h-10 mx-auto bg-white/5 rounded-lg flex items-center justify-center mb-2 text-zinc-400 ${tech.text} transition-colors border border-white/5`}>
-                  {tech.icon}
-                </div>
-                <div className="font-semibold text-sm text-white">{tech.name}</div>
-                <div className="text-xs text-zinc-500 mt-0.5 group-hover:text-zinc-400 transition-colors">{tech.desc}</div>
-              </div>
+                <motion.div whileHover={{ rotate: 360, transition: { duration: 0.6 } }}>
+                  <tech.icon className="w-5 h-5 text-zinc-400 group-hover:text-emerald-400 transition-colors" />
+                </motion.div>
+                <span className="text-sm font-medium text-zinc-300">{tech.name}</span>
+              </motion.div>
             ))}
           </div>
         </div>
       </Section>
 
-      {/* HOW IT WORKS - Simple 3-step */}
-      <Section className="px-4 sm:px-6 py-16">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-3">
-              How it works
-            </h2>
-            <p className="text-lg text-zinc-400">You drive. We generate.</p>
-          </div>
+      {/* HOW IT WORKS */}
+      <Section id="how-it-works" className="px-4 sm:px-6 py-24">
+        <div className="max-w-6xl mx-auto">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">From idea to live site in minutes</h2>
+            <p className="text-xl text-zinc-400">AI-powered builder. Real infrastructure. Zero DevOps.</p>
+          </motion.div>
 
-          {/* 3-step process */}
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="text-center p-8 bg-white/5 border border-white/10 backdrop-blur-sm rounded-2xl hover:bg-white/10 transition-all duration-300">
-              <div className="w-16 h-16 mx-auto bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-center mb-6 shadow-[0_0_30px_-10px_rgba(16,185,129,0.3)]">
-                <span className="text-2xl font-bold text-emerald-400">1</span>
-              </div>
-              <h3 className="text-lg font-bold mb-2 text-white">Describe a section</h3>
-              <p className="text-zinc-400 text-sm leading-relaxed">&quot;A pricing table with 3 tiers and a monthly/yearly toggle&quot;</p>
-            </div>
-            <div className="text-center p-8 bg-white/5 border border-white/10 backdrop-blur-sm rounded-2xl hover:bg-white/10 transition-all duration-300">
-              <div className="w-16 h-16 mx-auto bg-teal-500/10 border border-teal-500/20 rounded-2xl flex items-center justify-center mb-6 shadow-[0_0_30px_-10px_rgba(20,184,166,0.3)]">
-                <span className="text-2xl font-bold text-teal-400">2</span>
-              </div>
-              <h3 className="text-lg font-bold mb-2 text-white">Preview and refine</h3>
-              <p className="text-zinc-400 text-sm leading-relaxed">See it render live. Say &quot;make the buttons rounder&quot; — watch it update.</p>
-            </div>
-            <div className="text-center p-8 bg-white/5 border border-white/10 backdrop-blur-sm rounded-2xl hover:bg-white/10 transition-all duration-300">
-              <div className="w-16 h-16 mx-auto bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-center justify-center mb-6 shadow-[0_0_30px_-10px_rgba(245,158,11,0.3)]">
-                <span className="text-2xl font-bold text-amber-400">3</span>
-              </div>
-              <h3 className="text-lg font-bold mb-2 text-white">Ship it</h3>
-              <p className="text-zinc-400 text-sm leading-relaxed">Deploy to share instantly, or download the React code and own it forever.</p>
-            </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              { 
+                step: '01', 
+                title: 'Describe & Preview', 
+                copy: 'Type in plain English. Watch production React + Tailwind render live. Refine with natural language until pixel-perfect.',
+                delay: 0
+              },
+              { 
+                step: '02', 
+                title: 'Edit & Customize', 
+                copy: 'Point-and-click editing. Live preview updates instantly. We handle responsive design, accessibility, and performance.',
+                delay: 0.1
+              },
+              { 
+                step: '03', 
+                title: 'Deploy Securely', 
+                copy: 'One-click deploy to production infrastructure. Authentication, database, and CDN included. Custom domains supported.',
+                delay: 0.2
+              },
+            ].map((item) => (
+              <motion.div 
+                key={item.step}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: item.delay, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                whileHover={{ y: -12, transition: { duration: 0.3 } }}
+                className="relative p-8 bg-zinc-900/60 backdrop-blur-xl border border-zinc-800 rounded-2xl group hover:border-zinc-700 hover:shadow-2xl hover:shadow-black/20 transition-all cursor-pointer"
+              >
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  className="absolute inset-0 bg-gradient-to-b from-emerald-500/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"
+                />
+                
+                <div className="relative">
+                  <motion.div 
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    whileInView={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: item.delay + 0.2, duration: 0.5 }}
+                    className="text-6xl font-bold text-zinc-800 mb-4 group-hover:text-zinc-700 transition-colors"
+                  >
+                    {item.step}
+                  </motion.div>
+                  <h3 className="text-2xl font-semibold text-white mb-3">{item.title}</h3>
+                  <p className="text-zinc-400 leading-relaxed">{item.copy}</p>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </Section>
 
-
-
-      {/* PRICING */}
-      <Section id="pricing" className="px-4 sm:px-6 py-24 relative overflow-hidden">
-        {/* Depth background for pricing */}
-        <div className="absolute inset-0">
-          {/* Grid with perspective */}
-          <div 
-            className="absolute inset-0 opacity-[0.08]"
-            style={{
-              backgroundImage: `
-                linear-gradient(rgba(16,185,129,0.5) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(16,185,129,0.5) 1px, transparent 1px)
-              `,
-              backgroundSize: '40px 40px',
-              maskImage: 'radial-gradient(ellipse at center, black 0%, transparent 70%)',
-              WebkitMaskImage: 'radial-gradient(ellipse at center, black 0%, transparent 70%)',
-            }}
-          />
-          {/* Central glow */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/[0.05] rounded-full blur-[100px]" />
-        </div>
+      {/* INFRASTRUCTURE */}
+      <Section className="px-4 sm:px-6 py-24 border-y border-zinc-900 bg-zinc-950 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.06),transparent_60%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-zinc-950/50 to-transparent" />
         
-        <div className="max-w-6xl mx-auto relative z-10">
-          <div className="text-center mb-16">
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-4xl sm:text-5xl font-bold mb-4 tracking-tight"
-            >
-              Simple pricing
-            </motion.h2>
-            <p className="text-xl text-zinc-400">Start free. Upgrade when you need more.</p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-sm sm:max-w-none mx-auto">
-            {/* Starter ($19/mo) */}
-            <motion.div 
-              className="group relative p-8 bg-white/5 border border-white/10 backdrop-blur-sm rounded-2xl hover:bg-white/10 hover:border-emerald-500/30 transition-all duration-500 flex flex-col overflow-hidden"
-              whileHover={{ y: -4 }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              
-              <div className="relative z-10">
-                <div className="text-xs font-mono text-zinc-500 uppercase tracking-widest mb-4">Starter</div>
-                <h3 className="text-2xl font-bold text-white mb-2">Architect</h3>
-                <div className="flex items-baseline gap-1 mb-6">
-                  <span className="text-4xl font-mono font-bold text-white tracking-tighter">$19</span>
-                  <span className="text-zinc-600 font-mono text-sm">/mo</span>
-                </div>
-                
-                <div className="h-px w-full bg-white/10 mb-6" />
-                
-                <ul className="space-y-4 mb-8">
-                  {[
-                    { text: 'Unlimited generations', included: true },
-                    { text: 'Live preview', included: true },
-                    { text: 'Deploy to hatchit.dev', included: true },
-                    { text: '3 projects', included: true },
-                    { text: 'Download source code', included: false },
-                    { text: 'Custom domain', included: false },
-                  ].map((item, i) => (
-                    <li key={i} className={`flex items-center gap-3 text-sm ${item.included ? 'text-zinc-300' : 'text-zinc-600'}`}>
-                      <div className={`w-1.5 h-1.5 rounded-full ${item.included ? 'bg-emerald-500' : 'bg-zinc-800'}`} />
-                      <span className={item.included ? '' : 'line-through decoration-zinc-800'}>{item.text}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </motion.div>
-
-            {/* Pro ($49) */}
-            <motion.div 
-              className="group relative p-8 bg-emerald-500/10 border border-emerald-500/30 backdrop-blur-md rounded-2xl shadow-[0_0_50px_-10px_rgba(16,185,129,0.2)] hover:shadow-[0_0_80px_-10px_rgba(16,185,129,0.3)] transition-all duration-500 flex flex-col overflow-hidden lg:-translate-y-4"
-              whileHover={{ y: -12 }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/10 via-emerald-500/5 to-transparent opacity-100" />
-              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-50" />
-              
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-xs font-mono text-emerald-400 uppercase tracking-widest">Recommended</div>
-                  <div className="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-[10px] font-mono text-emerald-300 uppercase">Unlimited</div>
-                </div>
-                
-                <h3 className="text-3xl font-bold text-white mb-2">Visionary</h3>
-                <div className="flex items-baseline gap-1 mb-6">
-                  <span className="text-5xl font-mono font-bold text-white tracking-tighter">$49</span>
-                  <span className="text-zinc-500 font-mono text-sm">/mo</span>
-                </div>
-                
-                <div className="h-px w-full bg-emerald-500/20 mb-6" />
-                
-                <ul className="space-y-4 mb-8">
-                  {[
-                    'Everything in Architect',
-                    'Download source code',
-                    'Custom domain',
-                    'No HatchIt branding',
-                    'Commercial license',
-                    '10 projects',
-                  ].map((item, i) => (
-                    <li key={i} className="flex items-center gap-3 text-sm text-white">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </motion.div>
-
-            {/* Agency ($199) */}
-            <motion.div 
-              className="group relative p-8 bg-white/5 border border-white/10 backdrop-blur-sm rounded-2xl hover:bg-white/10 hover:border-amber-500/30 transition-all duration-500 flex flex-col overflow-hidden"
-              whileHover={{ y: -4 }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-b from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              
-              <div className="relative z-10">
-                <div className="text-xs font-mono text-amber-500 uppercase tracking-widest mb-4">Unlimited</div>
-                <h3 className="text-2xl font-bold text-white mb-2">Singularity</h3>
-                <div className="flex items-baseline gap-1 mb-6">
-                  <span className="text-4xl font-mono font-bold text-white tracking-tighter">$199</span>
-                  <span className="text-zinc-600 font-mono text-sm">/mo</span>
-                </div>
-                
-                <div className="h-px w-full bg-white/10 mb-6" />
-                
-                <ul className="space-y-4 mb-8">
-                  {[
-                    'Everything in Visionary',
-                    'Unlimited Projects',
-                    'Direct Line to Founders',
-                    'Early Access to New Models',
-                    'API Access (Coming Soon)',
-                    'Dedicated Infrastructure',
-                  ].map((item, i) => (
-                    <li key={i} className="flex items-center gap-3 text-sm text-zinc-300">
-                      <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Single Sign Up CTA */}
+        <div className="relative max-w-6xl mx-auto">
           <motion.div 
-            className="flex flex-col items-center gap-6 mt-16"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.3 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
           >
-            <Link 
-              href="/sign-up"
-              className="group relative inline-flex items-center gap-3 px-12 py-5 bg-emerald-500 hover:bg-emerald-400 text-black rounded-md font-bold text-lg transition-all shadow-[0_0_40px_rgba(16,185,129,0.3)] hover:shadow-[0_0_60px_rgba(16,185,129,0.5)] hover:scale-105 active:scale-95"
-            >
-              <span>Start Building Free</span>
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <p className="text-sm text-zinc-500">Free tier included • Upgrade anytime</p>
+            <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
+              Real infrastructure. Not a toy.
+            </h2>
+            <p className="text-xl text-zinc-400 max-w-3xl mx-auto">
+              Enterprise-grade deployment pipeline, secure authentication, managed database, and global CDN. We handle the DevOps so you don't have to.
+            </p>
           </motion.div>
-          
-          <p className="text-center text-sm text-zinc-600 mt-8">Cancel anytime. The code belongs to you.</p>
+
+          <div className="grid md:grid-cols-2 gap-6 mb-12">
+            {[
+              { 
+                title: 'Production Deployment',
+                features: ['Global CDN with edge caching', 'Automatic SSL certificates', 'Custom domain support', 'Zero-downtime deploys'],
+                delay: 0
+              },
+              { 
+                title: 'Authentication & Security',
+                features: ['Secure user accounts', 'OAuth integrations', 'Session management', 'Role-based access control'],
+                delay: 0.1
+              },
+              { 
+                title: 'Database & Storage',
+                features: ['PostgreSQL database', 'Real-time subscriptions', 'File storage & CDN', 'Automatic backups'],
+                delay: 0.2
+              },
+              { 
+                title: 'Integrations & Extensions',
+                features: ['Form handling (Formspree)', 'Analytics setup (GA, Plausible)', 'Email capture (ConvertKit)', 'Payment processing (Stripe)'],
+                delay: 0.3
+              },
+            ].map((item) => (
+              <motion.div
+                key={item.title}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: item.delay, duration: 0.5 }}
+                whileHover={{ y: -6, transition: { duration: 0.2 } }}
+                className="p-6 bg-zinc-900/60 backdrop-blur-xl border border-zinc-800 hover:border-zinc-700 rounded-xl group hover:bg-zinc-900/80 transition-all"
+              >
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  <motion.div 
+                    className="w-2 h-2 bg-emerald-400 rounded-full"
+                    animate={{ scale: [1, 1.3, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                  {item.title}
+                </h3>
+                <ul className="space-y-2">
+                  {item.features.map((feature, i) => (
+                    <motion.li
+                      key={feature}
+                      initial={{ opacity: 0, x: -10 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: item.delay + 0.1 + (i * 0.05), duration: 0.3 }}
+                      className="text-sm text-zinc-400 flex items-start gap-2"
+                    >
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+                      {feature}
+                    </motion.li>
+                  ))}
+                </ul>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+            className="text-center"
+          >
+            <p className="text-sm text-zinc-500 max-w-2xl mx-auto">
+              Built on production infrastructure: Vercel for deployment, Supabase for database, Clerk for auth. 
+              You get the power of enterprise tools with zero configuration.
+            </p>
+          </motion.div>
+        </div>
+      </Section>
+
+      {/* PRICING */}
+      <Section id="pricing" className="px-4 sm:px-6 py-24">
+        <div className="max-w-7xl mx-auto">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">Simple, honest pricing</h2>
+            <p className="text-xl text-zinc-400">Start free. Scale when ready.</p>
+          </motion.div>
+
+          <div className="grid lg:grid-cols-3 gap-8 mb-12">
+            {[
+              {
+                tier: 'Architect',
+                price: '$19',
+                accent: 'emerald',
+                featured: false,
+                delay: 0,
+                perks: [
+                  'Unlimited generations',
+                  'Live preview',
+                  'Deploy to hatchit.dev',
+                  '3 projects',
+                  'Download source code',
+                ],
+              },
+              {
+                tier: 'Visionary',
+                price: '$49',
+                accent: 'violet',
+                featured: true,
+                delay: 0.1,
+                perks: [
+                  'Everything in Architect',
+                  'Unlimited projects',
+                  'Custom domain',
+                  'Remove branding',
+                  'Priority support',
+                ],
+              },
+              {
+                tier: 'Singularity',
+                price: '$199',
+                accent: 'amber',
+                featured: false,
+                delay: 0.2,
+                perks: [
+                  'Everything in Visionary',
+                  'Direct founder access',
+                  'Early model access',
+                  'API access (soon)',
+                  'Custom integrations',
+                ],
+              },
+            ].map((plan) => (
+              <motion.div
+                key={plan.tier}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: plan.delay, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                whileHover={{ y: -8, scale: 1.02, transition: { duration: 0.3 } }}
+                className={`relative p-8 rounded-2xl bg-zinc-900/70 backdrop-blur-2xl border ${
+                  plan.featured 
+                    ? 'border-violet-500/30 shadow-xl shadow-violet-500/5' 
+                    : 'border-zinc-800'
+                } flex flex-col group`}
+              >
+                {plan.featured && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: plan.delay + 0.2 }}
+                    className="absolute -top-4 left-1/2 -translate-x-1/2"
+                  >
+                    <span className="px-4 py-1.5 bg-violet-500 text-white text-xs font-semibold rounded-full shadow-lg">
+                      Most Popular
+                    </span>
+                  </motion.div>
+                )}
+                
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent opacity-50 group-hover:opacity-100 transition-opacity" />
+                <motion.div
+                  className={`absolute inset-0 bg-gradient-to-b from-${plan.accent}-500/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl`}
+                />
+                
+                <div className="relative mb-6">
+                  <h3 className={`text-sm font-semibold uppercase tracking-wider mb-4 text-${plan.accent}-400`}>
+                    {plan.tier}
+                  </h3>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-5xl font-bold text-white">{plan.price}</span>
+                    <span className="text-zinc-500">/month</span>
+                  </div>
+                </div>
+
+                <ul className="space-y-4 flex-1 mb-8">
+                  {plan.perks.map((perk, i) => (
+                    <li 
+                      key={perk}
+                      className="flex items-start gap-3"
+                    >
+                      <CheckCircle2 className={`w-5 h-5 text-${plan.accent}-400 mt-0.5 flex-shrink-0`} />
+                      <span className="text-zinc-300">{perk}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Link
+                    href="/sign-up"
+                    className={`block w-full py-3.5 px-6 rounded-xl font-semibold text-center transition-all relative overflow-hidden ${
+                      plan.featured
+                        ? 'bg-violet-500/15 backdrop-blur-2xl border border-violet-500/40 hover:bg-violet-500/20 hover:border-violet-500/50 text-white shadow-[0_0_15px_rgba(139,92,246,0.15)]'
+                        : 'bg-zinc-800/50 backdrop-blur-xl hover:bg-zinc-800/60 text-zinc-200 border border-zinc-700/50'
+                    }`}
+                  >
+                    {plan.featured && <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent rounded-xl pointer-events-none" />}
+                    Get Started
+                  </Link>
+                </motion.div>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.4 }}
+            className="text-center"
+          >
+            <p className="text-sm text-zinc-500">All plans include a free tier to start. Cancel anytime.</p>
+          </motion.div>
         </div>
       </Section>
 
       {/* FINAL CTA */}
-      <Section className="px-4 sm:px-6 py-24 relative overflow-hidden border-t border-white/5">
-        <div className="max-w-3xl mx-auto text-center relative z-10">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">Ready to try it?</h2>
-          <p className="text-lg text-zinc-400 mb-8">Build your first section in under a minute. No signup required.</p>
-          <div className="flex justify-center">
-            <VoidButton isSignedIn={isSignedIn} router={router} onLaunch={triggerTransition} />
-          </div>
+      <Section className="px-4 sm:px-6 py-20 sm:py-32 border-t border-zinc-900 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.08),transparent_70%)]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-transparent to-transparent" />
+        
+        <div className="relative max-w-4xl mx-auto text-center px-2">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-zinc-900/50 border border-zinc-800 rounded-full text-xs text-zinc-400 backdrop-blur-sm mb-6 sm:mb-8"
+          >
+            <motion.span 
+              animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="w-1.5 h-1.5 bg-emerald-400 rounded-full" 
+            />
+            No credit card required
+          </motion.div>
+          
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1, duration: 0.6 }}
+            className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6 text-white"
+          >
+            Build your first section<br className="hidden sm:block" /><span className="sm:hidden"> </span>in under 60 seconds
+          </motion.h2>
+          
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+            className="text-lg sm:text-xl text-zinc-400 mb-8 sm:mb-10"
+          >
+            No signup. No setup. Just describe what you want.
+          </motion.p>
+          
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={triggerTransition}
+            className="group relative inline-flex items-center justify-center gap-2 sm:gap-3 px-8 sm:px-10 py-4 sm:py-5 bg-emerald-500/15 backdrop-blur-2xl border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white text-base sm:text-lg text-center rounded-xl font-semibold transition-all shadow-[0_0_25px_rgba(16,185,129,0.2)] overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent rounded-xl pointer-events-none" />
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
+              animate={{ x: ['-200%', '200%'] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+            />
+            <span className="relative">Try the Demo</span>
+            <ArrowRight className="relative w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
+          </motion.button>
         </div>
       </Section>
-
-      {/* FOOTER - Now Global Component */}
     </main>
   )
 }

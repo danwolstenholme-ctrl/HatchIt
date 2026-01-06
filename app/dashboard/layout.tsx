@@ -22,7 +22,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-8">
             <Link href="/" className="block hover:opacity-80 transition-opacity">
               <Image 
-                src="/assets/hatchit_definitive.svg" 
+                src="/icon.svg" 
                 alt="Logo" 
                 width={32}
                 height={32}

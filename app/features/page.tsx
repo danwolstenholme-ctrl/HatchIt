@@ -1,281 +1,353 @@
 'use client'
-import Link from 'next/link'
-import { motion, useReducedMotion as useFramerReducedMotion } from 'framer-motion'
-import { useState, useSyncExternalStore } from 'react'
-import { Terminal, Cpu, Network, Zap, Code2, Shield, Layers, Globe, Box, Lock, Brain, Sparkles, MessageSquare } from 'lucide-react'
 
-// Client-side check to prevent hydration mismatch
-const emptySubscribe = () => () => {}
-function useIsClient() {
-  return useSyncExternalStore(
-    emptySubscribe,
-    () => true,
-    () => false
+import { useRef } from 'react'
+import Link from 'next/link'
+import { motion, useInView } from 'framer-motion'
+import { 
+  Cpu, Globe, Download, Wand2, Copy, Zap, 
+  RefreshCw, MessageSquare, Layers, Box, 
+  Shield, Code2, Lock, Terminal, Sparkles,
+  ArrowRight
+} from 'lucide-react'
+
+// Scroll-triggered section wrapper
+function Section({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true, margin: "-100px" })
+  return (
+    <motion.section
+      ref={ref}
+      initial={{ opacity: 0, y: 40 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+      transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
+    >
+      {children}
+    </motion.section>
   )
 }
 
-// Custom hook to detect reduced motion preference
-function useReducedMotion() {
-  const prefersReducedMotion = useFramerReducedMotion()
-  return prefersReducedMotion
-}
-
 export default function FeaturesPage() {
-  const reducedMotion = useReducedMotion()
-  const [expandedFeature, setExpandedFeature] = useState<string | null>(null)
-
+  // Real features from the APIs
   const coreFeatures = [
     {
-      id: 'ai-generation',
       icon: <Cpu className="w-6 h-6" />,
-      title: 'Unified Genesis Architecture',
-      subtitle: 'Powered by Claude 3.5 Sonnet',
-      description: "It's not just a chatbot. It's a full-stack engineer. The Genesis Engine writes the code, tests it, fixes bugs, and optimizes for mobile—all in one go. You describe the result; it handles the implementation.",
-      details: [
-        'Genesis Engine: Instant logic generation',
-        'The Architect: Semantic & accessibility refinement',
-        'The Auditor: Security & best-practice audit',
-        'Recursive self-correction loop',
-      ],
-      gradient: 'from-emerald-500 to-teal-600',
+      title: 'Text to React',
+      description: 'Describe what you want in plain English. Claude Sonnet 4 writes production-ready React components with Tailwind styling. No templates, no drag-and-drop.',
+      tier: 'All tiers',
+      tierColor: 'text-zinc-400'
     },
     {
-      id: 'hatch-helper',
-      icon: <Terminal className="w-6 h-6" />,
-      title: 'Direct Line Interface',
-      subtitle: 'Voice-to-Code Protocol',
-      description: 'Bypass the keyboard. Speak your intent directly to the Architect. The system parses natural language into executable React components in real-time.',
-      details: [
-        'Latency: <200ms voice parsing',
-        'Context-aware intent resolution',
-        'Recursive prompt refinement',
-        'Hands-free architectural control',
-      ],
-      gradient: 'from-emerald-600 to-teal-700',
-      badge: 'V4.0',
-    },
-    {
-      id: 'section-building',
       icon: <Layers className="w-6 h-6" />,
-      title: 'Modular Architecture',
-      subtitle: 'Component-Level Isolation',
-      description: 'Build the system piece by piece. Header, hero, features, pricing—each module is isolated, generated, and refined before integration into the main branch.',
-      details: [
-        'Atomic component generation',
-        'Context-aware integration',
-        'Style propagation system',
-        'Modular rollback capability',
-      ],
-      gradient: 'from-teal-500 to-emerald-600',
+      title: 'Section-by-Section Building',
+      description: 'Build your site piece by piece. Hero, features, pricing, contact—each section generated and refined individually before assembly.',
+      tier: 'All tiers',
+      tierColor: 'text-zinc-400'
+    },
+    {
+      icon: <MessageSquare className="w-6 h-6" />,
+      title: 'AI Prompt Helper',
+      description: 'Stuck on what to say? The Architect helps you craft the perfect prompt. Just describe your business, and it generates optimized prompts for each section.',
+      tier: 'All tiers',
+      tierColor: 'text-zinc-400'
+    },
+    {
+      icon: <Globe className="w-6 h-6" />,
+      title: 'One-Click Deploy',
+      description: 'Deploy to your own subdomain on hatchitsites.dev instantly. Multi-page sites supported. No server setup, no DNS headaches.',
+      tier: 'Architect+',
+      tierColor: 'text-emerald-400'
+    },
+    {
+      icon: <Download className="w-6 h-6" />,
+      title: 'Download Source Code',
+      description: 'Export your entire project as a production-ready Next.js app. Clean code, proper file structure, ready to deploy anywhere.',
+      tier: 'Architect+',
+      tierColor: 'text-emerald-400'
+    },
+    {
+      icon: <RefreshCw className="w-6 h-6" />,
+      title: 'Self-Healing Code',
+      description: 'When errors happen, The Healer automatically detects and fixes them. Runtime errors trigger a regeneration cycle until the component works.',
+      tier: 'Visionary+',
+      tierColor: 'text-violet-400'
+    },
+    {
+      icon: <Copy className="w-6 h-6" />,
+      title: 'Website Cloner',
+      description: 'See a site you love? Paste the URL. The Replicator reverse-engineers it into a Hatch prompt structure—colors, layout, copy, everything.',
+      tier: 'Singularity',
+      tierColor: 'text-amber-400'
+    },
+    {
+      icon: <Wand2 className="w-6 h-6" />,
+      title: 'Dream Engine',
+      description: 'The Singularity mutates your UI based on your style DNA. It evolves components autonomously—adding animations, changing colors, making it "alive."',
+      tier: 'Singularity',
+      tierColor: 'text-amber-400'
     },
   ]
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-200 overflow-hidden relative selection:bg-emerald-500/30 selection:text-emerald-50">
-      {/* Scanline Overlay */}
-      <div className="fixed inset-0 pointer-events-none z-50 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDIiLz4KPC9zdmc+')] opacity-20 mix-blend-overlay" />
-      
-      {/* Ambient Void */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-teal-500/5 rounded-full blur-[120px]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(9,9,11,0.8)_100%)]" />
-      </div>
-      
-      {/* Hero Section */}
-      <section className="relative px-6 pt-20 pb-24 text-center z-10">
-        <div className="max-w-3xl mx-auto">
+    <div className="min-h-screen bg-zinc-950 text-zinc-200 overflow-hidden relative selection:bg-emerald-500/30">
+      {/* Floating particles */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        {[...Array(12)].map((_, i) => (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm mb-8 font-mono"
+            key={i}
+            className="absolute w-1 h-1 rounded-full bg-emerald-400/30"
+            style={{
+              left: `${10 + (i * 7) % 80}%`,
+              top: `${15 + (i * 11) % 70}%`,
+            }}
+            animate={{
+              y: [0, -40, 0],
+              opacity: [0.1, 0.3, 0.1],
+            }}
+            transition={{
+              duration: 8 + i * 1.2,
+              repeat: Infinity,
+              delay: i * 0.6,
+              ease: "easeInOut"
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Gradient backdrops */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-emerald-500/8 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-violet-500/5 rounded-full blur-[120px]" />
+      </div>
+
+      {/* Hero Section */}
+      <section className="relative px-6 pt-24 pb-20 z-10">
+        <div className="max-w-4xl mx-auto text-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 text-zinc-400 text-sm mb-8"
           >
-            <Zap className="w-4 h-4" />
-            <span>SYSTEM_CAPABILITIES</span>
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+            >
+              <Sparkles className="w-4 h-4 text-emerald-400" />
+            </motion.div>
+            <span>Everything you need to ship</span>
           </motion.div>
           
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-5xl md:text-7xl font-bold mb-6 leading-tight tracking-tight"
+            transition={{ delay: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="text-5xl md:text-7xl font-bold mb-6 tracking-tight"
           >
-            Beyond
+            Text In.
             <br />
-            <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
-              Templates.
+            <span className="bg-gradient-to-r from-emerald-400 to-emerald-500 bg-clip-text text-transparent">
+              Website Out.
             </span>
           </motion.h1>
           
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             className="text-xl text-zinc-400 max-w-2xl mx-auto mb-10 leading-relaxed"
           >
-            The Architect does not use drag-and-drop. It uses a recursive neural pipeline to generate, audit, and deploy production-grade React code.
+            No templates. No drag-and-drop. Just describe what you want, 
+            and Claude writes real React code. Then deploy it.
           </motion.p>
           
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="flex flex-wrap justify-center gap-4"
+            transition={{ delay: 0.3, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
             <Link
               href="/builder"
-              className="px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-lg transition-all shadow-lg shadow-emerald-900/20 hover:-translate-y-0.5"
+              className="group relative inline-flex items-center gap-3 px-8 py-4 bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 hover:border-emerald-500/50 rounded-xl font-semibold text-lg transition-all duration-300 hover:shadow-[0_0_30px_rgba(16,185,129,0.15)]"
             >
-              Initialize System
-            </Link>
-            <Link
-              href="/roadmap"
-              className="px-8 py-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg font-semibold text-lg transition-all hover:-translate-y-0.5"
-            >
-              View Evolution Log
+              <span className="bg-gradient-to-r from-emerald-400 to-emerald-500 bg-clip-text text-transparent">
+                Start Building
+              </span>
+              <ArrowRight className="w-5 h-5 text-emerald-400 group-hover:translate-x-1 transition-transform" />
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             </Link>
           </motion.div>
         </div>
       </section>
 
-      {/* Core Modules */}
-      <section className="py-24 px-6 relative z-10">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-6">
-            {coreFeatures.map((feature, i) => (
-              <motion.div
-                key={feature.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="group relative p-6 md:p-8 rounded-lg bg-zinc-900 border border-zinc-800 hover:border-emerald-500/30 transition-all duration-300"
-              >
-                <div className="relative z-10">
-                  <div className="flex justify-between items-start mb-6">
-                    <div className="p-3 rounded-lg bg-zinc-950 border border-zinc-800 text-emerald-400 group-hover:scale-110 transition-transform duration-300">
+      {/* Core Features Grid */}
+      <Section>
+        <div className="px-6 py-20 relative z-10">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">What You Can Do</h2>
+              <p className="text-zinc-400 max-w-xl mx-auto">
+                From prompt to production. Every feature designed to get you shipped faster.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {coreFeatures.map((feature, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.05, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  whileHover={{ y: -8, transition: { duration: 0.2 } }}
+                  className="group p-6 rounded-2xl bg-zinc-900/60 backdrop-blur-xl border border-zinc-800 hover:border-zinc-700 transition-all duration-300 hover:shadow-2xl hover:shadow-black/50"
+                >
+                  <div className="p-3 rounded-xl bg-zinc-950 border border-zinc-800 text-emerald-400 w-fit mb-4 group-hover:border-emerald-500/30 transition-colors">
+                    <motion.div
+                      whileHover={{ rotate: 12 }}
+                      transition={{ duration: 0.2 }}
+                    >
                       {feature.icon}
-                    </div>
-                    {feature.badge && (
-                      <span className="px-2 py-1 rounded text-xs font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                        {feature.badge}
-                      </span>
-                    )}
+                    </motion.div>
                   </div>
                   
-                  <h3 className="text-xl font-bold mb-1 text-zinc-100">{feature.title}</h3>
-                  <p className="text-sm font-mono text-emerald-400/80 mb-4">{feature.subtitle}</p>
-                  <p className="text-zinc-400 leading-relaxed mb-6">{feature.description}</p>
+                  <h3 className="text-lg font-semibold mb-2 text-zinc-100">{feature.title}</h3>
+                  <p className="text-sm text-zinc-400 leading-relaxed mb-4">{feature.description}</p>
                   
-                  <ul className="space-y-2">
-                    {feature.details.map((detail, j) => (
-                      <li key={j} className="flex items-center gap-2 text-sm text-zinc-500">
-                        <div className="w-1 h-1 rounded-full bg-emerald-500/50" />
-                        {detail}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </motion.div>
-            ))}
+                  <span className={`text-xs font-medium ${feature.tierColor}`}>
+                    {feature.tier}
+                  </span>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </div>
-      </section>
+      </Section>
 
-      {/* The Neural Network (AI Models) */}
-      <section className="py-24 px-6 relative z-10 bg-transparent">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">The Neural Network</h2>
-            <p className="text-zinc-400">Three specialized models working in perfect synchronization.</p>
+      {/* AI Engine Section */}
+      <Section delay={0.1}>
+        <div className="px-6 py-20 border-t border-zinc-800/50 relative z-10">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">The AI Engine</h2>
+              <p className="text-zinc-400 max-w-xl mx-auto">
+                Three models working together. Each specialized for its role.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              {[
+                {
+                  name: "Claude Sonnet 4",
+                  role: "Code Generation",
+                  desc: "The heavy lifter. Writes production-ready React and TypeScript. Handles the entire build pipeline.",
+                  color: "emerald",
+                  borderColor: "border-emerald-500/20 hover:border-emerald-500/40"
+                },
+                {
+                  name: "Claude Haiku 4",
+                  role: "Quality Audit",
+                  desc: "The witness. Fast, cheap verification layer that checks every component for errors and best practices.",
+                  color: "violet",
+                  borderColor: "border-violet-500/20 hover:border-violet-500/40"
+                },
+                {
+                  name: "Gemini 2 Flash",
+                  role: "Vision + Analysis",
+                  desc: "The Replicator's eyes. Screenshots websites, extracts structure, reverse-engineers designs into prompts.",
+                  color: "amber",
+                  borderColor: "border-amber-500/20 hover:border-amber-500/40"
+                }
+              ].map((model, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  whileHover={{ y: -8, transition: { duration: 0.2 } }}
+                  className={`p-8 rounded-2xl bg-zinc-900/60 backdrop-blur-xl border ${model.borderColor} transition-all duration-300 group`}
+                >
+                  <div className={`w-12 h-12 rounded-xl bg-${model.color}-500/10 text-${model.color}-400 flex items-center justify-center mb-6`}>
+                    <Cpu className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-1">{model.name}</h3>
+                  <p className={`text-sm text-${model.color}-400 mb-4`}>{model.role}</p>
+                  <p className="text-zinc-400 text-sm leading-relaxed">{model.desc}</p>
+                </motion.div>
+              ))}
+            </div>
           </div>
+        </div>
+      </Section>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                name: "Gemini 3 Pro",
-                role: "The Architect",
-                desc: "Vision, high-level architecture, and user intent analysis. It sees the big picture.",
-                icon: <Brain className="w-6 h-6" />,
-                color: "text-teal-400",
-                bg: "bg-violet-500/10",
-                border: "border-violet-500/20"
-              },
-              {
-                name: "Claude Sonnet 4",
-                role: "The Engine",
-                desc: "Heavy lifting and code generation. It writes strict, production-ready TypeScript.",
-                icon: <Cpu className="w-6 h-6" />,
-                color: "text-emerald-400",
-                bg: "bg-emerald-500/10",
-                border: "border-emerald-500/20"
-              },
-              {
-                name: "Claude Opus 4.5",
-                role: "The Poet",
-                desc: "Creative direction and marketing copy. It gives the system its voice and soul.",
-                icon: <Sparkles className="w-6 h-6" />,
-                color: "text-amber-400",
-                bg: "bg-amber-500/10",
-                border: "border-amber-500/20"
-              }
-            ].map((model, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className={`p-6 rounded-md bg-zinc-950 border ${model.border} hover:border-opacity-50 transition-all group`}
+      {/* Tech Stack */}
+      <Section delay={0.1}>
+        <div className="px-6 py-20 border-t border-zinc-800/50 bg-zinc-900/30 relative z-10">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">What You Get</h2>
+              <p className="text-zinc-400 max-w-xl mx-auto">
+                Modern stack. Clean code. Ready to deploy anywhere.
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { icon: <Code2 className="w-5 h-5" />, label: "React 19" },
+                { icon: <Box className="w-5 h-5" />, label: "Next.js 15" },
+                { icon: <Layers className="w-5 h-5" />, label: "Tailwind CSS" },
+                { icon: <Zap className="w-5 h-5" />, label: "Framer Motion" },
+                { icon: <Lock className="w-5 h-5" />, label: "TypeScript" },
+                { icon: <Shield className="w-5 h-5" />, label: "Clerk Auth" },
+                { icon: <Globe className="w-5 h-5" />, label: "Edge Deploy" },
+                { icon: <Terminal className="w-5 h-5" />, label: "Clean Exports" },
+              ].map((tech, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.03, duration: 0.4 }}
+                  className="p-4 rounded-xl bg-zinc-900/60 backdrop-blur-xl border border-zinc-800 hover:border-zinc-700 flex items-center gap-3 group transition-all"
+                >
+                  <div className="text-zinc-500 group-hover:text-emerald-400 transition-colors">
+                    {tech.icon}
+                  </div>
+                  <span className="text-sm text-zinc-300">{tech.label}</span>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* CTA */}
+      <Section delay={0.1}>
+        <div className="px-6 py-24 relative z-10">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to build?</h2>
+            <p className="text-xl text-zinc-400 mb-10">
+              Free to start. No credit card required.
+            </p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <Link
+                href="/builder"
+                className="group relative px-8 py-4 bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 hover:border-emerald-500/50 rounded-xl font-semibold text-lg transition-all duration-300 hover:shadow-[0_0_30px_rgba(16,185,129,0.15)]"
               >
-                <div className={`w-12 h-12 rounded-md ${model.bg} ${model.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                  {model.icon}
-                </div>
-                <h3 className="text-xl font-bold text-white mb-1">{model.name}</h3>
-                <p className={`text-sm font-mono ${model.color} mb-4`}>{model.role}</p>
-                <p className="text-zinc-400 text-sm leading-relaxed">{model.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Tech Stack Grid */}
-      <section className="py-24 px-6 border-t border-zinc-800/50 bg-zinc-900/20 relative z-10">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">System Architecture</h2>
-            <p className="text-zinc-400">Built on the bleeding edge. Outputs standard, maintainable code.</p>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { icon: <Code2 />, label: "React 19" },
-              { icon: <Box />, label: "Next.js 15" },
-              { icon: <Layers />, label: "Tailwind 4" },
-              { icon: <Globe />, label: "Edge Ready" },
-              { icon: <Shield />, label: "Auth v5" },
-              { icon: <Zap />, label: "Framer Motion" },
-              { icon: <Lock />, label: "TypeScript 5" },
-              { icon: <Terminal />, label: "Node 22" },
-            ].map((tech, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.05 }}
-                className="p-4 rounded-md bg-zinc-950 border border-zinc-800 flex items-center gap-3 hover:border-emerald-500/30 transition-colors group"
+                <span className="bg-gradient-to-r from-emerald-400 to-emerald-500 bg-clip-text text-transparent">
+                  Open Builder
+                </span>
+              </Link>
+              <Link
+                href="/pricing"
+                className="px-8 py-4 bg-zinc-800/50 backdrop-blur-xl hover:bg-zinc-800/70 text-zinc-300 hover:text-white rounded-xl font-semibold text-lg transition-all border border-zinc-700/50 hover:border-zinc-600"
               >
-                <div className="text-zinc-500 group-hover:text-emerald-400 transition-colors">
-                  {tech.icon}
-                </div>
-                <span className="font-mono text-sm text-zinc-300">{tech.label}</span>
-              </motion.div>
-            ))}
+                View Pricing
+              </Link>
+            </div>
           </div>
         </div>
-      </section>
+      </Section>
     </div>
   )
 }

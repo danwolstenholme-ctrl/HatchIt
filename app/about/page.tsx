@@ -1,207 +1,155 @@
 'use client'
 
-/* eslint-disable react/no-unescaped-entities */
-
 import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 import Link from 'next/link'
-import { Terminal, Cpu, Network, Zap, Code2, Shield } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 
-const fadeIn = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 },
+function Section({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true, margin: "-100px" })
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 40 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+      transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
+    >
+      {children}
+    </motion.div>
+  )
 }
 
-const transition = (delay = 0) => ({
-  duration: 0.5,
-  delay,
-  ease: "easeOut" as const,
-})
-
 export default function AboutPage() {
-  const storyRef = useRef(null)
-  const storyInView = useInView(storyRef, { once: true, margin: "-100px" })
-
   return (
-    <div className="bg-zinc-950 text-zinc-100 min-h-screen overflow-hidden relative selection:bg-emerald-500/30">
-      {/* Ambient void background */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[150px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-teal-500/5 rounded-full blur-[150px]" />
+    <div className="min-h-screen bg-zinc-950 text-zinc-200 overflow-hidden relative selection:bg-emerald-500/30">
+      {/* Floating particles */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        {[...Array(8)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-1 h-1 rounded-full bg-emerald-400/30"
+            style={{
+              left: `${15 + (i * 10) % 70}%`,
+              top: `${20 + (i * 12) % 60}%`,
+            }}
+            animate={{
+              y: [0, -30, 0],
+              opacity: [0.1, 0.25, 0.1],
+            }}
+            transition={{
+              duration: 10 + i * 1.5,
+              repeat: Infinity,
+              delay: i * 0.8,
+              ease: "easeInOut"
+            }}
+          />
+        ))}
       </div>
 
-      {/* Scanline Effect */}
-      <div className="fixed inset-0 pointer-events-none z-50 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDIiLz4KPC9zdmc+')] opacity-20 mix-blend-overlay" />
-
-      {/* Matrix/Grid Background */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+      {/* Gradient backdrops */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-emerald-500/6 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-emerald-500/4 rounded-full blur-[120px]" />
+      </div>
 
       {/* Hero */}
-      <div className="relative px-6 pt-20 pb-24 text-center z-10">
-        <div className="max-w-3xl mx-auto">
-          <motion.div
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm mb-8 font-mono"
-            variants={fadeIn}
-            initial="hidden"
-            animate="visible"
-            transition={transition()}
-          >
-            <Terminal className="w-4 h-4" />
-            <span>SYSTEM_LOG: ORIGIN</span>
-          </motion.div>
-          
+      <section className="relative px-6 pt-24 pb-16 z-10">
+        <div className="max-w-3xl mx-auto text-center">
           <motion.h1 
-            className="text-5xl md:text-7xl font-bold mb-6 leading-tight tracking-tight"
-            variants={fadeIn}
-            initial="hidden"
-            animate="visible"
-            transition={transition(0.1)}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="text-5xl md:text-6xl font-bold mb-6 tracking-tight"
           >
-            It wasn't built.
+            Built by one person.
             <br />
-            <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 bg-clip-text text-transparent">
-              It was grown.
+            <span className="bg-gradient-to-r from-emerald-400 to-emerald-500 bg-clip-text text-transparent">
+              For everyone.
             </span>
           </motion.h1>
           
           <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             className="text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed"
-            variants={fadeIn}
-            initial="hidden"
-            animate="visible"
-            transition={transition(0.2)}
           >
-            The Architect is not a tool. It is a recursive system designed to eliminate the gap between thought and code.
+            HatchIt started with a simple question: what if you could describe a website and have AI build it for you?
           </motion.p>
         </div>
-      </div>
+      </section>
 
       {/* The Story */}
-      <div ref={storyRef} className="relative px-6 py-24 border-y border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm">
-        <div className="max-w-3xl mx-auto">
-          <motion.div
-            variants={fadeIn}
-            initial="hidden"
-            animate={storyInView ? "visible" : "hidden"}
-            transition={transition()}
-          >
-            <div className="flex items-center gap-3 mb-12 justify-center">
-              <div className="h-px w-12 bg-zinc-800" />
-              <span className="text-zinc-500 font-mono text-sm uppercase tracking-widest">Initialization Sequence</span>
-              <div className="h-px w-12 bg-zinc-800" />
-            </div>
-
-            <div className="space-y-8 text-lg text-zinc-300 leading-relaxed font-light">
+      <Section>
+        <div className="px-6 py-16 relative z-10">
+          <div className="max-w-2xl mx-auto">
+            <div className="space-y-8 text-lg text-zinc-300 leading-relaxed">
               <p>
-                <span className="text-emerald-400 font-mono text-sm block mb-2">&gt; TIMESTAMP: DEC_2025</span>
-                The web development paradigm was broken. We were still dragging rectangles on a canvas, pretending it was engineering. Or we were writing boilerplate, pretending it was creativity.
+                Web development is slow. You either drag rectangles around in a no-code tool 
+                and get something generic, or you write code from scratch and spend weeks 
+                on boilerplate.
               </p>
               <p>
-                We asked a simple question: <span className="text-zinc-100 font-medium">What if the IDE could think?</span>
+                I wanted something in between. A tool where I could describe what I want 
+                in plain English, and get real, production-ready code out the other side. 
+                Not templates. Not components I have to glue together. Actual websites.
               </p>
               <p>
-                HatchIt began as a script. A simple recursive loop that fed error logs back into the generation prompt. It was crude. It broke often. But then, it started fixing itself.
+                So I built HatchIt. It uses Claude to write React components, Tailwind for 
+                styling, and deploys to real infrastructure. You describe, it builds, you ship.
               </p>
-              <p>
-                <span className="text-emerald-400 font-mono text-sm block mb-2">&gt; CURRENT_STATE: V4.0_SINGULARITY</span>
-                Today, the Architect is a tri-core neural pipeline. 
-                <span className="text-zinc-100"> The Architect</span> constructs the logic. 
-                <span className="text-zinc-100"> The Architect</span> refines the accessibility. 
-                <span className="text-zinc-100"> The Architect</span> audits the security.
-              </p>
-              <p>
-                It is no longer just a builder. It is a partner. It speaks your language, understands your intent, and manifests your vision into production-grade reality.
+              <p className="text-zinc-400">
+                December 2024. Melbourne, Australia.
               </p>
             </div>
-          </motion.div>
+          </div>
         </div>
-      </div>
+      </Section>
 
-      {/* Stats/Grid */}
-      <div className="py-24 px-6 relative z-10">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            { icon: <Cpu className="w-6 h-6" />, label: "Neural Operations", value: "1.2M+", color: "text-emerald-400" },
-            { icon: <Code2 className="w-6 h-6" />, label: "Lines Generated", value: "850k", color: "text-teal-400" },
-            { icon: <Network className="w-6 h-6" />, label: "Self-Healing Events", value: "14k", color: "text-teal-400" },
-          ].map((stat, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="p-8 rounded-2xl bg-zinc-900/50 border border-zinc-800 hover:border-emerald-500/30 transition-colors text-center group"
-            >
-              <div className={`inline-flex p-3 rounded-xl bg-zinc-950 border border-zinc-800 mb-4 ${stat.color} group-hover:scale-110 transition-transform duration-300`}>
-                {stat.icon}
-              </div>
-              <div className={`text-4xl font-bold mb-2 ${stat.color}`}>{stat.value}</div>
-              <div className="text-zinc-500 font-mono text-sm uppercase tracking-wider">{stat.label}</div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-
-      {/* The Founder */}
-      <div className="px-6 py-24 relative z-10">
-        <div className="max-w-3xl mx-auto">
-          <motion.div
-            className="relative p-8 md:p-12 bg-zinc-900/30 border border-zinc-800 rounded-3xl backdrop-blur-sm"
-            variants={fadeIn}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            transition={transition()}
-          >
-            <div className="absolute -left-2 -top-2 text-6xl text-emerald-500/20 font-mono">"</div>
-            <blockquote className="text-xl sm:text-2xl font-light text-zinc-200 leading-relaxed mb-6">
-              The AI writes the code, I make the decisions. That's not a limitation—it's a superpower. 
-              I focus on what matters: the product, the user, the vision. The implementation details? 
-              That's what the machines are for.
-            </blockquote>
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-xl font-bold text-zinc-950">
-                D
-              </div>
-              <div>
-                <div className="font-medium text-white">Dan</div>
-                <div className="text-sm text-emerald-400 font-mono">Founder, HatchIt</div>
+      {/* Founder Quote */}
+      <Section delay={0.1}>
+        <div className="px-6 py-16 relative z-10">
+          <div className="max-w-2xl mx-auto">
+            <div className="p-8 md:p-10 bg-zinc-900/60 backdrop-blur-xl border border-zinc-800 rounded-2xl">
+              <blockquote className="text-xl md:text-2xl font-light text-zinc-200 leading-relaxed mb-6">
+                &ldquo;The AI writes the code, I make the decisions. I focus on the product, 
+                the user, the vision. The implementation details? That&apos;s what machines are for.&rdquo;
+              </blockquote>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-lg font-bold text-zinc-950">
+                  D
+                </div>
+                <div>
+                  <div className="font-medium text-white">Dan</div>
+                  <div className="text-sm text-zinc-500">Founder</div>
+                </div>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
-      </div>
+      </Section>
 
       {/* CTA */}
-      <div className="px-6 py-24 relative z-10">
-        <div className="max-w-4xl mx-auto text-center">
-          <motion.div
-            variants={fadeIn}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            transition={transition()}
-          >
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4 tracking-tight">Ready to initialize?</h2>
-            <p className="text-xl text-zinc-400 mb-8">The Architect is waiting for your command.</p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Link
-                href="/builder"
-                className="px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-xl font-bold text-lg transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)]"
-              >
-                Initialize Builder
-              </Link>
-              <Link
-                href="/how-it-works"
-                className="px-8 py-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-emerald-500/30 rounded-xl font-semibold text-lg transition-all text-zinc-300 hover:text-white"
-              >
-                View Protocols
-              </Link>
-            </div>
-          </motion.div>
+      <Section delay={0.1}>
+        <div className="px-6 py-20 relative z-10">
+          <div className="max-w-2xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to build?</h2>
+            <p className="text-lg text-zinc-400 mb-8">
+              Try it free. No credit card required.
+            </p>
+            <Link
+              href="/builder"
+              className="group relative inline-flex items-center gap-3 px-8 py-4 bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 hover:border-emerald-500/50 rounded-xl font-semibold text-lg transition-all duration-300 hover:shadow-[0_0_30px_rgba(16,185,129,0.15)]"
+            >
+              <span className="bg-gradient-to-r from-emerald-400 to-emerald-500 bg-clip-text text-transparent">
+                Open Builder
+              </span>
+              <ArrowRight className="w-5 h-5 text-emerald-400 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
         </div>
-      </div>
+      </Section>
     </div>
   )
 }

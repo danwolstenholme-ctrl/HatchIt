@@ -1,8 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Settings, Check } from 'lucide-react'
-import Image from 'next/image'
+import { Settings, Check, Sparkles, Cpu, Code2, Database, ArrowRight } from 'lucide-react'
 
 interface SingularitySidebarProps {
   currentSection: number
@@ -10,135 +9,177 @@ interface SingularitySidebarProps {
   sectionNames?: string[]
   isGenerating: boolean
   thought?: string
-  promptsUsed: number
-  promptsLimit: number
-  isPaid: boolean
   projectName?: string
-  onUpgrade?: () => void
   onOpenSettings?: () => void
+  onSignUp?: () => void
+  demoMode?: boolean
 }
+
+const STACK_PILLS = [
+  { icon: Code2, label: 'React 18', meta: 'Server + Client' },
+  { icon: Sparkles, label: 'AI Orchestration', meta: 'Describe → Ship' },
+  { icon: Cpu, label: 'Next.js 14', meta: 'App Router' },
+  { icon: Database, label: 'Supabase', meta: 'Auth & Data' }
+]
 
 export default function SingularitySidebar({
   currentSection,
   totalSections,
   sectionNames,
   isGenerating,
-  projectName = "Untitled Project",
-  onOpenSettings
+  thought,
+  projectName = 'Untitled Project',
+  onOpenSettings,
+  onSignUp,
+  demoMode
 }: SingularitySidebarProps) {
-  
-  // Generate a clean label for each section
   const getSectionLabel = (index: number) => {
     if (sectionNames && sectionNames[index]) {
-      // Convert "Hero Section" to "Hero" for cleaner UI
       return sectionNames[index].replace(/Section/i, '').trim()
     }
     return `Step ${index + 1}`
   }
 
-  return (
-    <div className="w-64 border-r border-white/10 bg-black flex flex-col h-full relative overflow-hidden">
-      {/* Subtle Void Gradient */}
-      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.03),transparent_40%)]" />
+  const activeLabel = getSectionLabel(Math.max(currentSection - 1, 0))
 
-      {/* Header - Minimalist Logo & Context */}
-      <div className="relative p-6 flex items-center gap-4 border-b border-white/10 overflow-hidden">
-        {/* Subtle ambient glow */}
-        <div className="absolute top-0 left-0 w-32 h-full bg-gradient-to-r from-emerald-500/5 to-transparent opacity-50" />
-        
-        <div className="relative z-10 group cursor-default shrink-0">
-          <div className="absolute -inset-4 bg-emerald-500/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-          <Image 
-            src="/assets/hatchit_definitive.svg" 
-            alt="HatchIt" 
-            width={36} 
-            height={36} 
-            className="w-9 h-9 relative z-10 opacity-100 transition-opacity duration-500" 
-          />
+  return (
+    <div className="w-72 flex flex-col h-full relative overflow-hidden">
+      {/* Glass background - matches HomepageWelcome exactly */}
+      <div className="absolute inset-0 bg-zinc-900/70 backdrop-blur-xl" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(16,185,129,0.04),transparent_60%)]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
+      <div className="absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-zinc-700/50 to-transparent" />
+      
+      <div className="relative flex-1 overflow-y-auto px-5 py-6 space-y-5 scrollbar-thin">
+        {/* Project Capsule - HomepageWelcome card style */}
+        <div className="relative rounded-2xl overflow-hidden">
+          <div className="absolute inset-0 bg-zinc-900/40 backdrop-blur-xl" />
+          <div className="absolute inset-0 border border-zinc-800/50 rounded-2xl" />
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent" />
+          
+          <div className="relative p-5 space-y-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] uppercase tracking-[0.35em] text-zinc-500">
+                  {demoMode ? 'Sandbox Mode' : 'Active Build'}
+                </p>
+                <h2 className="text-base font-semibold text-zinc-200 mt-1.5 truncate">{projectName}</h2>
+              </div>
+              {!demoMode && (
+                <div className="px-2.5 py-1 text-[10px] rounded-full border border-emerald-500/30 text-emerald-400 bg-emerald-500/10 font-medium shrink-0">
+                  Live
+                </div>
+              )}
+            </div>
+            <p className="text-[13px] text-zinc-400 leading-relaxed">
+              {thought || `Building ${activeLabel}...`}
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {STACK_PILLS.map(({ icon: Icon, label, meta }) => (
+                <div key={label} className="bg-zinc-900/40 border border-zinc-800/50 rounded-lg px-3 py-2">
+                  <div className="flex items-center gap-1.5 text-[11px] text-zinc-300">
+                    <Icon className="w-3 h-3 text-emerald-400 shrink-0" />
+                    <span className="font-medium truncate">{label}</span>
+                  </div>
+                  <p className="text-[9px] text-zinc-500 mt-0.5 truncate">{meta}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* Project Context - Very subtle */}
-        <div className="relative z-10 flex flex-col justify-center">
-          <div className="h-3 w-px bg-white/10 absolute -left-2 top-1/2 -translate-y-1/2" />
-          <span className="text-xs font-medium text-zinc-300 tracking-wide truncate max-w-[140px]">
-            {projectName}
-          </span>
-          <div className="flex items-center gap-1.5 mt-0.5">
-            <div className="w-1 h-1 rounded-full bg-emerald-500/50" />
-            <span className="text-[9px] text-zinc-600 font-medium uppercase tracking-wider">
-              Environment Active
-            </span>
+        {/* Timeline - HomepageWelcome card style */}
+        <div className="relative rounded-2xl overflow-hidden">
+          <div className="absolute inset-0 bg-zinc-900/40 backdrop-blur-xl" />
+          <div className="absolute inset-0 border border-zinc-800/50 rounded-2xl" />
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent" />
+          
+          <div className="relative p-4">
+            <div className="flex items-center justify-between pb-4 border-b border-zinc-800/50">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">Build timeline</p>
+                <p className="text-sm text-zinc-200 font-medium mt-1">{currentSection}/{totalSections} in progress</p>
+              </div>
+              <motion.div 
+                className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.6)]"
+                animate={{ opacity: [0.4, 1, 0.4] }}
+                transition={{ duration: 2.2, repeat: Infinity }}
+              />
+            </div>
+
+            <div className="relative mt-5">
+              <div className="absolute left-2 top-0 bottom-0 w-px bg-zinc-800/50" />
+              <div className="space-y-4 pl-6">
+                {Array.from({ length: totalSections }).map((_, i) => {
+                  const isActive = i === currentSection - 1
+                  const isCompleted = i < currentSection - 1
+
+                  return (
+                    <div key={i} className="relative">
+                      <div className={`absolute -left-6 top-1 w-3 h-3 rounded-full border ${
+                        isActive ? 'border-emerald-400 bg-black' : isCompleted ? 'border-emerald-400 bg-emerald-500/30' : 'border-zinc-700 bg-zinc-900'
+                      } flex items-center justify-center`}
+                      >
+                        {isCompleted ? <Check className="w-2 h-2 text-emerald-400" /> : null}
+                        {isActive && !isCompleted && <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
+                      </div>
+                      <div className={`transition-all ${isActive ? 'text-zinc-200' : 'text-zinc-500'}`}>
+                        <p className="text-sm font-medium">{getSectionLabel(i)}</p>
+                        {isActive && (
+                          <p className="text-[11px] uppercase tracking-[0.3em] text-emerald-400 mt-0.5">
+                            {isGenerating ? 'Building' : 'Live Editing'}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Studio Timeline */}
-      <div className="flex-1 overflow-y-auto py-8 px-6 custom-scrollbar">
-        <div className="relative">
-          {/* Vertical Line */}
-          <div className="absolute left-[11px] top-2 bottom-2 w-px bg-white/10" />
-
-          {Array.from({ length: totalSections }).map((_, i) => {
-            const isActive = i === currentSection - 1
-            const isCompleted = i < currentSection - 1
-
-            return (
-              <div key={i} className="relative flex items-center gap-4 mb-6 last:mb-0 group">
-                {/* Status Dot */}
-                <div className={`relative z-10 flex items-center justify-center w-4 h-4 rounded-full border transition-all duration-500 ${
-                  isActive ? 'bg-black border-emerald-500/50 shadow-[0_0_10px_rgba(16,185,129,0.15)]' : 
-                  isCompleted ? 'bg-emerald-500/5 border-emerald-500/30' : 
-                  'bg-black border-white/10'
-                }`}>
-                  {isCompleted ? (
-                    <Check className="w-2.5 h-2.5 text-emerald-500/70" />
-                  ) : isActive ? (
-                    <div className="w-1.5 h-1.5 bg-emerald-500/80 rounded-full animate-pulse" />
-                  ) : (
-                    <div className="w-1 h-1 bg-white/20 rounded-full group-hover:bg-white/30 transition-colors" />
-                  )}
-                </div>
-
-                {/* Label */}
-                <div className={`flex flex-col transition-all duration-500 ${
-                  isActive ? 'opacity-100 translate-x-1' : 
-                  isCompleted ? 'opacity-60' : 
-                  'opacity-40'
-                }`}>
-                  <span className={`text-sm font-medium tracking-wide ${isActive ? 'text-white' : 'text-zinc-400'}`}>
-                    {getSectionLabel(i)}
-                  </span>
-                  {isActive && (
-                    <motion.span 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="text-[10px] text-emerald-600 font-medium tracking-wider uppercase mt-0.5"
-                    >
-                      {isGenerating ? 'Building...' : 'Current Step'}
-                    </motion.span>
-                  )}
-                </div>
+      {/* Bottom CTA */}
+      <div className="relative p-4">
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700/50 to-transparent" />
+        
+        {demoMode ? (
+          <div className="space-y-3">
+            <div className="relative rounded-2xl overflow-hidden">
+              <div className="absolute inset-0 bg-zinc-900/40" />
+              <div className="absolute inset-0 border border-zinc-800/50 rounded-2xl" />
+              
+              <div className="relative px-4 py-3 text-center">
+                <p className="text-[12px] text-zinc-400 leading-relaxed">
+                  Sign up free to save your work and continue in the full builder.
+                </p>
               </div>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* Footer Controls */}
-      <div className="p-4 border-t border-zinc-900 bg-zinc-950/50 backdrop-blur-sm">
-        {onOpenSettings && (
-          <button
-            onClick={onOpenSettings}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-zinc-900/50 hover:bg-zinc-900 border border-zinc-800/50 hover:border-zinc-700 transition-all group"
-          >
-            <div className="p-1.5 rounded-lg bg-zinc-800 group-hover:bg-zinc-700 transition-colors">
-              <Settings className="w-4 h-4 text-zinc-400 group-hover:text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-xs font-medium text-zinc-300 group-hover:text-white">Project Settings</span>
-              <span className="text-[10px] text-zinc-500">Configure SEO & Brand</span>
-            </div>
-          </button>
+            
+            <button
+              onClick={onSignUp}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 hover:bg-emerald-500/25 hover:border-emerald-500/40 transition-all"
+            >
+              <span className="text-sm font-semibold text-zinc-100">Continue in Studio</span>
+              <ArrowRight className="w-4 h-4 text-emerald-400" />
+            </button>
+          </div>
+        ) : (
+          onOpenSettings && (
+            <button
+              onClick={onOpenSettings}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-zinc-900/40 border border-zinc-800/50 hover:border-emerald-500/30 transition-all"
+            >
+              <div className="p-2 rounded-xl bg-zinc-900/60 border border-zinc-800/50">
+                <Settings className="w-4 h-4 text-zinc-300" />
+              </div>
+              <div className="flex flex-col text-left">
+                <span className="text-sm font-medium text-zinc-200">Project console</span>
+                <span className="text-[11px] text-zinc-400">SEO, branding, integrations</span>
+              </div>
+            </button>
+          )
         )}
       </div>
     </div>

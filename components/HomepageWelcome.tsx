@@ -2,66 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowRight, X } from 'lucide-react'
+import { ArrowRight, CheckCircle2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
-import Image from 'next/image'
-
-// =============================================================================
-// HOMEPAGE WELCOME - First Contact
-// A dismissible popup that introduces the "Text to React" concept.
-// =============================================================================
-
-function TypewriterText({ text, delay = 0 }: { text: string; delay?: number }) {
-  const [displayed, setDisplayed] = useState('')
-  const [started, setStarted] = useState(false)
-  
-  useEffect(() => {
-    const startTimer = setTimeout(() => setStarted(true), delay)
-    return () => clearTimeout(startTimer)
-  }, [delay])
-  
-  useEffect(() => {
-    if (!started) return
-    let i = 0
-    const interval = setInterval(() => {
-      if (i < text.length) {
-        setDisplayed(text.slice(0, i + 1))
-        i++
-      } else {
-        clearInterval(interval)
-      }
-    }, 50)
-    return () => clearInterval(interval)
-  }, [text, started])
-  
-  return (
-    <span className="relative inline-block">
-      <motion.span 
-        className="bg-gradient-to-r from-emerald-400 via-teal-200 to-emerald-400 bg-[length:200%_auto] bg-clip-text text-transparent font-bold"
-        animate={{ backgroundPosition: ['0% center', '200% center'] }}
-        transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-      >
-        {displayed}
-      </motion.span>
-      
-      {/* Cursor */}
-      {started && displayed.length < text.length && (
-        <motion.span
-          animate={{ opacity: [1, 0] }}
-          transition={{ duration: 0.5, repeat: Infinity }}
-          className="text-emerald-400 ml-0.5"
-        >
-          _
-        </motion.span>
-      )}
-    </span>
-  )
-}
 
 export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
   const [isOpen, setIsOpen] = useState(false)
-  const [phase, setPhase] = useState<'init' | 'ready'>('init')
   const [resumeUrl, setResumeUrl] = useState<string | null>(null)
   const router = useRouter()
   const { isSignedIn, isLoaded } = useUser()
@@ -108,9 +54,6 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
     if (!hasSeen) {
       // Open immediately for instant impact
       setIsOpen(true)
-      // Progress to ready phase after typing animation
-      const phaseTimer = setTimeout(() => setPhase('ready'), 1500)
-      return () => clearTimeout(phaseTimer)
     }
   }, [isLoaded, isSignedIn])
 
@@ -144,120 +87,150 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center px-4"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
         >
-          {/* Semi-transparent backdrop with blur */}
-          <div 
-            className="absolute inset-0 bg-black/50 backdrop-blur-md transition-opacity" 
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/70 backdrop-blur-xl" 
             onClick={handleDismiss}
           />
           
-          {/* Main content - Premium Glass Card */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            initial={{ opacity: 0, scale: 0.9, y: 40 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            transition={{ type: "spring", duration: 0.4, bounce: 0.2 }}
-            className="relative z-10 w-full max-w-xl"
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ 
+              duration: 0.6, 
+              ease: [0.16, 1, 0.3, 1],
+              scale: { type: "spring", damping: 20, stiffness: 300 }
+            }}
+            className="relative w-full max-w-2xl"
           >
-            {/* Outer glow */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 via-teal-500/10 to-emerald-500/20 rounded-3xl blur-2xl opacity-60" />
-            
-            {/* Glass card */}
-            <div className="relative bg-zinc-900/70 backdrop-blur-2xl backdrop-saturate-150 border border-white/10 rounded-2xl overflow-hidden shadow-2xl shadow-black/50">
-              {/* Top highlight */}
-              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+            <div className="relative bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-2xl overflow-hidden shadow-2xl shadow-black/50">
+              {/* Subtle gradient overlay */}
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(16,185,129,0.04),transparent_60%)]" />
+              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
               
-              {/* Close button */}
-              <button 
-                onClick={handleDismiss}
-                className="absolute top-4 right-4 p-2 text-zinc-500 hover:text-white transition-colors rounded-full hover:bg-white/10 z-20"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <div className="relative p-8 md:p-10 text-center">
-              {/* Logo */}
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.2 }}
-                className="w-12 h-12 mx-auto mb-6 relative"
-              >
-                <div className="absolute inset-0 bg-emerald-500/20 blur-xl rounded-full" />
-                <Image 
-                  src="/assets/hatchit_definitive.svg" 
-                  alt="HatchIt" 
-                  width={48} 
-                  height={48}
-                  className="w-full h-full relative z-10"
-                />
-              </motion.div>
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent" />
               
-              {/* Hero Text */}
-              <div className="mb-8">
-                <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">
-                  <span className="text-zinc-400">Text</span>
-                  <span className="mx-3 text-zinc-600">→</span>
-                  <TypewriterText text="React" delay={400} />
-                </h2>
-                
-                <motion.p
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: phase === 'ready' ? 1 : 0, y: phase === 'ready' ? 0 : 10 }}
-                  className="text-zinc-400 text-lg leading-relaxed max-w-sm mx-auto"
+              <div className="relative px-5 pt-8 pb-8 sm:px-8 sm:pt-12 sm:pb-12 md:px-16 md:pt-14 md:pb-16">
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                  className="text-center mb-6 sm:mb-8"
                 >
-                  Describe it. Watch it build.
-                  <br />
-                  <span className="text-zinc-200">Live preview. One-click deploy.</span>
-                </motion.p>
-              </div>
+                  <motion.img
+                    src="/icon.svg"
+                    alt="HatchIt"
+                    width={80}
+                    height={80}
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.05, duration: 0.5, type: "spring", stiffness: 200 }}
+                    className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-6 sm:mb-8"
+                  />
+                  <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-4 sm:mb-6 tracking-tight">
+                    <span className="text-zinc-200">Text</span>
+                    <span className="mx-2 sm:mx-4 text-zinc-600">→</span>
+                    <span className="bg-gradient-to-r from-emerald-400 to-emerald-500 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(16,185,129,0.5)]">React</span>
+                  </h1>
+                  
+                  <p className="text-base sm:text-xl text-zinc-400 mb-1 sm:mb-2 leading-relaxed">
+                    Describe your vision in plain English.
+                  </p>
+                  <p className="text-base sm:text-xl text-zinc-300 font-medium mb-6 sm:mb-8">
+                    Watch it materialize in real-time.
+                  </p>
 
-              {/* CTA Section */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: phase === 'ready' ? 1 : 0, y: phase === 'ready' ? 0 : 10 }}
-                transition={{ delay: 0.2 }}
-                className="flex flex-col gap-3"
-              >
-                {resumeUrl && (
-                  <button
-                    onClick={() => {
-                      localStorage.setItem(SEEN_KEY, 'true')
-                      setIsOpen(false)
-                      router.push(resumeUrl)
-                    }}
-                    className="w-full py-3.5 px-6 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-base rounded-xl transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] flex items-center justify-center gap-2 group"
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3, duration: 0.4 }}
+                    className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 max-w-lg mx-auto mb-6 sm:mb-8"
                   >
-                    Resume Session
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </button>
-                )}
+                    {[
+                      'Live preview as you type',
+                      'Point-and-click editing',
+                      'Production React code',
+                      'Secure deployment',
+                      'Custom domains',
+                      'Download source code',
+                    ].map((feature, i) => (
+                      <motion.div
+                        key={feature}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.4 + (i * 0.05), duration: 0.3 }}
+                        className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-zinc-300 bg-zinc-900/40 backdrop-blur-xl border border-zinc-800/50 rounded-lg px-3 py-2.5 sm:px-4 sm:py-3">
+                        <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 flex-shrink-0" />
+                        <span className="leading-snug">{feature}</span>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                </motion.div>
 
-                <button
-                  onClick={handleStart}
-                  className={`w-full py-3.5 px-6 font-semibold text-base rounded-xl transition-all flex items-center justify-center gap-2 group ${
-                    resumeUrl 
-                      ? 'bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/10' 
-                      : 'bg-white hover:bg-zinc-100 text-black shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]'
-                  }`}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5, duration: 0.4 }}
+                  className="space-y-2 sm:space-y-3 max-w-md mx-auto"
                 >
-                  {resumeUrl ? 'Start New Project' : 'Start Building Free'}
-                  {!resumeUrl && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
-                </button>
-                
-                <button
-                  onClick={handleDismiss}
-                  className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors py-2"
-                >
-                  No thanks, I'm just browsing
-                </button>
-              </motion.div>
+                  {resumeUrl && (
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        localStorage.setItem(SEEN_KEY, 'true')
+                        setIsOpen(false)
+                        router.push(resumeUrl)
+                      }}
+                      className="group relative w-full py-3 sm:py-4 px-5 sm:px-6 bg-emerald-500/15 backdrop-blur-2xl border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white font-semibold text-base sm:text-lg text-center rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] flex items-center justify-center gap-2 sm:gap-3 overflow-hidden"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent rounded-xl pointer-events-none" />
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0"
+                        animate={{ x: ['-200%', '200%'] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                      />
+                      <span className="relative">Resume Session</span>
+                      <ArrowRight className="relative w-5 h-5 group-hover:translate-x-1 transition-transform group-hover:drop-shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+                    </motion.button>
+                  )}
+
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleStart}
+                    className={`group relative w-full py-3 sm:py-4 px-5 sm:px-6 font-semibold text-base sm:text-lg text-center rounded-xl transition-all flex items-center justify-center gap-2 sm:gap-3 overflow-hidden ${
+                      resumeUrl 
+                        ? 'bg-zinc-800/50 backdrop-blur-xl hover:bg-zinc-800/60 text-zinc-200 border border-zinc-700/50' 
+                        : 'bg-emerald-500/15 backdrop-blur-2xl border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white shadow-[0_0_15px_rgba(16,185,129,0.15)]'
+                    }`}
+                  >
+                    {!resumeUrl && <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent rounded-xl pointer-events-none" />}
+                    {!resumeUrl && (
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0"
+                        animate={{ x: ['-200%', '200%'] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                      />
+                    )}
+                    <span className="relative">{resumeUrl ? 'Start Fresh' : 'Start Building'}</span>
+                    {!resumeUrl && <ArrowRight className="relative w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform\" />}
+                  </motion.button>
+                  
+                  <div className="text-center pt-3 sm:pt-4">
+                    <motion.button
+                      onClick={handleDismiss}
+                      className="text-xs sm:text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
+                    >
+                      Continue browsing
+                    </motion.button>
+                  </div>
+                </motion.div>
               </div>
             </div>
-            
-            {/* Bottom decorative line */}
-            <div className="h-1 w-full bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
           </motion.div>
         </motion.div>
       )}

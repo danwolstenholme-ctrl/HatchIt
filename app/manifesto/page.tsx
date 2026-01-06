@@ -9,10 +9,7 @@ export default function ManifestoPage() {
     <div className="min-h-screen bg-zinc-950 text-zinc-100 selection:bg-emerald-500/30 overflow-x-hidden relative">
       {/* Subtle grid pattern */}
       <div className="fixed inset-0 pointer-events-none z-0 opacity-[0.02]">
-        <div className="absolute inset-0" style={{ 
-          backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
-          backgroundSize: '50px 50px'
-        }} />
+        <div className="absolute inset-0 manifesto-grid" />
       </div>
 
       {/* Back Link */}
@@ -57,7 +54,7 @@ export default function ManifestoPage() {
           {/* Section 1 */}
           <section className="relative">
             <div className="flex items-start gap-6">
-              <div className="shrink-0 w-12 h-12 bg-zinc-900/50 border border-zinc-800 rounded-sm flex items-center justify-center backdrop-blur-sm">
+              <div className="shrink-0 w-12 h-12 bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-sm flex items-center justify-center shadow-lg shadow-black/30">
                 <Zap className="w-6 h-6 text-emerald-400" />
               </div>
               <div>
@@ -83,8 +80,8 @@ export default function ManifestoPage() {
           {/* Section 2 */}
           <section className="relative">
             <div className="flex items-start gap-6">
-              <div className="shrink-0 w-12 h-12 bg-zinc-900/50 border border-zinc-800 rounded-sm flex items-center justify-center backdrop-blur-sm">
-                <Code2 className="w-6 h-6 text-cyan-400" />
+              <div className="shrink-0 w-12 h-12 bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-sm flex items-center justify-center shadow-lg shadow-black/30">
+                <Code2 className="w-6 h-6 text-emerald-400" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold mb-4">Real Code, Real Ownership</h2>
@@ -97,7 +94,7 @@ export default function ManifestoPage() {
                     We use Claude Sonnet 4.5 to generate production-quality components because we believe
                     AI should amplify your capabilities, not create dependencies.
                   </p>
-                  <p className="text-zinc-100 font-medium border-l-2 border-cyan-500 pl-4">
+                  <p className="text-zinc-100 font-medium border-l-2 border-emerald-500 pl-4">
                     Build with AI, but own the result. That&apos;s the deal.
                   </p>
                 </div>
@@ -108,7 +105,7 @@ export default function ManifestoPage() {
           {/* Section 3 */}
           <section className="relative">
             <div className="flex items-start gap-6">
-              <div className="shrink-0 w-12 h-12 bg-zinc-900/50 border border-zinc-800 rounded-sm flex items-center justify-center backdrop-blur-sm">
+              <div className="shrink-0 w-12 h-12 bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-sm flex items-center justify-center shadow-lg shadow-black/30">
                 <Eye className="w-6 h-6 text-violet-400" />
               </div>
               <div>
@@ -131,7 +128,7 @@ export default function ManifestoPage() {
           {/* Section 4 */}
           <section className="relative">
             <div className="flex items-start gap-6">
-              <div className="shrink-0 w-12 h-12 bg-zinc-900/50 border border-zinc-800 rounded-sm flex items-center justify-center backdrop-blur-sm">
+              <div className="shrink-0 w-12 h-12 bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-sm flex items-center justify-center shadow-lg shadow-black/30">
                 <Layers className="w-6 h-6 text-amber-400" />
               </div>
               <div>
@@ -150,7 +147,7 @@ export default function ManifestoPage() {
           </section>
 
           {/* CTA */}
-          <div className="p-8 border border-zinc-800 bg-zinc-900/50 rounded-sm mt-12 text-center backdrop-blur-sm">
+          <div className="p-8 border border-zinc-800/50 bg-zinc-900/70 backdrop-blur-xl rounded-sm mt-12 text-center shadow-2xl shadow-black/50">
             <h3 className="text-xl text-zinc-100 font-bold mb-4">Ready to Build?</h3>
             <p className="text-zinc-400 mb-6 max-w-md mx-auto">
               Stop reading manifestos. Start building. Your first component is free—no credit card required.

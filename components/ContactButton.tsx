@@ -15,21 +15,17 @@ export default function ContactButton() {
 
   return (
     <Link href={contactUrl} aria-label="Contact Support">
-      <motion.button
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50 flex items-center justify-center gap-2 px-3 py-2 md:px-4 md:py-3 bg-zinc-900 border border-emerald-500/30 rounded-full shadow-[0_0_20px_rgba(16,185,129,0.2)] group hover:border-emerald-500/60 transition-colors"
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5, duration: 0.3 }}
+        className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50 flex items-center justify-center gap-2 px-3 py-2 md:px-4 md:py-2.5 bg-zinc-900 border border-zinc-800 rounded-full hover:border-zinc-700 hover:bg-zinc-800 transition-colors group"
       >
-        <div className="relative">
-          <MessageSquare className="w-4 h-4 md:w-5 md:h-5 text-emerald-500" />
-          <span className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-        </div>
-        <span className="hidden sm:inline text-xs md:text-sm font-medium text-zinc-300 group-hover:text-white transition-colors pr-1">
-          Contact Support
+        <MessageSquare className="w-4 h-4 text-zinc-400 group-hover:text-zinc-200 transition-colors" />
+        <span className="hidden sm:inline text-xs md:text-sm font-medium text-zinc-400 group-hover:text-zinc-200 transition-colors">
+          Contact
         </span>
-      </motion.button>
+      </motion.div>
     </Link>
   )
 }

@@ -79,7 +79,7 @@ const changes = [
 
 export default function ChangelogPage() {
   return (
-    <div className="min-h-screen bg-black text-white selection:bg-emerald-500/30">
+    <div className="min-h-screen bg-zinc-950 text-white selection:bg-emerald-500/30">
       <Navigation />
       
       <main className="pt-32 pb-20 px-4">
@@ -101,11 +101,11 @@ export default function ChangelogPage() {
               animate={{ opacity: 1, y: 0 }}
               className="flex items-center gap-4 mb-6"
             >
-              <div className="w-12 h-12 rounded-sm bg-white/5 border border-white/10 flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.1)]">
+              <div className="w-12 h-12 rounded-sm bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.1)]">
                 <GitCommit className="w-6 h-6 text-emerald-500" />
               </div>
               <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-                System <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">Changelog</span>
+                System <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-400">Changelog</span>
               </h1>
             </motion.div>
             
@@ -117,7 +117,7 @@ export default function ChangelogPage() {
           {/* Timeline */}
           <div className="space-y-12 relative">
             {/* Vertical Line */}
-            <div className="absolute left-0 md:left-6 top-4 bottom-0 w-px bg-white/10 hidden md:block" />
+            <div className="absolute left-0 md:left-6 top-4 bottom-0 w-px bg-zinc-800/50 hidden md:block" />
 
             {changes.map((change, index) => (
               <motion.div
@@ -128,11 +128,11 @@ export default function ChangelogPage() {
                 className="relative pl-0 md:pl-20"
               >
                 {/* Node */}
-                <div className="absolute left-4 top-2 w-4 h-4 rounded-full bg-black border-2 border-emerald-500/50 hidden md:block z-10">
+                <div className="absolute left-4 top-2 w-4 h-4 rounded-full bg-zinc-950 border-2 border-emerald-500/50 hidden md:block z-10">
                   <div className="absolute inset-0 rounded-full bg-emerald-500/20 animate-pulse" />
                 </div>
 
-                <div className="bg-white/5 border border-white/10 rounded-sm p-6 md:p-8 hover:border-emerald-500/20 transition-colors group">
+                <div className="bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-sm p-6 md:p-8 hover:border-emerald-500/20 transition-colors group shadow-2xl shadow-black/50">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                     <div className="flex items-center gap-3">
                       <div className="px-3 py-1 rounded-sm bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-mono text-sm font-medium flex items-center gap-2">

@@ -211,7 +211,7 @@ export default function PortalPage() {
       icon: Code2,
       cta: lastUpdatedProject ? 'Resume builder' : 'Launch builder',
       action: () => routeToBuilder(lastUpdatedProject?.id),
-      accent: 'from-emerald-500/20 via-teal-500/10 to-transparent',
+      accent: 'from-emerald-500/20 via-emerald-500/10 to-transparent',
     },
     {
       title: 'Data Layer',
@@ -241,7 +241,7 @@ export default function PortalPage() {
           className="grid gap-6 lg:grid-cols-[2fr,1fr]"
         >
           <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-950 via-zinc-900/80 to-zinc-900/40 px-6 py-6 sm:px-8 sm:py-8 shadow-[0_0_40px_-15px_rgba(16,185,129,0.5)]">
-            <div className="pointer-events-none absolute inset-0 opacity-60" style={{ backgroundImage: 'radial-gradient(circle at top right, rgba(16,185,129,0.15), transparent 45%)' }} />
+            <div className="pointer-events-none absolute inset-0 opacity-60 portal-hero-radial" />
             <div className="relative z-10 flex flex-wrap items-center justify-between gap-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.4em] text-zinc-600">Portal</p>
@@ -426,12 +426,18 @@ export default function PortalPage() {
             </div>
             <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-white/5 p-1 backdrop-blur">
               <button
+                type="button"
+                aria-label="Show projects in grid view"
+                aria-pressed={viewMode === 'grid'}
                 onClick={() => setViewMode('grid')}
                 className={`rounded-lg p-2 text-xs font-semibold transition-all ${viewMode === 'grid' ? 'bg-white/10 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
               >
                 <LayoutGrid className="h-4 w-4" />
               </button>
               <button
+                type="button"
+                aria-label="Show projects in list view"
+                aria-pressed={viewMode === 'list'}
                 onClick={() => setViewMode('list')}
                 className={`rounded-lg p-2 text-xs font-semibold transition-all ${viewMode === 'list' ? 'bg-white/10 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
               >
@@ -480,7 +486,7 @@ export default function PortalPage() {
                     href={`/builder?project=${project.id}`}
                     className="group relative block h-full overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-all duration-300 hover:border-emerald-500/40 hover:bg-white/10"
                   >
-                    <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ backgroundImage: 'linear-gradient(135deg, rgba(16,185,129,0.08), transparent)' }} />
+                    <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 project-card-hover-gradient" />
                     <div className="relative z-10 flex items-start justify-between">
                       <div className="rounded-xl border border-white/5 bg-black/30 p-3">
                         <div className="h-2 w-8 rounded-full bg-emerald-400" />
@@ -505,6 +511,8 @@ export default function PortalPage() {
                           </p>
                         </div>
                         <button
+                          type="button"
+                          aria-label={`Delete ${project.name || 'project'}`}
                           onClick={(event) => handleDelete(event, project.id)}
                           className="rounded-full border border-white/10 p-2 text-zinc-500 hover:text-red-400 hover:border-red-400/40 transition-colors"
                         >
@@ -550,6 +558,8 @@ export default function PortalPage() {
                         {project.slug ? 'Published' : 'Draft'}
                       </span>
                       <button
+                        type="button"
+                        aria-label={`Delete ${project.name || 'project'}`}
                         onClick={(event) => handleDelete(event, project.id)}
                         className="rounded-full border border-white/10 p-2 text-zinc-500 hover:text-red-400 hover:border-red-400/40 transition-colors"
                       >

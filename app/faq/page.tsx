@@ -91,11 +91,11 @@ export default function FAQPage() {
 ]
 
   return (
-    <div className="min-h-screen bg-black text-white selection:bg-emerald-500/30 relative overflow-hidden">
+    <div className="min-h-screen bg-zinc-950 text-white selection:bg-emerald-500/30 relative overflow-hidden">
       {/* Ambient void background */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[150px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-teal-500/5 rounded-full blur-[150px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[150px]" />
       </div>
 
       {/* Scanline Effect */}
@@ -152,7 +152,7 @@ export default function FAQPage() {
                   const element = document.getElementById(section.category.toLowerCase().replace(/\s+/g, '-'))
                   element?.scrollIntoView({ behavior: 'smooth' })
                 }}
-                className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-500/30 rounded-sm text-xs font-mono text-zinc-400 hover:text-emerald-400 transition-all uppercase tracking-wider"
+                className="px-4 py-2 bg-zinc-900/70 backdrop-blur-xl hover:bg-zinc-800/70 border border-zinc-800/50 hover:border-emerald-500/30 rounded-sm text-xs font-mono text-zinc-400 hover:text-emerald-400 transition-all uppercase tracking-wider"
               >
                 [{section.category}]
               </button>
@@ -165,7 +165,7 @@ export default function FAQPage() {
               const Icon = section.icon
               return (
                 <section key={section.category} id={section.category.toLowerCase().replace(/\s+/g, '-')}>
-                  <div className="flex items-center gap-3 mb-8 border-b border-white/10 pb-4">
+                  <div className="flex items-center gap-3 mb-8 border-b border-zinc-800/50 pb-4">
                     <Icon className="w-5 h-5 text-emerald-500" />
                     <h2 className="text-xl font-bold text-white font-mono uppercase tracking-wider">
                       {section.category}
@@ -179,7 +179,7 @@ export default function FAQPage() {
                       return (
                         <motion.div
                           key={idx}
-                          className="bg-white/5 border border-white/10 rounded-sm overflow-hidden hover:border-emerald-500/30 transition-colors"
+                          className="bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-sm overflow-hidden hover:border-emerald-500/30 transition-colors shadow-2xl shadow-black/50"
                           initial={{ opacity: 0, y: 20 }}
                           whileInView={{ opacity: 1, y: 0 }}
                           viewport={{ once: true }}
@@ -210,7 +210,7 @@ export default function FAQPage() {
                                 transition={{ duration: 0.3 }}
                               >
                                 <div className="px-6 pb-6 pt-0">
-                                  <div className="h-px w-full border-t border-white/10 mb-4"></div>
+                                  <div className="h-px w-full border-t border-zinc-800/50 mb-4"></div>
                                   <div className="flex gap-3">
                                     <span className="text-emerald-500/50 font-mono text-sm font-bold">A:</span>
                                     <p className="text-zinc-400 text-sm font-mono leading-relaxed">

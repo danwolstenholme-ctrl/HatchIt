@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Sparkles, Rocket, Code2, Globe, Zap, Crown, ArrowRight, Shield, Cloud } from 'lucide-react'
 import { useUser } from '@clerk/nextjs'
-import Image from 'next/image'
 
 // =============================================================================
 // BUILDER WELCOME - First-time orientation for authenticated users
@@ -127,15 +126,20 @@ export default function BuilderWelcome({ onClose }: BuilderWelcomeProps) {
             {/* Outer glow */}
             <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 via-teal-500/10 to-emerald-500/20 rounded-3xl blur-2xl opacity-60" />
             
-            {/* Glass card */}
-            <div className="relative bg-zinc-900/70 backdrop-blur-2xl backdrop-saturate-150 border border-white/10 rounded-2xl overflow-hidden shadow-2xl shadow-black/50">
+            {/* Glass card - matching HomepageWelcome style */}
+            <div className="relative bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-2xl overflow-hidden shadow-2xl shadow-black/50">
+              {/* Subtle gradient overlay */}
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(16,185,129,0.04),transparent_60%)]" />
+              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
+              
               {/* Top highlight */}
-              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent" />
               
               {/* Close button */}
               <button
                 onClick={handleDismiss}
-                className="absolute top-4 right-4 p-2 text-zinc-500 hover:text-white transition-colors rounded-full hover:bg-white/10 z-10"
+                aria-label="Close welcome modal"
+                className="absolute top-4 right-4 p-2 text-zinc-500 hover:text-white transition-colors rounded-full hover:bg-zinc-800 z-10"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -149,15 +153,12 @@ export default function BuilderWelcome({ onClose }: BuilderWelcomeProps) {
                   transition={{ delay: 0.2 }}
                   className="flex items-center gap-4 mb-8"
                 >
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-emerald-500/30 blur-xl rounded-full" />
-                    <div className="relative w-14 h-14 bg-white/5 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/10">
-                      <Image 
-                        src="/assets/hatchit_definitive.svg"
-                        alt="HatchIt"
-                        width={32}
-                        height={32}
-                      />
+                  {/* Geometric H mark */}
+                  <div className="relative w-14 h-14 bg-zinc-900 rounded-xl flex items-center justify-center border border-zinc-800">
+                    <div className="w-6 h-6 relative">
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-400 to-emerald-600 rounded-full" />
+                      <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-400 to-emerald-600 rounded-full" />
+                      <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full" />
                     </div>
                   </div>
                   <div>
@@ -165,8 +166,8 @@ export default function BuilderWelcome({ onClose }: BuilderWelcomeProps) {
                       Welcome, {firstName}
                     </h2>
                     <div className="flex items-center gap-2 mt-1">
-                      <TierIcon className="w-4 h-4 text-emerald-400" />
-                      <span className="text-sm text-emerald-400 font-medium">
+                      <TierIcon className="w-4 h-4 text-emerald-500" />
+                      <span className="text-sm text-zinc-400 font-medium">
                         {config.name} Plan
                       </span>
                     </div>
@@ -187,10 +188,10 @@ export default function BuilderWelcome({ onClose }: BuilderWelcomeProps) {
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.4 + i * 0.1 }}
-                        className="flex items-center gap-3 text-white/80"
+                        className="flex items-center gap-3 text-zinc-200"
                       >
-                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                          <perk.icon className="w-4 h-4 text-emerald-400" />
+                        <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center">
+                          <perk.icon className="w-4 h-4 text-zinc-400" />
                         </div>
                         <span className="text-sm">{perk.text}</span>
                       </motion.div>
@@ -204,25 +205,29 @@ export default function BuilderWelcome({ onClose }: BuilderWelcomeProps) {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.6 }}
-                    className="text-xs text-white/30 text-center mb-6"
+                    className="text-xs text-zinc-500 text-center mb-6"
                   >
                     {config.upgradeHint}
                   </motion.p>
                 )}
 
-                {/* CTA - Void Button style */}
+                {/* CTA - Primary shimmer style */}
                 <motion.button
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={handleDismiss}
-                  className="group relative w-full py-4 px-6 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-500/50 backdrop-blur-md rounded-xl font-semibold text-lg transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_30px_-10px_rgba(16,185,129,0.3)] hover:shadow-[0_0_50px_-10px_rgba(16,185,129,0.5)] overflow-hidden flex items-center justify-center gap-3"
+                  className="group relative w-full py-4 px-6 bg-emerald-500/15 backdrop-blur-2xl border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white font-semibold rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] flex items-center justify-center gap-3 overflow-hidden"
                 >
-                  {/* Glow ring on hover */}
-                  <div className="absolute -inset-[2px] rounded-xl bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-emerald-500/20 opacity-0 group-hover:opacity-100 blur-md transition-opacity duration-500" />
-                  
-                  <span className="relative z-10 text-white">Enter the Studio</span>
-                  <ArrowRight className="relative z-10 w-5 h-5 text-emerald-400 group-hover:translate-x-1 transition-transform" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent rounded-xl pointer-events-none" />
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0"
+                    animate={{ x: ['-200%', '200%'] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                  />
+                  <span className="relative">Enter the Studio</span>
+                  <ArrowRight className="relative w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </motion.button>
               </div>
             </div>

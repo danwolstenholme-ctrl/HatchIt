@@ -107,12 +107,7 @@ export default function PaywallTransition({ reason, onClose, onUpgrade }: Paywal
   }
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black text-white overflow-y-auto font-mono">
-      {/* Background grid */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.03)_1px,transparent_1px)] bg-[size:50px_50px]" />
-      
-      {/* Radial glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(16,185,129,0.1),transparent_50%)]" />
+    <div className="fixed inset-0 z-[100] bg-zinc-950 text-white overflow-y-auto font-mono">
 
       <AnimatePresence mode="wait">
         {!showPricing ? (
@@ -129,14 +124,13 @@ export default function PaywallTransition({ reason, onClose, onUpgrade }: Paywal
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ duration: 0.5, ease: 'easeOut' }}
-              className="relative mb-12"
+              className="mb-12"
             >
-              <div className="absolute inset-0 bg-emerald-500/20 blur-3xl rounded-full scale-150" />
-              <div className="relative w-24 h-24 bg-zinc-900/80 border border-emerald-500/30 rounded-full flex items-center justify-center shadow-[0_0_60px_rgba(16,185,129,0.3)]">
+              <div className="w-24 h-24 bg-zinc-900 border border-zinc-700 rounded-full flex items-center justify-center">
                 {reason === 'limit_reached' ? (
                   <Lock className="w-10 h-10 text-amber-400" />
                 ) : (
-                  <CheckCircle2 className="w-10 h-10 text-emerald-400" />
+                  <CheckCircle2 className="w-10 h-10 text-emerald-500" />
                 )}
               </div>
             </motion.div>
@@ -180,10 +174,10 @@ export default function PaywallTransition({ reason, onClose, onUpgrade }: Paywal
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/30 mb-6"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-900 border border-zinc-700 mb-6"
               >
-                <Eye className="w-4 h-4 text-emerald-400" />
-                <span className="text-xs text-emerald-300 uppercase tracking-wider">
+                <Eye className="w-4 h-4 text-zinc-400" />
+                <span className="text-xs text-zinc-300 uppercase tracking-wider">
                   {reason === 'limit_reached' ? 'Unlock Full Access' : 'Your Site is Ready'}
                 </span>
               </motion.div>
@@ -210,11 +204,11 @@ export default function PaywallTransition({ reason, onClose, onUpgrade }: Paywal
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 + index * 0.1 }}
-                  className={`relative p-6 rounded-2xl border backdrop-blur-sm ${
+                  className={`relative p-6 rounded-2xl border ${
                     tier.popular
-                      ? 'bg-emerald-500/5 border-emerald-500/30 shadow-[0_0_40px_rgba(16,185,129,0.1)]'
-                      : 'bg-zinc-900/50 border-zinc-800 hover:border-zinc-700'
-                  } transition-all`}
+                      ? 'bg-zinc-900 border-emerald-500/50'
+                      : 'bg-zinc-900 border-zinc-800 hover:border-zinc-700'
+                  } transition-colors`}
                 >
                   {tier.popular && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-emerald-500 text-xs font-semibold text-black rounded-full">

@@ -27,12 +27,12 @@ function DemoContent() {
   
   // Show loading while checking auth
   if (!isLoaded) {
-    return <SingularityLoader text="INITIALIZING SYSTEM" />
+    return <SingularityLoader text="LOADING" />
   }
   
   // If signed in, don't render - we're redirecting
   if (isSignedIn) {
-    return <SingularityLoader text="AUTHENTICATING" />
+    return <SingularityLoader text="REDIRECTING" />
   }
   
   return (
@@ -45,7 +45,7 @@ function DemoContent() {
 
 export default function DemoPage() {
   return (
-    <Suspense fallback={<SingularityLoader text="LOADING CORE" />}>
+    <Suspense fallback={<SingularityLoader text="LOADING" />}>
       <DemoContent />
     </Suspense>
   )

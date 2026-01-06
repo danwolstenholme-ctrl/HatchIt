@@ -104,12 +104,8 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   const [brandConfig, setBrandConfig] = useState<DbBrandConfig | null>(null)
   const [buildState, setBuildState] = useState<BuildState | null>(null)
   const [project, setProject] = useState<DbProject | null>(null)
-  // Initialize guest count from localStorage to stay in sync with SectionBuilder
-  const [guestInteractionCount, setGuestInteractionCount] = useState(() => {
-    if (typeof window === 'undefined') return 0
-    const stored = localStorage.getItem('hatch_guest_generations')
-    return stored ? parseInt(stored, 10) || 0 : 0
-  })
+  // Initialize guest count to 0 for SSR, sync from localStorage in useEffect
+  const [guestInteractionCount, setGuestInteractionCount] = useState(0)
   const [hatchModalReason, setHatchModalReason] = useState<'generation_limit' | 'code_access' | 'deploy' | 'download' | 'proactive' | 'running_low' | 'guest_lock'>('proactive')
   const [showPaywallTransition, setShowPaywallTransition] = useState(false)
   const [paywallReason, setPaywallReason] = useState<'limit_reached' | 'site_complete'>('limit_reached')
@@ -142,6 +138,14 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       OLD_WELCOME_KEYS.forEach((key) => localStorage.removeItem(key))
     } catch (err) {
       console.warn('Welcome key cleanup failed', err)
+    }
+  }, [])
+
+  // Sync guestInteractionCount from localStorage after mount (prevents hydration mismatch)
+  useEffect(() => {
+    const stored = localStorage.getItem('hatch_guest_generations')
+    if (stored) {
+      setGuestInteractionCount(parseInt(stored, 10) || 0)
     }
   }, [])
   
@@ -605,9 +609,18 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
         }
       })
       
-      // Find first pending section
-      const firstPending = finalSections.findIndex((s: any) => s.status === 'pending')
-      state.currentSectionIndex = firstPending === -1 ? finalSections.length : firstPending
+      // Find first pending section - but clamp to hero only for free/demo users
+      // Demo users only have access to hero section, so if hero is complete,
+      // keep index at 0 to show the completed preview instead of black screen
+      const heroSection = finalSections.find((s: any) => s.section_id === 'hero')
+      if (heroSection?.status === 'complete') {
+        // Hero is done - stay on hero to show preview
+        state.currentSectionIndex = 0
+      } else {
+        // Hero not done - find first pending (should be hero at index 0)
+        const firstPending = finalSections.findIndex((s: any) => s.status === 'pending')
+        state.currentSectionIndex = firstPending === -1 ? 0 : Math.min(firstPending, 0)
+      }
 
       setBuildState(state)
       setPhase('building')
@@ -1451,12 +1464,12 @@ export default function GeneratedPage() {
 
   // Only show loading screen if NOT coming from FirstContact
   if (isLoading && !skipLoadingScreen) {
-    // Show different message depending on if we're loading existing vs creating new
-    let loadingMessage = 'Initializing the build system...'
-    if (existingProjectId) loadingMessage = 'Resuming your project...'
-    else if (!isLoaded) loadingMessage = 'Connecting to neural network...'
+    // Short, branded loading messages
+    let loadingMessage = 'LOADING'
+    if (existingProjectId) loadingMessage = 'RESUMING PROJECT'
+    else if (!isLoaded) loadingMessage = 'CONNECTING'
     
-    return <SingularityLoader text={loadingMessage.toUpperCase()} />
+    return <SingularityLoader text={loadingMessage} />
   }
 
   if (error) {
@@ -1485,7 +1498,7 @@ export default function GeneratedPage() {
   
   // Show simple loading state while initializing (especially for guest mode)
   if (phase === 'initializing' || isLoading) {
-    return <SingularityLoader text="INITIALIZING SINGULARITY" />
+    return <SingularityLoader text="INITIALIZING" />
   }
 
   return (
@@ -1508,20 +1521,17 @@ export default function GeneratedPage() {
             className="flex h-screen overflow-hidden bg-black"
           >
             {/* Singularity Sidebar - Desktop Only */}
-            <div className="hidden lg:block w-64 border-r border-zinc-900 bg-zinc-950 flex flex-col h-full overflow-y-auto">
+            <div className="hidden lg:block w-72 border-r border-zinc-900 bg-zinc-950 flex flex-col h-full overflow-y-auto">
               <SingularitySidebar
                 currentSection={buildState.currentSectionIndex + 1}
                 totalSections={sectionsForBuild.length}
+                sectionNames={sectionsForBuild.map(section => section.name)}
                 isGenerating={false}
                 thought={getCurrentSection()?.name ? `Building ${getCurrentSection()?.name}...` : 'Analyzing...'}
-                promptsUsed={!isSignedIn ? guestBuildsUsed : 0}
-                promptsLimit={!isSignedIn ? 3 : -1}
-                isPaid={isPaid}
-                onUpgrade={() => {
-                  setHatchModalReason('generation_limit')
-                  setShowHatchModal(true)
-                }}
-                onOpenSettings={() => setIsSettingsOpen(true)}
+                projectName={project?.name || brandConfig?.brandName || 'Untitled Project'}
+                onOpenSettings={!demoMode ? () => setIsSettingsOpen(true) : undefined}
+                onSignUp={demoMode ? () => router.push('/sign-up?redirect_url=/dashboard') : undefined}
+                demoMode={demoMode}
               />
             </div>
 
@@ -1630,8 +1640,8 @@ export default function GeneratedPage() {
                   </button>
                   <div className="h-6 w-px bg-zinc-800" />
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                      <Terminal className="w-4 h-4 text-emerald-400" />
+                    <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center">
+                      <Terminal className="w-4 h-4 text-zinc-400" />
                     </div>
                     <h1 className="text-lg font-bold text-white tracking-tight">{project?.name || 'Untitled Project'}</h1>
                   </div>
@@ -1666,7 +1676,7 @@ export default function GeneratedPage() {
                       href={deployedUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-4 py-2 text-sm bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg hover:bg-emerald-500/20 transition-colors flex items-center gap-2 font-medium"
+                      className="px-4 py-2 text-sm bg-zinc-800 text-emerald-400 border border-zinc-700 rounded-lg hover:bg-zinc-700 transition-colors flex items-center gap-2 font-medium"
                     >
                       <Globe className="w-4 h-4" />
                       <span>View Live Site</span>
@@ -1676,12 +1686,12 @@ export default function GeneratedPage() {
                     <button
                       onClick={handleDeploy}
                       disabled={isDeploying || !assembledCode}
-                      className={`px-6 py-2.5 text-sm font-bold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 group ${
+                      className={`px-6 py-2.5 text-sm font-bold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 group ${
                         tierConfig?.color === 'amber' 
-                          ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-black shadow-[0_0_15px_rgba(245,158,11,0.3)] hover:shadow-[0_0_25px_rgba(245,158,11,0.5)]'
+                          ? 'bg-amber-500 hover:bg-amber-400 text-black'
                           : tierConfig?.color === 'lime'
-                          ? 'bg-gradient-to-r from-lime-500 to-green-500 text-black shadow-[0_0_15px_rgba(132,204,22,0.3)] hover:shadow-[0_0_25px_rgba(132,204,22,0.5)]'
-                          : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:shadow-[0_0_25px_rgba(16,185,129,0.4)]'
+                          ? 'bg-lime-500 hover:bg-lime-400 text-black'
+                          : 'bg-emerald-600 hover:bg-emerald-500 text-white'
                       }`}
                     >
                       {isDeploying ? (
@@ -1713,14 +1723,14 @@ export default function GeneratedPage() {
                 <div className="px-6 py-5 border-b border-emerald-500/20 bg-gradient-to-r from-emerald-950/50 via-zinc-900/80 to-emerald-950/50 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <div className="w-2 h-2 rounded-full bg-emerald-500" />
                       <p className="text-base text-white font-semibold">Hero Section Deployed</p>
                     </div>
                     <p className="text-sm text-zinc-400">Don't lose your progress. Start your 14-day trial to keep building.</p>
                   </div>
                   <button
                     onClick={() => handleDirectCheckout('architect')}
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-sm transition-all shadow-lg shadow-emerald-900/30 hover:shadow-emerald-900/50 hover:scale-105"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-colors"
                   >
                     <Lock className="w-4 h-4" />
                     Unlock — $19/mo
@@ -1806,7 +1816,7 @@ export default function GeneratedPage() {
                             isLocked
                               ? 'bg-zinc-700/50 text-zinc-500 border border-zinc-600'
                             : isCompleted 
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                              ? 'bg-zinc-800 text-emerald-400 border border-zinc-700' 
                               : isSkipped
                               ? 'bg-zinc-800 text-zinc-500 border border-zinc-700'
                               : 'bg-zinc-800 text-zinc-500 border border-zinc-700'
@@ -1851,7 +1861,7 @@ export default function GeneratedPage() {
                     {accountSubscription?.tier === 'architect' && (
                       <button 
                         onClick={() => window.location.href = '/sign-up?upgrade=visionary'}
-                        className="mt-4 w-full py-2 text-xs font-medium bg-gradient-to-r from-emerald-600/20 to-teal-600/20 border border-emerald-500/30 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition-colors flex items-center justify-center gap-2"
+                        className="mt-4 w-full py-2 text-xs font-medium bg-zinc-800 border border-zinc-700 text-emerald-400 rounded-lg hover:bg-zinc-700 transition-colors flex items-center justify-center gap-2"
                       >
                         <Zap className="w-3.5 h-3.5" />
                         Upgrade to Visionary for Unlimited
@@ -1880,7 +1890,7 @@ export default function GeneratedPage() {
                     )}
                   </button>
                   {buildState.finalAuditComplete && (
-                    <div className="mt-3 flex items-center justify-center gap-2 text-xs text-emerald-400 font-mono bg-emerald-500/10 py-1.5 rounded border border-emerald-500/20">
+                    <div className="mt-3 flex items-center justify-center gap-2 text-xs text-emerald-400 font-mono bg-zinc-800 py-1.5 rounded border border-zinc-700">
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       <span>Optimized: {buildState.finalAuditChanges?.length || 0} improvements</span>
                     </div>
@@ -1970,14 +1980,13 @@ export default function GeneratedPage() {
                     className="bg-zinc-950 border border-zinc-800 rounded-2xl p-8 max-w-lg w-full shadow-2xl relative overflow-hidden"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent pointer-events-none" />
                     
                     <div className="text-center relative z-10">
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         transition={{ type: 'spring', bounce: 0.5, delay: 0.2 }}
-                        className="w-20 h-20 mx-auto mb-6 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center"
+                        className="w-20 h-20 mx-auto mb-6 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center"
                       >
                         <Rocket className="w-10 h-10 text-emerald-400" />
                       </motion.div>
@@ -1991,7 +2000,7 @@ export default function GeneratedPage() {
                           setShareUrlCopied(true)
                           setTimeout(() => setShareUrlCopied(false), 2000)
                         }}
-                        className="w-full inline-flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:shadow-[0_0_20px_rgba(59,130,246,0.3)] transition-all group mb-4"
+                        className="w-full inline-flex items-center justify-center gap-3 px-6 py-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-colors group mb-4"
                       >
                         {shareUrlCopied ? (
                           <>
@@ -2010,25 +2019,25 @@ export default function GeneratedPage() {
                         href={deployedUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/10 text-zinc-300 font-medium rounded-xl hover:bg-white/10 hover:text-white transition-all group"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-900 border border-zinc-800 text-zinc-300 font-medium rounded-xl hover:bg-zinc-800 hover:text-white transition-colors group"
                       >
                         <Globe className="w-5 h-5" />
                         <span>View Live Site</span>
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                       </a>
                       
-                      <div className="mt-4 p-3 bg-white/5 border border-white/10 rounded-lg">
+                      <div className="mt-4 p-3 bg-zinc-900 border border-zinc-800 rounded-lg">
                         <code className="text-xs text-zinc-400 font-mono break-all">{deployedUrl}</code>
                       </div>
                     </div>
 
                     {/* Next Steps - Tier-aware */}
-                    <div className="mt-8 pt-6 border-t border-white/10 relative z-10">
+                    <div className="mt-8 pt-6 border-t border-zinc-800 relative z-10">
                       <h3 className="text-xs font-mono text-zinc-500 uppercase tracking-wider mb-4">What's Next</h3>
                       <div className="space-y-2">
                         <button
                           onClick={() => setDeployedUrl(null)}
-                          className="w-full flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors text-left group"
+                          className="w-full flex items-center gap-3 p-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg transition-colors text-left group"
                         >
                           <div className="w-8 h-8 rounded-lg bg-teal-500/10 flex items-center justify-center">
                             <Edit3 className="w-4 h-4 text-teal-400" />
@@ -2043,35 +2052,35 @@ export default function GeneratedPage() {
                         {isProUser ? (
                           <button
                             onClick={() => setIsSettingsOpen(true)}
-                            className="w-full flex items-center gap-3 p-3 bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/20 rounded-lg transition-colors text-left group"
+                            className="w-full flex items-center gap-3 p-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg transition-colors text-left group"
                           >
-                            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                            <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
                               <Globe className="w-4 h-4 text-emerald-400" />
                             </div>
                             <div className="flex-1">
                               <p className="text-sm font-medium text-white group-hover:text-emerald-300 transition-colors">Connect Custom Domain</p>
                               <p className="text-xs text-zinc-500">Use your own domain name</p>
                             </div>
-                            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">PRO</span>
+                            <span className="text-[10px] font-mono text-emerald-400 bg-zinc-800 px-2 py-0.5 rounded">PRO</span>
                           </button>
                         ) : (
-                          <div className="w-full flex items-center gap-3 p-3 bg-white/5 border border-white/10 rounded-lg opacity-50 cursor-not-allowed">
-                            <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                          <div className="w-full flex items-center gap-3 p-3 bg-zinc-900 border border-zinc-800 rounded-lg opacity-50 cursor-not-allowed">
+                            <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
                               <Globe className="w-4 h-4 text-zinc-500" />
                             </div>
                             <div className="flex-1">
                               <p className="text-sm font-medium text-zinc-500">Custom Domain</p>
                               <p className="text-xs text-zinc-600">Upgrade to Pro to unlock</p>
                             </div>
-                            <span className="text-[10px] font-mono text-zinc-500 bg-white/10 px-2 py-0.5 rounded">PRO</span>
+                            <span className="text-[10px] font-mono text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded">PRO</span>
                           </div>
                         )}
                         
                         <button
                           onClick={handleStartFresh}
-                          className="w-full flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors text-left group"
+                          className="w-full flex items-center gap-3 p-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg transition-colors text-left group"
                         >
-                          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                          <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
                             <Plus className="w-4 h-4 text-emerald-400" />
                           </div>
                           <div>
@@ -2159,7 +2168,7 @@ export default function GeneratedPage() {
               className="bg-black/90 border border-white/10 rounded-xl p-6 max-w-md w-full shadow-2xl"
             >
               <div className="text-center mb-6">
-                <div className="w-12 h-12 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-12 h-12 bg-zinc-900 rounded-full flex items-center justify-center mx-auto mb-4 border border-zinc-800">
                   <Sparkles className="w-6 h-6 text-emerald-400" />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">Momentum Building</h3>
@@ -2174,14 +2183,14 @@ export default function GeneratedPage() {
                     setShowDemoNudge(false)
                     router.push('/sign-up?redirect_url=/dashboard')
                   }}
-                  className="w-full py-3 px-4 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
                 >
                   <span>Sign Up Free</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setShowDemoNudge(false)}
-                  className="w-full py-3 px-4 bg-white/5 hover:bg-white/10 text-white font-medium rounded-lg transition-colors"
+                  className="w-full py-3 px-4 bg-zinc-800 hover:bg-zinc-700 text-white font-medium rounded-lg transition-colors"
                 >
                   Keep Building
                 </button>
@@ -2201,6 +2210,16 @@ export default function GeneratedPage() {
         projectId={project?.id || ''}
         currentBrand={project?.brand_config || undefined}
         onSave={handleSaveSettings}
+        projectName={project?.name || brandConfig?.brandName || 'Untitled Project'}
+        currentSectionName={getCurrentSection()?.name}
+        thought={getCurrentSection()?.name ? `Building ${getCurrentSection()?.name}` : undefined}
+        demoMode={demoMode}
+        promptsUsed={!isSignedIn ? guestBuildsUsed : 0}
+        promptsLimit={!isSignedIn ? 3 : undefined}
+        onUpgrade={() => {
+          setHatchModalReason('generation_limit')
+          setShowHatchModal(true)
+        }}
       />
     </div>
   )

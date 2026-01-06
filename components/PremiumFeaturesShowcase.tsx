@@ -136,7 +136,7 @@ export default function PremiumFeaturesShowcase({ onFeatureClick }: PremiumFeatu
               {/* Stats */}
               {feature.stats && (
                 <div className="flex items-center gap-1.5 mt-2 pt-2 border-t border-zinc-800/50">
-                  <div className="w-1 h-1 rounded-full bg-emerald-500/50 animate-pulse" />
+                  <div className="w-1 h-1 rounded-full bg-emerald-500" />
                   <span className="text-[9px] text-zinc-500 font-medium group-hover:text-zinc-400 transition-colors">
                     {feature.stats}
                   </span>
@@ -154,7 +154,7 @@ export default function PremiumFeaturesShowcase({ onFeatureClick }: PremiumFeatu
         transition={{ delay: 0.6 }}
         className="pt-2 px-1"
       >
-        <div className="p-3 bg-gradient-to-br from-violet-500/5 to-fuchsia-500/5 border border-violet-500/10 rounded-lg">
+        <div className="p-3 bg-zinc-900 border border-zinc-800 rounded-lg">
           <p className="text-[10px] text-zinc-400 leading-relaxed mb-2">
             <span className="text-violet-400 font-semibold">Visionary</span> unlocks 2 features. 
             <span className="text-amber-400 font-semibold"> Singularity</span> unlocks all 5.

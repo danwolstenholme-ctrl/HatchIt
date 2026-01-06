@@ -68,14 +68,15 @@ export default function WelcomeModal({ trigger = 'auto', isOpen: externalIsOpen,
             {/* Close button - Optional: Remove to force signup? User said "They NEED to create an account" */}
             <button 
               onClick={handleClose}
+              aria-label="Close modal"
               className="absolute top-4 right-4 p-2 text-zinc-500 hover:text-white transition-colors rounded-lg hover:bg-zinc-800 z-10"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="p-8 text-center">
-              <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-emerald-500/20">
-                <Lock className="w-8 h-8 text-emerald-500" />
+              <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-6 border border-zinc-700">
+                <Lock className="w-8 h-8 text-zinc-400" />
               </div>
               
               <h2 className="text-2xl font-bold text-white mb-3">
@@ -89,7 +90,7 @@ export default function WelcomeModal({ trigger = 'auto', isOpen: externalIsOpen,
               <div className="space-y-4">
                 <button 
                   onClick={handleSignup}
-                  className="w-full py-4 px-6 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-lg rounded-xl transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:shadow-[0_0_30px_rgba(16,185,129,0.4)] flex items-center justify-center gap-2"
+                  className="w-full py-4 px-6 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-lg rounded-xl transition-colors flex items-center justify-center gap-2"
                 >
                   Create Free Account
                   <ArrowRight className="w-5 h-5" />

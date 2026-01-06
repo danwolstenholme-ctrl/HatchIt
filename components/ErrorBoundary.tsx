@@ -119,7 +119,7 @@ export default class ErrorBoundary extends Component<Props, State> {
                 animate={{ opacity: 1 }}
                 className="flex flex-col items-center"
               >
-                <div className="w-16 h-16 mb-6 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                <div className="w-16 h-16 mb-6 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center">
                   <RefreshCw className="w-8 h-8 text-emerald-400 animate-spin" />
                 </div>
                 <h2 className="text-xl font-bold text-white font-mono mb-2">APPLYING FIX</h2>
@@ -141,7 +141,7 @@ export default class ErrorBoundary extends Component<Props, State> {
                 animate={{ opacity: 1 }}
                 className="flex flex-col items-center"
               >
-                <div className="w-16 h-16 mb-6 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                <div className="w-16 h-16 mb-6 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center">
                   <ShieldCheck className="w-8 h-8 text-emerald-400" />
                 </div>
                 <h2 className="text-xl font-bold text-white font-mono mb-2">SYSTEM RESTORED</h2>
