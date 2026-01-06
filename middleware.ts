@@ -1,7 +1,8 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 
-// PROTECTED: Everything behind the gate
-// Keep build/refine APIs public so /demo guests can generate sections.
+// PROTECTED ROUTES: Require authentication
+// Note: /api/build-section and /api/refine-section are intentionally PUBLIC
+// to allow guest users on /demo to generate sections (with rate limits)
 const isProtectedRoute = createRouteMatcher([
   '/builder(.*)',
   '/dashboard(.*)',

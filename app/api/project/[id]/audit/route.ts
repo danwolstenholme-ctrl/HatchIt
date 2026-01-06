@@ -76,6 +76,13 @@ export async function POST(
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
+    // Tier check: Auditor requires Visionary+ tier
+    const accountSub = user?.publicMetadata?.accountSubscription as { tier?: string } | undefined
+    const hasAuditorAccess = ['visionary', 'singularity'].includes(accountSub?.tier || '') || user?.publicMetadata?.role === 'admin'
+    if (!hasAuditorAccess) {
+      return NextResponse.json({ error: 'Visionary tier required for audit', requiresUpgrade: true }, { status: 403 })
+    }
+
     const { id: projectId } = await params
 
     // Verify ownership using internal user ID

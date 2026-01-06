@@ -3,7 +3,7 @@
 // =============================================================================
 
 /**
- * Account-level subscription (Pro or Agency tier)
+ * Account-level subscription (Architect, Visionary, or Singularity tier)
  * Stored in Clerk publicMetadata.accountSubscription
  */
 export interface AccountSubscription {
@@ -16,10 +16,33 @@ export interface AccountSubscription {
   deployedSitesCount?: number // Track how many sites deployed
 }
 
+// =============================================================================
+// CENTRALIZED LIMITS - Import these instead of hardcoding
+// =============================================================================
+
+export const LIMITS = {
+  // Guest/Demo users (no account)
+  GUEST_TOTAL_CREDITS: 9, // Combined builds + refinements before signup wall
+  GUEST_REFINEMENTS: 1, // Max refinements per session
+  GUEST_DAILY_GENERATIONS: 3, // Generations per day (IP-based)
+  
+  // Free users (signed in, no subscription)
+  FREE_DAILY_GENERATIONS: 5, // Generations per day
+  FREE_REFINEMENTS: 1, // Max refinements before paywall
+  
+  // Architect tier
+  ARCHITECT_PROJECTS: 3, // Max projects
+  ARCHITECT_DEPLOYED_SITES: 3, // Max deployed sites
+  ARCHITECT_REFINEMENTS_MONTHLY: 5, // Refinements per month
+  
+  // Visionary+ = unlimited everything
+  // Singularity = unlimited + premium features
+}
+
 /**
  * Pricing tier configuration
  * NOTE: The paywall is at DEPLOY, not at generation.
- * Free users can generate unlimited code - they pay to ship.
+ * Free users can generate code - they pay to ship.
  */
 export interface PricingTier {
   name: 'architect' | 'visionary' | 'singularity'

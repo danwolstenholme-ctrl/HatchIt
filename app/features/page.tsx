@@ -351,10 +351,10 @@ export default function FeaturesPage() {
                 </span>
               </Link>
               <Link
-                href="/pricing"
+                href="/demo"
                 className="px-8 py-4 bg-zinc-800/50 backdrop-blur-xl hover:bg-zinc-800/70 text-zinc-300 hover:text-white rounded-xl font-semibold text-lg transition-all border border-zinc-700/50 hover:border-zinc-600"
               >
-                View Pricing
+                Try the Demo
               </Link>
             </div>
           </div>

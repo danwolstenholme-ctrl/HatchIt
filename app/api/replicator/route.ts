@@ -9,8 +9,8 @@ import { AccountSubscription } from '@/types/subscriptions'
 // Reverse-engineers a website from a URL into a Hatch prompt structure
 // =============================================================================
 
-// DEV BYPASS - Set to true to skip tier check for local testing
-const DEV_BYPASS = process.env.NEXT_PUBLIC_APP_ENV?.startsWith('local') || false
+// DEV BYPASS - Only enabled in development with explicit flag (server-side only)
+const DEV_BYPASS = process.env.NODE_ENV === 'development' && process.env.DEV_BYPASS_TIER_CHECK === 'true'
 
 const geminiApiKey = process.env.GEMINI_API_KEY
 const genai = geminiApiKey ? new GoogleGenAI({ apiKey: geminiApiKey }) : null
