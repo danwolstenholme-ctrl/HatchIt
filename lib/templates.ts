@@ -576,7 +576,9 @@ export const templates: Template[] = [
 ]
 
 export const getTemplateById = (id: string): Template | undefined => {
-  return templates.find(t => t.id === id)
+  // 'singularity' and 'architect' are aliases for 'website' template
+  const normalizedId = (id === 'singularity' || id === 'architect') ? 'website' : id
+  return templates.find(t => t.id === normalizedId)
 }
 
 export const getSectionById = (template: Template, sectionId: string): Section | undefined => {

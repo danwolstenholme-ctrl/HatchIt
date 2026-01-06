@@ -2,227 +2,201 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
-import { GitCommit, Circle, CheckCircle2, Clock, ChevronDown, Terminal, Cpu, Zap } from 'lucide-react'
+import { Rocket, CheckCircle2, Clock, ChevronDown, Sparkles, Zap } from 'lucide-react'
+import Link from 'next/link'
+import Navigation from '@/components/Navigation'
+import Footer from '@/components/Footer'
+
+// =============================================================================
+// ROADMAP PAGE - Clean HatchIt brand, no terminal aesthetic
+// =============================================================================
 
 interface RoadmapItem {
   title: string
   description: string
-  status: 'deployed' | 'compiling' | 'queued'
+  status: 'shipped' | 'building' | 'planned'
   date?: string
-  technicalDetails?: string
+  details?: string
 }
 
 interface RoadmapSection {
+  quarter: string
   title: string
-  timeline: string
   items: RoadmapItem[]
 }
 
 const roadmap: RoadmapSection[] = [
   {
-    title: 'System Version 3.1 [CURRENT]',
-    timeline: 'December 2025',
+    quarter: 'Now',
+    title: 'Recently Shipped',
     items: [
-      { 
-        title: 'Reasoning Engine Visualization', 
-        description: 'Exposed internal logic pathways to the Architect.', 
-        status: 'deployed', 
-        date: 'Dec 2025',
-        technicalDetails: `Added "Design Reasoning" display to SectionBuilder. The System now explains its choices: "Used split layout with testimonial on left to build trust before the CTA" or "Three feature cards because odd numbers feel more dynamic."
-
-Updated build-section API prompt to return JSON with both code and reasoning fields. Emerald-tinted card with terminal icon shows the reasoning after generation completes.`
+      {
+        title: 'AI Design Reasoning',
+        description: 'See why the AI made each design decision.',
+        status: 'shipped',
+        date: 'Jan 2026',
+        details: 'After generating a section, you\'ll see the AI\'s thinking: "Used split layout with testimonial on left to build trust before the CTA." Makes the output less of a black box.'
       },
-      { 
-        title: 'Cognitive Stream Display', 
-        description: 'Real-time visualization of System thought processes.', 
-        status: 'deployed', 
-        date: 'Dec 2025',
-        technicalDetails: `Replaced static caption under hero demo with rotating AIThinkingCaption component. Shows design reasoning like "Choosing gradient direction to guide eye flow toward CTA" and "Emerald CTA on dark = high contrast, draws immediate focus."
-
-Cycles through 6 thoughts every 4 seconds with fade animation. Makes the System feel alive and opinionated, not mechanical.`
+      {
+        title: 'Unified Credit System',
+        description: 'One pool of credits for builds, refinements, and experiments.',
+        status: 'shipped',
+        date: 'Jan 2026',
+        details: 'Simplified from separate counters. Guest users get 9 credits to explore before signing up. Paid users get unlimited access.'
       },
-      { 
-        title: 'Resource Allocation Control', 
-        description: 'Database-backed generation limits for stability.', 
-        status: 'deployed', 
+      {
+        title: 'Real-time Code Streaming',
+        description: 'Watch your code generate live.',
+        status: 'shipped',
         date: 'Dec 2025',
-        technicalDetails: `Moved generation tracking from in-memory Map to Supabase. Added generation_count and generation_date columns to users table with atomic increment function.
-
-    Guest flow now enforces the unified 9-credit pool (build/refine/dream) before signup. Previously, serverless cold starts would reset counters, allowing excess usage.`
+        details: 'See the React + Tailwind code appear character by character as Claude writes it. Satisfying to watch and helps you understand what\'s being built.'
       },
-      { 
-        title: 'Security Protocols', 
-        description: 'Enhanced webhook handling and API key validation.', 
-        status: 'deployed', 
+      {
+        title: 'The Prompt Helper',
+        description: 'AI assistant to help you write better prompts.',
+        status: 'shipped',
         date: 'Dec 2025',
-        technicalDetails: `Added findUserByStripeInfo helper for webhook user lookup with subscription metadata fallback. Proper Gemini API key validation with user-friendly errors.
-
-Created shared subscription types in types/subscriptions.ts for consistent tier handling across checkout, webhooks, and API routes.`
+        details: 'Click the sparkle icon and describe what you want. The helper rewrites your prompt to get better results from the builder.'
       },
     ]
   },
   {
-    title: 'System Version 3.0',
-    timeline: 'December 2025',
+    quarter: 'Q1 2026',
+    title: 'Coming Soon',
     items: [
-      { 
-        title: 'Tri-Core Neural Pipeline', 
-        description: 'Architect builds. Architect polishes. Architect audits.', 
-        status: 'deployed', 
-        date: 'Dec 2025',
-        technicalDetails: `Replaced single-model approach with specialized pipeline. The Architect generates initial code fast. The Architect refines for accessibility, semantic HTML, and quality. The Architect audits final output for best practices.
-
-Each model has a specific role and system prompt optimized for its task. The pipeline runs sequentially: Build → Polish → (optional) Audit.`
+      {
+        title: 'URL Replicator',
+        description: 'Paste any URL and rebuild it automatically.',
+        status: 'building',
+        details: 'Analyze existing websites and recreate them with your branding. Great for "I want something like this" moments.'
       },
-      { 
-        title: 'System Architect Interface', 
-        description: 'The cognitive interface bridging User and System.', 
-        status: 'deployed', 
-        date: 'Dec 2025',
-        technicalDetails: `Created HatchCharacter.tsx component with 5 animated states: idle, thinking, excited, watching, sleeping. Powered by Claude Haiku (claude-3-5-haiku-20241022) for instant responses.
-
-Floating button in SectionBuilder opens popup where the Architect optimizes prompts based on your branding and current section. Visual design: Abstract geometric node with pulsing core and rotating rings.`
+      {
+        title: 'Visual Editor',
+        description: 'Click and drag to adjust generated layouts.',
+        status: 'building',
+        details: 'Move sections around, resize elements, and tweak spacing without touching code. AI-generated, human-refined.'
       },
-      { 
-        title: 'Modular Construction Flow', 
-        description: 'Sequential section generation with template logic.', 
-        status: 'deployed', 
-        date: 'Dec 2025',
-        technicalDetails: `New BuildFlowController orchestrates the flow: Template Selection → Branding Step → Section Building. Templates define section order (e.g., Website: header, hero, features, how-it-works, testimonials, pricing, cta, faq, footer).
-
-SectionProgress component shows progress with clickable dots. Each section is built and refined before moving to the next, with skip option available.`
-      },
-      { 
-        title: 'Brand Identity Matrix', 
-        description: 'Global style enforcement across all generated modules.', 
-        status: 'deployed', 
-        date: 'Dec 2025',
-        technicalDetails: `BrandingStep.tsx collects: businessName, tagline, primaryColor, accentColor, style (modern/minimal/bold/playful). Visual color picker with preset palettes.
-
-Brand config is passed to every AI prompt, ensuring consistent styling across all sections. Stored in project object and persisted to Supabase.`
-      },
-      { 
-        title: 'Optimization Subroutine', 
-        description: 'Architect analyzes and suggests improvements post-generation.', 
-        status: 'deployed', 
-        date: 'Dec 2025',
-        technicalDetails: `After the Architect generates a section, it analyzes and returns suggestions via suggest-improvements API. Displayed in friendly popup with The Architect: "I have some ideas! ✨"
-
-Suggestions are contextual to the section type. Click to apply, or dismiss and continue to next section.`
+      {
+        title: 'Custom Domains',
+        description: 'Map deployments to your own domain.',
+        status: 'planned',
+        details: 'Currently sites deploy to hatchitsites.dev subdomains. Soon you\'ll be able to connect your own domain with SSL.'
       },
     ]
   },
   {
-    title: 'System Version 2.0',
-    timeline: 'December 2025',
+    quarter: 'Q2 2026',
+    title: 'On the Horizon',
     items: [
-      { 
-        title: 'Real-time Code Streaming', 
-        description: 'Visualizing the generation process as it happens.', 
-        status: 'deployed', 
-        date: 'Dec 28',
-        technicalDetails: `Created a new /api/generate-stream endpoint using Anthropic's streaming API with Server-Sent Events (SSE). The streaming request runs in parallel with our robust non-streaming endpoint — streaming is purely visual while the actual code parsing uses the original endpoint for stability.
-
-Visual effects include: emerald glow border around the Code tab, "Generating..." badge with pulsing indicator, code text in emerald tint during streaming, animated cursor (▌) at the end that follows new lines, and auto-scroll to keep the latest code visible.`
+      {
+        title: 'Screenshot to Code',
+        description: 'Upload a design and get the code.',
+        status: 'planned',
+        details: 'Drag in a Figma export or screenshot, and the AI will recreate it in React + Tailwind.'
       },
-      { 
-        title: 'Project Persistence', 
-        description: 'Cross-device synchronization of System state.', 
-        status: 'deployed', 
-        date: 'Dec 27',
-        technicalDetails: `Projects are stored in Clerk user metadata for persistence. When a project is "hatched" (paid), we store the project ID and Stripe subscription in Clerk, which syncs across all devices where the user is logged in.`
+      {
+        title: 'Component Library',
+        description: 'Save and reuse your favorite generated sections.',
+        status: 'planned',
+        details: 'Build once, use everywhere. Create your own library of components.'
+      },
+      {
+        title: 'Team Collaboration',
+        description: 'Work together on projects in real-time.',
+        status: 'planned',
+        details: 'Invite team members, share projects, and build together.'
+      },
+      {
+        title: 'Backend Integration',
+        description: 'Built-in form submissions and data handling.',
+        status: 'planned',
+        details: 'Connect contact forms to your email, store submissions, and handle data without code.'
       },
     ]
   },
-  {
-    title: 'Future Trajectory',
-    timeline: 'Q1 2026',
-    items: [
-      { title: 'Visual Manipulation Interface', description: 'Direct manipulation of generated elements.', status: 'compiling' },
-      { title: 'Generation History Log', description: 'Visual timeline of all prompts and versions.', status: 'queued' },
-      { title: 'SEO Optimization Module', description: 'Automated meta tag and heading refinement.', status: 'queued' },
-      { title: 'Backend Integration', description: 'Built-in form submissions and data handling.', status: 'queued' },
-      { title: 'Framework Export', description: 'Download as Next.js or Vite project structure.', status: 'queued' },
-    ]
-  },
-  {
-    title: 'Long-term Horizon',
-    timeline: 'Q2 2026+',
-    items: [
-      { title: 'Visual Input Processing', description: 'Screenshot-to-Code conversion capabilities.', status: 'queued' },
-      { title: 'Voice Command Interface', description: 'Audio-based generation controls.', status: 'queued' },
-      { title: 'Component Library', description: 'Community-driven module marketplace.', status: 'queued' },
-      { title: 'Multi-User Synchronization', description: 'Real-time collaborative editing.', status: 'queued' },
-    ]
-  }
 ]
 
 const statusConfig = {
-  'deployed': { label: 'DEPLOYED', bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20', icon: CheckCircle2 },
-  'compiling': { label: 'COMPILING', bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20', icon: Cpu },
-  'queued': { label: 'QUEUED', bg: 'bg-zinc-500/10', text: 'text-zinc-400', border: 'border-zinc-500/20', icon: Clock }
+  shipped: {
+    label: 'Shipped',
+    bg: 'bg-emerald-500/10',
+    text: 'text-emerald-400',
+    border: 'border-emerald-500/20',
+    icon: CheckCircle2,
+    dot: 'bg-emerald-500'
+  },
+  building: {
+    label: 'Building',
+    bg: 'bg-amber-500/10',
+    text: 'text-amber-400',
+    border: 'border-amber-500/20',
+    icon: Sparkles,
+    dot: 'bg-amber-500 animate-pulse'
+  },
+  planned: {
+    label: 'Planned',
+    bg: 'bg-zinc-500/10',
+    text: 'text-zinc-400',
+    border: 'border-zinc-500/20',
+    icon: Clock,
+    dot: 'bg-zinc-600'
+  }
 }
 
-function RoadmapCard({ item, sectionIndex, itemIndex }: { item: RoadmapItem; sectionIndex: number; itemIndex: number }) {
+function RoadmapCard({ item }: { item: RoadmapItem }) {
   const [expanded, setExpanded] = useState(false)
   const config = statusConfig[item.status]
-  const hasDetails = !!item.technicalDetails
+  const hasDetails = !!item.details
   const Icon = config.icon
 
   return (
     <motion.div
-      className={`relative p-4 rounded-sm border backdrop-blur-xl ${config.bg} ${config.border} ${hasDetails ? 'cursor-pointer hover:bg-zinc-800/50 transition-colors' : ''}`}
-      initial={{ opacity: 0, x: -10 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.3, delay: sectionIndex * 0.1 + itemIndex * 0.05 }}
+      initial={{ opacity: 0, y: 10 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className={`relative rounded-2xl border bg-zinc-900/50 backdrop-blur-sm transition-all ${
+        hasDetails ? 'cursor-pointer hover:bg-zinc-900/80' : ''
+      } ${expanded ? 'border-white/20' : 'border-white/10'}`}
       onClick={() => hasDetails && setExpanded(!expanded)}
     >
-      {/* Timeline connector */}
-      <div className="absolute -left-[41px] top-5 w-px h-full border-l border-zinc-800/50 last:hidden"></div>
-      <div className={`absolute -left-[45px] top-5 w-2 h-2 rounded-full ${item.status === 'deployed' ? 'bg-emerald-500' : item.status === 'compiling' ? 'bg-amber-500 animate-pulse' : 'bg-zinc-700'}`}></div>
-      
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-mono font-bold text-white text-sm tracking-tight">{item.title}</h3>
-            {item.date && (
-              <span className="text-xs font-mono text-zinc-600">[{item.date}]</span>
-            )}
-            {hasDetails && (
-              <motion.span 
-                className="text-zinc-500"
-                animate={{ rotate: expanded ? 180 : 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <ChevronDown className="w-3 h-3" />
-              </motion.span>
-            )}
+      <div className="p-5">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1.5">
+              <h3 className="font-semibold text-white">{item.title}</h3>
+              {hasDetails && (
+                <motion.span
+                  className="text-zinc-500"
+                  animate={{ rotate: expanded ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <ChevronDown className="w-4 h-4" />
+                </motion.span>
+              )}
+            </div>
+            <p className="text-sm text-zinc-400 leading-relaxed">{item.description}</p>
           </div>
-          <p className="text-zinc-400 text-sm font-mono leading-relaxed">{item.description}</p>
-        </div>
-        <div className={`flex items-center gap-1.5 px-2 py-1 rounded-sm text-[10px] font-mono uppercase tracking-wider ${config.bg} ${config.text} border ${config.border}`}>
-          <Icon className="w-3 h-3" />
-          {config.label}
+          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${config.bg} ${config.text} border ${config.border} shrink-0`}>
+            <Icon className="w-3.5 h-3.5" />
+            {config.label}
+          </div>
         </div>
       </div>
 
-      {/* Expandable Technical Details */}
       <AnimatePresence>
-        {expanded && item.technicalDetails && (
+        {expanded && item.details && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="mt-4 pt-4 border-t border-zinc-800/50">
-              <div className="flex items-center gap-2 mb-2">
-                <Terminal className="w-3 h-3 text-emerald-500" />
-                <span className="text-[10px] font-mono text-emerald-500 uppercase tracking-wider">System Logs</span>
-              </div>
-              <div className="text-xs text-zinc-400 font-mono bg-zinc-950/50 border border-zinc-800/50 rounded-sm p-3 whitespace-pre-line leading-relaxed">
-                {item.technicalDetails}
+            <div className="px-5 pb-5">
+              <div className="pt-4 border-t border-white/5">
+                <p className="text-sm text-zinc-400 leading-relaxed">
+                  {item.details}
+                </p>
               </div>
             </div>
           </motion.div>
@@ -234,73 +208,94 @@ function RoadmapCard({ item, sectionIndex, itemIndex }: { item: RoadmapItem; sec
 
 export default function RoadmapPage() {
   return (
-    <div className="min-h-screen bg-zinc-950 text-white selection:bg-emerald-500/30 relative overflow-hidden">
-      {/* Ambient void background */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[150px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[150px]" />
-      </div>
+    <div className="min-h-screen bg-zinc-950 text-white selection:bg-emerald-500/30">
+      <Navigation />
 
-      {/* Scanline Effect */}
-      <div className="fixed inset-0 pointer-events-none z-50 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDIiLz4KPC9zdmc+')] opacity-20 mix-blend-overlay" />
+      {/* Hero */}
+      <section className="relative pt-32 pb-16 px-4 overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-emerald-500/10 rounded-full blur-[120px]" />
+        </div>
 
-      {/* Grid Background */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
-      
-      {/* Radial Gradient */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_-30%,#10b98115,transparent)] pointer-events-none" />
-
-      <main className="relative z-10 px-6 pt-24 pb-20">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <motion.div 
-            className="mb-20"
+        <div className="relative max-w-4xl mx-auto text-center">
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 text-sm text-zinc-400 mb-8"
           >
-            <div className="flex items-center gap-2 text-emerald-400 mb-4 font-mono text-sm">
-              <GitCommit className="w-4 h-4" />
-              <span>SYSTEM_TRAJECTORY</span>
-            </div>
-            
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight font-mono">
-              Evolution <span className="text-emerald-400">Log</span>
-            </h1>
-            
-            <p className="text-lg text-zinc-400 max-w-2xl font-mono leading-relaxed">
-              Tracking the development and expansion of the Hatch System capabilities.
-              <br />
-              <span className="text-emerald-500/50 text-sm">/// UPDATING REAL-TIME</span>
-            </p>
+            <Rocket className="w-4 h-4 text-emerald-400" />
+            Product Roadmap
           </motion.div>
 
-          {/* Roadmap */}
-          <div className="space-y-16 pl-4 border-l border-zinc-800/50 ml-2 md:ml-0">
-            {roadmap.map((section, index) => (
-              <div key={index} className="relative">
-                <div className="absolute -left-[21px] top-1 w-3 h-3 bg-zinc-950 border border-zinc-700 rounded-full"></div>
-                
-                <div className="mb-8">
-                  <h2 className="text-xl font-bold text-white font-mono mb-1">{section.title}</h2>
-                  <span className="text-xs font-mono text-zinc-500 uppercase tracking-wider">{section.timeline}</span>
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-4xl md:text-6xl font-bold tracking-tight mb-6"
+          >
+            What we&apos;re <span className="text-emerald-400">building</span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-lg text-zinc-400 max-w-2xl mx-auto"
+          >
+            A transparent look at what&apos;s shipped, what&apos;s in progress, and what&apos;s coming next. 
+            We ship fast and often.
+          </motion.p>
+        </div>
+      </section>
+
+      {/* Roadmap Content */}
+      <main className="px-4 pb-32">
+        <div className="max-w-4xl mx-auto">
+          <div className="space-y-16">
+            {roadmap.map((section, sectionIndex) => (
+              <motion.section
+                key={section.quarter}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-100px' }}
+                transition={{ delay: sectionIndex * 0.1 }}
+              >
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                    <span className="text-sm font-semibold text-emerald-400">{section.quarter}</span>
+                  </div>
+                  <h2 className="text-xl font-semibold text-white">{section.title}</h2>
                 </div>
 
                 <div className="space-y-4">
-                  {section.items.map((item, itemIndex) => (
-                    <RoadmapCard 
-                      key={itemIndex} 
-                      item={item} 
-                      sectionIndex={index} 
-                      itemIndex={itemIndex} 
-                    />
+                  {section.items.map((item) => (
+                    <RoadmapCard key={item.title} item={item} />
                   ))}
                 </div>
-              </div>
+              </motion.section>
             ))}
           </div>
+
+          {/* CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mt-20 text-center"
+          >
+            <p className="text-zinc-400 mb-4">Have a feature request?</p>
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-white font-medium hover:bg-white/10 transition-colors"
+            >
+              <Zap className="w-4 h-4 text-emerald-400" />
+              Send us your ideas
+            </Link>
+          </motion.div>
         </div>
       </main>
+
+      <Footer />
     </div>
   )
 }

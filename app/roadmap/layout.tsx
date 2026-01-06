@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Roadmap | Hatch",
-  description: "System evolution trajectory and development logs.",
+  title: "Roadmap | HatchIt",
+  description: "See what we're building, what's shipped, and what's coming next.",
 };
 
 export default function RoadmapLayout({

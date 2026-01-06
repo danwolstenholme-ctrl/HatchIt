@@ -232,6 +232,81 @@ export default function Home() {
           </div>
       </section>
 
+      {/* TRUST BAR */}
+      <Section className="px-6 py-16 border-b border-zinc-900 bg-zinc-950/30">
+        <div className="max-w-5xl mx-auto">
+          <motion.p 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center text-sm text-zinc-500 mb-8"
+          >
+            Enterprise-grade infrastructure
+          </motion.p>
+          
+          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6">
+            {[
+              { label: 'One-click deploy', subtext: 'Live on Vercel instantly' },
+              { label: 'Supabase backend', subtext: 'PostgreSQL + realtime' },
+              { label: 'Clerk auth', subtext: 'Secure user management' },
+              { label: 'Stripe billing', subtext: 'Production payments' },
+            ].map((stat, i) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1, duration: 0.4 }}
+                className="text-center"
+              >
+                <div className="text-lg font-semibold text-white">{stat.label}</div>
+                <div className="text-xs text-zinc-500">{stat.subtext}</div>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.4 }}
+            className="flex items-center justify-center gap-8 mt-10 pt-8 border-t border-zinc-800/50"
+          >
+            <span className="text-xs text-zinc-600">Powered by</span>
+            <div className="flex items-center gap-8">
+              {/* Vercel */}
+              <div className="flex items-center gap-2 text-zinc-400 hover:text-zinc-300 transition-colors">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M24 22.525H0l12-21.05 12 21.05z"/>
+                </svg>
+                <span className="text-sm font-medium">Vercel</span>
+              </div>
+              {/* Supabase */}
+              <div className="flex items-center gap-2 text-zinc-400 hover:text-zinc-300 transition-colors">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M21.362 9.354H12V.396a.396.396 0 0 0-.716-.233L2.203 12.424l-.401.562a1.04 1.04 0 0 0 .836 1.659H12v8.959a.396.396 0 0 0 .716.233l9.081-12.261.401-.562a1.04 1.04 0 0 0-.836-1.66z"/>
+                </svg>
+                <span className="text-sm font-medium">Supabase</span>
+              </div>
+              {/* Clerk */}
+              <div className="flex items-center gap-2 text-zinc-400 hover:text-zinc-300 transition-colors">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.812 0h-4.535c-.113 0-.221.045-.301.125l-8.851 8.852a.426.426 0 0 0 0 .602l4.535 4.535a.426.426 0 0 0 .602 0l8.852-8.851a.427.427 0 0 0 .125-.301V.426A.426.426 0 0 0 17.812 0zm-2.132 5.251a1.491 1.491 0 1 1 0-2.981 1.491 1.491 0 0 1 0 2.981zM8.252 14.888a.426.426 0 0 0-.602 0l-2.267 2.267a.426.426 0 0 0 0 .602l4.535 4.535a.426.426 0 0 0 .602 0l2.267-2.267a.426.426 0 0 0 0-.602z"/>
+                </svg>
+                <span className="text-sm font-medium">Clerk</span>
+              </div>
+              {/* Stripe */}
+              <div className="flex items-center gap-2 text-zinc-400 hover:text-zinc-300 transition-colors">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z"/>
+                </svg>
+                <span className="text-sm font-medium">Stripe</span>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </Section>
+
       {/* THE STACK */}
       <Section id="stack" className="px-6 py-24 border-y border-zinc-900 bg-zinc-950/50 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.05),transparent_70%)]" />

@@ -12,7 +12,8 @@ import { Logo } from '@/components/Logo'
 const navLinks = [
   { href: '/how-it-works', label: 'How It Works' },
   { href: '/features', label: 'Features' },
-  { href: '/pricing', label: 'Pricing' },
+  { href: '/roadmap', label: 'Roadmap' },
+  { href: '/about', label: 'About' },
 ]
 
 export default function Navigation() {

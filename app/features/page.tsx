@@ -89,65 +89,77 @@ export default function FeaturesPage() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-200 overflow-hidden relative selection:bg-emerald-500/30">
-      {/* Floating particles */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        {[...Array(12)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 rounded-full bg-emerald-400/30"
-            style={{
-              left: `${10 + (i * 7) % 80}%`,
-              top: `${15 + (i * 11) % 70}%`,
-            }}
-            animate={{
-              y: [0, -40, 0],
-              opacity: [0.1, 0.3, 0.1],
-            }}
-            transition={{
-              duration: 8 + i * 1.2,
-              repeat: Infinity,
-              delay: i * 0.6,
-              ease: "easeInOut"
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Gradient backdrops */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-emerald-500/8 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-violet-500/5 rounded-full blur-[120px]" />
-      </div>
-
+      
       {/* Hero Section */}
-      <section className="relative px-6 pt-24 pb-20 z-10">
-        <div className="max-w-4xl mx-auto text-center">
+      <section className="relative min-h-[70vh] flex items-center px-4 sm:px-6 pt-32 pb-24 overflow-hidden">
+        {/* Gradient backdrop - matching how-it-works */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.08),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(16,185,129,0.05),transparent_70%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/40 via-transparent to-zinc-950/90" />
+        
+        {/* Floating particles */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {[...Array(12)].map((_, i) => (
+            <motion.div
+              key={i}
+              animate={{
+                y: [0, -40, 0],
+                x: [0, Math.sin(i) * 15, 0],
+                opacity: [0.05, 0.2, 0.05],
+                scale: [1, 1.3, 1]
+              }}
+              transition={{
+                duration: 10 + i * 1.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: i * 0.8
+              }}
+              className="absolute w-1 h-1 rounded-full bg-emerald-400/30"
+              style={{
+                left: `${15 + (i * 10)}%`,
+                top: `${25 + (i % 3) * 20}%`,
+                filter: 'blur(1px)'
+              }}
+            />
+          ))}
+        </div>
+
+        <div className="relative z-10 max-w-4xl mx-auto w-full text-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 text-zinc-400 text-sm mb-8"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 text-zinc-400 text-sm mb-8"
           >
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-            >
-              <Sparkles className="w-4 h-4 text-emerald-400" />
-            </motion.div>
-            <span>Everything you need to ship</span>
+            <motion.span 
+              animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="w-1.5 h-1.5 bg-emerald-400 rounded-full" 
+            />
+            Everything you need to ship
           </motion.div>
           
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="text-5xl md:text-7xl font-bold mb-6 tracking-tight"
+            transition={{ delay: 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 tracking-tight text-white leading-[1.1]"
           >
             Text In.
             <br />
-            <span className="bg-gradient-to-r from-emerald-400 to-emerald-500 bg-clip-text text-transparent">
+            <motion.span
+              animate={{ 
+                textShadow: [
+                  '0 0 20px rgba(16,185,129,0.3)',
+                  '0 0 40px rgba(16,185,129,0.4)',
+                  '0 0 20px rgba(16,185,129,0.3)'
+                ]
+              }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              className="bg-gradient-to-r from-emerald-400 to-emerald-500 bg-clip-text text-transparent"
+            >
               Website Out.
-            </span>
+            </motion.span>
           </motion.h1>
           
           <motion.p 

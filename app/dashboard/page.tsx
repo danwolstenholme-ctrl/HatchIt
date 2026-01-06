@@ -173,7 +173,7 @@ export default function PortalPage() {
       const res = await fetch('/api/project', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: 'Untitled Project', templateId: 'landing-page' }),
+        body: JSON.stringify({ name: 'Untitled Project', templateId: 'website' }),
       })
 
       if (res.ok) {
@@ -587,7 +587,7 @@ export default function PortalPage() {
                 <h3 className="text-lg font-semibold text-white mt-1">Signal From The Singularity</h3>
               </div>
               <Link href="/roadmap" className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-300 hover:text-white">
-                View full changelog
+                View roadmap
                 <ExternalLink className="h-3.5 w-3.5" />
               </Link>
             </div>

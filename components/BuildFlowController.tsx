@@ -171,6 +171,16 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       setShowBuilderWelcome(true)
     }
   }, [isSignedIn])
+  
+  // Keep demoMode in sync with isDemo prop and auth state
+  // Ensures signed-in users on /builder never show sandbox mode
+  useEffect(() => {
+    if (!isLoaded) return
+    // If signed in and not explicitly in demo, force live mode
+    if (isSignedIn && !isDemo) {
+      setDemoMode(false)
+    }
+  }, [isLoaded, isSignedIn, isDemo])
 
   // Sync guest credit counts from localStorage (only for guests)
   useEffect(() => {
