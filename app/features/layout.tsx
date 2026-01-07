@@ -1,29 +1,28 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'System Capabilities - HatchIt | Singularity Engine',
-  description: 'Explore the capabilities of the Singularity Engine. Powered by Gemini 2.0 Flash, HatchIt offers autonomous architectural generation, real-time code streaming, and self-healing deployments.',
+  title: 'Features | HatchIt',
+  description: 'Explore what HatchIt can do. Real-time AI code generation, live preview, section-by-section building, one-click deploys, and clean React + Tailwind output.',
   keywords: [
     'AI website builder',
-    'Singularity Engine',
-    'Gemini 2.0 Flash',
     'React code generator',
-    'autonomous web development',
-    'self-healing code',
-    'Next.js builder',
-    'Tailwind CSS generator',
+    'live preview',
+    'one-click deploy',
+    'Tailwind CSS',
+    'Claude AI',
+    'website builder features',
   ],
   openGraph: {
-    title: 'System Capabilities - HatchIt | Singularity Engine',
-    description: 'Autonomous website generation powered by Gemini 2.0 Flash. Experience the Singularity.',
+    title: 'Features | HatchIt',
+    description: 'Real-time AI code generation, live preview, and one-click deploys. See what HatchIt can do.',
     url: 'https://hatchit.dev/features',
     siteName: 'HatchIt',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'System Capabilities - HatchIt | Singularity Engine',
-    description: 'Autonomous website generation powered by Gemini 2.0 Flash. Experience the Singularity.',
+    title: 'Features | HatchIt',
+    description: 'Real-time AI code generation, live preview, and one-click deploys. See what HatchIt can do.',
     creator: '@HatchItD',
   },
   alternates: {

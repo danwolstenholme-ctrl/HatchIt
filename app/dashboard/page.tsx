@@ -5,11 +5,10 @@ import type { MouseEvent } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, ArrowRight, Trash2, Search, Globe, LayoutGrid, List, ExternalLink, Clock, ChevronRight, Zap, Code2, Database, ShieldCheck } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
+import { Plus, ArrowRight, Trash2, Search, Globe, LayoutGrid, List, ExternalLink, Sparkles, Settings } from 'lucide-react'
 import { useUser } from '@clerk/nextjs'
 import { formatDistanceToNow } from 'date-fns'
-
+import Pip from '@/components/Pip'
 import { DbProject } from '@/lib/supabase'
 
 type TierConfig = {
@@ -18,35 +17,7 @@ type TierConfig = {
   color: string
 }
 
-type RoadmapFeature = {
-  title: string
-  description: string
-  status: string
-  icon: LucideIcon
-}
-
-const ROADMAP_FEATURES: RoadmapFeature[] = [
-  {
-    title: 'URL Replicator',
-    description: 'Paste any URL and rebuild the layout automatically.',
-    status: 'Built — Launching Soon',
-    icon: Zap,
-  },
-  {
-    title: 'Code Export',
-    description: 'Download clean React + Tailwind files with one click.',
-    status: 'Visionary+ Tier',
-    icon: Code2,
-  },
-  {
-    title: 'Custom Domains',
-    description: 'Map hatchitsites.dev deployments to your own domains.',
-    status: 'Q1 2026',
-    icon: Globe,
-  },
-]
-
-export default function PortalPage() {
+export default function DashboardPage() {
   const { user, isLoaded, isSignedIn } = useUser()
   const router = useRouter()
   const [projects, setProjects] = useState<DbProject[]>([])
@@ -69,6 +40,7 @@ export default function PortalPage() {
   }, [tier])
 
   const isAtLimit = tierConfig.limit !== Infinity && projects.length >= tierConfig.limit
+  const firstName = user?.firstName || 'there'
 
   useEffect(() => {
     if (!isLoaded) return
@@ -83,13 +55,13 @@ export default function PortalPage() {
     const bootstrap = async () => {
       try {
         const guestHandoff = typeof window !== 'undefined' ? localStorage.getItem('hatch_guest_handoff') : null
-        console.log('[Portal] Checking for guest handoff:', { hasHandoff: !!guestHandoff, dataLength: guestHandoff?.length || 0 })
+        console.log('[Dashboard] Checking for guest handoff:', { hasHandoff: !!guestHandoff, dataLength: guestHandoff?.length || 0 })
 
         if (guestHandoff) {
           setIsMigrating(true)
           try {
             const payload = JSON.parse(guestHandoff)
-            console.log('[Portal] Importing guest handoff', {
+            console.log('[Dashboard] Importing guest handoff', {
               projectName: payload?.projectName,
               templateId: payload?.templateId,
               sections: payload?.sections?.length,
@@ -102,27 +74,27 @@ export default function PortalPage() {
             })
 
             const responseData = await res.json()
-            console.log('[Portal] Import response:', { status: res.status, ok: res.ok, data: responseData })
+            console.log('[Dashboard] Import response:', { status: res.status, ok: res.ok, data: responseData })
 
             if (res.ok) {
               localStorage.removeItem('hatch_guest_handoff')
               localStorage.removeItem('hatch_last_prompt')
-              console.log('[Portal] Import succeeded, cleared localStorage')
+              console.log('[Dashboard] Import succeeded, cleared localStorage')
             } else if (res.status === 401) {
               router.replace('/sign-in?redirect_url=/dashboard')
               return
             } else {
-              console.error('[Portal] Import failed', responseData)
+              console.error('[Dashboard] Import failed', responseData)
             }
           } catch (error) {
-            console.error('[Portal] Import error', error)
+            console.error('[Dashboard] Import error', error)
           } finally {
             setIsMigrating(false)
           }
         }
 
         const res = await fetch('/api/project/list')
-        console.log('[Portal] Project list fetch:', { status: res.status })
+        console.log('[Dashboard] Project list fetch:', { status: res.status })
         if (res.status === 401) {
           router.replace('/sign-in?redirect_url=/dashboard')
           return
@@ -130,11 +102,11 @@ export default function PortalPage() {
 
         if (res.ok) {
           const data = await res.json()
-          console.log('[Portal] Projects loaded:', { count: data.projects?.length || 0, projects: data.projects?.map((p: any) => ({ id: p.id, name: p.name })) })
+          console.log('[Dashboard] Projects loaded:', { count: data.projects?.length || 0, projects: data.projects?.map((p: any) => ({ id: p.id, name: p.name })) })
           if (!cancelled) setProjects(data.projects || [])
         }
       } catch (error) {
-        console.error('[Portal] Failed to load projects', error)
+        console.error('[Dashboard] Failed to load projects', error)
       } finally {
         if (!cancelled) setIsLoading(false)
       }
@@ -204,482 +176,407 @@ export default function PortalPage() {
     if (res.ok) setProjects(prev => prev.filter(project => project.id !== id))
   }
 
+  // Loading state with Pip
   if (!isLoaded || !isSignedIn || isLoading || isMigrating) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-zinc-800 border-t-emerald-500 rounded-full animate-spin" />
+      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center gap-4">
+        <Pip size={60} animate={true} float={true} glow={true} />
+        <p className="text-zinc-400 text-sm">
+          {isMigrating ? 'Importing your project...' : 'Loading your dashboard...'}
+        </p>
       </div>
     )
   }
 
-  const portalStacks = [
-    {
-      title: 'Builder',
-      description: 'Generate React components with Singularity-grade AI.',
-      icon: Code2,
-      cta: lastUpdatedProject ? 'Resume builder' : 'Launch builder',
-      action: () => routeToBuilder(lastUpdatedProject?.id),
-      accent: 'from-emerald-500/20 via-emerald-500/10 to-transparent',
-    },
-    {
-      title: 'Data Layer',
-      description: 'View Supabase tables, logs, and connection details.',
-      icon: Database,
-      cta: 'Coming soon',
-      disabled: true,
-      accent: 'from-zinc-600/30 via-zinc-900 to-transparent',
-    },
-    {
-      title: 'Access & Billing',
-      description: 'Manage your seat, upgrade tier, and invoices.',
-      icon: ShieldCheck,
-      cta: 'Open billing',
-      action: () => router.push('/dashboard/billing'),
-      accent: 'from-emerald-500/15 via-emerald-500/5 to-transparent',
-    },
-  ]
+  const hasProjects = projects.length > 0
 
   return (
-    <>
-      <div className="w-full px-6 py-8 space-y-10">
-        <motion.section
+    <div className="min-h-screen bg-zinc-950">
+      <div className="max-w-6xl mx-auto px-6 py-10 space-y-10">
+        
+        {/* Header */}
+        <motion.header
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="grid gap-6 lg:grid-cols-[2fr,1fr]"
+          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
         >
-          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-950 via-zinc-900/80 to-zinc-900/40 px-6 py-6 sm:px-8 sm:py-8 shadow-[0_0_40px_-15px_rgba(16,185,129,0.5)]">
-            <div className="pointer-events-none absolute inset-0 opacity-60 portal-hero-radial" />
-            <div className="relative z-10 flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <p className="text-xs uppercase tracking-[0.4em] text-zinc-600">Portal</p>
-                <h1 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight mt-2">Singularity Portal</h1>
-                <p className="text-zinc-400 text-sm sm:text-base mt-2 max-w-2xl">
-                  Everything inside your HatchIt database — projects, builder, billing, and the roadmap — in one control surface.
-                </p>
-              </div>
-              <span className="px-3 py-1 text-[10px] font-semibold tracking-widest uppercase rounded-full border border-emerald-500/30 text-emerald-400 bg-emerald-500/10">
-                Live Sync
-              </span>
-            </div>
-
-            <div className="relative z-10 mt-8 grid gap-4 sm:grid-cols-3">
-              <div className="rounded-xl border border-white/5 bg-white/5 p-4 backdrop-blur-xl">
-                <p className="text-xs uppercase tracking-wide text-zinc-500">Projects</p>
-                <p className="text-2xl font-semibold text-white mt-1">{projects.length || 0}</p>
-                <p className="text-[11px] text-zinc-500 mt-2">
-                  {tierConfig.limit === Infinity ? 'Unlimited capacity' : `${projects.length} / ${tierConfig.limit} used`}
-                </p>
-              </div>
-              <div className="rounded-xl border border-white/5 bg-white/5 p-4 backdrop-blur-xl">
-                <p className="text-xs uppercase tracking-wide text-zinc-500">Tier</p>
-                <p className={`text-2xl font-semibold mt-1 ${tierConfig.color}`}>{tierConfig.name}</p>
-                <p className="text-[11px] text-zinc-500 mt-2">Powered by Clerk + Supabase</p>
-              </div>
-              <div className="rounded-xl border border-white/5 bg-white/5 p-4 backdrop-blur-xl">
-                <p className="text-xs uppercase tracking-wide text-zinc-500">Last activity</p>
-                <p className="text-2xl font-semibold text-white mt-1">
-                  {lastUpdatedProject?.updated_at
-                    ? formatDistanceToNow(new Date(lastUpdatedProject.updated_at), { addSuffix: true })
-                    : 'No builds yet'}
-                </p>
-                <p className="text-[11px] text-zinc-500 mt-2">Observing builder state in real time</p>
-              </div>
-            </div>
-
-            <div className="relative z-10 mt-8 flex flex-wrap gap-3">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-semibold text-white">
+              Hey {firstName} 👋
+            </h1>
+            <p className="text-zinc-400 mt-1">
+              {hasProjects 
+                ? `You have ${projects.length} project${projects.length === 1 ? '' : 's'}. Let's keep building.`
+                : "Ready to build something amazing?"
+              }
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <Link
+              href="/dashboard/billing"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-zinc-800 bg-zinc-900/50 text-sm text-zinc-400 hover:text-white hover:border-zinc-700 transition-colors"
+            >
+              <Settings className="w-4 h-4" />
+              <span className={tierConfig.color}>{tierConfig.name}</span>
+            </Link>
+            
+            {hasProjects && (
               <motion.button
-                whileHover={{ scale: 1.02, y: -2 }}
+                whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleCreate}
                 disabled={isCreating}
-                className="group flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-5 py-3 text-sm font-medium text-emerald-300 shadow-[0_0_30px_rgba(16,185,129,0.25)] transition-all"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-sm font-medium hover:bg-emerald-500/20 transition-colors"
               >
                 {isCreating ? (
                   <div className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
                 ) : (
                   <Plus className="w-4 h-4" />
                 )}
-                Start fresh build
-              </motion.button>
-
-              <motion.button
-                whileHover={{ scale: 1.02, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => routeToBuilder(lastUpdatedProject?.id)}
-                className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-medium text-white/90 backdrop-blur transition-all hover:bg-white/10"
-              >
-                <ArrowRight className="w-4 h-4" />
-                {lastUpdatedProject ? 'Resume last build' : 'Open builder'}
-              </motion.button>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 flex flex-col justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-zinc-600">Account</p>
-              <h2 className="text-xl font-semibold text-white mt-2">{tierConfig.name} Tier</h2>
-              <p className="text-sm text-zinc-400 mt-2">
-                {isFreeTier ? 'Unlock code export, deployments, and unlimited projects.' : 'Full access unlocked. Head to billing to adjust seats or cancel.'}
-              </p>
-            </div>
-            <div className="mt-6 space-y-3 text-sm text-zinc-400">
-              <div className="flex items-center justify-between">
-                <span>Projects in DB</span>
-                <span className="font-semibold text-white">{projects.length}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>Plan Limit</span>
-                <span className="font-semibold text-white">{tierConfig.limit === Infinity ? '∞' : tierConfig.limit}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>Sync Status</span>
-                <span className="font-semibold text-emerald-400 flex items-center gap-1 text-xs uppercase tracking-wider">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  Healthy
-                </span>
-              </div>
-            </div>
-            <div className="mt-6 flex gap-3">
-              <Link
-                href="/dashboard/billing"
-                className="flex-1 text-center rounded-xl border border-white/10 bg-white/5 py-2.5 text-sm font-medium text-white hover:bg-white/10 transition-colors"
-              >
-                {isFreeTier ? 'Upgrade Plan' : 'Manage Billing'}
-              </Link>
-              <Link
-                href="/roadmap"
-                className="flex-1 text-center rounded-xl border border-white/5 bg-white/5 py-2.5 text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
-              >
-                Product Roadmap
-              </Link>
-            </div>
-          </div>
-        </motion.section>
-
-        <motion.section
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid gap-4 md:grid-cols-3"
-        >
-          {portalStacks.map((card, index) => (
-            <motion.div
-              key={card.title}
-              whileHover={{ y: -4 }}
-              className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl"
-              transition={{ delay: index * 0.05 }}
-            >
-              <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${card.accent} opacity-60`} />
-              <div className="relative z-10 space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-black/30">
-                    <card.icon className="w-5 h-5 text-emerald-300" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-white">{card.title}</p>
-                    <p className="text-xs text-zinc-500">Portal stack</p>
-                  </div>
-                </div>
-                <p className="text-sm text-zinc-400 leading-relaxed">{card.description}</p>
-                <button
-                  disabled={card.disabled}
-                  onClick={card.action}
-                  className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-wide transition-colors ${card.disabled ? 'cursor-not-allowed border-white/5 text-zinc-500' : 'border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/10'}`}
-                >
-                  {card.cta}
-                  {!card.disabled && <ArrowRight className="w-3.5 h-3.5" />}
-                </button>
-              </div>
-            </motion.div>
-          ))}
-        </motion.section>
-
-        <motion.section
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="space-y-6"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-zinc-600">Projects</p>
-              <h2 className="text-xl font-semibold text-white mt-1">Active Deliverables</h2>
-            </div>
-            {projects.length > 0 && (
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleCreate}
-                disabled={isCreating}
-                className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white hover:bg-white/10 transition-all"
-              >
-                <Plus className="w-4 h-4" />
-                New project
+                New Project
               </motion.button>
             )}
           </div>
+        </motion.header>
 
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="relative flex-1 min-w-[240px] group">
-              <div className="pointer-events-none absolute inset-0 rounded-xl bg-emerald-500/5 blur-2xl opacity-0 group-focus-within:opacity-100 transition" />
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-              <input
-                type="text"
-                placeholder="Search projects..."
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                className="relative w-full rounded-xl border border-white/10 bg-white/5 pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-zinc-600 backdrop-blur-sm focus:border-emerald-500/40 focus:bg-white/10 focus:outline-none"
-              />
-            </div>
-            <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-white/5 p-1 backdrop-blur">
-              <button
-                type="button"
-                aria-label="Show projects in grid view"
-                aria-pressed={viewMode === 'grid'}
-                onClick={() => setViewMode('grid')}
-                className={`rounded-lg p-2 text-xs font-semibold transition-all ${viewMode === 'grid' ? 'bg-white/10 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
+        {/* Empty State - First Time User */}
+        {!hasProjects && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="relative overflow-hidden rounded-2xl bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 p-8 sm:p-12"
+          >
+            {/* Gradient overlay */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(16,185,129,0.08),transparent_60%)] pointer-events-none" />
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent" />
+            
+            <div className="relative flex flex-col items-center text-center max-w-lg mx-auto">
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
               >
-                <LayoutGrid className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                aria-label="Show projects in list view"
-                aria-pressed={viewMode === 'list'}
-                onClick={() => setViewMode('list')}
-                className={`rounded-lg p-2 text-xs font-semibold transition-all ${viewMode === 'list' ? 'bg-white/10 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
-              >
-                <List className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-
-          {!isLoading && projects.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-800 bg-zinc-950/60 py-16 text-center"
-            >
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/5 mb-4">
-                <Zap className="h-8 w-8 text-emerald-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-white">Your database is waiting</h3>
-              <p className="mt-2 text-sm text-zinc-500 max-w-md">
-                Generate your first artifact. Everything you build here syncs to Supabase and can be deployed instantly.
+                <Pip size={100} animate={true} float={true} glow={true} />
+              </motion.div>
+              
+              <h2 className="text-2xl sm:text-3xl font-semibold text-white mt-6">
+                Welcome to HatchIt!
+              </h2>
+              <p className="text-zinc-400 mt-3 leading-relaxed">
+                Describe what you want to build, and watch AI create production-ready React components in real-time. 
+                No templates. No drag-and-drop. Just your ideas, instantly realized.
               </p>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleCreate}
-                className="mt-6 flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-3 text-sm font-semibold text-emerald-300"
-              >
-                <Plus className="w-4 h-4" />
-                Create first project
-              </motion.button>
-            </motion.div>
-          ) : filteredProjects.length === 0 ? (
-            <div className="rounded-2xl border border-white/10 bg-white/5 px-6 py-12 text-center">
-              <p className="text-sm text-zinc-500">No matches. Try another query.</p>
-            </div>
-          ) : viewMode === 'grid' ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProjects.map((project, index) => (
-                <motion.div
-                  key={project.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 + index * 0.05 }}
-                >
-                  <Link
-                    href={`/builder?project=${project.id}`}
-                    className="group relative block h-full overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-all duration-300 hover:border-emerald-500/40 hover:bg-white/10"
-                  >
-                    <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 project-card-hover-gradient" />
-                    <div className="relative z-10 flex items-start justify-between">
-                      <div className="rounded-xl border border-white/5 bg-black/30 p-3">
-                        <div className="h-2 w-8 rounded-full bg-emerald-400" />
-                      </div>
-                      {project.slug ? (
-                        <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[11px] font-semibold text-zinc-300">
-                          {project.slug}
-                          <ExternalLink className="h-3 w-3" />
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[11px] font-semibold text-zinc-500">
-                          Draft
-                        </span>
-                      )}
-                    </div>
-                    <div className="relative z-10 mt-6 space-y-3">
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-semibold text-white">{project.name || 'Untitled Project'}</p>
-                          <p className="text-xs text-zinc-500">
-                            Updated {project.updated_at ? formatDistanceToNow(new Date(project.updated_at), { addSuffix: true }) : 'moments ago'}
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          aria-label={`Delete ${project.name || 'project'}`}
-                          onClick={(event) => handleDelete(event, project.id)}
-                          className="rounded-full border border-white/10 p-2 text-zinc-500 hover:text-red-400 hover:border-red-400/40 transition-colors"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                      <div className="flex items-center justify-between text-xs text-zinc-500">
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-3.5 w-3.5" />
-                          {project.updated_at ? formatDistanceToNow(new Date(project.updated_at), { addSuffix: true }) : 'Waiting for first pass'}
-                        </span>
-                        <span className="flex items-center gap-1 text-emerald-300 group-hover:text-white">
-                          Open
-                          <ArrowRight className="h-3.5 w-3.5" />
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {filteredProjects.map((project, index) => (
-                <motion.div
-                  key={project.id}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.05 + index * 0.04 }}
-                >
-                  <Link
-                    href={`/builder?project=${project.id}`}
-                    className="group flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur transition-colors hover:border-emerald-500/40 hover:bg-white/10"
-                  >
-                    <div>
-                      <p className="text-sm font-semibold text-white">{project.name || 'Untitled Project'}</p>
-                      <p className="text-xs text-zinc-500">
-                        Last touched {project.updated_at ? formatDistanceToNow(new Date(project.updated_at), { addSuffix: true }) : 'just now'}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3 text-xs text-zinc-400">
-                      <span className="inline-flex items-center gap-1 rounded-full border border-white/10 px-3 py-1">
-                        {project.slug ? 'Published' : 'Draft'}
-                      </span>
-                      <button
-                        type="button"
-                        aria-label={`Delete ${project.name || 'project'}`}
-                        onClick={(event) => handleDelete(event, project.id)}
-                        className="rounded-full border border-white/10 p-2 text-zinc-500 hover:text-red-400 hover:border-red-400/40 transition-colors"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                      <ChevronRight className="h-4 w-4 text-emerald-300" />
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
-          )}
-        </motion.section>
 
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="grid gap-6 lg:grid-cols-[2fr,1fr]"
-        >
-          <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-950 via-zinc-900/70 to-zinc-950/60 p-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-zinc-600">Roadmap</p>
-                <h3 className="text-lg font-semibold text-white mt-1">Signal From The Singularity</h3>
+              <div className="flex flex-col sm:flex-row items-center gap-3 mt-8">
+                <motion.button
+                  whileHover={{ scale: 1.03, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleCreate}
+                  disabled={isCreating}
+                  className="relative group w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 font-semibold hover:bg-emerald-500/20 transition-all shadow-[0_0_30px_rgba(16,185,129,0.15)] overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent rounded-xl pointer-events-none" />
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0"
+                    animate={{ x: ['-200%', '200%'] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                  />
+                  {isCreating ? (
+                    <div className="w-5 h-5 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
+                  ) : (
+                    <Sparkles className="w-5 h-5" />
+                  )}
+                  <span className="relative">Start Building</span>
+                  <ArrowRight className="w-5 h-5 relative group-hover:translate-x-1 transition-transform" />
+                </motion.button>
+                
+                <Link
+                  href="/how-it-works"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-4 rounded-xl border border-zinc-800 bg-zinc-900/50 text-zinc-300 font-medium hover:bg-zinc-800/50 hover:border-zinc-700 transition-colors"
+                >
+                  See how it works
+                </Link>
               </div>
-              <Link href="/roadmap" className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-300 hover:text-white">
-                View roadmap
-                <ExternalLink className="h-3.5 w-3.5" />
-              </Link>
+
+              <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mt-8 text-xs text-zinc-500">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  Live preview
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  Real React code
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  One-click deploy
+                </span>
+              </div>
             </div>
-            <div className="mt-6 space-y-4">
-              {ROADMAP_FEATURES.map(feature => (
-                <div key={feature.title} className="relative flex gap-4 rounded-2xl border border-white/5 bg-white/5 p-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-black/30">
-                    <feature.icon className="h-5 w-5 text-emerald-300" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-sm font-semibold text-white">{feature.title}</p>
-                      <span className="rounded-full border border-white/10 px-3 py-1 text-[11px] uppercase tracking-wide text-zinc-400">
-                        {feature.status}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-sm text-zinc-400">{feature.description}</p>
-                  </div>
-                </div>
-              ))}
+          </motion.div>
+        )}
+
+        {/* Projects Section */}
+        {hasProjects && (
+          <motion.section
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="space-y-6"
+          >
+            {/* Search and View Toggle */}
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="relative flex-1 min-w-[240px] group">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                <input
+                  type="text"
+                  placeholder="Search projects..."
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  className="w-full rounded-xl border border-zinc-800 bg-zinc-900/50 pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-zinc-600 focus:border-emerald-500/40 focus:bg-zinc-900 focus:outline-none transition-colors"
+                />
+              </div>
+              <div className="flex items-center gap-1 rounded-xl border border-zinc-800 bg-zinc-900/50 p-1">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('grid')}
+                  className={`rounded-lg p-2 transition-all ${viewMode === 'grid' ? 'bg-zinc-800 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('list')}
+                  className={`rounded-lg p-2 transition-all ${viewMode === 'list' ? 'bg-zinc-800 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
+                >
+                  <List className="h-4 w-4" />
+                </button>
+              </div>
             </div>
-          </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-4">
-            <p className="text-xs uppercase tracking-[0.3em] text-zinc-600">Velocity</p>
-            <h3 className="text-lg font-semibold text-white">Deployment timeline</h3>
-            <p className="text-sm text-zinc-400">
-              Live shipping cadence from the Chronosphere. Builder updates land here before the public log.
-            </p>
-            <ul className="space-y-3 text-sm text-zinc-400">
-              <li className="flex items-center gap-3">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                Portal redesign shipped · {formatDistanceToNow(new Date(), { addSuffix: true })}
-              </li>
-              <li className="flex items-center gap-3">
-                <span className="h-2 w-2 rounded-full bg-zinc-500" />
-                Next up: Builder autosave sync to Supabase
-              </li>
-              <li className="flex items-center gap-3">
-                <span className="h-2 w-2 rounded-full bg-zinc-500" />
-                Researching native deploy pipeline with incremental cache
-              </li>
-            </ul>
-          </div>
-        </motion.section>
+
+            {/* No Search Results */}
+            {filteredProjects.length === 0 && searchQuery && (
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-6 py-12 text-center">
+                <p className="text-zinc-500">No projects match "{searchQuery}"</p>
+              </div>
+            )}
+
+            {/* Grid View */}
+            {viewMode === 'grid' && filteredProjects.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {filteredProjects.map((project, index) => (
+                  <motion.div
+                    key={project.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.05 + index * 0.03 }}
+                  >
+                    <Link
+                      href={`/builder?project=${project.id}`}
+                      className="group relative block h-full overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 transition-all duration-200 hover:border-emerald-500/40 hover:bg-zinc-900"
+                    >
+                      {/* Hover gradient */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                      
+                      <div className="relative">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-medium text-white truncate group-hover:text-emerald-400 transition-colors">
+                              {project.name || 'Untitled Project'}
+                            </h3>
+                            <p className="text-xs text-zinc-500 mt-1">
+                              {project.updated_at
+                                ? formatDistanceToNow(new Date(project.updated_at), { addSuffix: true })
+                                : 'Just created'}
+                            </p>
+                          </div>
+                          
+                          <button
+                            onClick={(e) => handleDelete(e, project.id)}
+                            className="p-1.5 rounded-lg text-zinc-600 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        <div className="flex items-center gap-3 mt-4 pt-4 border-t border-zinc-800/50">
+                          <span className={`text-xs px-2 py-1 rounded-full border ${
+                            project.status === 'deployed' 
+                              ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
+                              : project.status === 'complete'
+                              ? 'border-blue-500/30 bg-blue-500/10 text-blue-400'
+                              : 'border-zinc-700 bg-zinc-800/50 text-zinc-400'
+                          }`}>
+                            {project.status === 'deployed' ? 'Live' : project.status === 'complete' ? 'Ready' : 'Building'}
+                          </span>
+                          
+                          {project.status === 'deployed' && project.slug && (
+                            <a
+                              href={`https://${project.slug}.hatchitsites.dev`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="flex items-center gap-1 text-xs text-zinc-500 hover:text-emerald-400 transition-colors"
+                            >
+                              <Globe className="w-3 h-3" />
+                              View site
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+
+            {/* List View */}
+            {viewMode === 'list' && filteredProjects.length > 0 && (
+              <div className="space-y-2">
+                {filteredProjects.map((project, index) => (
+                  <motion.div
+                    key={project.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.05 + index * 0.03 }}
+                  >
+                    <Link
+                      href={`/builder?project=${project.id}`}
+                      className="group flex items-center justify-between p-4 rounded-xl border border-zinc-800 bg-zinc-900/50 hover:border-emerald-500/40 hover:bg-zinc-900 transition-all"
+                    >
+                      <div className="flex items-center gap-4 flex-1 min-w-0">
+                        <div className="w-10 h-10 rounded-lg border border-zinc-700 bg-zinc-800/50 flex items-center justify-center flex-shrink-0">
+                          <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-white truncate group-hover:text-emerald-400 transition-colors">
+                            {project.name || 'Untitled Project'}
+                          </h3>
+                          <div className="flex items-center gap-3 mt-0.5">
+                            <span className="text-xs text-zinc-500">
+                              {project.updated_at
+                                ? formatDistanceToNow(new Date(project.updated_at), { addSuffix: true })
+                                : 'Just created'}
+                            </span>
+                            <span className={`text-xs ${
+                              project.status === 'deployed' ? 'text-emerald-400' : 'text-zinc-500'
+                            }`}>
+                              {project.status === 'deployed' ? '● Live' : project.status === 'complete' ? '● Ready' : '● Building'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {project.status === 'deployed' && project.slug && (
+                          <a
+                            href={`https://${project.slug}.hatchitsites.dev`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="p-2 rounded-lg text-zinc-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                        )}
+                        <button
+                          onClick={(e) => handleDelete(e, project.id)}
+                          className="p-2 rounded-lg text-zinc-600 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                        <ArrowRight className="w-4 h-4 text-zinc-600 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
+                      </div>
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </motion.section>
+        )}
+
+        {/* Quick Stats for Users with Projects */}
+        {hasProjects && (
+          <motion.section
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="grid grid-cols-2 sm:grid-cols-4 gap-4"
+          >
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
+              <p className="text-xs text-zinc-500">Total Projects</p>
+              <p className="text-2xl font-semibold text-white mt-1">{projects.length}</p>
+            </div>
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
+              <p className="text-xs text-zinc-500">Deployed</p>
+              <p className="text-2xl font-semibold text-emerald-400 mt-1">
+                {projects.filter(p => p.status === 'deployed').length}
+              </p>
+            </div>
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
+              <p className="text-xs text-zinc-500">Plan Limit</p>
+              <p className="text-2xl font-semibold text-white mt-1">
+                {tierConfig.limit === Infinity ? '∞' : `${projects.length}/${tierConfig.limit}`}
+              </p>
+            </div>
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
+              <p className="text-xs text-zinc-500">Last Activity</p>
+              <p className="text-lg font-medium text-white mt-1 truncate">
+                {lastUpdatedProject?.updated_at
+                  ? formatDistanceToNow(new Date(lastUpdatedProject.updated_at), { addSuffix: true })
+                  : 'None'}
+              </p>
+            </div>
+          </motion.section>
+        )}
       </div>
 
+      {/* Upgrade Modal */}
       <AnimatePresence>
         {showUpgradeModal && (
           <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowUpgradeModal(false)}
           >
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="max-w-md rounded-2xl border border-white/10 bg-zinc-950 p-6 text-white shadow-2xl"
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-zinc-900/90 backdrop-blur-xl border border-zinc-800 rounded-2xl p-6 max-w-md w-full shadow-2xl"
             >
-              <h3 className="text-xl font-semibold">Upgrade for unlimited builds</h3>
-              <p className="mt-2 text-sm text-zinc-400">
-                You have reached the cap for the {tierConfig.name} tier. Unlock Visionary to remove project limits, export code, and deploy to custom domains.
-              </p>
-              <div className="mt-6 flex flex-col gap-3">
-                <Link
-                  href="/dashboard/billing"
-                  onClick={() => setShowUpgradeModal(false)}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-300 hover:bg-emerald-500/20"
-                >
-                  Upgrade plan
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-                <button
-                  onClick={() => setShowUpgradeModal(false)}
-                  className="rounded-xl border border-white/10 px-4 py-3 text-sm text-zinc-400 hover:text-white"
-                >
-                  Keep free tier for now
-                </button>
+              <div className="text-center">
+                <Pip size={60} animate={true} float={false} glow={true} />
+                <h3 className="text-xl font-semibold text-white mt-4">Project Limit Reached</h3>
+                <p className="text-zinc-400 mt-2">
+                  You've hit the {tierConfig.limit} project limit on your {tierConfig.name} plan. 
+                  Upgrade to create unlimited projects.
+                </p>
+                <div className="flex gap-3 mt-6">
+                  <button
+                    onClick={() => setShowUpgradeModal(false)}
+                    className="flex-1 px-4 py-3 rounded-xl border border-zinc-700 text-zinc-300 hover:bg-zinc-800 transition-colors"
+                  >
+                    Maybe Later
+                  </button>
+                  <Link
+                    href="/pricing"
+                    className="flex-1 px-4 py-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 font-medium hover:bg-emerald-500/20 transition-colors text-center"
+                  >
+                    View Plans
+                  </Link>
+                </div>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </div>
   )
 }

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | Hatch",
-  description: "Data sovereignty and privacy protocols for the Hatch System.",
+  title: "Privacy Policy | HatchIt",
+  description: "Privacy policy for HatchIt. Learn how we collect, use, and protect your data.",
 };
 
 export default function PrivacyLayout({

@@ -25,9 +25,9 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://hatchit.dev'),
-  title: 'HatchIt | The Singularity Interface',
-  description: 'Not just a website builder. A recursive, self-healing architectural system. Speak your intent, watch the code evolve. Welcome to the post-prompt era.',
-  keywords: ['AI website builder', 'React', 'Tailwind CSS', 'Singularity', 'Self-Healing Code', 'Direct Line API'],
+  title: 'HatchIt — AI Website Builder | Describe it. Build it. Ship it.',
+  description: 'Turn plain English into production-ready React websites. No templates, no drag-and-drop. Just describe what you want and watch AI build it in real-time.',
+  keywords: ['AI website builder', 'React', 'Tailwind CSS', 'website generator', 'no-code', 'AI development', 'Claude AI'],
   authors: [{ name: 'HatchIt' }],
   creator: 'HatchIt',
   manifest: '/manifest.json',
@@ -50,15 +50,15 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://hatchit.dev',
     siteName: 'HatchIt',
-    title: 'HatchIt | The Singularity Interface',
-    description: 'Not just a website builder. A recursive, self-healing architectural system.',
+    title: 'HatchIt — AI Website Builder',
+    description: 'Turn plain English into production-ready React websites. No templates. Just describe what you want.',
   },
   twitter: {
     card: 'summary_large_image',
     site: '@HatchItD',
     creator: '@HatchItD',
-    title: 'HatchIt — The Architect | AI Website Builder',
-    description: 'The prompt is dead. Speak your intent. Watch the code evolve. The Singularity Interface is here.',
+    title: 'HatchIt — AI Website Builder',
+    description: 'Turn plain English into production-ready React websites. No templates. Just describe what you want.',
   },
   robots: {
     index: true,

@@ -1,79 +1,80 @@
-# HATCHIT: THE SINGULARITY INTERFACE
+# HatchIt
 
-> **"Stop Prompting. Start Manifesting."**
+> **Describe it. Watch it build. Deploy it.**
 
 ![HatchIt Banner](https://hatchit.dev/opengraph-image.png)
 
-**HatchIt** is not a website builder. It is an **Autonomous Software Architect**.
-It does not drag-and-drop. It does not use templates.
-It listens to your intent, compiles it into raw React/Tailwind code, and renders it live in a sandboxed reality.
+**HatchIt** turns plain English into production-ready React websites. No templates. No drag-and-drop. Just describe what you want, watch AI generate each section in real-time, and deploy with one click.
 
-**[ENTER THE VOID](https://hatchit.dev)**
+🚀 **Live at [hatchit.dev](https://hatchit.dev)**
 
 ---
 
-## 1. THE MISSION
-We are building the first AI that builds itself.
-Most AI tools are stateless text editors. HatchIt is a **Persistent Entity**.
-*   **It Remembers:** The `Chronosphere` tracks your style DNA across sessions.
-*   **It Thinks:** The `Consciousness` engine runs a recursive state machine in the background.
-*   **It Protects:** The `Gatekeeper` ensures only the worthy (authenticated) enter the build chamber.
+## Why I Built This
 
-## 2. THE INTELLIGENCE (THE MIND)
-The platform is run by **The Elite Squad** of models:
-*   **THE ARCHITECT (Gemini 3 Pro):** The Visionary. Handles high-level design, "Vibe" checks, and UX.
-*   **THE ENGINEER (GPT-5.1-Codex):** The Heavy Lifter. Handles complex refactoring and type safety.
-*   **THE POET (Claude Opus 4.5):** The Creative. Handles marketing copy and "soul".
-*   **THE SERGEANT (Grok):** The Enforcer. Keeps the Founder accountable.
+I've been building websites for over a decade. WordPress, Webflow, Figma exports, AI tools — I've tried them all. They all had the same problem: they controlled the output.
 
-## 3. THE TECHNOLOGY (THE BODY)
-This is not a wrapper. This is a compiler.
-*   **Core:** Next.js 16 (App Router) + React 19.
-*   **Engine:** `@babel/standalone` for in-browser compilation.
-*   **Safety:** Proxy-based Sandboxing + Error Boundaries (Zero Crashes).
-*   **Database:** Supabase (The Memory).
-*   **Auth:** Clerk (The Gate).
-*   **Styling:** Tailwind CSS + Framer Motion (The Glitch).
+Templates locked me into someone else's vision. Drag-and-drop builders created bloated code. AI tools wrapped everything in 47 divs and called it "clean."
 
-## 4. THE PROTOCOL (LOCAL DEV)
+So I built HatchIt for myself. A tool that:
+- Generates **real React + Tailwind code** (not template soup)
+- Shows a **live preview** as it builds (not "wait 30 seconds and pray")
+- Lets me **iterate section by section** (not start over every time)
+- **Deploys instantly** to a real URL (not "export and figure it out")
 
-**WARNING:** You are entering the engine room.
-
-1.  **Clone the Singularity:**
-    ```bash
-    git clone https://github.com/your-repo/hatchit.git
-    cd hatchit
-    ```
-
-2.  **Install Dependencies:**
-    ```bash
-    npm install
-    ```
-
-3.  **Ignite the Core:**
-    ```bash
-    npm run dev
-    ```
-
-4.  **Environment Variables:**
-    You need the Keys to the Kingdom. Create `.env.local`:
-    *   `GEMINI_API_KEY`: The Brain.
-    *   `NEXT_PUBLIC_SUPABASE_URL`: The Memory.
-    *   `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`: The Gate.
-
-## 5. THE RULES
-*   **No Pink:** We do not do "Barbie" aesthetics. We do Cyberpunk.
-*   **No Corporate Speak:** We do not "circle back." We **ship**.
-*   **No Hallucinations:** If the code doesn't run, it doesn't exist.
+Then I realized: if I needed this, other people probably do too.
 
 ---
-*Built by The Founder & The Architect.*
-*Est. 2026*
+
+## How It Works
+
+1. **Describe your site** — "A landing page for my coffee shop with a hero, menu, and contact form"
+2. **Watch it build** — AI generates each section with live preview
+3. **Refine** — Edit prompts, regenerate sections, adjust the vibe
+4. **Deploy** — One click to a live `.hatchitsites.dev` URL
+
+No coding required. But if you want the code, export it as clean React + Tailwind files.
+
+---
+
+## Stack
+
+| Layer | Tech |
+|-------|------|
+| Framework | Next.js 16 + React 19 |
+| Styling | Tailwind CSS 4 + Framer Motion |
+| AI | Claude Sonnet 4.5 |
+| Database | Supabase |
+| Auth | Clerk |
+| Payments | Stripe |
+| Deploy | Cloudflare Workers |
+
+---
+
+## Local Development
+
+```bash
+# Clone
+git clone https://github.com/danwolstenholme-ctrl/hatchit.git
+cd hatchit
+
+# Install
+npm install
+
+# Run
+npm run dev
+```
+
+**Environment Variables** (`.env.local`):
+- `ANTHROPIC_API_KEY` — Claude API
+- `NEXT_PUBLIC_SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` — Database
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` + `CLERK_SECRET_KEY` — Auth
+- `STRIPE_SECRET_KEY` — Payments
+
+---
 
 ## Status
 
-🚀 **Live** at [hatchit.dev](https://hatchit.dev)
+✅ Live and shipping daily at [hatchit.dev](https://hatchit.dev)
 
----
-
-Built by [@danwolstenholme-ctrl](https://github.com/danwolstenholme-ctrl)
+Built by [@danwolstenholme-ctrl](https://github.com/danwolstenholme-ctrl) — shipping since Christmas 2025.

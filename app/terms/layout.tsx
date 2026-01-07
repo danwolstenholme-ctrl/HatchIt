@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | Hatch",
-  description: "Legal protocols and usage terms for the Hatch System.",
+  title: "Terms of Service | HatchIt",
+  description: "Terms of service for HatchIt. Read our usage terms, acceptable use policy, and service agreements.",
 };
 
 export default function TermsLayout({
