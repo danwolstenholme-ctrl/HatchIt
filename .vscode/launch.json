@@ -1,0 +1,25 @@
+{
+    "configurations": [
+        {
+            "type": "pwa-msedge",
+            "name": "Launch Edge",
+            "request": "launch",
+            "runtimeArgs": [
+                "--remote-debugging-port=9222"
+            ],
+            "url": "http://localhost:3000",
+            "webRoot": "${workspaceFolder}"
+        },
+        {
+            "type": "pwa-chrome",
+            "name": "Launch Chrome",
+            "request": "launch",
+            "url": "http://localhost:3000",
+            "webRoot": "${workspaceFolder}"
+        }
+    ]
+}
+            ]
+        }
+    ]
+}

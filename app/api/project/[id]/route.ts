@@ -4,6 +4,7 @@ import {
   getProjectById, 
   getSectionsByProjectId,
   updateProjectBrandConfig,
+  deleteProject,
 } from '@/lib/db'
 import { getTemplateById } from '@/lib/templates'
 
@@ -80,6 +81,40 @@ export async function PATCH(
 
   } catch (error) {
     console.error('Error updating project:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+// =============================================================================
+// DELETE: Delete a project
+// =============================================================================
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { userId: clerkId } = await auth()
+    if (!clerkId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { id } = await params
+
+    // Verify ownership
+    const project = await getProjectById(id)
+    if (!project) {
+      return NextResponse.json({ error: 'Project not found' }, { status: 404 })
+    }
+    if (project.user_id !== clerkId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    await deleteProject(id)
+    
+    return NextResponse.json({ success: true })
+
+  } catch (error) {
+    console.error('Error deleting project:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -690,13 +690,13 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
 
             {!isMobileDevice && viewMode === 'preview' && (
               <div className="flex items-center gap-3">
-                {/* Edit Mode Toggle */}
+                {/* Edit Mode Toggle - PROMINENT */}
                 <button
                   onClick={() => setIsEditModeActive(!isEditModeActive)}
                   className={`px-3.5 py-2 rounded-lg text-xs font-medium tracking-wide transition-all flex items-center gap-2 ${
                     isEditModeActive
-                      ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                      : 'bg-zinc-900/50 text-zinc-400 border border-zinc-800/50 hover:text-zinc-200 hover:border-zinc-700/50'
+                      ? 'bg-violet-500/15 text-violet-400 border border-violet-500/30 shadow-[0_0_12px_rgba(139,92,246,0.2)]'
+                      : 'bg-violet-500/10 text-violet-400 border border-violet-500/20 hover:bg-violet-500/15 hover:border-violet-500/30'
                   }`}
                   title="Double-click text to edit"
                 >

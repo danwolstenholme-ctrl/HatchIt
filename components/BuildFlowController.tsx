@@ -41,7 +41,6 @@ import Image from 'next/image'
 import { track } from '@vercel/analytics'
 import SectionProgress from './SectionProgress'
 import SectionBuilder from './SectionBuilder'
-import SingularitySidebar from './singularity/SingularitySidebar'
 import PaywallTransition from './PaywallTransition'
 import HatchModal from './HatchModal'
 import TheWitness from './singularity/TheWitness'
@@ -54,6 +53,8 @@ import GuestCreditBadge from './GuestCreditBadge'
 import PremiumFeaturesShowcase from './PremiumFeaturesShowcase'
 import BuildSuccessModal from './BuildSuccessModal'
 import SingularityLoader from './singularity/SingularityLoader'
+import ReplicatorModal from './ReplicatorModal'
+import { Sidebar } from './builder'
 import { chronosphere } from '@/lib/chronosphere'
 import { Template, Section, getTemplateById, getSectionById, createInitialBuildState, BuildState, websiteTemplate } from '@/lib/templates'
 import { DbProject, DbSection, DbBrandConfig } from '@/lib/supabase'
@@ -154,6 +155,15 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   const [showWitness, setShowWitness] = useState(false)
   const [witnessNote, setWitnessNote] = useState<string | null>(null)
   const [isWitnessLoading, setIsWitnessLoading] = useState(false)
+
+  // Healer State (self-healing background process)
+  const [isHealing, setIsHealing] = useState(false)
+  const [lastHealMessage, setLastHealMessage] = useState<string | null>(null)
+
+  // Singularity Feature Modals
+  const [showReplicator, setShowReplicator] = useState(false)
+  const [showOracle, setShowOracle] = useState(false)
+  const [showArchitect, setShowArchitect] = useState(false)
 
   const [showReset, setShowReset] = useState(false)
   const [isReplicationReady, setIsReplicationReady] = useState(false)
@@ -427,16 +437,12 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       : selectedTemplate.sections
   }, [customizedSections, selectedTemplate])
 
-  // For FREE users: Only build the HERO section first
-  // For PAID users: Build all sections
-  // This creates a faster "aha moment" - they see their hero, then the full site potential
+  // All users can build all sections now
+  // Free users get the full building experience, they just can't deploy/export
+  // This showcases the full power of the platform to drive conversions
   const sectionsForBuild = useMemo(() => {
-    if (isPaidUser) {
-      return allTemplateSections
-    }
-    // Free users only build hero initially
-    return allTemplateSections.filter(s => s.id === 'hero')
-  }, [allTemplateSections, isPaidUser])
+    return allTemplateSections
+  }, [allTemplateSections])
 
   const templateForBuild = useMemo(() => {
     return { ...selectedTemplate, sections: sectionsForBuild }
@@ -1468,18 +1474,55 @@ export default function GeneratedPage() {
             exit={{ opacity: 0 }}
             className={`flex h-screen overflow-hidden bg-black ${demoMode ? 'pt-10' : ''}`}
           >
-            {/* Singularity Sidebar - Desktop Only */}
-            <div className="hidden lg:block w-72 border-r border-zinc-900 bg-zinc-950 flex flex-col h-full overflow-y-auto">
-              <SingularitySidebar
+            {/* Sidebar - Desktop Only */}
+            <div className="hidden lg:block w-72 border-r border-zinc-900 bg-zinc-950 flex-col h-full overflow-y-auto">
+              <Sidebar
+                userTier={demoMode ? 'demo' : (accountSubscription?.status === 'active' ? accountSubscription?.tier : 'free') as 'demo' | 'free' | 'architect' | 'visionary' | 'singularity'}
+                projectName={project?.name || brandConfig?.brandName || (demoMode ? 'Demo Project' : 'Untitled Project')}
                 currentSection={buildState.currentSectionIndex + 1}
                 totalSections={sectionsForBuild.length}
-                sectionNames={sectionsForBuild.map(section => section.name)}
+                sectionNames={sectionsForBuild.map(s => s.name)}
                 isGenerating={false}
-                thought={getCurrentSection()?.name ? `Building ${getCurrentSection()?.name}...` : 'Analyzing...'}
-                projectName={project?.name || brandConfig?.brandName || 'Untitled Project'}
-                onOpenSettings={!demoMode ? () => setIsSettingsOpen(true) : undefined}
-                onSignUp={demoMode ? () => router.push('/sign-up?redirect_url=/dashboard') : undefined}
-                demoMode={demoMode}
+                isHealing={isHealing}
+                lastHealMessage={lastHealMessage ?? undefined}
+                onAddSection={() => {
+                  if (buildState.currentSectionIndex < sectionsForBuild.length - 1) {
+                    handleNextSection()
+                  }
+                }}
+                onOpenOracle={() => setShowOracle(true)}
+                onOpenWitness={() => {
+                  setShowWitness(true)
+                  if (demoMode) {
+                    setIsWitnessLoading(true)
+                    fetch('/api/witness', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ 
+                        context: 'Demo user exploring the builder',
+                        prompt: 'A user is trying out the demo builder for the first time',
+                        isDemo: true
+                      })
+                    })
+                      .then(res => res.json())
+                      .then(data => {
+                        setWitnessNote(data.note || "Welcome to the Singularity. I'm here to guide your creative journey.")
+                        setIsWitnessLoading(false)
+                      })
+                      .catch(() => {
+                        setWitnessNote("Welcome to the Singularity. I'm here to guide your creative journey.")
+                        setIsWitnessLoading(false)
+                      })
+                  }
+                }}
+                onOpenArchitect={() => setShowArchitect(true)}
+                onOpenReplicator={() => setShowReplicator(true)}
+                onRunAudit={handleRunAudit}
+                onDeploy={handleDeploy}
+                onExport={handleDownload}
+                onAddPage={() => {}}
+                onOpenSettings={() => setIsSettingsOpen(true)}
+                onSignUp={demoMode ? () => router.push('/sign-up?redirect_url=/builder') : undefined}
               />
             </div>
 
@@ -1508,6 +1551,10 @@ export default function GeneratedPage() {
                     isPaid={isPaid}
                     isDemo={isDemo}
                     initialPrompt={buildState.currentSectionIndex === 0 ? initialPrompt : undefined}
+                    onHealingStateChange={(healing, message) => {
+                      setIsHealing(healing)
+                      if (message) setLastHealMessage(message)
+                    }}
                   />
                 )}
 
@@ -2172,6 +2219,17 @@ export default function GeneratedPage() {
         onUpgrade={() => {
           setHatchModalReason('generation_limit')
           setShowHatchModal(true)
+        }}
+      />
+
+      {/* Replicator Modal - Clone any website (Singularity tier) */}
+      <ReplicatorModal
+        isOpen={showReplicator}
+        onClose={() => setShowReplicator(false)}
+        onReplicate={(data) => {
+          // Handle replicated site data - could populate sections with cloned content
+          console.log('Replicated site data:', data)
+          setShowReplicator(false)
         }}
       />
     </div>

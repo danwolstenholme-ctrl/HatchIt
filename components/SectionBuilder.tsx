@@ -42,6 +42,8 @@ import {
 } from 'lucide-react'
 import GeneratingModal from './builder/GeneratingModal'
 import GuestPromptModal from './GuestPromptModal'
+import Pip from './Pip'
+import Button from './singularity/Button'
 
 // =============================================================================
 // STREAMING CODE EFFECT - Fake code animation for loading state
@@ -124,7 +126,7 @@ function StreamingCodeEffect() {
 }
 
 // =============================================================================
-// INLINE PROMPT INPUT - Integrated into main content area (replaces modal)
+// INLINE PROMPT INPUT - Split view: prompt left, preview right
 // =============================================================================
 function InlinePromptInput({ onSubmit }: { onSubmit: (prompt: string) => void }) {
   const [prompt, setPrompt] = useState('')
@@ -141,130 +143,149 @@ function InlinePromptInput({ onSubmit }: { onSubmit: (prompt: string) => void })
   }
 
   return (
-    <div className="h-full flex items-center justify-center bg-zinc-950 p-3 sm:p-6">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="w-full max-w-2xl"
-      >
-        {/* Header */}
-        <div className="relative overflow-hidden rounded-xl sm:rounded-2xl border border-zinc-800/60 bg-zinc-950/70 backdrop-blur-xl shadow-2xl shadow-black/40 px-4 py-5 sm:px-6 sm:py-8 md:px-10 md:py-10">
-          <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent" />
-          <div className="flex flex-col items-center text-center gap-3 sm:gap-4">
-            <motion.div
-              initial={{ scale: 0.85, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.1, duration: 0.4 }}
-              className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center shadow-inner shadow-black/60"
-            >
-              <Image src="/icon.svg" alt="HatchIt" width={36} height={36} className="w-6 h-6 sm:w-9 sm:h-9" />
-            </motion.div>
-            <div>
-              <p className="text-[10px] sm:text-xs uppercase tracking-[0.4em] text-zinc-600">Builder</p>
-              <h1 className="text-xl sm:text-3xl md:text-4xl font-semibold text-white mt-1.5 sm:mt-2">
-                Text to React generation surface
-              </h1>
-            </div>
-            <p className="text-xs sm:text-sm md:text-base text-zinc-400 max-w-xl leading-relaxed">
-              Describe the component or page in plain English. We assemble the React tree, Tailwind styling, and deployment wiring in one pass.
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-zinc-500">
-              {['Live preview', 'Production React + Tailwind', 'Supabase-ready deploy'].map(item => (
-                <span key={item} className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full border border-zinc-800/80 px-2 py-0.5 sm:px-3 sm:py-1 bg-zinc-900/40">
-                  <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  {item}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Input Area */}
-        <div className="mt-4 sm:mt-6 bg-zinc-950/70 border border-zinc-800/60 rounded-xl sm:rounded-2xl overflow-hidden backdrop-blur-xl transition-colors focus-within:border-emerald-500/30">
-          <textarea
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey && isValid) {
-                e.preventDefault()
-                handleSubmit()
-              }
-            }}
-            placeholder="e.g. A landing page for a premium fitness app called 'Elevate' with dark theme, neon accents, pricing cards, and testimonials..."
-            className="w-full h-24 sm:h-32 bg-transparent p-3 sm:p-5 text-sm sm:text-base text-white placeholder-zinc-600 resize-none focus:outline-none font-medium"
-            autoFocus
-          />
-          
-          {/* Inline tips when empty */}
-          {!prompt.trim() && (
-            <div className="px-3 pb-3 sm:px-5 sm:pb-4 space-y-1.5 sm:space-y-2">
-              <p className="text-[10px] sm:text-xs text-emerald-400 font-medium">💡 Tips for great results:</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-zinc-500">
-                <span>• Be specific: mention colors, style, purpose</span>
-                <span>• Include your brand name if you have one</span>
-                <span>• Describe your target audience</span>
-                <span>• Mention sections: hero, pricing, testimonials</span>
+    <div className="h-full flex flex-col lg:flex-row bg-zinc-950">
+      {/* Left Panel - Prompt Input */}
+      <div className="flex-1 lg:max-w-xl xl:max-w-2xl flex flex-col border-r border-zinc-800/50 overflow-auto">
+        <div className="flex-1 p-4 sm:p-6 lg:p-8 flex flex-col">
+          {/* Header */}
+          <div className="mb-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+                <Image src="/icon.svg" alt="HatchIt" width={24} height={24} />
               </div>
-              <p className="text-[10px] sm:text-xs text-zinc-600 mt-1.5 sm:mt-2 border-t border-zinc-800/50 pt-1.5 sm:pt-2">
-                <span className="text-zinc-500">After generation:</span> Click any text to edit • Switch device views • Refine with AI prompts
-              </p>
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-600">Builder</p>
+                <h1 className="text-lg sm:text-xl font-semibold text-white">What are we building?</h1>
+              </div>
             </div>
-          )}
-          
-          <div className="flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-center sm:justify-between px-3 py-2.5 sm:px-5 sm:py-4 bg-zinc-900/40 border-t border-zinc-800/60">
-            <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-zinc-500">
-              <Command className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-              <span className="hidden sm:inline">Shift + Enter for newline</span>
-              <span className="sm:hidden">Shift+Enter: newline</span>
-              {!isValid && prompt.trim().length > 0 && (
-                <span className="text-amber-500 ml-2">
-                  ({10 - prompt.trim().length} more chars)
-                </span>
-              )}
+            <p className="text-sm text-zinc-400">
+              Describe your component or page. Be specific about colors, style, and purpose.
+            </p>
+          </div>
+
+          {/* Input Area */}
+          <div className="flex-1 flex flex-col">
+            <div className="flex-1 bg-zinc-900/50 border border-zinc-800/60 rounded-xl overflow-hidden transition-colors focus-within:border-emerald-500/30">
+              <textarea
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey && isValid) {
+                    e.preventDefault()
+                    handleSubmit()
+                  }
+                }}
+                placeholder="e.g. A landing page for a premium fitness app called 'Elevate' with dark theme, neon accents, pricing cards, and testimonials..."
+                className="w-full h-full min-h-[120px] bg-transparent p-4 text-sm text-white placeholder-zinc-600 resize-none focus:outline-none"
+                autoFocus
+              />
             </div>
-            
-            <motion.button
-              whileTap={{ scale: isValid && !isSubmitting ? 0.97 : 1 }}
-              onClick={handleSubmit}
-              disabled={!isValid || isSubmitting}
-              className={`relative inline-flex items-center justify-center gap-1.5 sm:gap-2 rounded-lg sm:rounded-xl px-3 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm font-semibold transition-all overflow-hidden
-                ${isValid && !isSubmitting
-                  ? 'bg-emerald-500/15 border border-emerald-500/40 text-white shadow-[0_0_20px_rgba(16,185,129,0.25)]'
-                  : 'bg-zinc-900/60 border border-zinc-800 text-zinc-500 cursor-not-allowed'}`}
-            >
-              {isValid && !isSubmitting && (
-                <motion.span
-                  className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/15 to-white/0"
-                  animate={{ x: ['-200%', '200%'] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-                />
-              )}
-              {isSubmitting ? (
-                <>
-                  <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span className="relative">Building...</span>
-                </>
-              ) : (
-                <>
-                  <span className="relative">Generate<span className="hidden sm:inline"> section</span></span>
-                  <ArrowRight className="relative w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                </>
-              )}
-            </motion.button>
+
+            {/* Tips */}
+            {!prompt.trim() && (
+              <div className="mt-4 space-y-2 text-xs text-zinc-500">
+                <p className="text-emerald-400 font-medium">💡 Tips:</p>
+                <ul className="space-y-1 text-zinc-500">
+                  <li>• Mention colors, style, and purpose</li>
+                  <li>• Include your brand name</li>
+                  <li>• Describe sections: hero, pricing, etc.</li>
+                </ul>
+              </div>
+            )}
+
+            {/* Submit */}
+            <div className="mt-4 flex items-center justify-between">
+              <span className="text-xs text-zinc-600">
+                {!isValid && prompt.trim().length > 0 && `${10 - prompt.trim().length} more chars`}
+              </span>
+              <motion.button
+                whileTap={{ scale: isValid && !isSubmitting ? 0.97 : 1 }}
+                onClick={handleSubmit}
+                disabled={!isValid || isSubmitting}
+                className={`relative inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all overflow-hidden
+                  ${isValid && !isSubmitting
+                    ? 'bg-emerald-500/15 border border-emerald-500/40 text-white shadow-[0_0_20px_rgba(16,185,129,0.25)]'
+                    : 'bg-zinc-900/60 border border-zinc-800 text-zinc-500 cursor-not-allowed'}`}
+              >
+                {isValid && !isSubmitting && (
+                  <motion.span
+                    className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/15 to-white/0"
+                    animate={{ x: ['-200%', '200%'] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                  />
+                )}
+                {isSubmitting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Building...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Generate</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </motion.button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Panel - Preview Area */}
+      <div className="hidden lg:flex flex-1 flex-col bg-zinc-900/30 relative overflow-hidden">
+        {/* Top bar */}
+        <div className="h-10 border-b border-zinc-800/50 bg-zinc-900/50 flex items-center justify-between px-4">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 px-2 py-1 bg-zinc-800/50 rounded text-[10px] text-zinc-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/50" />
+              Preview
+            </div>
+          </div>
+          <div className="flex items-center gap-1 bg-zinc-800/30 rounded p-0.5">
+            <button title="Mobile" className="p-1 rounded text-zinc-500"><Smartphone className="w-3.5 h-3.5" /></button>
+            <button title="Tablet" className="p-1 rounded text-zinc-500"><Tablet className="w-3.5 h-3.5" /></button>
+            <button title="Desktop" className="p-1 rounded bg-zinc-700/50 text-zinc-300"><Monitor className="w-3.5 h-3.5" /></button>
           </div>
         </div>
 
-        {/* Example prompt - not clickable, just inspiration */}
-        <div className="mt-3 sm:mt-4 text-center">
-          <p className="text-[10px] sm:text-xs text-zinc-600">
-            <span className="text-zinc-500">Try something like:</span>{' '}
-            <span className="text-zinc-400 italic">
-              "A hero section for [your business name] - we do [what you do] for [who you help]. Dark theme with [your brand color] accents."
-            </span>
-          </p>
+        {/* Preview content - streaming code effect */}
+        <div className="flex-1 relative">
+          <div className="absolute inset-0 p-6">
+            <StreamingCodeEffect />
+          </div>
+          
+          {/* Overlay with message */}
+          <div className="absolute inset-0 flex items-center justify-center bg-zinc-950/60 backdrop-blur-sm">
+            <div className="text-center px-6">
+              <motion.div
+                animate={{ y: [0, -5, 0] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                className="w-16 h-16 mx-auto mb-4"
+              >
+                <Image src="/icon.svg" alt="HatchIt" width={64} height={64} className="opacity-60" />
+              </motion.div>
+              <p className="text-sm text-zinc-400 mb-1">Your React component will appear here</p>
+              <p className="text-xs text-zinc-600">Live preview • Edit text directly • Refine with AI</p>
+            </div>
+          </div>
         </div>
-      </motion.div>
+
+        {/* Feature badges */}
+        <div className="px-4 py-3 border-t border-zinc-800/50 bg-zinc-900/30 flex items-center justify-center gap-4 text-[10px] text-zinc-500">
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            Live preview
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            Production React
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            One-click deploy
+          </span>
+        </div>
+      </div>
     </div>
   )
 }
@@ -442,6 +463,326 @@ function GuestRefineBar({
 }
 
 // =============================================================================
+// AUTH REFINE BAR - For logged-in users
+// Shows refine input + Next Section button (user controls when to move on)
+// =============================================================================
+function AuthRefineBar({
+  refinePrompt,
+  setRefinePrompt,
+  isUserRefining,
+  handleUserRefine,
+  onNextSection,
+  isLastSection,
+  reasoning,
+  refinementChanges,
+  showPipChat,
+  setShowPipChat,
+  pipMessages,
+  sendPipMessage,
+  isPipLoading,
+  selectedElement,
+}: {
+  refinePrompt: string
+  setRefinePrompt: (v: string) => void
+  isUserRefining: boolean
+  handleUserRefine: () => void
+  onNextSection: () => void
+  isLastSection: boolean
+  reasoning: string
+  refinementChanges: string[]
+  showPipChat?: boolean
+  setShowPipChat?: (v: boolean) => void
+  pipMessages?: { role: 'user' | 'assistant'; content: string }[]
+  sendPipMessage?: (msg: string) => void
+  isPipLoading?: boolean
+  selectedElement?: { tagName: string; text: string; className: string } | null
+}) {
+  const [isFocused, setIsFocused] = useState(false)
+  const [promptIndex, setPromptIndex] = useState(0)
+  
+  useEffect(() => {
+    if (!isFocused) return
+    const interval = setInterval(() => {
+      setPromptIndex(prev => (prev + 1) % REFINE_PROMPTS.length)
+    }, 2500)
+    return () => clearInterval(interval)
+  }, [isFocused])
+  
+  return (
+    <div className="space-y-2">
+      {/* Single-row compact refine bar */}
+      <div className="flex items-center gap-2">
+        {/* Pip indicator - minimal */}
+        <motion.div 
+          className="flex-shrink-0 w-6 h-6 flex items-center justify-center"
+          animate={{ scale: [1, 1.05, 1] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <Pip size={18} animate={true} float={false} glow={true} />
+        </motion.div>
+        
+        {/* Input */}
+        <div className="relative flex-1">
+          <div className="flex items-center bg-zinc-950/50 border border-zinc-700/50 rounded-lg overflow-hidden transition-all duration-200 focus-within:border-emerald-500/40">
+            <input
+              type="text"
+              value={refinePrompt}
+              onChange={(e) => setRefinePrompt(e.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              onKeyDown={(e) => e.key === 'Enter' && refinePrompt.trim() && handleUserRefine()}
+              disabled={isUserRefining}
+              placeholder={isFocused ? REFINE_PROMPTS[promptIndex] : "What would you change?"}
+              className="flex-1 bg-transparent px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none disabled:opacity-50"
+            />
+            <button
+              onClick={handleUserRefine}
+              disabled={!refinePrompt.trim() || isUserRefining}
+              className="px-4 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 border-l border-zinc-700/50 text-emerald-400 text-xs font-semibold transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5"
+            >
+              {isUserRefining ? (
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <>
+                  <Wand2 className="w-3.5 h-3.5" />
+                  <span>Refine</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+        
+        {/* Next Section button */}
+        <button
+          onClick={onNextSection}
+          className="flex-shrink-0 px-4 py-2.5 rounded-lg bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/25 text-emerald-400 text-xs font-semibold transition-all flex items-center gap-1.5"
+        >
+          {isLastSection ? 'Finish' : 'Next'}
+          <ArrowRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
+      
+      {/* Quick suggestions - inline, subtle */}
+      <div className="flex items-center gap-3 px-1">
+        <span className="text-[10px] text-zinc-500">Try:</span>
+        {PIP_SUGGESTIONS.slice(0, 4).map((sug, i) => (
+          <button
+            key={i}
+            onClick={() => setRefinePrompt(sug)}
+            className="text-[10px] text-zinc-400 hover:text-emerald-400 transition-colors"
+          >
+            {sug}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// =============================================================================
+// =============================================================================
+// COMMAND BAR - The main builder interface
+// 3 AIs: Builder (quiet, does the work), Healer (auto-fixes), Pip (refiner, interactive)
+// =============================================================================
+const DEMO_PROMPTS = [
+  "A SaaS landing page for a project management tool",
+  "A portfolio site for a UX designer",
+  "A startup landing page with waitlist signup",
+  "A modern agency website with dark theme",
+  "A product launch page with countdown timer",
+]
+
+// Pip's contextual suggestions based on what's been built
+const PIP_SUGGESTIONS = [
+  "Make it bolder",
+  "Add more contrast",
+  "Bigger headline",
+  "More whitespace",
+  "Add a testimonial",
+  "Make CTA pop more",
+]
+
+function DemoCommandBar({
+  stage,
+  prompt,
+  setPrompt,
+  onBuild,
+  refinePrompt,
+  setRefinePrompt,
+  isUserRefining,
+  handleUserRefine,
+  goToSignUp,
+  reasoning,
+  refinementChanges,
+  showPipChat,
+  setShowPipChat,
+  pipMessages,
+  sendPipMessage,
+  isPipLoading,
+  selectedElement,
+}: {
+  stage: BuildStage
+  prompt: string
+  setPrompt: (v: string) => void
+  onBuild: (prompt: string) => void
+  refinePrompt: string
+  setRefinePrompt: (v: string) => void
+  isUserRefining: boolean
+  handleUserRefine: () => void
+  goToSignUp: () => void
+  reasoning: string
+  refinementChanges: string[]
+  showPipChat?: boolean
+  setShowPipChat?: (v: boolean) => void
+  pipMessages?: { role: 'user' | 'assistant'; content: string }[]
+  sendPipMessage?: (msg: string) => void
+  isPipLoading?: boolean
+  selectedElement?: { tagName: string; text: string; className: string } | null
+}) {
+  const [isFocused, setIsFocused] = useState(false)
+  const [promptIndex, setPromptIndex] = useState(0)
+  const [pipInput, setPipInput] = useState('')
+  const pipChatRef = useRef<HTMLDivElement>(null)
+  const isInitialState = stage === 'input' && !reasoning
+  
+  // Cycle through prompts when focused
+  useEffect(() => {
+    if (!isFocused) return
+    const prompts = isInitialState ? DEMO_PROMPTS : REFINE_PROMPTS
+    const interval = setInterval(() => {
+      setPromptIndex(prev => (prev + 1) % prompts.length)
+    }, 2500)
+    return () => clearInterval(interval)
+  }, [isFocused, isInitialState])
+  
+  // Auto-scroll pip chat
+  useEffect(() => {
+    if (pipChatRef.current && showPipChat) {
+      pipChatRef.current.scrollTo({ top: pipChatRef.current.scrollHeight, behavior: 'smooth' })
+    }
+  }, [pipMessages, showPipChat])
+  
+  // Get the right value and handlers based on state
+  const inputValue = isInitialState ? prompt : refinePrompt
+  const setInputValue = isInitialState ? setPrompt : setRefinePrompt
+  const handleSubmit = isInitialState ? () => onBuild(inputValue) : handleUserRefine
+  const placeholderText = isInitialState 
+    ? "Describe your landing page..."
+    : "What would you change?"
+  const buttonText = isInitialState ? "Build" : "Refine"
+  
+  // Pip's contextual message
+  const getPipMessage = () => {
+    if (selectedElement) {
+      return `Selected: ${selectedElement.tagName.toLowerCase()} - what should I change?`
+    }
+    if (isInitialState) {
+      return "What are we building?"
+    }
+    if (refinementChanges.length > 0) {
+      return "Done! What else? ✨"
+    }
+    if (reasoning) {
+      return "Looking good! What should I tweak?"
+    }
+    return "Tell me what to change."
+  }
+  
+  const handlePipSubmit = () => {
+    if (!pipInput.trim() || isPipLoading) return
+    sendPipMessage?.(pipInput)
+    setPipInput('')
+  }
+  
+  // Minimal Pip - just the essentials
+  const showQuickTips = !isInitialState && !showPipChat
+  
+  return (
+    <div className="space-y-2">
+      {/* Main Input Row - Clean and simple */}
+      <div className="flex items-center gap-2">
+        {/* Pip indicator - subtle, not a big header */}
+        <motion.div 
+          className="flex-shrink-0 w-6 h-6 flex items-center justify-center"
+          animate={!isInitialState ? { scale: [1, 1.05, 1] } : {}}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <Pip size={18} animate={!isInitialState} float={false} glow={!isInitialState} />
+        </motion.div>
+        
+        {/* Input */}
+        <div className="relative flex-1">
+          <div className="flex items-center bg-zinc-950/50 border border-zinc-700/50 rounded-lg overflow-hidden transition-all duration-200 focus-within:border-emerald-500/40">
+            <input
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              onKeyDown={(e) => e.key === 'Enter' && inputValue.trim() && handleSubmit()}
+              disabled={isUserRefining}
+              placeholder={isFocused 
+                ? (isInitialState ? DEMO_PROMPTS : REFINE_PROMPTS)[promptIndex] 
+                : placeholderText
+              }
+              className="flex-1 bg-transparent px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none disabled:opacity-50"
+            />
+            <button
+              onClick={handleSubmit}
+              disabled={!inputValue.trim() || isUserRefining}
+              className="px-4 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 border-l border-zinc-700/50 text-emerald-400 text-xs font-semibold transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5"
+            >
+              {isUserRefining ? (
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <>
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>{buttonText}</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+        
+        {/* Sign up CTA - only when preview exists */}
+        {!isInitialState && (
+          <button
+            onClick={() => goToSignUp()}
+            className="flex-shrink-0 px-4 py-2.5 rounded-lg bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/25 text-emerald-400 text-xs font-semibold transition-all"
+          >
+            Sign up
+          </button>
+        )}
+      </div>
+      
+      {/* Contextual tips - inline, not a big panel */}
+      {showQuickTips && (
+        <div className="flex items-center gap-3 px-1">
+          <span className="text-[10px] text-zinc-500">Try:</span>
+          {PIP_SUGGESTIONS.slice(0, 4).map((sug, i) => (
+            <button
+              key={i}
+              onClick={() => setRefinePrompt(sug)}
+              className="text-[10px] text-zinc-400 hover:text-emerald-400 transition-colors"
+            >
+              {sug}
+            </button>
+          ))}
+        </div>
+      )}
+      
+      {/* Sandbox badge for initial state */}
+      {isInitialState && (
+        <div className="flex items-center gap-1.5 px-1">
+          <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+          <span className="text-[9px] uppercase tracking-wider text-zinc-500">Sandbox</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// =============================================================================
 // SECTION BUILDER
 // The actual interface for building one section at a time
 // Now with opt-in Opus refinement (not automatic)
@@ -460,6 +801,7 @@ interface SectionBuilderProps {
   isPaid?: boolean // Whether project is hatched (paid)
   isDemo?: boolean // Simplified UI for unauthenticated users
   initialPrompt?: string // Prompt passed from demo page - use this to skip empty state
+  onHealingStateChange?: (isHealing: boolean, message?: string) => void // Report healing to parent
 }
 
 type BuildStage = 'input' | 'generating' | 'refining' | 'complete'
@@ -756,6 +1098,7 @@ export default function SectionBuilder({
   isPaid = false,
   isDemo = false,
   initialPrompt,
+  onHealingStateChange,
 }: SectionBuilderProps) {
   const router = useRouter()
   const { isSignedIn, user } = useUser()
@@ -861,6 +1204,12 @@ export default function SectionBuilder({
   const [showGuestPromptModal, setShowGuestPromptModal] = useState(
     !isSignedIn && !effectivePrompt && !savedPreview
   )
+  
+  // Pip Chat State (interactive refiner after first build)
+  const [showPipChat, setShowPipChat] = useState(false)
+  const [pipMessages, setPipMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([])
+  const [isPipLoading, setIsPipLoading] = useState(false)
+  const pipChatRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setIsPreviewReady(false)
@@ -1164,6 +1513,7 @@ export default function SectionBuilder({
 
     console.log('Attempting self-healing for error:', errorMsg)
     setIsSelfHealing(true)
+    onHealingStateChange?.(true, `Fixing: ${errorMsg.slice(0, 40)}...`)
 
     // Demo mode - simulate self-healing
     if (demoMode) {
@@ -1173,6 +1523,7 @@ export default function SectionBuilder({
       setHasSelfHealed(true)
       onComplete(generatedCode, true, [...refinementChanges, fixMsg])
       setIsSelfHealing(false)
+      onHealingStateChange?.(false, fixMsg)
       return
     }
     
@@ -1200,13 +1551,16 @@ export default function SectionBuilder({
       const fixedCode = unwrapCodePayload(rawFixedCode)
       
       setGeneratedCode(fixedCode)
-      setRefinementChanges(prev => [...prev, `Auto-fixed crash: ${errorMsg.slice(0, 30)}...`])
+      const healMessage = `Auto-fixed: ${errorMsg.slice(0, 30)}...`
+      setRefinementChanges(prev => [...prev, healMessage])
       setHasSelfHealed(true)
-      onComplete(fixedCode, true, [...refinementChanges, `Auto-fixed crash: ${errorMsg.slice(0, 30)}...`])
+      onComplete(fixedCode, true, [...refinementChanges, healMessage])
+      onHealingStateChange?.(false, healMessage)
       
     } catch (err) {
       console.error('Self-healing failed:', err)
       setError(`Preview crashed and self-healing failed: ${err instanceof Error ? err.message : 'Unknown error'}`)
+      onHealingStateChange?.(false, 'Healing failed')
     } finally {
       setIsSelfHealing(false)
     }
@@ -1416,6 +1770,63 @@ export default function SectionBuilder({
       setTimeout(() => textareaRef.current?.focus(), 100)
     }
   }
+
+  // Pip Chat - Interactive refiner that appears after first build
+  // This is the conversational interface where users can ask Pip for help
+  const sendPipMessage = async (userMessage: string) => {
+    if (!userMessage.trim() || isPipLoading) return
+    
+    setPipMessages(prev => [...prev, { role: 'user', content: userMessage }])
+    setIsPipLoading(true)
+    
+    try {
+      const response = await fetch('/api/prompt-helper', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sectionType: section.id,
+          sectionName: section.name,
+          templateType: 'Landing Page',
+          userMessage: `[Context: User has built a section and wants to refine it. ${selectedElement ? `They clicked on a <${selectedElement.tagName}> element with text "${selectedElement.text.slice(0, 50)}".` : ''}]\n\nUser: ${userMessage}`,
+          conversationHistory: pipMessages,
+          brandName: brandConfig?.brandName,
+          brandTagline: brandConfig?.tagline,
+        }),
+      })
+      
+      if (response.ok) {
+        const { message } = await response.json()
+        setPipMessages(prev => [...prev, { role: 'assistant', content: message }])
+        
+        // If Pip suggested a refinement, auto-fill the refine input
+        if (message.toLowerCase().includes('try:') || message.toLowerCase().includes('ask for:')) {
+          const match = message.match(/['"]([^'"]+)['"]/);
+          if (match) {
+            setRefinePrompt(match[1])
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Pip chat error:', err)
+      setPipMessages(prev => [...prev, { role: 'assistant', content: 'Oops, something went wrong. Try again?' }])
+    } finally {
+      setIsPipLoading(false)
+    }
+  }
+  
+  // Initialize Pip with a greeting when the build completes
+  useEffect(() => {
+    if (stage === 'complete' && generatedCode && pipMessages.length === 0) {
+      // Give Pip a contextual greeting
+      const greetings = [
+        "Nice! What should we tweak? 🎯",
+        "Looking good! Want any changes?",
+        "Built it! Click anything to refine it.",
+        "Done! I can help you polish this.",
+      ]
+      setPipMessages([{ role: 'assistant', content: greetings[Math.floor(Math.random() * greetings.length)] }])
+    }
+  }, [stage, generatedCode, pipMessages.length])
 
   const handleBuildSection = async (options?: { skipGuestCredit?: boolean; overridePrompt?: string }) => {
     const skipGuestCredit = options?.skipGuestCredit
@@ -1885,20 +2296,14 @@ export default function SectionBuilder({
   // Once we have code, NEVER show generating - let the preview render even if iframe is loading
   const showGenerating = stage === 'generating' && !generatedCode
   
-  // For demo mode: show GuestPromptModal (fixed overlay) instead of inline input
   // For auth users: show inline input when in initial state with no prompt
+  // Demo users get DemoCommandBar in the bottom panel instead
   const showInlinePromptInput = !isDemo && isInitialState && !effectivePrompt
   
   return (
     <div className="relative w-full flex-1 min-h-0 bg-zinc-950 overflow-hidden flex flex-col">
       
-      {/* Guest Prompt Modal - cinematic prompt entry for demo users */}
-      {isDemo && (
-        <GuestPromptModal 
-          isOpen={showGuestPromptModal} 
-          onSubmit={handleGuestPromptSubmit} 
-        />
-      )}
+      {/* GuestPromptModal removed - Demo mode now uses DemoCommandBar in bottom panel */}
       
       {/* Generating Modal - keeps users engaged during the wait */}
         <GeneratingModal 
@@ -1944,21 +2349,7 @@ export default function SectionBuilder({
                 hideToolbar={false}
                 onReady={() => setIsPreviewReady(true)}
               />
-              {/* AI Presence Indicator - shows the system is alive */}
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="absolute top-3 right-3 z-20"
-              >
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/90 backdrop-blur-sm border border-zinc-800 rounded-full">
-                  <motion.div 
-                    animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                    className="w-2 h-2 rounded-full bg-emerald-500"
-                  />
-                  <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider">Live</span>
-                </div>
-              </motion.div>
+              {/* Removed fake Live badge - preview speaks for itself */}
             </>
           ) : showGenerating ? (
             // Generating state - Full Studio Interface
@@ -2161,21 +2552,87 @@ export default function SectionBuilder({
             // Inline Prompt Input - integrated into main content area (not a modal)
             <InlinePromptInput onSubmit={handleGuestPromptSubmit} />
           ) : (
-            // Fallback empty state
-            <div className="h-full flex items-center justify-center bg-zinc-950">
-              <motion.div
-                animate={{ scale: [1, 1.05, 1], opacity: [0.4, 0.6, 0.4] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                className="w-16 h-16"
-              >
-                <Image 
-                  src="/icon.svg" 
-                  alt="Loading" 
-                  width={64} 
-                  height={64}
-                  className="w-full h-full"
-                />
-              </motion.div>
+            // Empty state - guide users on how to prompt well (responsive)
+            <div className="h-full flex flex-col items-center justify-center bg-zinc-950 p-4 sm:p-6 overflow-auto">
+              <div className="max-w-md w-full space-y-4 sm:space-y-6">
+                {/* Header */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-center space-y-1"
+                >
+                  <h2 className="text-lg sm:text-xl font-semibold text-white">
+                    Be specific. Be bold.
+                  </h2>
+                  <p className="text-zinc-500 text-xs sm:text-sm">
+                    The more detail, the better the result.
+                  </p>
+                </motion.div>
+
+                {/* What to include - 2x2 grid on mobile, same on desktop */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.1 }}
+                  className="grid grid-cols-2 gap-2 text-left"
+                >
+                  {[
+                    { label: 'What', example: '"A fitness app landing"' },
+                    { label: 'Vibe', example: '"Dark, bold, energetic"' },
+                    { label: 'Elements', example: '"Hero, pricing cards"' },
+                    { label: 'Audience', example: '"Young professionals"' },
+                  ].map((tip, i) => (
+                    <div
+                      key={i}
+                      className="p-2 sm:p-2.5 bg-zinc-900/50 border border-zinc-800/50 rounded-lg"
+                    >
+                      <p className="text-[10px] sm:text-xs font-medium text-zinc-400">{tip.label}</p>
+                      <p className="text-[9px] sm:text-[10px] text-zinc-600 truncate">{tip.example}</p>
+                    </div>
+                  ))}
+                </motion.div>
+
+                {/* Example prompts - scrollable on small screens */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                  className="space-y-2"
+                >
+                  <p className="text-[9px] sm:text-[10px] uppercase tracking-wider text-zinc-600 text-center">Or try one</p>
+                  <div className="space-y-1.5 max-h-32 sm:max-h-40 overflow-y-auto">
+                    {[
+                      "Dark hero for a dev tool with code snippet and glowing CTA",
+                      "Meditation app landing with soft gradients and testimonials",
+                      "Agency portfolio with project grid and bold typography",
+                    ].map((prompt, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setPrompt(prompt)}
+                        className="w-full text-left px-3 py-2 text-[11px] sm:text-xs text-zinc-400 bg-zinc-900/50 border border-zinc-800/50 rounded-lg hover:border-zinc-700 hover:text-zinc-300 transition-colors line-clamp-2"
+                      >
+                        {prompt}
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+
+                {/* Arrow - hidden on very small screens */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className="hidden sm:flex justify-center"
+                >
+                  <motion.div
+                    animate={{ y: [0, 4, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                    className="text-zinc-700"
+                  >
+                    <ArrowRight className="w-4 h-4 rotate-90" />
+                  </motion.div>
+                </motion.div>
+              </div>
             </div>
           )}
         </div>
@@ -2188,6 +2645,49 @@ export default function SectionBuilder({
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             className="mx-auto w-full max-w-3xl relative"
           >
+            {/* Demo Mode - Unified Command Bar (handles both input and complete stages) */}
+            {isDemo && (stage === 'input' || stage === 'complete') && (
+              <div className="relative rounded-xl sm:rounded-2xl overflow-hidden">
+                {/* Glass layers */}
+                <div className="absolute inset-0 bg-zinc-900/70 backdrop-blur-xl" />
+                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
+                <div className="absolute inset-0 border border-zinc-800/50 rounded-xl sm:rounded-2xl" />
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent" />
+                
+                {/* Content */}
+                <div className="relative p-3 sm:p-4">
+                  <DemoCommandBar
+                    stage={stage}
+                    prompt={prompt}
+                    setPrompt={setPrompt}
+                    onBuild={(submittedPrompt: string) => {
+                      setPrompt(submittedPrompt)
+                      setStage('generating')
+                      if (typeof window !== 'undefined') {
+                        localStorage.setItem('hatch_last_prompt', submittedPrompt)
+                      }
+                      setTimeout(() => {
+                        handleBuildSection({ overridePrompt: submittedPrompt, skipGuestCredit: true })
+                      }, 100)
+                    }}
+                    refinePrompt={refinePrompt}
+                    setRefinePrompt={setRefinePrompt}
+                    isUserRefining={isUserRefining}
+                    handleUserRefine={handleUserRefine}
+                    goToSignUp={goToSignUp}
+                    reasoning={reasoning}
+                    refinementChanges={refinementChanges}
+                    showPipChat={showPipChat}
+                    setShowPipChat={setShowPipChat}
+                    pipMessages={pipMessages}
+                    sendPipMessage={sendPipMessage}
+                    isPipLoading={isPipLoading}
+                    selectedElement={selectedElement}
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Generating Stage */}
             {(stage === 'generating' || showGenerating) && (
               <div className="relative rounded-xl sm:rounded-2xl overflow-hidden">
@@ -2237,8 +2737,8 @@ export default function SectionBuilder({
               </div>
             )}
 
-            {/* Complete Stage */}
-            {stage === 'complete' && (
+            {/* Complete Stage - Only for non-demo (demo uses DemoCommandBar above) */}
+            {stage === 'complete' && !isDemo && (
               <div className="relative rounded-xl sm:rounded-2xl overflow-hidden">
                 {/* Glass layers - matches sidebar exactly */}
                 <div className="absolute inset-0 bg-zinc-900/70 backdrop-blur-xl" />
@@ -2246,18 +2746,37 @@ export default function SectionBuilder({
                 <div className="absolute inset-0 border border-zinc-800/50 rounded-xl sm:rounded-2xl" />
                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent" />
                 
-                {/* Content */}
+                {/* Content - Different bar for guests vs signed-in users */}
                 <div className="relative p-3 sm:p-4">
-                  <GuestRefineBar
-                    refinePrompt={refinePrompt}
-                    setRefinePrompt={setRefinePrompt}
-                    isUserRefining={isUserRefining}
-                    isGuestRefineLocked={isGuestRefineLocked}
-                    handleUserRefine={handleUserRefine}
-                    goToSignUp={goToSignUp}
-                    reasoning={reasoning}
-                    refinementChanges={refinementChanges}
-                  />
+                  {isSignedIn ? (
+                    <AuthRefineBar
+                      refinePrompt={refinePrompt}
+                      setRefinePrompt={setRefinePrompt}
+                      isUserRefining={isUserRefining}
+                      handleUserRefine={handleUserRefine}
+                      onNextSection={handleNextSection}
+                      isLastSection={isLastSection || false}
+                      reasoning={reasoning}
+                      refinementChanges={refinementChanges}
+                      showPipChat={showPipChat}
+                      setShowPipChat={setShowPipChat}
+                      pipMessages={pipMessages}
+                      sendPipMessage={sendPipMessage}
+                      isPipLoading={isPipLoading}
+                      selectedElement={selectedElement}
+                    />
+                  ) : (
+                    <GuestRefineBar
+                      refinePrompt={refinePrompt}
+                      setRefinePrompt={setRefinePrompt}
+                      isUserRefining={isUserRefining}
+                      isGuestRefineLocked={isGuestRefineLocked}
+                      handleUserRefine={handleUserRefine}
+                      goToSignUp={goToSignUp}
+                      reasoning={reasoning}
+                      refinementChanges={refinementChanges}
+                    />
+                  )}
                 </div>
               </div>
             )}

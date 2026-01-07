@@ -378,6 +378,14 @@ export async function POST(request: NextRequest) {
       await completeSection(sectionId, generatedCode, reasoning)
     }
 
+    // Guard: Don't return invalid/empty code - that breaks the preview
+    if (!generatedCode || !generatedCode.includes('function') || generatedCode.length < 100) {
+      console.error('Claude returned invalid/empty code. Raw response:', responseText.slice(0, 500))
+      return NextResponse.json({ 
+        error: 'AI returned an invalid response. Please try again with a more specific prompt.' 
+      }, { status: 500 })
+    }
+
     return NextResponse.json({ 
       success: true, 
       code: generatedCode,

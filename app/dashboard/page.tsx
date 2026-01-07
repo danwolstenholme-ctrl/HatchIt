@@ -5,10 +5,11 @@ import type { MouseEvent } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, ArrowRight, Trash2, Search, Globe, LayoutGrid, List, ExternalLink, Sparkles, Settings } from 'lucide-react'
+import { Plus, ArrowRight, Trash2, Search, Globe, LayoutGrid, List, ExternalLink, Sparkles, Settings, MessageSquare, Eye, Zap, Shield, Download, Rocket, Lock, Crown, Star } from 'lucide-react'
 import { useUser } from '@clerk/nextjs'
 import { formatDistanceToNow } from 'date-fns'
 import Pip from '@/components/Pip'
+import Button from '@/components/singularity/Button'
 import { DbProject } from '@/lib/supabase'
 
 type TierConfig = {
@@ -25,6 +26,7 @@ export default function DashboardPage() {
   const [isCreating, setIsCreating] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+  const [showWelcome, setShowWelcome] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
@@ -211,26 +213,22 @@ export default function DashboardPage() {
             </Link>
             
             {hasProjects && (
-              <motion.button
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
+              <Button
                 onClick={handleCreate}
                 disabled={isCreating}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-xs font-medium hover:bg-emerald-500/20 transition-colors"
+                variant="primary"
+                size="sm"
+                icon={isCreating ? undefined : <Plus className="w-4 h-4" />}
+                iconPosition="left"
               >
-                {isCreating ? (
-                  <div className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
-                ) : (
-                  <Plus className="w-4 h-4" />
-                )}
-                New Project
-              </motion.button>
+                {isCreating ? 'Creating...' : 'New Project'}
+              </Button>
             )}
           </div>
         </motion.header>
 
-        {/* Empty State - First Time User */}
-        {!hasProjects && (
+        {/* Welcome Card - First Time User (dismissible) */}
+        {!hasProjects && showWelcome && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -258,35 +256,25 @@ export default function DashboardPage() {
                 No templates. No drag-and-drop. Just your ideas, instantly realized.
               </p>
 
-              <div className="flex flex-col sm:flex-row items-center gap-2 mt-6">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+              <div className="flex justify-center gap-3 mt-6">
+                <Button
                   onClick={handleCreate}
                   disabled={isCreating}
-                  className="relative group w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-sm font-medium hover:bg-emerald-500/20 transition-all shadow-[0_0_20px_rgba(16,185,129,0.1)] overflow-hidden"
+                  loading={isCreating}
+                  variant="primary"
+                  size="md"
+                  icon={<ArrowRight className="w-4 h-4" />}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent rounded-xl pointer-events-none" />
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0"
-                    animate={{ x: ['-200%', '200%'] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                  />
-                  {isCreating ? (
-                    <div className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
-                  ) : (
-                    <Sparkles className="w-4 h-4" />
-                  )}
-                  <span className="relative">Start Building</span>
-                  <ArrowRight className="w-4 h-4 relative group-hover:translate-x-0.5 transition-transform" />
-                </motion.button>
+                  Start Building
+                </Button>
                 
-                <Link
-                  href="/features"
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-zinc-800 bg-zinc-900/50 text-zinc-300 text-sm font-medium hover:bg-zinc-800/50 hover:border-zinc-700 transition-colors"
+                <Button
+                  onClick={() => setShowWelcome(false)}
+                  variant="secondary"
+                  size="md"
                 >
                   Explore Features
-                </Link>
+                </Button>
               </div>
 
               <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-5 mt-5 text-xs text-zinc-500">
@@ -304,6 +292,28 @@ export default function DashboardPage() {
                 </span>
               </div>
             </div>
+          </motion.div>
+        )}
+
+        {/* Empty State after dismissing welcome */}
+        {!hasProjects && !showWelcome && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-xl border border-dashed border-zinc-700 bg-zinc-900/30 p-8 text-center"
+          >
+            <p className="text-zinc-400 text-sm mb-4">No projects yet. Ready to create your first one?</p>
+            <Button
+              onClick={handleCreate}
+              disabled={isCreating}
+              loading={isCreating}
+              variant="primary"
+              size="md"
+              icon={<Plus className="w-4 h-4" />}
+              iconPosition="left"
+            >
+              Create Project
+            </Button>
           </motion.div>
         )}
 
@@ -521,6 +531,153 @@ export default function DashboardPage() {
             </div>
           </motion.section>
         )}
+
+        {/* Singularity Tools Section */}
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: hasProjects ? 0.3 : 0.2 }}
+          className="space-y-4"
+        >
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-emerald-400" />
+              Singularity Tools
+            </h2>
+            {tier === 'free' && (
+              <Link href="/pricing" className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors">
+                Upgrade for more →
+              </Link>
+            )}
+          </div>
+          
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            {/* Oracle - AI Assistant (Free) */}
+            <Link
+              href="/builder"
+              className="group relative rounded-lg border border-zinc-800 bg-zinc-900/50 p-4 hover:border-emerald-500/40 hover:bg-zinc-900 transition-all"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-lg pointer-events-none" />
+              <div className="relative">
+                <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-3">
+                  <MessageSquare className="w-5 h-5 text-emerald-400" />
+                </div>
+                <h3 className="text-sm font-medium text-white mb-1">Oracle</h3>
+                <p className="text-xs text-zinc-500">AI assistant</p>
+                <span className="absolute top-2 right-2 text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400">Free</span>
+              </div>
+            </Link>
+
+            {/* Witness - AI Observations (Free) */}
+            <Link
+              href="/builder"
+              className="group relative rounded-lg border border-zinc-800 bg-zinc-900/50 p-4 hover:border-emerald-500/40 hover:bg-zinc-900 transition-all"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-lg pointer-events-none" />
+              <div className="relative">
+                <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-3">
+                  <Eye className="w-5 h-5 text-emerald-400" />
+                </div>
+                <h3 className="text-sm font-medium text-white mb-1">Witness</h3>
+                <p className="text-xs text-zinc-500">AI observations</p>
+                <span className="absolute top-2 right-2 text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400">Free</span>
+              </div>
+            </Link>
+
+            {/* Deploy (Architect+) */}
+            <div className={`group relative rounded-lg border p-4 transition-all ${
+              tier === 'architect' || tier === 'visionary' || tier === 'singularity'
+                ? 'border-zinc-800 bg-zinc-900/50 hover:border-emerald-500/40 hover:bg-zinc-900 cursor-pointer'
+                : 'border-zinc-800/50 bg-zinc-900/30 cursor-not-allowed'
+            }`}>
+              {(tier === 'architect' || tier === 'visionary' || tier === 'singularity') ? (
+                <Link href="/builder" className="block">
+                  <div className="w-10 h-10 rounded-lg bg-teal-500/10 border border-teal-500/20 flex items-center justify-center mb-3">
+                    <Rocket className="w-5 h-5 text-teal-400" />
+                  </div>
+                  <h3 className="text-sm font-medium text-white mb-1">Deploy</h3>
+                  <p className="text-xs text-zinc-500">Ship to web</p>
+                  <span className="absolute top-2 right-2 text-[10px] px-1.5 py-0.5 rounded bg-teal-500/10 text-teal-400">
+                    <Star className="w-2.5 h-2.5 inline mr-0.5" />Architect
+                  </span>
+                </Link>
+              ) : (
+                <>
+                  <div className="w-10 h-10 rounded-lg bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-center mb-3">
+                    <Rocket className="w-5 h-5 text-zinc-600" />
+                  </div>
+                  <h3 className="text-sm font-medium text-zinc-500 mb-1">Deploy</h3>
+                  <p className="text-xs text-zinc-600">Ship to web</p>
+                  <span className="absolute top-2 right-2">
+                    <Lock className="w-3.5 h-3.5 text-zinc-600" />
+                  </span>
+                </>
+              )}
+            </div>
+
+            {/* Auditor (Visionary+) */}
+            <div className={`group relative rounded-lg border p-4 transition-all ${
+              tier === 'visionary' || tier === 'singularity'
+                ? 'border-zinc-800 bg-zinc-900/50 hover:border-violet-500/40 hover:bg-zinc-900 cursor-pointer'
+                : 'border-zinc-800/50 bg-zinc-900/30 cursor-not-allowed'
+            }`}>
+              {(tier === 'visionary' || tier === 'singularity') ? (
+                <Link href="/builder" className="block">
+                  <div className="w-10 h-10 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center mb-3">
+                    <Shield className="w-5 h-5 text-violet-400" />
+                  </div>
+                  <h3 className="text-sm font-medium text-white mb-1">Auditor</h3>
+                  <p className="text-xs text-zinc-500">Quality check</p>
+                  <span className="absolute top-2 right-2 text-[10px] px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-400">
+                    <Zap className="w-2.5 h-2.5 inline mr-0.5" />Visionary
+                  </span>
+                </Link>
+              ) : (
+                <>
+                  <div className="w-10 h-10 rounded-lg bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-center mb-3">
+                    <Shield className="w-5 h-5 text-zinc-600" />
+                  </div>
+                  <h3 className="text-sm font-medium text-zinc-500 mb-1">Auditor</h3>
+                  <p className="text-xs text-zinc-600">Quality check</p>
+                  <span className="absolute top-2 right-2">
+                    <Lock className="w-3.5 h-3.5 text-zinc-600" />
+                  </span>
+                </>
+              )}
+            </div>
+
+            {/* Replicator (Singularity only) */}
+            <div className={`group relative rounded-lg border p-4 transition-all ${
+              tier === 'singularity'
+                ? 'border-zinc-800 bg-zinc-900/50 hover:border-amber-500/40 hover:bg-zinc-900 cursor-pointer'
+                : 'border-zinc-800/50 bg-zinc-900/30 cursor-not-allowed'
+            }`}>
+              {tier === 'singularity' ? (
+                <Link href="/builder" className="block">
+                  <div className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-3">
+                    <Globe className="w-5 h-5 text-amber-400" />
+                  </div>
+                  <h3 className="text-sm font-medium text-white mb-1">Replicator</h3>
+                  <p className="text-xs text-zinc-500">Clone any site</p>
+                  <span className="absolute top-2 right-2 text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400">
+                    <Crown className="w-2.5 h-2.5 inline mr-0.5" />Singularity
+                  </span>
+                </Link>
+              ) : (
+                <>
+                  <div className="w-10 h-10 rounded-lg bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-center mb-3">
+                    <Globe className="w-5 h-5 text-zinc-600" />
+                  </div>
+                  <h3 className="text-sm font-medium text-zinc-500 mb-1">Replicator</h3>
+                  <p className="text-xs text-zinc-600">Clone any site</p>
+                  <span className="absolute top-2 right-2">
+                    <Lock className="w-3.5 h-3.5 text-zinc-600" />
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+        </motion.section>
       </div>
 
       {/* Upgrade Modal */}
