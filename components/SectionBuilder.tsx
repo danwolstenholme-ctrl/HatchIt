@@ -41,6 +41,7 @@ import {
   AlertCircle
 } from 'lucide-react'
 import GeneratingModal from './builder/GeneratingModal'
+import GuestPromptModal from './GuestPromptModal'
 
 // =============================================================================
 // STREAMING CODE EFFECT - Fake code animation for loading state
@@ -1884,11 +1885,20 @@ export default function SectionBuilder({
   // Once we have code, NEVER show generating - let the preview render even if iframe is loading
   const showGenerating = stage === 'generating' && !generatedCode
   
-  // Show inline prompt input for demo users OR auth users with no prompt yet
-  const showInlinePromptInput = isDemo ? showGuestPromptModal : (isInitialState && !effectivePrompt)
+  // For demo mode: show GuestPromptModal (fixed overlay) instead of inline input
+  // For auth users: show inline input when in initial state with no prompt
+  const showInlinePromptInput = !isDemo && isInitialState && !effectivePrompt
   
   return (
     <div className="relative w-full flex-1 min-h-0 bg-zinc-950 overflow-hidden flex flex-col">
+      
+      {/* Guest Prompt Modal - cinematic prompt entry for demo users */}
+      {isDemo && (
+        <GuestPromptModal 
+          isOpen={showGuestPromptModal} 
+          onSubmit={handleGuestPromptSubmit} 
+        />
+      )}
       
       {/* Generating Modal - keeps users engaged during the wait */}
         <GeneratingModal 
