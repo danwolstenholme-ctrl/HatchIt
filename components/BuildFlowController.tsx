@@ -310,7 +310,19 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       sectionsCount: payload.sections.length,
       sectionsWithCode: payload.sections.filter(s => s.code && s.code.length > 0).length,
       sectionIds: payload.sections.map(s => s.sectionId),
+      firstSectionCode: payload.sections[0]?.code?.substring(0, 100) || 'NO CODE',
     })
+    
+    // Validation before save
+    if (!payload.templateId) {
+      console.error('[GuestHandoff] MISSING templateId!')
+    }
+    if (!payload.projectName) {
+      console.error('[GuestHandoff] MISSING projectName!')
+    }
+    if (!payload.sections?.length) {
+      console.error('[GuestHandoff] MISSING sections!')
+    }
     
     try {
       localStorage.setItem('hatch_guest_handoff', JSON.stringify(payload))

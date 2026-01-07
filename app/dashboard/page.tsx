@@ -83,6 +83,7 @@ export default function PortalPage() {
     const bootstrap = async () => {
       try {
         const guestHandoff = typeof window !== 'undefined' ? localStorage.getItem('hatch_guest_handoff') : null
+        console.log('[Portal] Checking for guest handoff:', { hasHandoff: !!guestHandoff, dataLength: guestHandoff?.length || 0 })
 
         if (guestHandoff) {
           setIsMigrating(true)
@@ -92,6 +93,7 @@ export default function PortalPage() {
               projectName: payload?.projectName,
               templateId: payload?.templateId,
               sections: payload?.sections?.length,
+              sectionsWithCode: payload?.sections?.filter((s: any) => s.code && s.code.length > 0).length || 0,
             })
             const res = await fetch('/api/project/import', {
               method: 'POST',
@@ -99,14 +101,18 @@ export default function PortalPage() {
               body: guestHandoff,
             })
 
+            const responseData = await res.json()
+            console.log('[Portal] Import response:', { status: res.status, ok: res.ok, data: responseData })
+
             if (res.ok) {
               localStorage.removeItem('hatch_guest_handoff')
               localStorage.removeItem('hatch_last_prompt')
+              console.log('[Portal] Import succeeded, cleared localStorage')
             } else if (res.status === 401) {
               router.replace('/sign-in?redirect_url=/dashboard')
               return
             } else {
-              console.error('[Portal] Import failed', await res.text())
+              console.error('[Portal] Import failed', responseData)
             }
           } catch (error) {
             console.error('[Portal] Import error', error)
@@ -116,6 +122,7 @@ export default function PortalPage() {
         }
 
         const res = await fetch('/api/project/list')
+        console.log('[Portal] Project list fetch:', { status: res.status })
         if (res.status === 401) {
           router.replace('/sign-in?redirect_url=/dashboard')
           return
@@ -123,6 +130,7 @@ export default function PortalPage() {
 
         if (res.ok) {
           const data = await res.json()
+          console.log('[Portal] Projects loaded:', { count: data.projects?.length || 0, projects: data.projects?.map((p: any) => ({ id: p.id, name: p.name })) })
           if (!cancelled) setProjects(data.projects || [])
         }
       } catch (error) {
