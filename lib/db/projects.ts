@@ -1,4 +1,5 @@
 import { supabaseAdmin, DbProject, DbBrandConfig } from '../supabase'
+import { randomUUID } from 'crypto'
 
 // =============================================================================
 // PROJECT DATABASE OPERATIONS
@@ -21,9 +22,10 @@ function generateSlug(name: string): string {
 
 /**
  * Create a new project with optional brand config
+ * Note: userId here should be the Clerk ID (text), not the internal UUID
  */
 export async function createProject(
-  userId: string,
+  clerkId: string,
   name: string,
   templateId: string,
   brandConfig?: DbBrandConfig | null
@@ -34,11 +36,13 @@ export async function createProject(
   }
 
   const slug = generateSlug(name)
+  const id = `proj_${randomUUID().split('-')[0]}`
 
   const { data, error } = await supabaseAdmin
     .from('projects')
     .insert({
-      user_id: userId,
+      id,
+      user_id: clerkId,
       name,
       slug,
       template_id: templateId,
@@ -82,15 +86,15 @@ export async function updateProjectBrandConfig(
 }
 
 /**
- * Get all projects for a user
+ * Get all projects for a user by Clerk ID
  */
-export async function getProjectsByUserId(userId: string): Promise<DbProject[]> {
+export async function getProjectsByUserId(clerkId: string): Promise<DbProject[]> {
   if (!supabaseAdmin) return []
 
   const { data, error } = await supabaseAdmin
     .from('projects')
     .select('*')
-    .eq('user_id', userId)
+    .eq('user_id', clerkId)
     .order('created_at', { ascending: false })
 
   if (error) {

@@ -1,4 +1,5 @@
 import { supabaseAdmin, DbUser } from '../supabase'
+import { randomUUID } from 'crypto'
 
 // =============================================================================
 // USER DATABASE OPERATIONS
@@ -13,37 +14,52 @@ export async function getOrCreateUser(
   email?: string | null
 ): Promise<DbUser | null> {
   if (!supabaseAdmin) {
-    console.error('Supabase admin client not configured')
+    console.error('[getOrCreateUser] Supabase admin client not configured')
     return null
   }
 
-  // Use upsert to atomically create or get user (race-condition safe)
-  const { data: user, error } = await supabaseAdmin
+  console.log('[getOrCreateUser] Attempting upsert for clerkId:', clerkId)
+  
+  // First check if user exists
+  const { data: existingUser } = await supabaseAdmin
     .from('users')
-    .upsert(
-      { clerk_id: clerkId, email: email || null },
-      { onConflict: 'clerk_id', ignoreDuplicates: false }
-    )
+    .select('*')
+    .eq('clerk_id', clerkId)
+    .single()
+
+  if (existingUser) {
+    console.log('[getOrCreateUser] Found existing user:', existingUser.id)
+    return existingUser as DbUser
+  }
+
+  // User doesn't exist, create new one with explicit ID
+  const newId = randomUUID()
+  console.log('[getOrCreateUser] Creating new user with id:', newId)
+  
+  const { data: newUser, error: insertError } = await supabaseAdmin
+    .from('users')
+    .insert({ id: newId, clerk_id: clerkId, email: email || null })
     .select()
     .single()
 
-  if (error) {
-    // If upsert failed, try a simple select (user might already exist)
-    const { data: existingUser, error: selectError } = await supabaseAdmin
+  if (insertError) {
+    console.error('[getOrCreateUser] Insert error:', insertError)
+    // Race condition - another request might have created it, try select again
+    const { data: raceUser } = await supabaseAdmin
       .from('users')
       .select('*')
       .eq('clerk_id', clerkId)
       .single()
-
-    if (existingUser && !selectError) {
-      return existingUser as DbUser
+    
+    if (raceUser) {
+      console.log('[getOrCreateUser] Found user after race condition:', raceUser.id)
+      return raceUser as DbUser
     }
-
-    console.error('Error in getOrCreateUser:', error)
     return null
   }
 
-  return user as DbUser
+  console.log('[getOrCreateUser] Created new user:', newUser?.id)
+  return newUser as DbUser
 }
 
 /**

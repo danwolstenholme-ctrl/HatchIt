@@ -4,6 +4,8 @@ import { useEffect } from 'react'
 import { useUser, useAuth } from '@clerk/nextjs'
 import { createClerkSupabaseClient } from '@/lib/supabase'
 
+const SUPABASE_JWT_TEMPLATE = process.env.NEXT_PUBLIC_CLERK_SUPABASE_TEMPLATE
+
 export default function UserSync() {
   const { user, isLoaded } = useUser()
   const { getToken } = useAuth()
@@ -13,9 +15,21 @@ export default function UserSync() {
       if (!isLoaded || !user) return
 
       try {
-        // Note: Requires "supabase" JWT template in Clerk dashboard
-        // If template doesn't exist, silently skip sync
-        const token = await getToken({ template: 'supabase' }).catch(() => null)
+        const templateName = SUPABASE_JWT_TEMPLATE
+        if (!templateName) {
+          if (process.env.NODE_ENV === 'development') {
+            console.debug('[UserSync] Skipping sync - NEXT_PUBLIC_CLERK_SUPABASE_TEMPLATE not set')
+          }
+          return
+        }
+
+        const token = await getToken({ template: templateName }).catch((error) => {
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('[UserSync] Failed to fetch Clerk JWT for Supabase sync. Ensure the template exists or set NEXT_PUBLIC_CLERK_SUPABASE_TEMPLATE.', error)
+          }
+          return null
+        })
+
         if (!token) return
 
         const supabase = createClerkSupabaseClient(token)

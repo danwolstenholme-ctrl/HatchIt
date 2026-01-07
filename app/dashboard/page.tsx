@@ -282,10 +282,10 @@ export default function DashboardPage() {
                 </motion.button>
                 
                 <Link
-                  href="/how-it-works"
+                  href="/features"
                   className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-zinc-800 bg-zinc-900/50 text-zinc-300 text-sm font-medium hover:bg-zinc-800/50 hover:border-zinc-700 transition-colors"
                 >
-                  See how it works
+                  Explore Features
                 </Link>
               </div>
 

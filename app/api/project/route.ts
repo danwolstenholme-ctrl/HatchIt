@@ -29,9 +29,12 @@ export async function POST(request: NextRequest) {
     const email = user?.emailAddresses?.[0]?.emailAddress
 
     // Get or create our user record
+    console.log('[API/project] Getting or creating user for clerkId:', clerkId)
     const dbUser = await getOrCreateUser(clerkId, email)
+    console.log('[API/project] dbUser result:', JSON.stringify(dbUser, null, 2))
+    console.log('[API/project] Using user_id for project:', dbUser?.id)
     if (!dbUser) {
-      return NextResponse.json({ error: 'Failed to create user' }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to create user', detail: 'getOrCreateUser returned null' }, { status: 500 })
     }
 
     // Server-side project limit check
@@ -39,7 +42,7 @@ export async function POST(request: NextRequest) {
     const tier = accountSubscription?.tier || 'free'
     const limit = getProjectLimit(tier)
     
-    const existingProjects = await getProjectsByUserId(dbUser.id)
+    const existingProjects = await getProjectsByUserId(clerkId)
     if (existingProjects.length >= limit) {
       return NextResponse.json(
         { error: 'Project limit reached', limit, current: existingProjects.length },
@@ -63,8 +66,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid template' }, { status: 400 })
     }
 
-    // Create project with brand config
-    const project = await createProject(dbUser.id, name, templateId, brand || null)
+    // Create project with brand config (use clerkId, not dbUser.id)
+    const project = await createProject(clerkId, name, templateId, brand || null)
     if (!project) {
       return NextResponse.json({ error: 'Failed to create project' }, { status: 500 })
     }
@@ -80,7 +83,8 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error creating project:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json({ error: 'Internal server error', detail: message }, { status: 500 })
   }
 }
 
