@@ -5,16 +5,15 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { UserButton } from '@clerk/nextjs'
-import { motion } from 'framer-motion'
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-200 selection:bg-emerald-500/30">
-      {/* Ambient Background */}
-      <div className="fixed inset-0 bg-[linear-gradient(to_right,#27272a_1px,transparent_1px),linear-gradient(to_bottom,#27272a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20 pointer-events-none" />
-      <div className="fixed inset-0 pointer-events-none z-50 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDIiLz4KPC9zdmc+')] opacity-20 mix-blend-overlay" />
+      {/* Ambient Background - softer emerald glow */}
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.06),transparent_50%)] pointer-events-none" />
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(16,185,129,0.03),transparent_60%)] pointer-events-none" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
         {/* Top Navigation Bar */}
@@ -30,13 +29,13 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               />
             </Link>
             
-            <nav className="flex items-center gap-0.5 sm:gap-1 bg-white/5 p-0.5 sm:p-1 rounded-lg border border-white/10">
+            <nav className="flex items-center gap-0.5 sm:gap-1 bg-zinc-900/50 p-0.5 sm:p-1 rounded-lg border border-zinc-800/50">
               <Link 
                 href="/dashboard"
                 className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all ${
                   pathname === '/dashboard' 
-                    ? 'text-white bg-white/10 shadow-sm' 
-                    : 'text-zinc-500 hover:text-zinc-300'
+                    ? 'text-white bg-zinc-800 shadow-sm' 
+                    : 'text-zinc-400 hover:text-zinc-200'
                 }`}
               >
                 Dashboard
@@ -45,8 +44,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 href="/dashboard/billing"
                 className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all ${
                   pathname === '/dashboard/billing' 
-                    ? 'text-white bg-white/10 shadow-sm' 
-                    : 'text-zinc-500 hover:text-zinc-300'
+                    ? 'text-white bg-zinc-800 shadow-sm' 
+                    : 'text-zinc-400 hover:text-zinc-200'
                 }`}
               >
                 Billing

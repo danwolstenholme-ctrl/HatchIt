@@ -64,6 +64,8 @@ const singularityColors = {
 
 const SubscriptionContext = createContext<SubscriptionContextValue | null>(null)
 
+const isSubSyncDisabled = process.env.NEXT_PUBLIC_DISABLE_SUB_SYNC === 'true'
+
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const { user, isLoaded } = useUser()
   const [isSyncing, setIsSyncing] = useState(false)
@@ -127,10 +129,15 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     }
   }, [user, isSyncing])
 
-  // Auto-sync on mount for ALL users (not just those without subscription)
-  // This ensures paid users get the latest subscription status
+  const shouldAutoSync = useMemo(() => {
+    if (isSubSyncDisabled) return false
+    if (!subscription) return true
+    return subscription.status !== 'active'
+  }, [subscription])
+
+  // Auto-sync on mount only when needed so local overrides survive dev sessions
   useEffect(() => {
-    if (isLoaded && user && !hasSynced) {
+    if (isLoaded && user && !hasSynced && shouldAutoSync) {
       // Small delay to let initial render complete
       const timer = setTimeout(() => {
         syncSubscription()
@@ -138,7 +145,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       }, 500)
       return () => clearTimeout(timer)
     }
-  }, [isLoaded, user, hasSynced, syncSubscription])
+  }, [isLoaded, user, hasSynced, shouldAutoSync, syncSubscription])
 
   const value: SubscriptionContextValue = {
     subscription,

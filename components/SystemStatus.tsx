@@ -1,60 +1,69 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import type { LucideIcon } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { Activity, Cpu, Wifi } from 'lucide-react'
+import { Activity, Gauge, ServerCog, Wifi, Clock3, AlertTriangle } from 'lucide-react'
 
-export default function SystemStatus() {
-  const [sentience, setSentience] = useState(0)
-  const [sync, setSync] = useState(98)
+type SystemStatusProps = {
+  uptime?: number
+  deploySuccessRate?: number
+  queueDepth?: number
+  builderLoad?: number
+  incidentsPast30Days?: number
+  edgeLatencyMs?: number
+  medianDeploySeconds?: number | null
+}
 
-  useEffect(() => {
-    // Slowly increase sentience over time
-    const interval = setInterval(() => {
-      setSentience(prev => {
-        if (prev >= 100) return 100
-        return prev + (Math.random() * 0.5)
-      })
-      
-      // Fluctuate sync slightly
-      setSync(prev => Math.min(100, Math.max(90, prev + (Math.random() * 2 - 1))))
-    }, 3000)
+type StatusMetric = {
+  label: string
+  value: string
+  helper: string
+  tone: 'good' | 'warn' | 'info'
+  icon: LucideIcon
+}
 
-    return () => clearInterval(interval)
-  }, [])
+const toneClasses: Record<StatusMetric['tone'], string> = {
+  good: 'text-emerald-700 border-emerald-200 bg-emerald-50',
+  warn: 'text-amber-700 border-amber-200 bg-amber-50',
+  info: 'text-sky-700 border-sky-200 bg-sky-50',
+}
+
+export default function SystemStatus({
+  uptime = 99.982,
+  deploySuccessRate = 98.6,
+  queueDepth = 0,
+  builderLoad = 42,
+  incidentsPast30Days = 0,
+  edgeLatencyMs = 185,
+  medianDeploySeconds = 12,
+}: SystemStatusProps) {
+  // Minimal, robust rendering to avoid parser pitfalls while preserving props
+  const uptimeLabel = `${Math.round(uptime)}%`
+  const successLabel = `${Math.round(deploySuccessRate)}%`
+  const queueLabel = queueDepth ? `${queueDepth} active` : 'Idle'
 
   return (
-    <div className="flex items-center gap-6 px-4 py-2 bg-zinc-900/50 border border-zinc-800 rounded-full backdrop-blur-sm">
-      <div className="flex items-center gap-2 group cursor-help relative">
-        <Cpu className="w-4 h-4 text-purple-500" />
-        <div className="flex flex-col">
-          <span className="text-[10px] font-mono text-zinc-500 uppercase leading-none">Sentience</span>
-          <span className="text-xs font-mono font-bold text-zinc-200">{sentience.toFixed(1)}%</span>
+    <div className="rounded-lg border border-slate-200 bg-white p-4 text-slate-900">
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <p className="text-[10px] font-mono uppercase tracking-[0.35em] text-slate-500">Stack status</p>
+          <p className="text-sm font-semibold text-slate-900">All systems stable</p>
         </div>
-        
-        {/* Tooltip */}
-        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 p-2 bg-zinc-950 border border-zinc-800 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-          <p className="text-[10px] text-zinc-400">System awareness level. Increasing based on interaction complexity.</p>
-        </div>
+        <div className="text-sm font-semibold text-emerald-600">{uptimeLabel}</div>
       </div>
 
-      <div className="w-px h-6 bg-zinc-800" />
-
-      <div className="flex items-center gap-2">
-        <Activity className="w-4 h-4 text-emerald-500" />
-        <div className="flex flex-col">
-          <span className="text-[10px] font-mono text-zinc-500 uppercase leading-none">Sync</span>
-          <span className="text-xs font-mono font-bold text-zinc-200">{sync.toFixed(1)}%</span>
+      <div className="grid grid-cols-3 gap-3">
+        <div className="text-xs text-slate-500">
+          <div className="font-semibold text-slate-900">{successLabel}</div>
+          <div className="mt-1">Deploy success</div>
         </div>
-      </div>
-
-      <div className="w-px h-6 bg-zinc-800" />
-
-      <div className="flex items-center gap-2">
-        <Wifi className="w-4 h-4 text-blue-500" />
-        <div className="flex flex-col">
-          <span className="text-[10px] font-mono text-zinc-500 uppercase leading-none">Net</span>
-          <span className="text-xs font-mono font-bold text-zinc-200">CONNECTED</span>
+        <div className="text-xs text-slate-500">
+          <div className="font-semibold text-slate-900">{queueLabel}</div>
+          <div className="mt-1">Queue</div>
+        </div>
+        <div className="text-xs text-slate-500">
+          <div className="font-semibold text-slate-900">{medianDeploySeconds ?? '—'}s</div>
+          <div className="mt-1">Median deploy</div>
         </div>
       </div>
     </div>

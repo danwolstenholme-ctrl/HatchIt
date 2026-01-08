@@ -32,7 +32,6 @@ export default function DashboardPage() {
 
   const accountSubscription = user?.publicMetadata?.accountSubscription as { tier?: string } | undefined
   const tier = accountSubscription?.tier || 'free'
-  const isFreeTier = tier === 'free' || tier === 'trial'
   const canDeploy = tier === 'architect' || tier === 'visionary' || tier === 'singularity'
 
   const tierConfig = useMemo<TierConfig>(() => {
@@ -74,7 +73,7 @@ export default function DashboardPage() {
 
         if (res.ok) {
           const data = await res.json()
-          console.log('[Dashboard] Projects loaded:', { count: data.projects?.length || 0, projects: data.projects?.map((p: any) => ({ id: p.id, name: p.name })) })
+          console.log('[Dashboard] Projects loaded:', { count: data.projects?.length || 0, projects: data.projects?.map((p: DbProject) => ({ id: p.id, name: p.name })) })
           if (!cancelled) setProjects(data.projects || [])
         }
       } catch (error) {
@@ -310,7 +309,7 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center gap-4">
         <Pip size={60} animate={true} float={true} glow={true} />
-        <p className="text-zinc-400 text-sm">
+        <p className="text-zinc-500 text-sm">
           Loading your dashboard...
         </p>
       </div>
@@ -318,8 +317,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+    <div className="space-y-6">
         
         {/* Error Banner */}
         <AnimatePresence>
@@ -341,19 +339,19 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45 }}
-          className="relative overflow-hidden rounded-3xl border border-zinc-900/60 bg-gradient-to-br from-zinc-950 via-zinc-950/70 to-zinc-900/30 p-6 sm:p-8"
+          className="relative overflow-hidden rounded-3xl border border-zinc-800/60 bg-zinc-900/60 backdrop-blur-xl p-6 sm:p-8 shadow-2xl shadow-black/40"
         >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.18),transparent_55%)] opacity-80" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(79,70,229,0.1),transparent_60%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.05),transparent_55%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(16,185,129,0.04),transparent_60%)]" />
           <div className="relative flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-2xl space-y-5">
-              <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/5 px-3 py-1 text-xs font-medium uppercase tracking-[0.3em] text-emerald-200/90">
+              <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium uppercase tracking-[0.3em] text-emerald-400">
                 {tierConfig.name} plan
                 <span className="h-1 w-1 rounded-full bg-emerald-400" />
                 {projectSlotCopy}
               </span>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-semibold text-white">
+                <h1 className="text-2xl sm:text-3xl font-semibold text-zinc-100">
                   Hey {firstName}, your build stack is online.
                 </h1>
                 <p className="mt-2 text-sm text-zinc-400 sm:text-base">
@@ -392,25 +390,25 @@ export default function DashboardPage() {
                 )}
               </div>
             </div>
-            <div className="w-full max-w-sm space-y-4 rounded-2xl border border-zinc-800/70 bg-black/30 p-5 backdrop-blur">
+            <div className="w-full max-w-sm space-y-4 rounded-2xl border border-zinc-800/60 bg-zinc-800/40 backdrop-blur-xl p-5 shadow-xl shadow-black/30">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Status</p>
-                  <p className="text-sm font-medium text-white">System health</p>
+                  <p className="text-sm font-medium text-zinc-200">System health</p>
                 </div>
-                <span className="text-xs px-2 py-1 rounded-full border border-zinc-800 text-zinc-300">
+                <span className="text-xs px-2 py-1 rounded-full border border-zinc-700 bg-zinc-800/60 text-zinc-300">
                   {tierConfig.name}
                 </span>
               </div>
               <SystemStatus />
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="rounded-xl border border-zinc-800/60 bg-zinc-950/30 p-3">
+                <div className="rounded-xl border border-zinc-700/50 bg-zinc-800/50 p-3">
                   <p className="text-xs text-zinc-500">Last login</p>
-                  <p className="mt-1 text-sm text-white">{lastLogin}</p>
+                  <p className="mt-1 text-sm font-semibold text-zinc-200">{lastLogin}</p>
                 </div>
-                <div className="rounded-xl border border-zinc-800/60 bg-zinc-950/30 p-3">
+                <div className="rounded-xl border border-zinc-700/50 bg-zinc-800/50 p-3">
                   <p className="text-xs text-zinc-500">Member since</p>
-                  <p className="mt-1 text-sm text-white">{memberSince}</p>
+                  <p className="mt-1 text-sm font-semibold text-zinc-200">{memberSince}</p>
                 </div>
               </div>
             </div>
@@ -429,16 +427,16 @@ export default function DashboardPage() {
             return (
               <div
                 key={stat.label}
-                className="rounded-2xl border border-zinc-900/60 bg-zinc-950/40 p-5"
+                className="rounded-2xl border border-zinc-800/60 bg-zinc-900/50 backdrop-blur-xl p-5 shadow-lg shadow-black/20"
               >
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs uppercase tracking-[0.25em] text-zinc-500">{stat.label}</p>
-                    <p className="mt-2 text-2xl font-semibold text-white">{stat.value}</p>
+                    <p className="mt-2 text-2xl font-semibold text-zinc-100">{stat.value}</p>
                   </div>
                   <Icon className="h-5 w-5 text-emerald-400" />
                 </div>
-                <p className="mt-3 text-sm text-zinc-500">{stat.description}</p>
+                <p className="mt-3 text-sm text-zinc-400">{stat.description}</p>
               </div>
             )
           })}
@@ -451,41 +449,41 @@ export default function DashboardPage() {
           transition={{ delay: 0.1 }}
           className="grid gap-3 lg:grid-cols-3"
         >
-          <div className="rounded-2xl border border-zinc-900/60 bg-zinc-950/40 p-5 space-y-4">
+          <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900/50 backdrop-blur-xl p-5 space-y-4 shadow-lg shadow-black/20">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">Account</p>
-                <h3 className="text-lg font-semibold text-white">{firstName}'s workspace</h3>
+                <h3 className="text-lg font-semibold text-zinc-100">{firstName}&apos;s workspace</h3>
               </div>
-              <span className="text-xs px-2 py-1 rounded-full border border-zinc-800 text-zinc-300">
+              <span className="text-xs px-2 py-1 rounded-full border border-zinc-700 bg-zinc-800/60 text-zinc-300">
                 {tierConfig.name}
               </span>
             </div>
             <dl className="space-y-3 text-sm">
               <div className="flex items-center justify-between gap-3">
                 <dt className="text-zinc-500">Email</dt>
-                <dd className="text-white truncate">{primaryEmail}</dd>
+                <dd className="text-zinc-200 truncate">{primaryEmail}</dd>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <dt className="text-zinc-500">Last login</dt>
-                <dd className="text-white">{lastLogin}</dd>
+                <dd className="text-zinc-200">{lastLogin}</dd>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <dt className="text-zinc-500">Member since</dt>
-                <dd className="text-white">{memberSince}</dd>
+                <dd className="text-zinc-200">{memberSince}</dd>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <dt className="text-zinc-500">Project slots</dt>
-                <dd className="text-white">{projectSlotCopy}</dd>
+                <dd className="text-zinc-200">{projectSlotCopy}</dd>
               </div>
             </dl>
           </div>
 
-          <div className="rounded-2xl border border-zinc-900/60 bg-zinc-950/40 p-5 space-y-3">
+          <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900/50 backdrop-blur-xl p-5 space-y-3 shadow-lg shadow-black/20">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">Usage</p>
-                <h3 className="text-lg font-semibold text-white">Live limits</h3>
+                <h3 className="text-lg font-semibold text-zinc-100">Live limits</h3>
               </div>
               <button
                 type="button"
@@ -503,12 +501,12 @@ export default function DashboardPage() {
               return (
                 <div
                   key={metric.label}
-                  className="rounded-2xl border border-zinc-900/80 bg-black/20 p-4"
+                  className="rounded-2xl border border-zinc-700/50 bg-zinc-800/40 p-4"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="text-xs text-zinc-500">{metric.label}</p>
-                      <p className="mt-1 text-lg font-semibold text-white">
+                      <p className="mt-1 text-lg font-semibold text-zinc-100">
                         {metric.limit ? `${metric.value}/${metric.limit}` : metric.value}
                       </p>
                       <p className="text-xs text-zinc-500">{metric.limitLabel}</p>
@@ -516,11 +514,8 @@ export default function DashboardPage() {
                     <Icon className="h-5 w-5 text-emerald-400" />
                   </div>
                   {metric.limit ? (
-                    <div className="mt-3 h-1.5 rounded-full bg-zinc-800">
-                      <div
-                        className="h-full rounded-full bg-emerald-500"
-                        style={{ width: `${progress}%` }}
-                      />
+                    <div className="mt-3 h-1.5 rounded-full bg-zinc-700">
+                      <div className="h-full rounded-full bg-emerald-500" style={{ width: `${progress}%` }} />
                     </div>
                   ) : (
                     <p className="mt-3 text-xs text-zinc-500">{metric.hint}</p>
@@ -533,11 +528,11 @@ export default function DashboardPage() {
             })}
           </div>
 
-          <div className="rounded-2xl border border-zinc-900/60 bg-zinc-950/40 p-5">
+          <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900/50 backdrop-blur-xl p-5 shadow-lg shadow-black/20">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">Health</p>
-                <h3 className="text-lg font-semibold text-white">Launch readiness</h3>
+                <h3 className="text-lg font-semibold text-zinc-100">Launch readiness</h3>
               </div>
               <Shield className="h-4 w-4 text-emerald-400" />
             </div>
@@ -547,16 +542,16 @@ export default function DashboardPage() {
                 return (
                   <div
                     key={item.label}
-                    className="flex items-center justify-between rounded-2xl border border-zinc-900/70 bg-black/30 px-4 py-3"
+                    className="flex items-center justify-between rounded-2xl border border-zinc-700/50 bg-zinc-800/40 px-4 py-3"
                   >
                     <div className="flex items-center gap-3">
                       <Icon className="h-4 w-4 text-emerald-400" />
                       <div>
-                        <p className="text-sm font-medium text-white">{item.label}</p>
+                        <p className="text-sm font-medium text-zinc-200">{item.label}</p>
                         <p className="text-xs text-zinc-500">{item.status}</p>
                       </div>
                     </div>
-                    <span className="text-lg font-semibold text-white">{item.value}</span>
+                    <span className="text-lg font-semibold text-zinc-100">{item.value}</span>
                   </div>
                 )
               })}
@@ -569,13 +564,13 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.12 }}
-          className="rounded-3xl border border-zinc-900/60 bg-zinc-950/30 p-5 space-y-5"
+          className="rounded-3xl border border-zinc-800/60 bg-zinc-900/50 backdrop-blur-xl p-5 space-y-5 shadow-lg shadow-black/20"
         >
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">Projects</p>
-              <h2 className="text-xl font-semibold text-white">Active builds</h2>
-              <p className="text-sm text-zinc-500">{hasProjects ? 'Pick up where you left off or branch a new concept.' : 'No drafts yet. Create your first build to unlock deploys.'}</p>
+              <h2 className="text-xl font-semibold text-zinc-100">Active builds</h2>
+              <p className="text-sm text-zinc-400">{hasProjects ? 'Pick up where you left off or branch a new concept.' : 'No drafts yet. Create your first build to unlock deploys.'}</p>
             </div>
             <div className="flex flex-wrap gap-2">
               <Button
@@ -609,21 +604,21 @@ export default function DashboardPage() {
                     placeholder="Search projects..."
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
-                    className="w-full rounded-lg border border-zinc-800/80 bg-black/30 pl-8 pr-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-emerald-500/40 focus:bg-zinc-950 focus:outline-none transition-colors"
+                    className="w-full rounded-lg border border-zinc-700/50 bg-zinc-800/50 pl-8 pr-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 focus:border-emerald-500/50 focus:outline-none transition-colors"
                   />
                 </div>
-                <div className="flex items-center gap-0.5 rounded-lg border border-zinc-800/80 bg-black/30 p-0.5">
+                <div className="flex items-center gap-0.5 rounded-lg border border-zinc-700/50 bg-zinc-800/50 p-0.5">
                   <button
                     type="button"
                     onClick={() => setViewMode('grid')}
-                    className={`rounded-md p-1.5 transition-all ${viewMode === 'grid' ? 'bg-zinc-900 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
+                    className={`rounded-md p-1.5 transition-all ${viewMode === 'grid' ? 'bg-zinc-700 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
                   >
                     <LayoutGrid className="h-3.5 w-3.5" />
                   </button>
                   <button
                     type="button"
                     onClick={() => setViewMode('list')}
-                    className={`rounded-md p-1.5 transition-all ${viewMode === 'list' ? 'bg-zinc-900 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
+                    className={`rounded-md p-1.5 transition-all ${viewMode === 'list' ? 'bg-zinc-700 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
                   >
                     <List className="h-3.5 w-3.5" />
                   </button>
@@ -631,8 +626,8 @@ export default function DashboardPage() {
               </div>
 
               {filteredProjects.length === 0 && searchQuery && (
-                <div className="rounded-2xl border border-zinc-900/60 bg-black/30 px-4 py-8 text-center">
-                  <p className="text-zinc-500 text-sm">No projects match "{searchQuery}"</p>
+                <div className="rounded-2xl border border-zinc-700/50 bg-zinc-800/40 px-4 py-8 text-center">
+                  <p className="text-zinc-400 text-sm">No projects match &quot;{searchQuery}&quot;</p>
                 </div>
               )}
 
@@ -647,13 +642,13 @@ export default function DashboardPage() {
                     >
                       <Link
                         href={`/builder?project=${project.id}`}
-                        className="group relative block h-full overflow-hidden rounded-2xl border border-zinc-900/60 bg-zinc-950/30 p-4 transition-all duration-150 hover:border-emerald-500/40 hover:bg-zinc-950"
+                        className="group relative block h-full overflow-hidden rounded-2xl border border-zinc-700/50 bg-zinc-800/40 p-4 transition-all duration-150 hover:border-emerald-500/50 hover:bg-zinc-800/60"
                       >
-                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                         <div className="relative">
                           <div className="flex items-start justify-between">
                             <div className="flex-1 min-w-0">
-                              <h3 className="font-medium text-white truncate group-hover:text-emerald-400 transition-colors">
+                              <h3 className="font-medium text-zinc-100 truncate group-hover:text-emerald-400 transition-colors">
                                 {project.name || 'Untitled Project'}
                               </h3>
                               <p className="text-xs text-zinc-500 mt-1">
@@ -664,18 +659,18 @@ export default function DashboardPage() {
                             </div>
                             <button
                               onClick={(e) => handleDelete(e, project.id)}
-                              className="p-1.5 rounded-lg text-zinc-600 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all"
+                              className="p-1.5 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
-                          <div className="flex items-center gap-2 mt-3 pt-3 border-t border-zinc-900/60">
+                          <div className="flex items-center gap-2 mt-3 pt-3 border-t border-zinc-700/50">
                             <span className={`text-xs px-2 py-1 rounded-full border ${
                               project.status === 'deployed'
                                 ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
                                 : project.status === 'complete'
                                 ? 'border-blue-500/30 bg-blue-500/10 text-blue-400'
-                                : 'border-zinc-700 bg-zinc-900/50 text-zinc-400'
+                                : 'border-zinc-600 bg-zinc-700/50 text-zinc-400'
                             }`}>
                               {project.status === 'deployed' ? 'Live' : project.status === 'complete' ? 'Ready' : 'Building'}
                             </span>
@@ -685,7 +680,7 @@ export default function DashboardPage() {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={(e) => e.stopPropagation()}
-                                className="flex items-center gap-1 text-xs text-zinc-500 hover:text-emerald-400 transition-colors"
+                                className="flex items-center gap-1 text-xs text-zinc-400 hover:text-emerald-400 transition-colors"
                               >
                                 <Globe className="w-3 h-3" />
                                 View site
@@ -711,14 +706,14 @@ export default function DashboardPage() {
                     >
                       <Link
                         href={`/builder?project=${project.id}`}
-                        className="group flex items-center justify-between rounded-2xl border border-zinc-900/60 bg-zinc-950/30 p-3 hover:border-emerald-500/40 hover:bg-zinc-950 transition-all"
+                        className="group flex items-center justify-between rounded-2xl border border-zinc-700/50 bg-zinc-800/40 p-3 hover:border-emerald-500/50 hover:bg-zinc-800/60 transition-all"
                       >
                         <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <div className="w-8 h-8 rounded-md border border-zinc-800 bg-black/30 flex items-center justify-center flex-shrink-0">
+                          <div className="w-8 h-8 rounded-md border border-zinc-700 bg-zinc-800 flex items-center justify-center flex-shrink-0">
                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-sm font-medium text-white truncate group-hover:text-emerald-400 transition-colors">
+                            <h3 className="text-sm font-medium text-zinc-100 truncate group-hover:text-emerald-400 transition-colors">
                               {project.name || 'Untitled Project'}
                             </h3>
                             <div className="flex items-center gap-3 mt-0.5">
@@ -749,11 +744,11 @@ export default function DashboardPage() {
                           )}
                           <button
                             onClick={(e) => handleDelete(e, project.id)}
-                            className="p-2 rounded-lg text-zinc-600 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all"
+                            className="p-2 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
-                          <ArrowRight className="w-4 h-4 text-zinc-600 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
+                          <ArrowRight className="w-4 h-4 text-zinc-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
                         </div>
                       </Link>
                     </motion.div>
@@ -762,7 +757,7 @@ export default function DashboardPage() {
               )}
             </>
           ) : (
-            <div className="rounded-2xl border border-dashed border-zinc-800 bg-black/20 p-8 text-center">
+            <div className="rounded-2xl border border-dashed border-zinc-700 bg-zinc-800/30 p-8 text-center">
               <Pip size={48} animate float glow />
               <p className="mt-4 text-sm text-zinc-400">No projects yet. Kick off your first build to see Oracle, Claude, and Witness light up.</p>
               <div className="mt-5">
@@ -792,8 +787,8 @@ export default function DashboardPage() {
           <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">Intelligence</p>
-              <h2 className="text-xl font-semibold text-white">Oracle, Witness & friends</h2>
-              <p className="text-sm text-zinc-500">Every AI surface inside HatchIt, mapped to your current tier.</p>
+              <h2 className="text-xl font-semibold text-zinc-100">Oracle, Witness & friends</h2>
+              <p className="text-sm text-zinc-400">Every AI surface inside HatchIt, mapped to your current tier.</p>
             </div>
             <span className="text-xs text-zinc-500">More automations unlock as you upgrade.</span>
           </div>
@@ -808,13 +803,13 @@ export default function DashboardPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.03 }}
-                  className="rounded-2xl border border-zinc-900/60 bg-zinc-950/30 p-5 flex flex-col gap-4"
+                  className="rounded-2xl border border-zinc-800/60 bg-zinc-900/50 backdrop-blur-xl p-5 flex flex-col gap-4 shadow-lg shadow-black/20"
                 >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <Icon className="h-5 w-5 text-emerald-400" />
-                        <p className="text-base font-semibold text-white">{tool.name}</p>
+                        <p className="text-base font-semibold text-zinc-100">{tool.name}</p>
                         <span className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">{tool.badge}</span>
                       </div>
                       <p className="text-sm text-zinc-400">{tool.description}</p>
@@ -839,7 +834,6 @@ export default function DashboardPage() {
             })}
           </div>
         </motion.section>
-      </div>
 
       {/* Upgrade Modal */}
       <AnimatePresence>
@@ -848,7 +842,7 @@ export default function DashboardPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
             onClick={() => setShowUpgradeModal(false)}
           >
             <motion.div
@@ -856,13 +850,13 @@ export default function DashboardPage() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-zinc-900/90 backdrop-blur-xl border border-zinc-800 rounded-xl p-5 max-w-sm w-full shadow-2xl"
+              className="bg-zinc-900 backdrop-blur-xl border border-zinc-800 rounded-2xl p-5 max-w-sm w-full shadow-2xl shadow-black/50"
             >
               <div className="text-center">
                 <Pip size={48} animate={true} float={false} glow={true} />
-                <h3 className="text-lg font-semibold text-white mt-3">Project Limit Reached</h3>
+                <h3 className="text-lg font-semibold text-zinc-100 mt-3">Project Limit Reached</h3>
                 <p className="text-zinc-400 text-sm mt-1.5">
-                  You've hit the {tierConfig.limit} project limit on your {tierConfig.name} plan. 
+                  You&apos;ve hit the {tierConfig.limit} project limit on your {tierConfig.name} plan. 
                   Upgrade to create unlimited projects.
                 </p>
                 <div className="flex gap-2 mt-4">
@@ -874,7 +868,7 @@ export default function DashboardPage() {
                   </button>
                   <Link
                     href="/dashboard/billing"
-                    className="flex-1 px-3 py-2 rounded-lg bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-sm font-medium hover:bg-emerald-500/20 transition-colors text-center"
+                    className="flex-1 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-medium hover:bg-emerald-500/20 transition-colors text-center"
                   >
                     Manage Billing
                   </Link>

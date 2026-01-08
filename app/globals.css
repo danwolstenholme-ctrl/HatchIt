@@ -286,6 +286,12 @@ input, textarea, select {
                       linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
   }
   
+  .bg-grid-slate {
+    background-size: 4rem 4rem;
+    background-image: linear-gradient(to right, rgba(15, 23, 42, 0.03) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
+  }
+  
   .bg-grid-emerald {
     background-size: 40px 40px;
     background-image: linear-gradient(to right, rgba(16, 185, 129, 0.05) 1px, transparent 1px),

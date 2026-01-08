@@ -31,7 +31,7 @@ interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'children'> {
 
 const variants: Record<ButtonVariant, string> = {
   // Primary: Glass emerald with glow (matches homepage)
-  primary: 'bg-emerald-500/15 backdrop-blur-2xl border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white shadow-[0_0_15px_rgba(16,185,129,0.15)]',
+  primary: 'bg-emerald-500/20 backdrop-blur-2xl border border-emerald-500/40 hover:bg-emerald-500/30 hover:border-emerald-500/50 text-white shadow-[0_0_15px_rgba(16,185,129,0.15)]',
   // Secondary: Solid zinc
   secondary: 'bg-zinc-800/50 backdrop-blur-xl hover:bg-zinc-800/60 text-zinc-200 border border-zinc-700/50 hover:border-zinc-600',
   // Ghost: Minimal

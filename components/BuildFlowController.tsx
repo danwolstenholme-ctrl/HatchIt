@@ -681,7 +681,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
         }
       })
       const firstPending = dbSectionsData.findIndex((s: DbSection) => s.status === 'pending' || s.status === 'building')
-      state.currentSectionIndex = firstPending === -1 ? dbSectionsData.length : firstPending
+      state.currentSectionIndex = firstPending === -1 ? Math.max(0, dbSectionsData.length - 1) : firstPending
       
       setBuildState(state)
       setPhase('building')
@@ -776,7 +776,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       })
       
       const firstPending = sections.findIndex((s: DbSection) => s.status === 'pending' || s.status === 'building')
-      state.currentSectionIndex = firstPending === -1 ? reconstructed.length : firstPending
+      state.currentSectionIndex = firstPending === -1 ? Math.max(0, reconstructed.length - 1) : firstPending
       
       setBuildState(state)
       
@@ -968,6 +968,92 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       }))
       .filter(s => !!s.code)
   }, [buildState, sectionsForBuild])
+
+  const completedModuleCount = buildState?.completedSections.length ?? 0
+  const totalModules = sectionsForBuild.length
+
+  const builderTabs = useMemo(() => ([
+    {
+      id: 'building' as const,
+      label: 'Build',
+      meta: `${completedModuleCount}/${totalModules} modules`,
+      icon: Layout,
+      action: () => setPhase('building'),
+      active: phase === 'building',
+    },
+    {
+      id: 'review' as const,
+      label: 'Review',
+      meta: 'Audit & preview',
+      icon: Eye,
+      action: () => setPhase('review'),
+      active: phase === 'review',
+    },
+    {
+      id: 'oracle' as const,
+      label: 'Oracle',
+      meta: 'Prompt architect',
+      icon: Sparkles,
+      action: () => setShowOracle(true),
+      active: false,
+    },
+    {
+      id: 'deploy' as const,
+      label: 'Deploy',
+      meta: canDeploy ? 'Ship to HatchEdge' : 'Upgrade to deploy',
+      icon: Rocket,
+      action: () => {
+        if (!canDeploy || !assembledCode) {
+          setHatchModalReason('deploy')
+          setShowHatchModal(true)
+          return
+        }
+        handleDeploy()
+      },
+      active: false,
+      disabled: !canDeploy || !assembledCode,
+    },
+  ]), [completedModuleCount, totalModules, phase, canDeploy, assembledCode, setPhase])
+
+  const BuilderTabRail = ({ variant = 'glass' }: { variant?: 'glass' | 'flat' }) => (
+    <div
+      className={
+        variant === 'glass'
+          ? 'border-b border-white/5 bg-white/[0.02] backdrop-blur-xl'
+          : 'border-b border-zinc-800/60 bg-zinc-950/80'
+      }
+    >
+      <div className="flex flex-wrap gap-2 px-4 py-3">
+        {builderTabs.map((tab) => {
+          const Icon = tab.icon
+          const isDisabled = Boolean(tab.disabled)
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => !isDisabled && tab.action()}
+              disabled={isDisabled}
+              className={`group flex items-center gap-3 rounded-2xl border px-3 py-2 text-left transition-all ${
+                tab.active
+                  ? 'border-white/30 bg-white/[0.08] text-white shadow-[0_10px_40px_rgba(16,185,129,0.15)]'
+                  : 'border-white/10 text-zinc-400 hover:border-white/30 hover:text-white'
+              } ${isDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}
+            >
+              <div className={`flex h-9 w-9 items-center justify-center rounded-2xl ${
+                tab.active ? 'bg-emerald-500/20 text-emerald-300' : 'bg-white/[0.04] text-zinc-500'
+              }`}>
+                <Icon className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold leading-tight">{tab.label}</p>
+                <p className="text-[11px] text-zinc-500">{tab.meta}</p>
+              </div>
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
 
   const buildBundledCode = useCallback(() => {
     if (!buildState) return null
@@ -1466,16 +1552,20 @@ export default function GeneratedPage() {
       )}
       
       <AnimatePresence mode="wait">
-        {phase === 'building' && templateForBuild && buildState && (
+        {phase === 'building' && templateForBuild && buildState ? (
           <motion.div
             key="building"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className={`flex h-screen overflow-hidden bg-black ${demoMode ? 'pt-10' : ''}`}
+            className={`relative flex h-screen overflow-hidden bg-[#030712] text-white ${demoMode ? 'pt-10' : ''}`}
           >
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.2),transparent_55%)] opacity-60" />
+            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(130deg,rgba(15,23,42,0.7),rgba(0,0,0,0.6))]" />
+
+            <div className="relative z-10 flex w-full h-full">
             {/* Sidebar - Desktop Only */}
-            <div className="hidden lg:block w-72 border-r border-zinc-900 bg-zinc-950 flex-col h-full overflow-y-auto">
+            <div className="hidden lg:flex w-[320px] flex-col border-r border-white/10 bg-white/5 backdrop-blur-3xl h-full overflow-y-auto shadow-[inset_0_1px_rgba(255,255,255,0.08)]">
               <Sidebar
                 userTier={demoMode ? 'demo' : (accountSubscription?.status === 'active' ? accountSubscription?.tier : 'free') as 'demo' | 'free' | 'architect' | 'visionary' | 'singularity'}
                 projectName={project?.name || brandConfig?.brandName || (demoMode ? 'Demo Project' : 'Untitled Project')}
@@ -1528,91 +1618,96 @@ export default function GeneratedPage() {
 
             {/* Main Build Area */}
             <div className="flex-1 flex flex-col overflow-hidden">
-              {/* Section Progress - Now shown for everyone */}
-              <SectionProgress
-                template={templateForBuild}
-                buildState={buildState}
-                onSectionClick={handleSectionClick}
-                onSkip={handleSkipSection}
-              />
+              <BuilderTabRail />
+              <div className="border-b border-white/5 bg-white/[0.02] px-4 lg:px-8 py-3">
+                <SectionProgress
+                  template={templateForBuild}
+                  buildState={buildState}
+                  onSectionClick={handleSectionClick}
+                  onSkip={handleSkipSection}
+                />
+              </div>
 
-              <div className="flex-1 flex min-h-0 overflow-hidden">
+              <div className="flex-1 flex min-h-0 overflow-hidden px-4 lg:px-8 py-4 lg:py-8">
                 {getCurrentSection() && getCurrentDbSection() && (project?.id || getCurrentDbSection()!.project_id) && (
-                  <SectionBuilder
-                    section={getCurrentSection()!}
-                    dbSection={getCurrentDbSection()!}
-                    projectId={project?.id ?? getCurrentDbSection()!.project_id}
-                    onComplete={handleSectionComplete}
-                    onNextSection={handleNextSection}
-                    isLastSection={buildState.currentSectionIndex >= sectionsForBuild.length - 1}
-                    allSectionsCode={buildState.sectionCode}
-                    demoMode={demoMode}
-                    brandConfig={brandConfig}
-                    isPaid={isPaid}
-                    isDemo={isDemo}
-                    initialPrompt={buildState.currentSectionIndex === 0 ? initialPrompt : undefined}
-                    onHealingStateChange={(healing, message) => {
-                      setIsHealing(healing)
-                      if (message) setLastHealMessage(message)
-                    }}
-                  />
+                  <div className="flex-1 rounded-[32px] border border-white/10 bg-white/[0.02] backdrop-blur-2xl overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,0.65)]">
+                    <SectionBuilder
+                      section={getCurrentSection()!}
+                      dbSection={getCurrentDbSection()!}
+                      projectId={project?.id ?? getCurrentDbSection()!.project_id}
+                      onComplete={handleSectionComplete}
+                      onNextSection={handleNextSection}
+                      isLastSection={buildState.currentSectionIndex >= sectionsForBuild.length - 1}
+                      allSectionsCode={buildState.sectionCode}
+                      demoMode={demoMode}
+                      brandConfig={brandConfig}
+                      isPaid={isPaid}
+                      isDemo={isDemo}
+                      initialPrompt={buildState.currentSectionIndex === 0 ? initialPrompt : undefined}
+                      onHealingStateChange={(healing, message) => {
+                        setIsHealing(healing)
+                        if (message) setLastHealMessage(message)
+                      }}
+                    />
+                  </div>
                 )}
 
-              {getCurrentSection() && getCurrentDbSection() && !(project?.id || getCurrentDbSection()!.project_id) && (
-                <div className="flex-1 flex items-center justify-center bg-zinc-950">
-                  <div className="max-w-md text-center px-6">
-                    <div className="text-4xl mb-4">⚠️</div>
-                    <h2 className="text-lg font-semibold text-white mb-2">Project data isn't available yet</h2>
-                    <p className="text-sm text-zinc-400 mb-6">
-                      We can't generate the next section because the project id is missing. Please refresh or start a new project.
-                    </p>
-                    <div className="flex gap-3 justify-center">
-                      <button
-                        onClick={() => window.location.reload()}
-                        className="px-4 py-2 bg-zinc-800 text-white rounded-lg hover:bg-zinc-700"
-                      >
-                        Refresh
-                      </button>
-                      <button
-                        onClick={handleStartFresh}
-                        className="px-4 py-2 bg-zinc-700 text-zinc-200 rounded-lg hover:bg-zinc-600"
-                      >
-                        Start Fresh
-                      </button>
+                {getCurrentSection() && getCurrentDbSection() && !(project?.id || getCurrentDbSection()!.project_id) && (
+                  <div className="flex-1 rounded-[32px] border border-white/10 bg-white/[0.02] backdrop-blur-2xl flex items-center justify-center px-10 text-center shadow-[0_30px_80px_rgba(0,0,0,0.65)]">
+                    <div className="max-w-md">
+                      <div className="text-4xl mb-4">⚠️</div>
+                      <h2 className="text-lg font-semibold text-white mb-2">Project data isn't available yet</h2>
+                      <p className="text-sm text-zinc-400 mb-6">
+                        We can't generate the next section because the project id is missing. Please refresh or start a new project.
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                        <button
+                          onClick={() => window.location.reload()}
+                          className="px-4 py-2 rounded-xl border border-white/10 bg-white/[0.03] text-white hover:border-white/30"
+                        >
+                          Refresh
+                        </button>
+                        <button
+                          onClick={handleStartFresh}
+                          className="px-4 py-2 rounded-xl border border-white/10 text-zinc-200 hover:border-white/30"
+                        >
+                          Start Fresh
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {getCurrentSection() && !getCurrentDbSection() && (
-                <div className="flex-1 flex items-center justify-center bg-zinc-950">
-                  <div className="max-w-md text-center px-6">
-                    <div className="text-4xl mb-4">⚠️</div>
-                    <h2 className="text-lg font-semibold text-white mb-2">This section isn't in your project</h2>
-                    <p className="text-sm text-zinc-400 mb-6">
-                      Your selected section list doesn't match the project data. This can happen if the section list was customized.
-                    </p>
-                    <div className="flex gap-3 justify-center">
-                      <button
-                        onClick={handleStartFresh}
-                        className="px-4 py-2 bg-zinc-800 text-white rounded-lg hover:bg-zinc-700"
-                      >
-                        Start Fresh
-                      </button>
-                      <button
-                        onClick={() => setPhase('initializing')}
-                        className="px-4 py-2 bg-zinc-700 text-zinc-200 rounded-lg hover:bg-zinc-600"
-                      >
-                        Back to Start
-                      </button>
+                {getCurrentSection() && !getCurrentDbSection() && (
+                  <div className="flex-1 rounded-[32px] border border-white/10 bg-white/[0.02] backdrop-blur-2xl flex items-center justify-center px-10 text-center shadow-[0_30px_80px_rgba(0,0,0,0.65)]">
+                    <div className="max-w-md">
+                      <div className="text-4xl mb-4">⚠️</div>
+                      <h2 className="text-lg font-semibold text-white mb-2">This section isn't in your project</h2>
+                      <p className="text-sm text-zinc-400 mb-6">
+                        Your selected section list doesn't match the project data. This can happen if the section list was customized.
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                        <button
+                          onClick={handleStartFresh}
+                          className="px-4 py-2 rounded-xl border border-white/10 bg-white/[0.03] text-white hover:border-white/30"
+                        >
+                          Start Fresh
+                        </button>
+                        <button
+                          onClick={() => setPhase('initializing')}
+                          className="px-4 py-2 rounded-xl border border-white/10 text-zinc-200 hover:border-white/30"
+                        >
+                          Back to Start
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
             </div>
           </motion.div>
-        )}
+        ) : null}
 
         {phase === 'review' && buildState && templateForBuild && (
           <motion.div
@@ -1713,6 +1808,8 @@ export default function GeneratedPage() {
                 </div>
               )}
             </div>
+
+            <BuilderTabRail variant="flat" />
 
               {showUnlockBanner && (
                 <div className="px-3 py-3 sm:px-6 sm:py-5 border-b border-emerald-500/20 bg-gradient-to-r from-emerald-950/50 via-zinc-900/80 to-emerald-950/50 flex flex-col md:flex-row md:items-center md:justify-between gap-2 sm:gap-4">
@@ -1851,7 +1948,6 @@ export default function GeneratedPage() {
                         </div>
                       ))}
                     </div>
-                    
                     {/* Upgrade prompt for Architect users */}
                     {accountSubscription?.tier === 'architect' && (
                       <button 

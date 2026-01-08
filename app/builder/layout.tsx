@@ -11,11 +11,11 @@ import ErrorBoundary from '@/components/ErrorBoundary'
 export default function BuilderLayout({ children }: { children: ReactNode }) {
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-black text-white relative overflow-hidden">
+      <div className="min-h-screen bg-zinc-950 text-white relative overflow-hidden">
         {/* Void background */}
         <div className="fixed inset-0 pointer-events-none z-0">
-          <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[150px]" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-teal-500/5 rounded-full blur-[100px]" />
+          <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-emerald-500/4 rounded-full blur-[150px]" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-emerald-500/3 rounded-full blur-[100px]" />
         </div>
         
         {/* Content */}
