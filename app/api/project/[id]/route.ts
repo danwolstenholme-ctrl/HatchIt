@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
+import { auth, clerkClient } from '@clerk/nextjs/server'
 import { 
   getProjectById, 
   getSectionsByProjectId,
@@ -86,7 +86,7 @@ export async function PATCH(
 }
 
 // =============================================================================
-// DELETE: Delete a project
+// DELETE: Delete a project (Singularity tier only)
 // =============================================================================
 export async function DELETE(
   request: NextRequest,
@@ -96,6 +96,20 @@ export async function DELETE(
     const { userId: clerkId } = await auth()
     if (!clerkId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check tier - only Singularity can delete projects
+    const client = await clerkClient()
+    const user = await client.users.getUser(clerkId)
+    const accountSub = user.publicMetadata?.accountSubscription as { tier?: string } | undefined
+    const tier = accountSub?.tier || 'free'
+    const isAdmin = user.publicMetadata?.role === 'admin'
+    
+    if (tier !== 'singularity' && !isAdmin) {
+      return NextResponse.json({ 
+        error: 'Project deletion requires Singularity tier',
+        requiresUpgrade: true 
+      }, { status: 403 })
     }
 
     const { id } = await params

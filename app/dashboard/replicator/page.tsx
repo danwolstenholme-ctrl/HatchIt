@@ -35,6 +35,9 @@ export default function ReplicatorPage() {
   const tier = accountSubscription?.tier || 'free'
   const hasAccess = tier === 'singularity' || user?.publicMetadata?.role === 'admin'
 
+  // Temporarily disabled - under maintenance
+  const isDisabled = true
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!url) return
@@ -151,6 +154,16 @@ export default function ReplicatorPage() {
           >
             View plans →
           </button>
+        </div>
+      ) : isDisabled ? (
+        <div className="border border-amber-500/20 rounded-md p-8 bg-amber-500/5 text-center">
+          <p className="text-sm text-amber-400 mb-2">Under Maintenance</p>
+          <p className="text-xs text-zinc-500 mb-4">
+            The Replicator is being upgraded. Check back soon.
+          </p>
+          <p className="text-[10px] text-zinc-600">
+            Expected: January 2026
+          </p>
         </div>
       ) : (
         <>

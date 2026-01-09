@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useUser } from '@clerk/nextjs'
 import { formatDistanceToNow } from 'date-fns'
+import { Trash2, Rocket, Download, Github, Zap } from 'lucide-react'
 import { DbProject } from '@/lib/supabase'
 import { useGitHub } from '@/hooks/useGitHub'
 import ProjectWizard from '@/components/ProjectWizard'
@@ -322,7 +323,15 @@ export default function DashboardPage() {
                             Visit ↗
                           </a>
                         )}
-                        {/* Delete disabled for now - simplify flow */}
+                        {tier === 'singularity' && (
+                          <button
+                            onClick={(e) => handleDelete(e, project.id)}
+                            className="p-1.5 text-zinc-600 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                            title="Delete project"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                         <span className="text-zinc-700 group-hover:text-zinc-500 transition-colors">→</span>
                       </div>
                     </Link>
@@ -335,6 +344,30 @@ export default function DashboardPage() {
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {/* Quick Actions */}
+          <div className="rounded-md border border-zinc-800/60 bg-zinc-900/30 p-4">
+            <h3 className="text-sm font-medium text-white mb-3">Quick Actions</h3>
+            <div className="space-y-2">
+              <button
+                onClick={handleOpenWizard}
+                disabled={isAtLimit}
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs text-left rounded bg-zinc-800/50 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors disabled:opacity-50"
+              >
+                <Zap className="w-3.5 h-3.5 text-emerald-500" />
+                New Project
+              </button>
+              {projects.length > 0 && projects[0] && (
+                <Link
+                  href={`/builder?project=${projects[0].id}`}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-left rounded bg-zinc-800/50 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors"
+                >
+                  <Rocket className="w-3.5 h-3.5 text-zinc-500" />
+                  Continue Building
+                </Link>
+              )}
+            </div>
+          </div>
+
           {/* GitHub */}
           <div className="rounded-md border border-zinc-800/60 bg-zinc-900/30 p-4">
             <div className="flex items-center justify-between mb-2">
