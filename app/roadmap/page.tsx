@@ -31,29 +31,29 @@ const roadmap: RoadmapSection[] = [
     title: 'Recently Shipped',
     items: [
       {
-        title: 'AI Design Reasoning',
-        description: 'See why the AI made each design decision.',
+        title: 'Device Preview Toggle',
+        description: 'Phone, tablet, and desktop preview buttons in the builder.',
         status: 'shipped',
         date: 'Jan 2026',
-        details: 'After generating a section, you\'ll see the AI\'s thinking: "Used split layout with testimonial on left to build trust before the CTA." Makes the output less of a black box.'
+        details: 'See how your site looks at 375px, 768px, or full width. Click the device buttons in the preview header.'
       },
       {
-        title: 'Unified Credit System',
-        description: 'One pool of credits for builds, refinements, and experiments.',
+        title: '5-Step Project Wizard',
+        description: 'Guided setup: Info, Brand, Homepage, Pages, Review.',
         status: 'shipped',
         date: 'Jan 2026',
-        details: 'Simplified from separate counters. Guest users get 9 credits to explore before signing up. Paid users get unlimited access.'
+        details: 'Plan your entire site structure before building. Pick your pages, choose your sections, set your brand. Then build with confidence.'
       },
       {
-        title: 'Real-time Code Streaming',
-        description: 'Watch your code generate live.',
+        title: 'Multi-Page Sites',
+        description: 'Add About, Services, Pricing, Contact, FAQ, and Portfolio pages.',
         status: 'shipped',
-        date: 'Dec 2025',
-        details: 'See the React + Tailwind code appear character by character as Claude writes it. Satisfying to watch and helps you understand what\'s being built.'
+        date: 'Jan 2026',
+        details: 'Each page comes with preset sections. Build a complete site, not just a landing page.'
       },
       {
-        title: 'The Prompt Helper',
-        description: 'AI assistant to help you write better prompts.',
+        title: 'AI Prompt Helper',
+        description: 'Get help writing better prompts for each section.',
         status: 'shipped',
         date: 'Dec 2025',
         details: 'Click the sparkle icon and describe what you want. The helper rewrites your prompt to get better results from the builder.'
@@ -65,22 +65,22 @@ const roadmap: RoadmapSection[] = [
     title: 'Coming Soon',
     items: [
       {
-        title: 'URL Replicator',
-        description: 'Paste any URL and rebuild it automatically.',
+        title: 'Website Cloner',
+        description: 'Paste any URL and rebuild it with your branding.',
         status: 'building',
-        details: 'Analyze existing websites and recreate them with your branding. Great for "I want something like this" moments.'
-      },
-      {
-        title: 'Visual Editor',
-        description: 'Click and drag to adjust generated layouts.',
-        status: 'building',
-        details: 'Move sections around, resize elements, and tweak spacing without touching code. AI-generated, human-refined.'
+        details: 'Analyze existing websites and recreate them in your stack. Great for "I want something like this" moments.'
       },
       {
         title: 'Custom Domains',
-        description: 'Map deployments to your own domain.',
+        description: 'Connect your own domain to deployed sites.',
+        status: 'building',
+        details: 'Currently sites deploy to hatchitsites.dev subdomains. Soon you\'ll connect your own domain with automatic SSL.'
+      },
+      {
+        title: 'Visual Editor',
+        description: 'Click and drag to adjust layouts.',
         status: 'planned',
-        details: 'Currently sites deploy to hatchitsites.dev subdomains. Soon you\'ll be able to connect your own domain with SSL.'
+        details: 'Move sections around, resize elements, tweak spacing without touching code. AI-generated, human-refined.'
       },
     ]
   },
@@ -89,10 +89,10 @@ const roadmap: RoadmapSection[] = [
     title: 'On the Horizon',
     items: [
       {
-        title: 'Screenshot to Code',
-        description: 'Upload a design and get the code.',
+        title: 'Backend Generation',
+        description: 'Generate API routes, database schemas, and auth flows.',
         status: 'planned',
-        details: 'Drag in a Figma export or screenshot, and the AI will recreate it in React + Tailwind.'
+        details: 'Describe your app\'s data model and get working Supabase schemas, API endpoints, and authentication.'
       },
       {
         title: 'Component Library',
@@ -102,15 +102,9 @@ const roadmap: RoadmapSection[] = [
       },
       {
         title: 'Team Collaboration',
-        description: 'Work together on projects in real-time.',
+        description: 'Work together on projects.',
         status: 'planned',
         details: 'Invite team members, share projects, and build together.'
-      },
-      {
-        title: 'Backend Integration',
-        description: 'Built-in form submissions and data handling.',
-        status: 'planned',
-        details: 'Connect contact forms to your email, store submissions, and handle data without code.'
       },
     ]
   },

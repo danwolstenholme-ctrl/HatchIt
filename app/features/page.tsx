@@ -4,7 +4,7 @@ import { useRef } from 'react'
 import Link from 'next/link'
 import { motion, useInView } from 'framer-motion'
 import { 
-  Cpu, Globe, Download, Wand2, Copy, Zap, 
+  Cpu, Globe, Download, Copy, Zap, 
   RefreshCw, MessageSquare, Layers, Box, 
   Shield, Code2, Lock, Terminal, Sparkles,
   ArrowRight
@@ -67,21 +67,14 @@ export default function FeaturesPage() {
     {
       icon: <RefreshCw className="w-6 h-6" />,
       title: 'Self-Healing Code',
-      description: 'When errors happen, Automatic error detection and repair. When something breaks, it gets fixed.',
+      description: 'Automatic error detection and repair. When something breaks in preview, it gets fixed automatically.',
       tier: 'Visionary+',
       tierColor: 'text-violet-400'
     },
     {
       icon: <Copy className="w-6 h-6" />,
       title: 'Website Cloner',
-      description: 'See a site you love? Paste the URL. Reverse-engineer it into build prompts—colors, layout, copy, everything.',
-      tier: 'Singularity',
-      tierColor: 'text-amber-400'
-    },
-    {
-      icon: <Wand2 className="w-6 h-6" />,
-      title: 'Dream Engine',
-      description: 'Your style DNA shapes future generations. The system learns your preferences and evolves designs—adding animations, changing colors, making it "alive."',
+      description: 'See a site you love? Paste the URL. The system analyzes it and rebuilds it with your branding.',
       tier: 'Singularity',
       tierColor: 'text-amber-400'
     },
