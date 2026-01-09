@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
+import { CheckCircle, XCircle, Loader2, ExternalLink, AlertTriangle } from 'lucide-react'
 import type { DbProject, DbSection, DbBrandConfig, DbBuild } from '@/lib/supabase'
 
 function formatDate(value: string | undefined) {
@@ -36,7 +38,12 @@ const SECTION_INFO: Record<string, { name: string; desc: string }> = {
 export default function ProjectConfigPage() {
   const params = useParams<{ id: string }>()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const projectId = params?.id
+  
+  // Deployment status from URL params
+  const justDeployed = searchParams?.get('deployed') === 'true'
+  const deploymentId = searchParams?.get('deploymentId')
 
   const [project, setProject] = useState<DbProject | null>(null)
   const [sections, setSections] = useState<DbSection[]>([])
@@ -44,6 +51,14 @@ export default function ProjectConfigPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [activeTab, setActiveTab] = useState<'overview' | 'brand' | 'seo' | 'pages' | 'deployments'>('overview')
+  
+  // Deployment status tracking
+  const [deployStatus, setDeployStatus] = useState<{
+    status: 'checking' | 'building' | 'ready' | 'failed' | null
+    url?: string
+    error?: string
+    logsUrl?: string
+  }>({ status: justDeployed ? 'checking' : null })
 
   // Brand state
   const [brand, setBrand] = useState({
@@ -122,6 +137,67 @@ export default function ProjectConfigPage() {
     run()
     return () => { cancelled = true }
   }, [refresh])
+
+  // Poll deployment status when just deployed
+  useEffect(() => {
+    if (!justDeployed || !deploymentId) return
+    
+    let cancelled = false
+    let attempts = 0
+    const maxAttempts = 30 // 2 minutes max
+    
+    const checkStatus = async () => {
+      if (cancelled) return
+      
+      try {
+        const res = await fetch(`/api/deploy/status?id=${deploymentId}`)
+        const data = await res.json()
+        
+        if (cancelled) return
+        
+        if (data.status === 'ready') {
+          setDeployStatus({ status: 'ready', url: data.url })
+          // Clear URL params after success
+          window.history.replaceState({}, '', `/dashboard/projects/${projectId}`)
+          return
+        }
+        
+        if (data.status === 'failed') {
+          setDeployStatus({ 
+            status: 'failed', 
+            error: data.error,
+            logsUrl: data.logsUrl
+          })
+          return
+        }
+        
+        if (data.status === 'building') {
+          setDeployStatus({ status: 'building' })
+        }
+        
+        // Keep polling
+        attempts++
+        if (attempts < maxAttempts) {
+          setTimeout(checkStatus, 4000)
+        } else {
+          // Timeout - assume something went wrong
+          setDeployStatus({ 
+            status: 'failed', 
+            error: 'Deployment timed out. Check Vercel dashboard for details.'
+          })
+        }
+      } catch {
+        if (!cancelled) {
+          setDeployStatus({ status: 'failed', error: 'Could not check deployment status' })
+        }
+      }
+    }
+    
+    // Start polling after a short delay
+    setTimeout(checkStatus, 2000)
+    
+    return () => { cancelled = true }
+  }, [justDeployed, deploymentId, projectId])
 
   const handleSave = async () => {
     if (!projectId) return
@@ -238,6 +314,91 @@ export default function ProjectConfigPage() {
 
   return (
     <div className="space-y-6">
+      {/* Deployment Status Banner */}
+      <AnimatePresence>
+        {deployStatus.status && deployStatus.status !== null && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className={`rounded-lg border p-4 ${
+              deployStatus.status === 'ready' 
+                ? 'bg-emerald-500/10 border-emerald-500/30' 
+                : deployStatus.status === 'failed'
+                ? 'bg-red-500/10 border-red-500/30'
+                : 'bg-zinc-800/50 border-zinc-700/50'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              {deployStatus.status === 'checking' || deployStatus.status === 'building' ? (
+                <>
+                  <Loader2 className="w-5 h-5 text-zinc-400 animate-spin" />
+                  <div>
+                    <p className="text-sm font-medium text-white">
+                      {deployStatus.status === 'checking' ? 'Checking deployment...' : 'Building your site...'}
+                    </p>
+                    <p className="text-xs text-zinc-500">This usually takes 30-60 seconds</p>
+                  </div>
+                </>
+              ) : deployStatus.status === 'ready' ? (
+                <>
+                  <CheckCircle className="w-5 h-5 text-emerald-500" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-white">Deployed successfully!</p>
+                    <p className="text-xs text-zinc-400">Your site is now live</p>
+                  </div>
+                  {deployStatus.url && (
+                    <a
+                      href={deployStatus.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-emerald-500/20 text-emerald-400 rounded-md hover:bg-emerald-500/30 transition-colors"
+                    >
+                      View Live
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  )}
+                  <button
+                    onClick={() => setDeployStatus({ status: null })}
+                    className="text-zinc-500 hover:text-zinc-300 text-xs"
+                  >
+                    Dismiss
+                  </button>
+                </>
+              ) : deployStatus.status === 'failed' ? (
+                <>
+                  <XCircle className="w-5 h-5 text-red-500" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-white flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4 text-red-400" />
+                      Deployment failed
+                    </p>
+                    <p className="text-xs text-red-400/80 mt-0.5">{deployStatus.error || 'Unknown error'}</p>
+                  </div>
+                  {deployStatus.logsUrl && (
+                    <a
+                      href={deployStatus.logsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-zinc-800 text-zinc-300 rounded-md hover:bg-zinc-700 transition-colors"
+                    >
+                      View Logs
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  )}
+                  <button
+                    onClick={() => setDeployStatus({ status: null })}
+                    className="text-zinc-500 hover:text-zinc-300 text-xs"
+                  >
+                    Dismiss
+                  </button>
+                </>
+              ) : null}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>

@@ -1505,12 +1505,12 @@ export default function GeneratedPage() {
       if (data.url) {
         setDeployedUrl(data.url)
         
-        // Short delay for Vercel to propagate, then redirect
-        // Don't block on full readiness - dashboard will show "deploying" state
-        await new Promise(r => setTimeout(r, 3000))
+        // Short delay for Vercel to start, then redirect with deployment ID for status tracking
+        await new Promise(r => setTimeout(r, 2000))
         
-        // Redirect to dashboard - project page shows live stats
-        router.push(`/dashboard/projects/${project.id}?deployed=true`)
+        // Redirect to dashboard with deployment info for status polling
+        const deploymentId = data.deploymentId || ''
+        router.push(`/dashboard/projects/${project.id}?deployed=true&deploymentId=${deploymentId}`)
       } else {
         setError(data.error || 'Deploy failed')
       }
