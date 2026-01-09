@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
 import { 
   Plus, 
   Layers, 
@@ -58,6 +58,7 @@ interface SidebarProps {
   sectionNames?: string[]
   allSectionNames?: string[]
   sectionIds?: string[]
+  completedSectionIds?: string[]
   isGenerating: boolean
   projectName?: string
   userTier: Tier
@@ -111,6 +112,7 @@ export default function LiveSidebar({
   sectionNames,
   allSectionNames,
   sectionIds,
+  completedSectionIds = [],
   isGenerating,
   projectName = 'Untitled',
   userTier,
@@ -171,9 +173,9 @@ export default function LiveSidebar({
         <div className="px-4 py-4 border-b border-zinc-800/50">
           <h2 className="text-sm font-medium text-white truncate">{projectName}</h2>
           <div className="flex items-center gap-2 mt-1">
-            <div className={`w-1.5 h-1.5 rounded-full ${isHealing ? 'bg-amber-400 animate-pulse' : 'bg-emerald-500'}`} />
+            <div className={`w-1.5 h-1.5 rounded-full ${isHealing ? 'bg-amber-400 animate-pulse' : isGenerating ? 'bg-emerald-400 animate-pulse' : 'bg-emerald-500'}`} />
             <span className="text-[10px] text-zinc-500">
-              {isHealing ? 'Fixing...' : 'Ready'}
+              {isHealing ? 'Fixing...' : isGenerating ? 'Building...' : 'Ready'}
             </span>
           </div>
         </div>
@@ -182,15 +184,16 @@ export default function LiveSidebar({
         <div className="p-4">
           <div className="flex items-center justify-between mb-3">
             <span className="text-[10px] uppercase tracking-wider text-zinc-500">Sections</span>
-            <span className="text-[10px] text-zinc-600">{currentSection}/{totalSections}</span>
+            <span className="text-[10px] text-emerald-500/70">{completedSectionIds.length}/{totalSections} built</span>
           </div>
           
+          <LayoutGroup>
           <div className="space-y-0.5">
             {Array.from({ length: allSectionNames?.length || totalSections }).map((_, i) => {
               const isActive = i === currentSection - 1
-              const isCompleted = i < currentSection - 1
-              const isClickable = isCompleted || isActive
               const id = sectionIds?.[i]
+              const isBuilt = id ? completedSectionIds.includes(id) : false
+              const isClickable = isBuilt || isActive
               const SectionIcon = getSectionIcon(id || '')
 
               const isHeader = id === 'header'
@@ -198,31 +201,37 @@ export default function LiveSidebar({
               const wouldSwapWithHeader = sectionIds?.[i - 1] === 'header'
               const wouldSwapWithFooter = sectionIds?.[i + 1] === 'footer'
 
-              const canMoveUp = i > 0 && !isHeader && !isFooter && !wouldSwapWithHeader
-              const canMoveDown = i < (totalSections - 1) && !isHeader && !isFooter && !wouldSwapWithFooter
-              const canRemove = !isHeader && !isFooter && onRemoveSection
+              const canMoveUp = i > 0 && !isHeader && !isFooter && !wouldSwapWithHeader && isBuilt
+              const canMoveDown = i < (totalSections - 1) && !isHeader && !isFooter && !wouldSwapWithFooter && isBuilt
+              const canRemove = !isHeader && !isFooter && onRemoveSection && isBuilt
               
               return (
-                <div key={i} className="group relative">
+                <motion.div 
+                  key={id || i} 
+                  layout
+                  layoutId={id || `section-${i}`}
+                  className="group relative"
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                >
                   <button
                     onClick={() => isClickable && onSelectSection?.(i)}
                     disabled={!isClickable}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all text-left ${
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-left ${
                       isActive 
                         ? 'bg-emerald-500/10 border border-emerald-500/30' 
                         : isClickable 
-                          ? 'hover:bg-zinc-900 border border-transparent' 
+                          ? 'hover:bg-zinc-900 border border-transparent cursor-pointer' 
                           : 'opacity-40 cursor-not-allowed border border-transparent'
                     }`}
                   >
-                    <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                      isCompleted ? 'bg-emerald-500' : isActive && isGenerating ? 'bg-amber-400 animate-pulse' : isActive ? 'bg-emerald-400' : 'bg-zinc-700'
+                    <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors ${
+                      isBuilt && !isActive ? 'bg-emerald-500' : isActive && isGenerating ? 'bg-amber-400 animate-pulse' : isActive ? 'bg-emerald-400' : 'bg-zinc-700'
                     }`} />
-                    <SectionIcon className={`w-3.5 h-3.5 flex-shrink-0 ${isActive ? 'text-emerald-400' : 'text-zinc-600'}`} />
-                    <span className={`flex-1 text-xs truncate ${isActive ? 'text-white' : 'text-zinc-400'}`}>
+                    <SectionIcon className={`w-4 h-4 flex-shrink-0 transition-colors ${isActive ? 'text-emerald-400' : isBuilt ? 'text-zinc-400' : 'text-zinc-600'}`} />
+                    <span className={`flex-1 text-xs truncate transition-colors ${isActive ? 'text-white' : isBuilt ? 'text-zinc-300' : 'text-zinc-500'}`}>
                       {getSectionLabel(i)}
                     </span>
-                    {isCompleted && !isActive && <Check className="w-3 h-3 text-emerald-500/70 flex-shrink-0" />}
+                    {isBuilt && !isActive && <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />}
                   </button>
 
                   {(canMoveUp || canMoveDown || canRemove) && (
@@ -232,7 +241,7 @@ export default function LiveSidebar({
                           onClick={(e) => { e.stopPropagation(); onMoveSection?.(i, i - 1) }}
                           className="p-1 rounded hover:bg-zinc-800"
                         >
-                          <ArrowUp className="w-3 h-3 text-zinc-500" />
+                          <ArrowUp className="w-4 h-4 text-zinc-500" />
                         </button>
                       )}
                       {canMoveDown && (
@@ -240,7 +249,7 @@ export default function LiveSidebar({
                           onClick={(e) => { e.stopPropagation(); onMoveSection?.(i, i + 1) }}
                           className="p-1 rounded hover:bg-zinc-800"
                         >
-                          <ArrowDown className="w-3 h-3 text-zinc-500" />
+                          <ArrowDown className="w-4 h-4 text-zinc-500" />
                         </button>
                       )}
                       {canRemove && (
@@ -248,41 +257,51 @@ export default function LiveSidebar({
                           onClick={(e) => { e.stopPropagation(); onRemoveSection?.(i) }}
                           className="p-1 rounded hover:bg-red-500/10"
                         >
-                          <Trash2 className="w-3 h-3 text-zinc-500 hover:text-red-400" />
+                          <Trash2 className="w-4 h-4 text-zinc-500 hover:text-red-400" />
                         </button>
                       )}
                     </div>
                   )}
-                </div>
+                </motion.div>
               )
             })}
           </div>
+          </LayoutGroup>
           
-          {/* Add Section */}
-          <div className="relative mt-3">
-            <button
+          {/* Add Section - Prominent CTA */}
+          <div className="relative mt-4">
+            <motion.button
               onClick={() => setShowAddMenu(!showAddMenu)}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white text-xs transition-all"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-400 hover:text-emerald-300 text-sm font-medium transition-all shadow-[0_0_20px_rgba(16,185,129,0.1)]"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus className="w-4 h-4" />
               Add Section
-            </button>
+            </motion.button>
 
             <AnimatePresence>
               {showAddMenu && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowAddMenu(false)} />
                   <motion.div
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 5 }}
-                    className="absolute left-0 right-0 bottom-full mb-2 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl z-50 overflow-hidden"
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                    className="absolute left-0 right-0 bottom-full mb-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-50 overflow-hidden"
                   >
-                    <div className="p-2 max-h-64 overflow-y-auto">
-                      <p className="px-2 py-1.5 text-[10px] text-zinc-500 uppercase tracking-wider">
-                        Section Type
-                      </p>
-                      <div className="grid grid-cols-2 gap-1 mt-1">
+                    <div className="p-3">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-xs font-medium text-white">Choose Section Type</p>
+                        <button 
+                          onClick={() => setShowAddMenu(false)}
+                          className="text-zinc-500 hover:text-white transition-colors"
+                        >
+                          <span className="text-xs">✕</span>
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-1.5 max-h-64 overflow-y-auto">
                         {availableSectionTypes.map((type) => {
                           const Icon = type.icon
                           return (
@@ -296,10 +315,12 @@ export default function LiveSidebar({
                                 }
                                 setShowAddMenu(false)
                               }}
-                              className="flex items-center gap-2 px-2.5 py-2 rounded-lg hover:bg-zinc-800 text-left transition-colors"
+                              className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-zinc-800/50 hover:bg-emerald-500/20 hover:border-emerald-500/30 border border-transparent text-left transition-all group"
                             >
-                              <Icon className="w-3.5 h-3.5 text-zinc-500" />
-                              <span className="text-xs text-zinc-300">{type.name}</span>
+                              <div className="w-8 h-8 rounded-lg bg-zinc-800 group-hover:bg-emerald-500/20 flex items-center justify-center transition-colors">
+                                <Icon className="w-4 h-4 text-zinc-500 group-hover:text-emerald-400 transition-colors" />
+                              </div>
+                              <span className="text-xs text-zinc-300 group-hover:text-white transition-colors">{type.name}</span>
                             </button>
                           )
                         })}
@@ -314,19 +335,19 @@ export default function LiveSidebar({
 
         {/* AI Tools */}
         <div className="px-4 py-3 border-t border-zinc-800/50">
-          <p className="text-[10px] uppercase tracking-wider text-zinc-600 mb-2">AI Tools</p>
+          <p className="text-[10px] uppercase tracking-wider text-emerald-500/70 mb-2">AI Tools</p>
           <div className="space-y-0.5">
             {unlockedAITools.map((tool) => (
               <button
                 key={tool.id}
                 onClick={() => handleAIToolClick(tool)}
-                className="w-full flex items-center gap-3 px-2.5 py-2 rounded-lg hover:bg-zinc-900 transition-all group"
+                className="w-full flex items-center gap-3 px-2.5 py-2 rounded-lg hover:bg-emerald-500/10 transition-all group"
               >
-                <tool.icon className="w-3.5 h-3.5 text-zinc-500 group-hover:text-emerald-400 transition-colors" />
+                <tool.icon className="w-4 h-4 text-emerald-500/70 group-hover:text-emerald-400 transition-colors" />
                 <div className="flex-1 text-left">
                   <p className="text-xs text-zinc-400 group-hover:text-white transition-colors">{tool.name}</p>
                 </div>
-                <ChevronRight className="w-3 h-3 text-zinc-700 group-hover:text-zinc-500 transition-colors" />
+                <ChevronRight className="w-4 h-4 text-zinc-700 group-hover:text-emerald-400 transition-colors" />
               </button>
             ))}
           </div>
@@ -338,10 +359,10 @@ export default function LiveSidebar({
         {isDemo && onSignUp ? (
           <button
             onClick={onSignUp}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/20 transition-all"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white text-zinc-900 hover:bg-zinc-100 transition-all"
           >
-            <span className="text-sm font-medium text-white">Sign Up Free</span>
-            <ArrowRight className="w-4 h-4 text-white" />
+            <span className="text-sm font-medium">Sign Up Free</span>
+            <ArrowRight className="w-4 h-4" />
           </button>
         ) : onOpenSettings ? (
           <button

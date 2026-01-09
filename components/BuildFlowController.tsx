@@ -34,7 +34,8 @@ import {
   Lock,
   Check,
   X,
-  Menu
+  Menu,
+  Code
 } from 'lucide-react'
 import { track } from '@vercel/analytics'
 import SectionProgress from './SectionProgress'
@@ -46,11 +47,14 @@ import WelcomeModal from './WelcomeModal'
 import BuilderWelcome from './BuilderWelcome'
 import DemoWelcome from './DemoWelcome'
 import SiteSettingsModal, { SiteSettings } from './SiteSettingsModal'
+import AssistantModal from './builder/AssistantModal'
+import PromptHelperModal from './builder/PromptHelperModal'
 import { useGitHub } from '@/hooks/useGitHub'
 import { Github } from 'lucide-react'
 import FullSitePreviewFrame from './builder/FullSitePreviewFrame'
 import BuildSuccessModal from './BuildSuccessModal'
 import SingularityLoader from './singularity/SingularityLoader'
+import Button from './singularity/Button'
 import ReplicatorModal from './ReplicatorModal'
 import { Sidebar } from './builder'
 import { chronosphere } from '@/lib/chronosphere'
@@ -168,6 +172,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   const [shareUrlCopied, setShareUrlCopied] = useState(false)
   const [reviewDeviceView, setReviewDeviceView] = useState<'mobile' | 'tablet' | 'desktop'>('mobile')
   const [reviewMobileTab, setReviewMobileTab] = useState<'modules' | 'preview'>('preview')
+  const [buildMobileTab, setBuildMobileTab] = useState<'build' | 'preview'>('build')
   const [justCreatedProjectId, setJustCreatedProjectId] = useState<string | null>(null)
   const [showSignupGate, setShowSignupGate] = useState(false)
   const [showDemoNudge, setShowDemoNudge] = useState(false)
@@ -1151,7 +1156,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   }
 
   // Add a new section of a specific type
-  const handleAddSection = (sectionType: string) => {
+  const handleAddSection = async (sectionType: string) => {
     if (!buildState) return
 
     // Define section metadata for each type
@@ -1171,6 +1176,14 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
 
     const meta = sectionMeta[sectionType]
     if (!meta) return // Invalid section type
+
+    // Check if this section type already exists
+    const existingIndex = sectionsForBuild.findIndex(s => s.id === sectionType)
+    if (existingIndex >= 0) {
+      // Just navigate to the existing section instead of adding duplicate
+      setBuildState({ ...buildState, currentSectionIndex: existingIndex })
+      return
+    }
 
     // Create the new section
     const newSection: Section = {
@@ -1194,8 +1207,43 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
     // Update sections
     setCustomizedSections(nextSections)
 
+    // Create a placeholder dbSection for the new section (so it can be built)
+    const placeholderDbSection: DbSection = {
+      id: `temp-${sectionType}-${Date.now()}`, // Temporary ID
+      project_id: project?.id || 'demo',
+      section_id: sectionType,
+      order_index: insertAt,
+      status: 'pending',
+      code: null,
+      user_prompt: null,
+      refined: false,
+      refinement_changes: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+    
+    // Insert dbSection at the right position
+    setDbSections(prev => {
+      const next = [...prev]
+      next.splice(insertAt, 0, placeholderDbSection)
+      return next
+    })
+
     // Navigate to the new section
     setBuildState({ ...buildState, currentSectionIndex: insertAt })
+    
+    // Persist to DB if not in demo mode
+    if (!demoMode && project?.id) {
+      try {
+        await fetch(`/api/project/${project.id}/sections`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sectionId: sectionType, orderIndex: insertAt }),
+        })
+      } catch (err) {
+        console.error('Failed to persist new section:', err)
+      }
+    }
   }
 
   // Remove a section by index
@@ -1309,12 +1357,12 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
               disabled={isDisabled}
               className={`group flex items-center gap-1.5 sm:gap-2 rounded-lg sm:rounded-xl border px-2 sm:px-3 py-1.5 sm:py-2 text-left transition-all ${
                 tab.active
-                  ? 'border-emerald-500/40 bg-emerald-500/10 text-white'
-                  : 'border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
+                  ? 'border-zinc-600 bg-zinc-800/80 text-white'
+                  : 'border-zinc-800/50 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300'
               } ${isDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}
             >
               <div className={`flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-md sm:rounded-lg ${
-                tab.active ? 'bg-emerald-500/15 text-emerald-400' : 'bg-zinc-800/50 text-zinc-500'
+                tab.active ? 'bg-zinc-700 text-white' : 'bg-zinc-800/30 text-zinc-600'
               }`}>
                 <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </div>
@@ -1775,10 +1823,8 @@ export default function GeneratedPage() {
     )
   }
   
-  // Show simple loading state while initializing (especially for guest mode)
-  if (phase === 'initializing' || isLoading) {
-    return <SingularityLoader text="INITIALIZING" />
-  }
+  // Note: Loading is handled above with skipLoadingScreen check
+  // phase === 'initializing' is handled there too
 
   return (
     <div className="min-h-screen bg-zinc-950">
@@ -1819,25 +1865,12 @@ export default function GeneratedPage() {
                   </button>
                   
                   <button
-                    onClick={handleGoHome}
-                    className="hidden sm:flex p-1.5 text-zinc-500 hover:text-white transition-colors"
+                    onClick={() => router.push('/dashboard')}
+                    className="p-1.5 text-zinc-500 hover:text-white transition-colors"
                     aria-label="Back to dashboard"
                   >
                     <ArrowLeft className="w-4 h-4" />
                   </button>
-                  <div className="h-4 w-px bg-zinc-800 hidden sm:block" />
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded bg-zinc-800/80 border border-zinc-700/50 flex items-center justify-center">
-                      <Terminal className="w-3 h-3 text-zinc-500" />
-                    </div>
-                    <span className="text-sm font-medium text-white truncate max-w-[160px]">{project?.name || 'Untitled'}</span>
-                  </div>
-                  
-                  {/* Status indicator */}
-                  <div className="hidden md:flex items-center gap-1.5 ml-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    <span className="text-[10px] text-zinc-600 uppercase tracking-wider">Ready</span>
-                  </div>
                 </div>
                 
                 <div className="flex items-center gap-1.5">
@@ -1869,21 +1902,23 @@ export default function GeneratedPage() {
                       href={deployedUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-zinc-800 text-emerald-400 border border-zinc-700/50 rounded-md hover:bg-zinc-700 transition-colors"
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-emerald-500 text-white rounded-md hover:bg-emerald-400 transition-colors"
                     >
                       <Globe className="w-3.5 h-3.5" />
                       <span className="hidden sm:inline">Live</span>
                       <ExternalLink className="w-3 h-3" />
                     </a>
                   ) : (
-                    <button
+                    <Button
                       onClick={handleDeploy}
-                      disabled={!assembledCode}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors disabled:opacity-40 bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/15 text-white"
+                      disabled={!assembledCode || isDeploying}
+                      loading={isDeploying}
+                      size="sm"
+                      icon={<Rocket className="w-3.5 h-3.5" />}
+                      iconPosition="left"
                     >
-                      <Rocket className="w-3.5 h-3.5" />
-                      <span>Ship</span>
-                    </button>
+                      Ship
+                    </Button>
                   )}
                 </div>
               </div>
@@ -1923,6 +1958,7 @@ export default function GeneratedPage() {
                         totalSections={sectionsForBuild.length}
                         sectionNames={sectionsForBuild.map(s => s.name)}
                         sectionIds={sectionsForBuild.map(s => s.id)}
+                        completedSectionIds={buildState.completedSections}
                         isGenerating={false}
                         isHealing={isHealing}
                         lastHealMessage={lastHealMessage ?? undefined}
@@ -1974,6 +2010,7 @@ export default function GeneratedPage() {
                 totalSections={sectionsForBuild.length}
                 sectionNames={sectionsForBuild.map(s => s.name)}
                 sectionIds={sectionsForBuild.map(s => s.id)}
+                completedSectionIds={buildState.completedSections}
                 isGenerating={false}
                 isHealing={isHealing}
                 lastHealMessage={lastHealMessage ?? undefined}
@@ -2017,21 +2054,40 @@ export default function GeneratedPage() {
               />
             </div>
 
-            {/* Main Build Area */}
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <BuilderTabRail />
-              <div className="border-b border-zinc-800/50 bg-zinc-900/20 px-4 lg:px-8 py-3">
-                <SectionProgress
-                  template={templateForBuild}
-                  buildState={buildState}
-                  onSectionClick={handleSectionClick}
-                  onSkip={handleSkipSection}
-                />
+            {/* Main Build Area - Glass container with padding */}
+            <div className="flex-1 flex flex-col overflow-hidden p-2 sm:p-3 lg:p-4">
+              {/* Mobile Tab Switcher for Build/Preview */}
+              <div className="flex lg:hidden mb-2 sm:mb-3">
+                <div className="flex w-full bg-zinc-900/50 rounded-lg p-0.5 border border-zinc-800/50 backdrop-blur-xl">
+                  <button
+                    onClick={() => setBuildMobileTab('build')}
+                    className={`flex-1 py-2 text-xs font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-1.5 ${
+                      buildMobileTab === 'build' 
+                        ? 'bg-zinc-800 text-white shadow-sm' 
+                        : 'text-zinc-400 hover:text-zinc-300'
+                    }`}
+                  >
+                    <Code className="w-3.5 h-3.5" />
+                    <span>Build</span>
+                  </button>
+                  <button
+                    onClick={() => setBuildMobileTab('preview')}
+                    className={`flex-1 py-2 text-xs font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-1.5 ${
+                      buildMobileTab === 'preview' 
+                        ? 'bg-zinc-800 text-white shadow-sm' 
+                        : 'text-zinc-400 hover:text-zinc-300'
+                    }`}
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>Preview</span>
+                  </button>
+                </div>
               </div>
-
-              <div className="flex-1 flex min-h-0 overflow-hidden px-4 lg:px-8 py-4 lg:py-8">
+              
+              {/* Glass container wrapper */}
+              <div className="flex-1 flex min-h-0 overflow-hidden rounded-2xl border border-zinc-700/30 bg-zinc-900/40 backdrop-blur-2xl shadow-2xl shadow-black/20">
                 {getCurrentSection() && getCurrentDbSection() && (project?.id || getCurrentDbSection()!.project_id) && (
-                  <div className="flex-1 rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-xl overflow-hidden">
+                  <div className={`flex-1 overflow-hidden ${buildMobileTab === 'build' ? 'flex' : 'hidden'} lg:flex`}>
                     <SectionBuilder
                       section={getCurrentSection()!}
                       dbSection={getCurrentDbSection()!}
@@ -2049,28 +2105,50 @@ export default function GeneratedPage() {
                         setIsHealing(healing)
                         if (message) setLastHealMessage(message)
                       }}
+                      onOpenAssistant={() => setShowOracle(true)}
+                      onOpenPromptHelper={() => setShowArchitect(true)}
                     />
+                  </div>
+                )}
+                
+                {/* Mobile Preview Panel - visible when preview tab active */}
+                {buildMobileTab === 'preview' && previewSections.length > 0 && (
+                  <div className="flex-1 flex lg:hidden flex-col overflow-hidden">
+                    <FullSitePreviewFrame 
+                      sections={previewSections}
+                      deviceView="mobile"
+                      seo={brandConfig?.seo ? {
+                        title: brandConfig.seo.title || '',
+                        description: brandConfig.seo.description || '',
+                        keywords: brandConfig.seo.keywords || ''
+                      } : undefined}
+                    />
+                  </div>
+                )}
+                
+                {buildMobileTab === 'preview' && previewSections.length === 0 && (
+                  <div className="flex-1 flex lg:hidden items-center justify-center">
+                    <div className="text-center p-6">
+                      <Eye className="w-8 h-8 text-zinc-700 mx-auto mb-3" />
+                      <p className="text-sm text-zinc-500">Build a section to see preview</p>
+                    </div>
                   </div>
                 )}
 
                 {getCurrentSection() && getCurrentDbSection() && !(project?.id || getCurrentDbSection()!.project_id) && (
-                  <div className="flex-1 rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-xl flex items-center justify-center px-10 text-center">
-                    <div className="max-w-md">
-                      <div className="text-4xl mb-4">⚠️</div>
-                      <h2 className="text-lg font-semibold text-white mb-2">Project data isn't available yet</h2>
-                      <p className="text-sm text-zinc-400 mb-6">
-                        We can't generate the next section because the project id is missing. Please refresh or start a new project.
-                      </p>
-                      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <div className="flex-1 flex items-center justify-center px-10 text-center">
+                    <div className="max-w-sm">
+                      <p className="text-xs text-zinc-500 mb-4">Project data unavailable</p>
+                      <div className="flex gap-2 justify-center">
                         <button
                           onClick={() => window.location.reload()}
-                          className="px-4 py-2 rounded-lg border border-zinc-800 bg-zinc-900 text-white hover:border-zinc-700"
+                          className="px-3 py-1.5 text-xs rounded-md border border-zinc-800 bg-zinc-900 text-white hover:border-zinc-700"
                         >
                           Refresh
                         </button>
                         <button
                           onClick={handleStartFresh}
-                          className="px-4 py-2 rounded-lg border border-zinc-800 text-zinc-200 hover:border-zinc-700"
+                          className="px-3 py-1.5 text-xs rounded-md border border-zinc-800 text-zinc-400 hover:border-zinc-700"
                         >
                           Start Fresh
                         </button>
@@ -2080,39 +2158,27 @@ export default function GeneratedPage() {
                 )}
 
                 {getCurrentSection() && !getCurrentDbSection() && (
-                  <div className="flex-1 rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-xl flex items-center justify-center px-10 text-center">
-                    <div className="max-w-md">
-                      <div className="text-4xl mb-4">⚠️</div>
-                      <h2 className="text-lg font-semibold text-white mb-2">This section isn't in your project</h2>
-                      <p className="text-sm text-zinc-400 mb-6">
-                        Your selected section list doesn't match the project data. This can happen if the section list was customized.
-                      </p>
-                      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <div className="flex-1 flex items-center justify-center px-10 text-center">
+                    <div className="max-w-sm">
+                      <p className="text-xs text-zinc-500 mb-4">Section not found in project</p>
+                      <div className="flex gap-2 justify-center">
                         <button
                           onClick={handleStartFresh}
-                          className="px-4 py-2 rounded-lg border border-zinc-800 bg-zinc-900 text-white hover:border-zinc-700"
+                          className="px-3 py-1.5 text-xs rounded-md border border-zinc-800 bg-zinc-900 text-white hover:border-zinc-700"
                         >
                           Start Fresh
-                        </button>
-                        <button
-                          onClick={() => setPhase('initializing')}
-                          className="px-4 py-2 rounded-lg border border-zinc-800 text-zinc-200 hover:border-zinc-700"
-                        >
-                          Back to Start
                         </button>
                       </div>
                     </div>
                   </div>
                 )}
-              </div>
-            </div>
-
-            {/* Live Preview Panel - Denser, professional */}
-            <div className="hidden lg:flex w-[360px] flex-shrink-0 flex-col border-l border-zinc-800/50 bg-zinc-950">
+                
+                {/* Desktop Live Preview Panel - inside glass container */}
+                <div className="hidden lg:flex w-[360px] flex-shrink-0 flex-col border-l border-zinc-800/30 bg-zinc-950/50">
               {/* Preview Header - Minimal */}
               <div className="flex-shrink-0 h-10 px-3 border-b border-zinc-800/50 flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-zinc-500" />
                   <span className="text-[10px] text-zinc-600 uppercase tracking-wider">Preview</span>
                 </div>
                 
@@ -2122,7 +2188,7 @@ export default function GeneratedPage() {
                     <button
                       onClick={() => setPreviewEditMode(!previewEditMode)}
                       className={`p-1 rounded transition-all ${
-                        previewEditMode ? 'text-emerald-400 bg-emerald-500/10' : 'text-zinc-600 hover:text-zinc-400'
+                        previewEditMode ? 'text-white bg-zinc-700' : 'text-zinc-600 hover:text-zinc-400'
                       }`}
                       title={previewEditMode ? 'Editing enabled' : 'Enable text editing'}
                     >
@@ -2136,21 +2202,21 @@ export default function GeneratedPage() {
                         className={`p-1 rounded transition-all ${!expandedPreview && reviewDeviceView === 'mobile' ? 'bg-zinc-800 text-white' : 'text-zinc-600 hover:text-zinc-400'}`}
                         title="Mobile"
                       >
-                        <Smartphone className="w-3 h-3" />
+                        <Smartphone className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => { setExpandedPreview('tablet'); setReviewDeviceView('tablet') }}
                         className={`p-1 rounded transition-all ${expandedPreview === 'tablet' ? 'bg-zinc-800 text-white' : 'text-zinc-600 hover:text-zinc-400'}`}
                         title="Tablet"
                       >
-                        <Tablet className="w-3 h-3" />
+                        <Tablet className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => { setExpandedPreview('desktop'); setReviewDeviceView('desktop') }}
                         className={`p-1 rounded transition-all ${expandedPreview === 'desktop' ? 'bg-zinc-800 text-white' : 'text-zinc-600 hover:text-zinc-400'}`}
                         title="Desktop"
                       >
-                        <Monitor className="w-3 h-3" />
+                        <Monitor className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
@@ -2177,6 +2243,8 @@ export default function GeneratedPage() {
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
               </div>
             </div>
             
@@ -2209,7 +2277,7 @@ export default function GeneratedPage() {
                       }}
                       className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                         previewEditMode
-                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                          ? 'bg-zinc-100 text-zinc-900'
                           : 'bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-700'
                       }`}
                     >
@@ -2401,7 +2469,7 @@ export default function GeneratedPage() {
                         href={deployedUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-2.5 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm bg-zinc-800 text-emerald-400 border border-zinc-700 rounded-lg hover:bg-zinc-700 transition-colors flex items-center gap-1.5 sm:gap-2 font-medium"
+                        className="px-2.5 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm bg-white text-zinc-900 border border-zinc-200 rounded-lg hover:bg-zinc-100 transition-colors flex items-center gap-1.5 sm:gap-2 font-medium"
                       >
                         <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         <span className="hidden sm:inline">Live</span>
@@ -2413,10 +2481,10 @@ export default function GeneratedPage() {
                         disabled={!assembledCode}
                         className={`px-5 py-2.5 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 group ${
                           tierConfig?.color === 'amber' 
-                            ? 'bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white shadow-[0_0_15px_rgba(16,185,129,0.15)]'
+                            ? 'bg-white text-zinc-900 hover:bg-zinc-100'
                             : tierConfig?.color === 'lime'
-                            ? 'bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white shadow-[0_0_15px_rgba(16,185,129,0.15)]'
-                            : 'bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white shadow-[0_0_15px_rgba(16,185,129,0.15)]'
+                            ? 'bg-white text-zinc-900 hover:bg-zinc-100'
+                            : 'bg-white text-zinc-900 hover:bg-zinc-100'
                         }`}
                       >
                         <Rocket className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -2452,7 +2520,7 @@ export default function GeneratedPage() {
                                   <Github className="w-5 h-5 text-white" />
                                 </div>
                                 <div className="flex-1">
-                                  <p className="text-sm font-medium text-white group-hover:text-emerald-300">
+                                  <p className="text-sm font-medium text-white group-hover:text-zinc-200">
                                     {github.connected ? 'Push to GitHub' : 'Connect GitHub'}
                                   </p>
                                   <p className="text-xs text-zinc-500">
@@ -2471,11 +2539,11 @@ export default function GeneratedPage() {
                                 disabled={isDeploying}
                                 className="w-full flex items-center gap-3 p-3 hover:bg-zinc-800 rounded-lg transition-colors text-left group"
                               >
-                                <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                                  <Rocket className="w-5 h-5 text-emerald-400" />
+                                <div className="w-9 h-9 rounded-lg bg-zinc-800 flex items-center justify-center">
+                                  <Rocket className="w-5 h-5 text-zinc-400" />
                                 </div>
                                 <div className="flex-1">
-                                  <p className="text-sm font-medium text-white group-hover:text-emerald-300">Deploy to HatchIt</p>
+                                  <p className="text-sm font-medium text-white group-hover:text-zinc-200">Deploy to HatchIt</p>
                                   <p className="text-xs text-zinc-500">Live on hatchitsites.dev</p>
                                 </div>
                                 {!canDeploy && <Lock className="w-4 h-4 text-zinc-500" />}
@@ -2493,7 +2561,7 @@ export default function GeneratedPage() {
                                   <Download className="w-5 h-5 text-zinc-400" />
                                 </div>
                                 <div className="flex-1">
-                                  <p className="text-sm font-medium text-white group-hover:text-emerald-300">Download ZIP</p>
+                                  <p className="text-sm font-medium text-white group-hover:text-zinc-200">Download ZIP</p>
                                   <p className="text-xs text-zinc-500">Full Next.js project</p>
                                 </div>
                               </button>
@@ -2501,8 +2569,8 @@ export default function GeneratedPage() {
                             
                             {/* GitHub Push Result */}
                             {githubPushResult?.success && (
-                              <div className="border-t border-zinc-800 p-3 bg-emerald-500/5">
-                                <p className="text-xs text-emerald-400 font-medium mb-2">✓ Pushed to GitHub</p>
+                              <div className="border-t border-zinc-800 p-3 bg-zinc-800/50">
+                                <p className="text-xs text-white font-medium mb-2">✓ Pushed to GitHub</p>
                                 <div className="flex gap-2">
                                   <a
                                     href={githubPushResult.repoUrl}
@@ -2618,7 +2686,7 @@ export default function GeneratedPage() {
                         className="w-full text-left p-2 sm:p-3 rounded-lg mb-0.5 sm:mb-1 transition-all group hover:bg-zinc-800/50 border border-transparent cursor-pointer"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-6 h-6 rounded flex items-center justify-center text-xs bg-zinc-800 text-emerald-400 border border-zinc-700">
+                          <div className="w-6 h-6 rounded flex items-center justify-center text-xs bg-zinc-800 text-zinc-400 border border-zinc-700">
                             <CheckCircle2 className="w-3.5 h-3.5" />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -2651,7 +2719,7 @@ export default function GeneratedPage() {
                     )}
                   </button>
                   {buildState.finalAuditComplete && (
-                    <div className="mt-3 flex items-center justify-center gap-2 text-xs text-emerald-400 font-mono bg-zinc-800 py-1.5 rounded border border-zinc-700">
+                    <div className="mt-3 flex items-center justify-center gap-2 text-xs text-zinc-400 font-mono bg-zinc-800 py-1.5 rounded border border-zinc-700">
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       <span>Optimized: {buildState.finalAuditChanges?.length || 0} improvements</span>
                     </div>
@@ -2668,7 +2736,7 @@ export default function GeneratedPage() {
                 {/* Preview Header with Device Toggle */}
                 <div className="p-4 border-b border-zinc-800 flex items-center justify-between relative z-10 bg-zinc-950">
                   <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-zinc-500" />
                     <h3 className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Live Preview</h3>
                   </div>
                   
@@ -2999,6 +3067,21 @@ export default function GeneratedPage() {
         currentBrand={project?.brand_config || undefined}
         onSave={handleSaveSettings}
         projectName={project?.name || brandConfig?.brandName || 'Untitled Project'}
+        onProjectNameChange={async (name: string) => {
+          if (!project || demoMode) return
+          try {
+            const response = await fetch(`/api/project/${project.id}/name`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name })
+            })
+            if (response.ok) {
+              setProject(prev => prev ? { ...prev, name } : null)
+            }
+          } catch (err) {
+            console.error('Failed to update project name:', err)
+          }
+        }}
         currentSectionName={getCurrentSection()?.name}
         thought={getCurrentSection()?.name ? `Building ${getCurrentSection()?.name}` : undefined}
         demoMode={demoMode}
@@ -3018,6 +3101,28 @@ export default function GeneratedPage() {
           // Handle replicated site data - could populate sections with cloned content
           console.log('Replicated site data:', data)
           setShowReplicator(false)
+        }}
+      />
+
+      {/* Assistant Modal - AI help chat */}
+      <AssistantModal
+        isOpen={showOracle}
+        onClose={() => setShowOracle(false)}
+        currentCode={buildState?.sectionCode[getCurrentSection()?.id || ''] || ''}
+        sectionName={getCurrentSection()?.name}
+        projectName={project?.name}
+      />
+
+      {/* Prompt Helper Modal - Enhance prompts */}
+      <PromptHelperModal
+        isOpen={showArchitect}
+        onClose={() => setShowArchitect(false)}
+        currentSectionType={getCurrentSection()?.name}
+        onUsePrompt={(prompt) => {
+          // Set the prompt in the active section's input
+          setShowArchitect(false)
+          // Could dispatch to prompt input - for now just copy to clipboard
+          navigator.clipboard.writeText(prompt)
         }}
       />
     </div>

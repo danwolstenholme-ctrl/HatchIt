@@ -227,7 +227,7 @@ export default function SiteSettingsModal({
                             setEditingName(false)
                           }
                         }}
-                        className="text-xl font-semibold text-white bg-transparent border-b-2 border-emerald-500 outline-none px-0 py-1"
+                        className="text-xl font-semibold text-white bg-transparent border-b-2 border-zinc-400 outline-none px-0 py-1"
                       />
                     ) : (
                       <h2 
@@ -284,7 +284,7 @@ export default function SiteSettingsModal({
                   </p>
                   <button
                     onClick={() => onUpgrade?.()}
-                    className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold rounded-lg transition-colors"
+                    className="px-6 py-2.5 bg-white hover:bg-zinc-100 text-zinc-900 font-semibold rounded-lg transition-colors"
                   >
                     Create Free Account
                   </button>
@@ -332,7 +332,7 @@ export default function SiteSettingsModal({
                           value={settings.seo.title}
                           onChange={e => setSettings({...settings, seo: {...settings.seo, title: e.target.value}})}
                           placeholder="My Awesome Website"
-                          className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white placeholder-zinc-500 focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 outline-none transition-all"
+                          className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white placeholder-zinc-500 focus:ring-2 focus:ring-zinc-500/50 focus:border-white outline-none transition-all"
                         />
                         <p className="text-xs text-zinc-500 mt-1">Used in browser tab and as fallback if no logo.</p>
                       </div>
@@ -426,7 +426,7 @@ export default function SiteSettingsModal({
                               <select
                                 value={settings.brand.headingFont}
                                 onChange={e => setSettings({...settings, brand: {...settings.brand, headingFont: e.target.value}})}
-                                className="w-full appearance-none bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none cursor-pointer"
+                                className="w-full appearance-none bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-zinc-500/50 outline-none cursor-pointer"
                                 style={{ fontFamily: settings.brand.headingFont }}
                               >
                                 {FONT_OPTIONS.map((font) => (
@@ -444,7 +444,7 @@ export default function SiteSettingsModal({
                               <select
                                 value={settings.brand.font}
                                 onChange={e => setSettings({...settings, brand: {...settings.brand, font: e.target.value}})}
-                                className="w-full appearance-none bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none cursor-pointer"
+                                className="w-full appearance-none bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-zinc-500/50 outline-none cursor-pointer"
                                 style={{ fontFamily: settings.brand.font }}
                               >
                                 {FONT_OPTIONS.map((font) => (
@@ -484,7 +484,7 @@ export default function SiteSettingsModal({
                             onClick={() => setSettings({...settings, brand: {...settings.brand, mode: 'dark'}})}
                             className={`p-4 rounded-xl border-2 transition-all ${
                               settings.brand.mode === 'dark' 
-                                ? 'bg-zinc-800 border-emerald-500' 
+                                ? 'bg-zinc-800 border-white' 
                                 : 'bg-zinc-800/50 border-zinc-700 hover:border-zinc-600'
                             }`}
                           >
@@ -497,7 +497,7 @@ export default function SiteSettingsModal({
                             onClick={() => setSettings({...settings, brand: {...settings.brand, mode: 'light'}})}
                             className={`p-4 rounded-xl border-2 transition-all ${
                               settings.brand.mode === 'light' 
-                                ? 'bg-zinc-800 border-emerald-500' 
+                                ? 'bg-zinc-800 border-white' 
                                 : 'bg-zinc-800/50 border-zinc-700 hover:border-zinc-600'
                             }`}
                           >
@@ -521,7 +521,7 @@ export default function SiteSettingsModal({
                           value={settings.seo.title}
                           onChange={e => setSettings({...settings, seo: {...settings.seo, title: e.target.value}})}
                           placeholder="My Awesome Website"
-                          className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white placeholder-zinc-500 focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 outline-none transition-all"
+                          className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white placeholder-zinc-500 focus:ring-2 focus:ring-zinc-500/50 focus:border-white outline-none transition-all"
                         />
                         <p className="text-xs text-zinc-500 mt-1">Appears in browser tabs and search results.</p>
                       </div>
@@ -533,7 +533,7 @@ export default function SiteSettingsModal({
                           onChange={e => setSettings({...settings, seo: {...settings.seo, description: e.target.value}})}
                           placeholder="A brief description of your website..."
                           rows={3}
-                          className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white placeholder-zinc-500 focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 outline-none resize-none transition-all"
+                          className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white placeholder-zinc-500 focus:ring-2 focus:ring-zinc-500/50 focus:border-white outline-none resize-none transition-all"
                         />
                         <p className="text-xs text-zinc-500 mt-1">
                           {settings.seo.description.length}/160 characters
@@ -547,7 +547,7 @@ export default function SiteSettingsModal({
                           value={settings.seo.keywords}
                           onChange={e => setSettings({...settings, seo: {...settings.seo, keywords: e.target.value}})}
                           placeholder="react, website, builder, ai"
-                          className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white placeholder-zinc-500 focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 outline-none transition-all"
+                          className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white placeholder-zinc-500 focus:ring-2 focus:ring-zinc-500/50 focus:border-white outline-none transition-all"
                         />
                         <p className="text-xs text-zinc-500 mt-1">Comma-separated list of keywords.</p>
                       </div>
@@ -585,11 +585,11 @@ export default function SiteSettingsModal({
                 <button
                   onClick={handleSave}
                   disabled={isSaving}
-                  className="flex items-center gap-2 px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 px-5 py-2 bg-white hover:bg-zinc-100 text-zinc-900 font-semibold rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {isSaving ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-2 border-zinc-400 border-t-zinc-900 rounded-full animate-spin" />
                       Saving...
                     </>
                   ) : (

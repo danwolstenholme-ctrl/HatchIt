@@ -1,11 +1,11 @@
 'use client'
 
 import { useUser } from '@clerk/nextjs'
-import { Check, X } from 'lucide-react'
+import { Check, X, Sparkles } from 'lucide-react'
 
 export default function BillingPage() {
   const { user } = useUser()
-  const accountSubscription = user?.publicMetadata?.accountSubscription as any
+  const accountSubscription = user?.publicMetadata?.accountSubscription as { tier?: string } | undefined
   const currentTier = accountSubscription?.tier || 'free'
 
   const plans = [
@@ -78,25 +78,20 @@ export default function BillingPage() {
   ]
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-12">
-      <div className="mb-12">
-        <h1 className="text-2xl font-semibold text-zinc-100 mb-2">Billing</h1>
-        <p className="text-zinc-500 text-sm">
-          Manage your subscription and billing details
-        </p>
-      </div>
+    <div className="space-y-6">
+      <p className="text-xs text-zinc-500">Manage your subscription and billing details.</p>
 
       {/* Current plan info */}
-      <div className="mb-10 p-5 bg-zinc-900 border border-zinc-800 rounded-md">
+      <div className="p-4 bg-zinc-900 border border-zinc-800 rounded-lg">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs text-zinc-500 uppercase tracking-wide mb-1">Current plan</p>
-            <p className="text-lg font-medium text-zinc-200 capitalize">{currentTier}</p>
+            <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-medium mb-1">Current plan</p>
+            <p className="text-sm font-medium text-zinc-100 capitalize">{currentTier}</p>
           </div>
           {currentTier !== 'free' && (
             <a 
               href="/api/subscription/portal"
-              className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
+              className="text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors"
             >
               Manage subscription →
             </a>
@@ -104,42 +99,43 @@ export default function BillingPage() {
         </div>
       </div>
 
-      {/* Plans grid - 4 columns on desktop */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Plans grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         {plans.map((plan) => (
           <div
             key={plan.id}
-            className={`relative p-5 rounded-md border transition-all ${
+            className={`relative p-4 rounded-lg border transition-all ${
               plan.current
-                ? 'bg-emerald-900/10 border-emerald-500/30'
+                ? 'bg-emerald-500/5 border-emerald-500/30'
                 : plan.recommended
-                ? 'bg-zinc-900 border-emerald-500/30 hover:border-emerald-500/50'
+                ? 'bg-zinc-900 border-zinc-700 shadow-sm hover:border-zinc-600'
                 : 'bg-zinc-900 border-zinc-800 hover:border-zinc-700'
             }`}
           >
             {plan.recommended && !plan.current && (
-              <div className="absolute -top-2.5 left-4 px-2 py-0.5 bg-emerald-600 text-white text-[10px] font-semibold rounded">
+              <div className="absolute -top-2.5 left-3 px-2 py-0.5 bg-emerald-500 text-white text-[9px] font-medium rounded flex items-center gap-1">
+                <Sparkles className="w-2.5 h-2.5" />
                 RECOMMENDED
               </div>
             )}
 
-            <div className="mb-4">
-              <h3 className="text-lg font-medium text-zinc-200 mb-1">{plan.name}</h3>
-              <p className="text-xs text-zinc-500">{plan.description}</p>
+            <div className="mb-3">
+              <h3 className="text-sm font-medium text-zinc-100">{plan.name}</h3>
+              <p className="text-[10px] text-zinc-500">{plan.description}</p>
             </div>
 
-            <div className="flex items-baseline gap-1 mb-5">
-              <span className="text-2xl font-semibold text-zinc-200">${plan.price}</span>
-              <span className="text-zinc-500 text-xs">/mo</span>
+            <div className="flex items-baseline gap-0.5 mb-4">
+              <span className="text-xl font-semibold text-white">${plan.price}</span>
+              <span className="text-zinc-500 text-[10px]">/mo</span>
             </div>
 
-            <ul className="space-y-2 mb-5">
+            <ul className="space-y-1.5 mb-4">
               {plan.features.map((feature, i) => (
-                <li key={i} className={`flex items-start gap-2 text-xs ${feature.included ? 'text-zinc-400' : 'text-zinc-600'}`}>
+                <li key={i} className={`flex items-start gap-2 text-[11px] ${feature.included ? 'text-zinc-400' : 'text-zinc-600'}`}>
                   {feature.included ? (
-                    <Check className="w-3.5 h-3.5 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <Check className="w-3 h-3 text-emerald-500 mt-0.5 flex-shrink-0" />
                   ) : (
-                    <X className="w-3.5 h-3.5 text-zinc-700 mt-0.5 flex-shrink-0" />
+                    <X className="w-3 h-3 text-zinc-700 mt-0.5 flex-shrink-0" />
                   )}
                   <span>{feature.text}</span>
                 </li>
@@ -147,19 +143,19 @@ export default function BillingPage() {
             </ul>
 
             {plan.current ? (
-              <div className="w-full py-2 text-center text-xs text-emerald-500 border border-emerald-500/30 rounded-md">
+              <div className="w-full py-1.5 text-center text-[11px] text-emerald-400 border border-emerald-500/30 rounded-md bg-emerald-500/10">
                 Current plan
               </div>
             ) : plan.free ? (
-              <div className="w-full py-2 text-center text-xs text-zinc-600 border border-zinc-800 rounded-md">
+              <div className="w-full py-1.5 text-center text-[11px] text-zinc-500 border border-zinc-700 rounded-md">
                 Free forever
               </div>
             ) : (
               <a
                 href={`/api/checkout?tier=${plan.id}`}
-                className={`block w-full py-2 text-center text-xs font-medium rounded-md transition-colors ${
+                className={`block w-full py-1.5 text-center text-[11px] font-medium rounded-md transition-colors ${
                   plan.recommended
-                    ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                    ? 'bg-emerald-500 hover:bg-emerald-400 text-white'
                     : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-200'
                 }`}
               >
@@ -170,7 +166,7 @@ export default function BillingPage() {
         ))}
       </div>
 
-      <p className="text-center text-xs text-zinc-600 mt-8">
+      <p className="text-center text-[10px] text-zinc-500">
         All plans include a 14-day money-back guarantee. Cancel anytime.
       </p>
     </div>

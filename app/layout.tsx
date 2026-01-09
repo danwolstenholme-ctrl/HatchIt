@@ -3,7 +3,6 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
-import ContactButton from "@/components/ContactButton";
 import ConditionalNavigation from "@/components/ConditionalNavigation";
 import ConditionalFooter from "@/components/ConditionalFooter";
 import ConditionalAnalytics from "@/components/ConditionalAnalytics";
@@ -115,7 +114,6 @@ export default function RootLayout({
             <ConditionalNavigation />
             {children}
             <ConditionalFooter />
-            <ContactButton />
             <ConditionalAnalytics />
           </SubscriptionProvider>
         </body>

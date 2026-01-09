@@ -171,7 +171,7 @@ export default function BuildDetailPage() {
         <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">{error}</div>
       ) : null}
       {notice ? (
-        <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{notice}</div>
+        <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400">{notice}</div>
       ) : null}
 
       <section className="grid gap-3 md:grid-cols-2">
@@ -226,20 +226,20 @@ export default function BuildDetailPage() {
             <button
               onClick={createSnapshot}
               disabled={busy !== null}
-              className="px-3 py-1.5 text-xs text-zinc-200 border border-zinc-800 hover:border-zinc-700 rounded-lg transition-all disabled:opacity-50"
+              className="px-3 py-1.5 text-xs text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition-all disabled:opacity-50"
             >
               {busy === 'snapshot' ? 'Creating…' : 'Create snapshot'}
             </button>
             <button
               onClick={runAudit}
               disabled={busy !== null}
-              className="px-3 py-1.5 text-xs text-zinc-200 border border-zinc-800 hover:border-zinc-700 rounded-lg transition-all disabled:opacity-50"
+              className="px-3 py-1.5 text-xs text-zinc-200 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all disabled:opacity-50"
             >
               {busy === 'audit' ? 'Auditing…' : 'Run AI audit'}
             </button>
             <Link
               href={`/builder?project=${project.id}#deploy`}
-              className="px-3 py-1.5 text-xs text-zinc-200 border border-zinc-800 hover:border-zinc-700 rounded-lg transition-all"
+              className="px-3 py-1.5 text-xs text-zinc-200 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all"
             >
               Deploy
             </Link>

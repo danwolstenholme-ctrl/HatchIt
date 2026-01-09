@@ -20,15 +20,15 @@ import {
   ImageIcon,
   Code,
   Zap,
-  Lock
+  Lock,
+  MessageSquare
 } from 'lucide-react'
 import GeneratingModal from './builder/GeneratingModal'
 import { LogoMark } from './Logo'
+import Button from './singularity/Button'
 
 // =============================================================================
-// INLINE PROMPT INPUT - Clean, minimal input for section prompts
-// =============================================================================
-// INLINE PROMPT INPUT - Clean, professional initial state
+// INLINE PROMPT INPUT - Command bar at top, AI tools expanded below
 // =============================================================================
 function InlinePromptInput({ 
   onSubmit, 
@@ -37,10 +37,21 @@ function InlinePromptInput({
 }: { 
   onSubmit: (prompt: string) => void
   sectionName?: string
-  placeholder?: string 
+  placeholder?: string
 }) {
   const [prompt, setPrompt] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [activeToolTab, setActiveToolTab] = useState<'tips' | 'assistant' | 'helper'>('tips')
+  
+  // Inline assistant state
+  const [assistantMessages, setAssistantMessages] = useState<Array<{role: 'user' | 'assistant', content: string}>>([])
+  const [assistantInput, setAssistantInput] = useState('')
+  const [isAssistantLoading, setIsAssistantLoading] = useState(false)
+  
+  // Inline prompt helper state
+  const [helperPrompt, setHelperPrompt] = useState('')
+  const [enhancedPrompt, setEnhancedPrompt] = useState('')
+  const [isEnhancing, setIsEnhancing] = useState(false)
 
   const isValid = prompt.trim().length >= 10
 
@@ -49,19 +60,115 @@ function InlinePromptInput({
     setIsSubmitting(true)
     setTimeout(() => onSubmit(prompt), 300)
   }
+  
+  // Inline assistant send
+  const handleAssistantSend = async () => {
+    if (!assistantInput.trim() || isAssistantLoading) return
+    const userMessage = assistantInput.trim()
+    setAssistantInput('')
+    setAssistantMessages(prev => [...prev, { role: 'user', content: userMessage }])
+    setIsAssistantLoading(true)
+    
+    try {
+      const response = await fetch('/api/assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: userMessage,
+          sectionType: sectionName,
+          conversationHistory: assistantMessages.slice(-6),
+        }),
+      })
+      if (!response.ok) throw new Error('Failed')
+      const data = await response.json()
+      setAssistantMessages(prev => [...prev, { role: 'assistant', content: data.response }])
+    } catch {
+      setAssistantMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, something went wrong. Try again.' }])
+    } finally {
+      setIsAssistantLoading(false)
+    }
+  }
+  
+  // Inline prompt enhance
+  const handleEnhance = async () => {
+    if (!helperPrompt.trim() || isEnhancing) return
+    setIsEnhancing(true)
+    setEnhancedPrompt('')
+    
+    try {
+      const response = await fetch('/api/prompt-helper', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: helperPrompt,
+          sectionType: sectionName,
+        }),
+      })
+      if (!response.ok) throw new Error('Failed')
+      const data = await response.json()
+      setEnhancedPrompt(data.enhancedPrompt || data.enhanced || helperPrompt)
+    } catch {
+      setEnhancedPrompt('Enhancement failed. Try again.')
+    } finally {
+      setIsEnhancing(false)
+    }
+  }
+  
+  const useEnhancedPrompt = () => {
+    setPrompt(enhancedPrompt)
+    setHelperPrompt('')
+    setEnhancedPrompt('')
+    setActiveToolTab('tips')
+  }
+
+  const tips = [
+    { label: 'Style', example: 'Dark, minimal, cinematic' },
+    { label: 'Layout', example: 'Split hero, left-aligned' },
+    { label: 'Content', example: 'AI startup, dev tools, SaaS' },
+    { label: 'Tone', example: 'Professional, confident' },
+  ]
+  
+  const assistantQuickActions = [
+    { label: 'Debug help', prompt: 'What common issues should I avoid?' },
+    { label: 'Design tips', prompt: 'What makes a good hero section?' },
+    { label: 'Best practices', prompt: 'What should I include for conversion?' },
+  ]
+  
+  const examplePrompts: Record<string, string[]> = {
+    'Hero': [
+      'Dark, cinematic hero with bold headline and CTA',
+      'Split-screen hero with product mockup on right',
+      'Minimal hero with centered text and gradient',
+    ],
+    'Features': [
+      'Bento grid of features with icons',
+      '3-column feature cards with hover effects',
+      'Alternating feature rows with illustrations',
+    ],
+    'Pricing': [
+      'Three-tier pricing with popular badge',
+      'Toggle between monthly and yearly plans',
+      'Single featured plan with comparison table',
+    ],
+    'default': [
+      'Clean, modern, and professional',
+      'Dark theme with neon accents',
+      'Minimalist with lots of whitespace',
+    ],
+  }
+  
+  const currentExamples = examplePrompts[sectionName] || examplePrompts['default']
 
   return (
-    <div className="h-full flex flex-col bg-zinc-950">
-      <div className="flex-1 flex items-end justify-center p-4 pb-6">
-        <div className="w-full max-w-xl">
-          {/* Section label */}
+    <div className="h-full flex flex-col">
+      {/* Command bar at top */}
+      <div className="flex-shrink-0 p-4 border-b border-zinc-800 bg-zinc-900/50">
+        <div className="max-w-xl mx-auto">
           <div className="mb-3 text-center">
-            <p className="text-[10px] text-zinc-600 uppercase tracking-wider">Building</p>
-            <p className="text-sm text-zinc-300 font-medium">{sectionName}</p>
+            <p className="text-[11px] text-zinc-500 uppercase tracking-wider mb-1">Building</p>
+            <p className="text-lg text-white font-semibold">{sectionName}</p>
           </div>
-          
-          {/* Input */}
-          <div className="flex items-center bg-zinc-900/80 border border-zinc-800/60 rounded-lg overflow-hidden focus-within:border-zinc-700">
+          <div className="flex items-center bg-zinc-950 border border-zinc-700 rounded-lg overflow-hidden focus-within:border-emerald-500/50 focus-within:ring-1 focus-within:ring-emerald-500/20">
             <input
               type="text"
               value={prompt}
@@ -73,28 +180,269 @@ function InlinePromptInput({
                 }
               }}
               placeholder={placeholder}
-              className="flex-1 bg-transparent px-4 py-3 text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none"
+              className="flex-1 bg-transparent px-4 py-3.5 text-sm text-white placeholder-zinc-500 focus:outline-none"
               autoFocus
             />
-            <button
-              onClick={handleSubmit}
-              disabled={!isValid || isSubmitting}
-              className={`px-4 py-3 text-sm font-medium border-l border-zinc-700/50 transition-all
-                ${isValid && !isSubmitting
-                  ? 'bg-emerald-500/10 text-white hover:bg-emerald-500/15'
-                  : 'bg-zinc-800/50 text-zinc-600 cursor-not-allowed'}`}
-            >
-              {isSubmitting ? '...' : 'Build →'}
-            </button>
+            <div className="px-2">
+              <Button
+                onClick={handleSubmit}
+                disabled={!isValid || isSubmitting}
+                loading={isSubmitting}
+                size="sm"
+                shimmer={isValid && !isSubmitting}
+              >
+                Build
+              </Button>
+            </div>
           </div>
           
-          {/* Tech stack */}
-          <div className="mt-2 flex items-center justify-center gap-2 text-[10px] text-zinc-700">
+          {/* Tech stack hint */}
+          <div className="mt-2 flex items-center justify-center gap-2 text-[10px] text-zinc-600">
+            <span className="text-emerald-500/70">●</span>
             <span>Claude Sonnet 4.5</span>
             <span>·</span>
             <span>React 19</span>
             <span>·</span>
-            <span>Tailwind 4</span>
+            <span>Tailwind</span>
+          </div>
+        </div>
+      </div>
+      
+      {/* AI Tools Area - Expanded below */}
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        {/* Tool tabs */}
+        <div className="flex-shrink-0 px-4 pt-3 pb-2 border-b border-zinc-800/50">
+          <div className="max-w-xl mx-auto flex items-center gap-1">
+            <button
+              onClick={() => setActiveToolTab('tips')}
+              className={`px-3 py-1.5 text-xs rounded-md transition-all ${
+                activeToolTab === 'tips' 
+                  ? 'bg-zinc-800 text-white' 
+                  : 'text-zinc-500 hover:text-zinc-300'
+              }`}
+            >
+              Tips
+            </button>
+            <button
+              onClick={() => setActiveToolTab('assistant')}
+              className={`px-3 py-1.5 text-xs rounded-md transition-all flex items-center gap-1.5 ${
+                activeToolTab === 'assistant' 
+                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' 
+                  : 'text-zinc-500 hover:text-zinc-300'
+              }`}
+            >
+              <MessageSquare className="w-3 h-3" />
+              Assistant
+            </button>
+            <button
+              onClick={() => setActiveToolTab('helper')}
+              className={`px-3 py-1.5 text-xs rounded-md transition-all flex items-center gap-1.5 ${
+                activeToolTab === 'helper' 
+                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                  : 'text-zinc-500 hover:text-zinc-300'
+              }`}
+            >
+              <Sparkles className="w-3 h-3" />
+              Prompt Helper
+            </button>
+          </div>
+        </div>
+        
+        {/* Tool content */}
+        <div className="flex-1 overflow-y-auto p-4">
+          <div className="max-w-xl mx-auto h-full">
+            {/* TIPS TAB */}
+            {activeToolTab === 'tips' && (
+              <div className="space-y-4">
+                <p className="text-xs text-zinc-500 text-center">Be specific. The more detail, the better the result.</p>
+                <div className="grid grid-cols-2 gap-2 text-left">
+                  {tips.map((tip, i) => (
+                    <div key={i} className="p-3 rounded-lg bg-zinc-900/80 border border-zinc-800">
+                      <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">{tip.label}</p>
+                      <p className="text-xs text-zinc-300">{tip.example}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* ASSISTANT TAB - Full chat interface */}
+            {activeToolTab === 'assistant' && (
+              <div className="h-full flex flex-col">
+                {assistantMessages.length === 0 ? (
+                  // Empty state
+                  <div className="flex-1 flex flex-col items-center justify-center text-center">
+                    <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center mb-3">
+                      <MessageSquare className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <p className="text-sm text-white font-medium mb-1">Ask me anything</p>
+                    <p className="text-xs text-zinc-500 mb-4 max-w-xs">
+                      I can help with design ideas, coding tips, or explain concepts.
+                    </p>
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {assistantQuickActions.map((action, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setAssistantInput(action.prompt)}
+                          className="px-3 py-1.5 text-xs bg-zinc-900 border border-zinc-800 rounded-lg hover:border-blue-500/30 hover:bg-blue-950/20 text-zinc-400 hover:text-white transition-all"
+                        >
+                          {action.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  // Messages list
+                  <div className="flex-1 overflow-y-auto space-y-3 mb-3">
+                    {assistantMessages.map((msg, i) => (
+                      <div key={i} className={`flex gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                        <div className={`w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center ${
+                          msg.role === 'user' ? 'bg-zinc-800' : 'bg-blue-500/20'
+                        }`}>
+                          {msg.role === 'user' 
+                            ? <span className="text-[10px] text-zinc-400">You</span>
+                            : <MessageSquare className="w-3 h-3 text-blue-400" />
+                          }
+                        </div>
+                        <div className={`max-w-[85%] px-3 py-2 rounded-xl text-xs ${
+                          msg.role === 'user'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-zinc-800 text-zinc-200'
+                        }`}>
+                          {msg.content}
+                        </div>
+                      </div>
+                    ))}
+                    {isAssistantLoading && (
+                      <div className="flex gap-2">
+                        <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center">
+                          <MessageSquare className="w-3 h-3 text-blue-400 animate-pulse" />
+                        </div>
+                        <div className="px-3 py-2 bg-zinc-800 rounded-xl">
+                          <div className="flex gap-1">
+                            <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '0ms'}} />
+                            <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '150ms'}} />
+                            <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '300ms'}} />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Input bar */}
+                <div className="flex-shrink-0 flex gap-2">
+                  <input
+                    type="text"
+                    value={assistantInput}
+                    onChange={(e) => setAssistantInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAssistantSend()}
+                    placeholder="Ask a question..."
+                    className="flex-1 px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500/50"
+                  />
+                  <button
+                    onClick={handleAssistantSend}
+                    disabled={!assistantInput.trim() || isAssistantLoading}
+                    className="px-3 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white text-xs font-medium rounded-lg transition-colors"
+                  >
+                    Send
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {/* PROMPT HELPER TAB - Full enhancement interface */}
+            {activeToolTab === 'helper' && (
+              <div className="space-y-4">
+                {!enhancedPrompt ? (
+                  <>
+                    <div className="text-center">
+                      <Sparkles className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
+                      <p className="text-sm text-white font-medium">Enhance Your Prompt</p>
+                      <p className="text-xs text-zinc-500 mt-1">
+                        Enter a basic idea and I&apos;ll make it more detailed and effective.
+                      </p>
+                    </div>
+                    
+                    {/* Quick examples */}
+                    <div className="space-y-2">
+                      <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Try an example:</p>
+                      <div className="space-y-1.5">
+                        {currentExamples.map((example, i) => (
+                          <button
+                            key={i}
+                            onClick={() => setHelperPrompt(example)}
+                            className="w-full text-left px-3 py-2 text-xs text-zinc-400 bg-zinc-900 border border-zinc-800 rounded-lg hover:border-emerald-500/30 hover:bg-emerald-950/20 hover:text-white transition-all"
+                          >
+                            {example}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    {/* Input */}
+                    <div className="space-y-2">
+                      <textarea
+                        value={helperPrompt}
+                        onChange={(e) => setHelperPrompt(e.target.value)}
+                        placeholder="Describe your section idea..."
+                        rows={3}
+                        className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/50 resize-none"
+                      />
+                      <button
+                        onClick={handleEnhance}
+                        disabled={!helperPrompt.trim() || isEnhancing}
+                        className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+                      >
+                        {isEnhancing ? (
+                          <>
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            Enhancing...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-3.5 h-3.5" />
+                            Enhance Prompt
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  // Show enhanced result
+                  <div className="space-y-4">
+                    <div className="text-center">
+                      <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-2">
+                        <Sparkles className="w-5 h-5 text-emerald-400" />
+                      </div>
+                      <p className="text-sm text-white font-medium">Enhanced!</p>
+                    </div>
+                    
+                    <div className="p-3 bg-emerald-950/30 border border-emerald-500/30 rounded-xl">
+                      <p className="text-xs text-emerald-300 leading-relaxed">{enhancedPrompt}</p>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <button
+                        onClick={useEnhancedPrompt}
+                        className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-lg transition-colors"
+                      >
+                        Use This Prompt
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEnhancedPrompt('')
+                          setHelperPrompt('')
+                        }}
+                        className="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm font-medium rounded-lg transition-colors"
+                      >
+                        Try Again
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -104,7 +452,7 @@ function InlinePromptInput({
 
 import { Section } from '@/lib/templates'
 import { DbSection, DbBrandConfig } from '@/lib/supabase'
-import SectionPreview from './SectionPreview'
+// SectionPreview removed - preview is now in the right panel (FullSitePreviewFrame)
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import { chronosphere } from '@/lib/chronosphere'
 import { buildProgress } from '@/lib/build-progress'
@@ -147,7 +495,7 @@ const unwrapCodePayload = (payload: unknown): string => {
 }
 
 // =============================================================================
-// AUTH REFINE BAR - Professional, dense command bar for logged-in users
+// AUTH REFINE BAR - Professional command bar for logged-in users with quick actions
 // =============================================================================
 function AuthRefineBar({
   refinePrompt,
@@ -156,6 +504,8 @@ function AuthRefineBar({
   handleUserRefine,
   onNextSection,
   isLastSection,
+  onOpenAssistant,
+  onOpenPromptHelper,
 }: {
   refinePrompt: string
   setRefinePrompt: (v: string) => void
@@ -163,39 +513,94 @@ function AuthRefineBar({
   handleUserRefine: () => void
   onNextSection: () => void
   isLastSection: boolean
+  onOpenAssistant?: () => void
+  onOpenPromptHelper?: () => void
 }) {
+  const quickActions = [
+    { label: 'Make darker', prompt: 'Make this section darker, more contrast' },
+    { label: 'Bigger text', prompt: 'Increase font sizes and make headings bolder' },
+    { label: 'More space', prompt: 'Add more whitespace and breathing room' },
+    { label: 'Simplify', prompt: 'Remove clutter, make it cleaner and more minimal' },
+  ]
+
   return (
-    <div className="flex items-center gap-2">
-      {/* Refine input */}
-      <div className="relative flex-1">
-        <div className="flex items-center bg-zinc-900/80 border border-zinc-800/60 rounded-lg overflow-hidden focus-within:border-zinc-700">
-          <input
-            type="text"
-            value={refinePrompt}
-            onChange={(e) => setRefinePrompt(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && refinePrompt.trim() && handleUserRefine()}
-            disabled={isUserRefining}
-            placeholder="What should change?"
-            className="flex-1 bg-transparent px-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none disabled:opacity-50"
-          />
+    <div className="space-y-2">
+      {/* Quick action chips + AI Tools */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+        <span className="text-[10px] text-emerald-500/70 uppercase tracking-wider flex-shrink-0">Quick:</span>
+        {quickActions.map((action, i) => (
           <button
-            onClick={handleUserRefine}
-            disabled={!refinePrompt.trim() || isUserRefining}
-            className="px-3 py-2 text-xs font-medium bg-zinc-800/80 border-l border-zinc-700/50 text-zinc-400 hover:text-white transition-all disabled:opacity-30"
+            key={i}
+            onClick={() => {
+              setRefinePrompt(action.prompt)
+            }}
+            disabled={isUserRefining}
+            className="flex-shrink-0 px-2.5 py-1 text-[11px] rounded-md bg-zinc-800/80 border border-zinc-700/50 text-zinc-400 hover:text-white hover:bg-emerald-500/10 hover:border-emerald-500/30 transition-all disabled:opacity-30"
           >
-            {isUserRefining ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : 'Refine'}
+            {action.label}
           </button>
-        </div>
+        ))}
+        
+        {/* Divider */}
+        <div className="w-px h-4 bg-zinc-700 mx-1 flex-shrink-0" />
+        
+        {/* AI Tool buttons */}
+        {onOpenAssistant && (
+          <button
+            onClick={onOpenAssistant}
+            className="flex-shrink-0 flex items-center gap-1 px-2.5 py-1 text-[11px] rounded-md bg-blue-500/10 border border-blue-500/30 text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 transition-all"
+          >
+            <MessageSquare className="w-3 h-3" />
+            Assistant
+          </button>
+        )}
+        {onOpenPromptHelper && (
+          <button
+            onClick={onOpenPromptHelper}
+            className="flex-shrink-0 flex items-center gap-1 px-2.5 py-1 text-[11px] rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/20 transition-all"
+          >
+            <Sparkles className="w-3 h-3" />
+            Enhance
+          </button>
+        )}
       </div>
       
-      {/* Next button */}
-      <button
-        onClick={onNextSection}
-        className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/15 text-white text-sm font-medium transition-all"
-      >
-        {isLastSection ? 'Finish' : 'Next'}
-        <ArrowRight className="w-3.5 h-3.5" />
-      </button>
+      {/* Main refine input */}
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <div className="flex items-center bg-zinc-950 border border-zinc-700 rounded-lg overflow-hidden focus-within:border-emerald-500/50 focus-within:ring-1 focus-within:ring-emerald-500/20">
+            <input
+              type="text"
+              value={refinePrompt}
+              onChange={(e) => setRefinePrompt(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && refinePrompt.trim() && handleUserRefine()}
+              disabled={isUserRefining}
+              placeholder="Describe what should change..."
+              className="flex-1 bg-transparent px-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none disabled:opacity-50"
+            />
+            <button
+              onClick={handleUserRefine}
+              disabled={!refinePrompt.trim() || isUserRefining}
+              className={`px-4 py-3 text-sm font-medium transition-all ${
+                refinePrompt.trim() && !isUserRefining
+                  ? 'bg-emerald-500 text-white hover:bg-emerald-400'
+                  : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
+              }`}
+            >
+              {isUserRefining ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Refine'}
+            </button>
+          </div>
+        </div>
+        
+        {/* Next button */}
+        <button
+          onClick={onNextSection}
+          className="flex items-center gap-1.5 px-5 py-3 rounded-lg bg-white text-black hover:bg-zinc-200 text-sm font-medium transition-all"
+        >
+          {isLastSection ? 'Finish' : 'Next'}
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
     </div>
   )
 }
@@ -245,8 +650,8 @@ function DemoCommandBar({
       {/* Input */}
       <div className="flex-1 flex items-center bg-zinc-900/80 border border-zinc-800/60 rounded-lg overflow-hidden focus-within:border-zinc-700">
         <div className="pl-3 flex-shrink-0">
-          <div className="w-4 h-4 rounded bg-emerald-500/20 flex items-center justify-center">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          <div className="w-4 h-4 rounded bg-zinc-800 flex items-center justify-center">
+            <div className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
           </div>
         </div>
         <input
@@ -271,7 +676,7 @@ function DemoCommandBar({
       {!isInitialState && (
         <button
           onClick={goToSignUp}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/15 text-white text-xs font-medium transition-all whitespace-nowrap"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white text-zinc-900 hover:bg-zinc-100 text-xs font-medium transition-all whitespace-nowrap"
         >
           Sign up
           <ArrowRight className="w-3 h-3" />
@@ -300,6 +705,8 @@ interface SectionBuilderProps {
   isDemo?: boolean
   initialPrompt?: string
   onHealingStateChange?: (isHealing: boolean, message?: string) => void
+  onOpenAssistant?: () => void
+  onOpenPromptHelper?: () => void
 }
 
 type BuildStage = 'input' | 'generating' | 'refining' | 'complete'
@@ -318,6 +725,8 @@ export default function SectionBuilder({
   isDemo = false,
   initialPrompt,
   onHealingStateChange,
+  onOpenAssistant,
+  onOpenPromptHelper,
 }: SectionBuilderProps) {
   const router = useRouter()
   const { isSignedIn, user } = useUser()
@@ -1411,22 +1820,51 @@ export default function SectionBuilder({
             </motion.div>
           )}
           {generatedCode ? (
-            <>
-              <SectionPreview 
-                code={generatedCode} 
-                darkMode={true}
-                onRuntimeError={handleRuntimeError}
-                inspectorMode={false}
-                captureTrigger={captureTrigger}
-                onScreenshotCaptured={handleScreenshotCaptured}
-                editMode={true}
-                onTextEdit={handleTextEdit}
-                allowCodeView={false}
-                hideToolbar={false}
-                onReady={() => setIsPreviewReady(true)}
-              />
-              {/* Removed fake Live badge - preview speaks for itself */}
-            </>
+            // Section Complete - Success state (preview is in right panel)
+            // Minimal state - user should focus on the preview, not this panel
+            <div className="h-full flex flex-col items-center justify-center bg-zinc-950 p-4">
+              <div className="text-center space-y-3">
+                {/* Logo */}
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="mx-auto"
+                >
+                  <Image
+                    src="/assets/hatchit_definitive.svg"
+                    alt="HatchIt"
+                    width={40}
+                    height={40}
+                    className="opacity-60"
+                  />
+                </motion.div>
+                
+                {/* Section info */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  <p className="text-sm font-medium text-white">{section.name} ready</p>
+                  <p className="text-xs text-zinc-500 mt-1">Check the preview →</p>
+                </motion.div>
+                
+                {/* Reasoning - collapsed by default */}
+                {reasoning && (
+                  <motion.details
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                    className="text-left max-w-sm mx-auto"
+                  >
+                    <summary className="text-[10px] text-zinc-600 cursor-pointer hover:text-zinc-400 transition-colors">
+                      View design decisions
+                    </summary>
+                    <p className="text-[11px] text-zinc-500 mt-2 leading-relaxed">{reasoning}</p>
+                  </motion.details>
+                )}
+              </div>
+            </div>
           ) : showGenerating ? (
             // Generating state - Full Studio Interface
             <div className="h-full flex relative overflow-hidden bg-zinc-950">
@@ -1477,8 +1915,8 @@ export default function SectionBuilder({
                 {/* Top Bar - File tabs + device selector */}
                 <div className="h-8 border-b border-zinc-800/50 bg-zinc-900/30 flex items-center justify-between px-1.5">
                   <div className="flex items-center gap-0.5">
-                    <div className="flex items-center gap-1 px-2 py-1 bg-zinc-800 rounded-t text-xs border-b-2 border-emerald-500">
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <div className="flex items-center gap-1 px-2 py-1 bg-zinc-800 rounded-t text-xs border-b-2 border-white">
+                      <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                       <span className="text-[11px] font-medium text-white">Hero Section</span>
                     </div>
                     <div className="flex items-center gap-1 px-2 py-1 text-zinc-500 rounded-t hover:bg-zinc-800/50 cursor-not-allowed">
@@ -1559,11 +1997,11 @@ export default function SectionBuilder({
                 <div className="px-3 py-2 border-b border-zinc-800/50">
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="text-[10px] text-zinc-500">Progress</span>
-                    <span className="text-[10px] font-mono text-emerald-400">{Math.min(95, ((loadingStage + 1) / loadingStages.length) * 100).toFixed(0)}%</span>
+                    <span className="text-[10px] font-mono text-zinc-400">{Math.min(95, ((loadingStage + 1) / loadingStages.length) * 100).toFixed(0)}%</span>
                   </div>
                   <div className="h-0.5 bg-zinc-800 rounded-full overflow-hidden">
                     <motion.div
-                      className="h-full bg-emerald-500"
+                      className="h-full bg-white"
                       initial={{ width: '5%' }}
                       animate={{ width: `${Math.min(95, ((loadingStage + 1) / loadingStages.length) * 100)}%` }}
                       transition={{ duration: 0.5, ease: 'easeOut' }}
@@ -1680,9 +2118,9 @@ export default function SectionBuilder({
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.25 + i * 0.05 }}
                         onClick={() => setPrompt(prompt)}
-                        className="w-full text-left px-3 py-2.5 text-xs text-zinc-400 bg-zinc-900/40 backdrop-blur-sm border border-zinc-800/50 rounded-xl hover:border-emerald-500/30 hover:bg-emerald-500/5 hover:text-zinc-200 transition-all group"
+                        className="w-full text-left px-3 py-2.5 text-xs text-zinc-400 bg-zinc-900/40 backdrop-blur-sm border border-zinc-800/50 rounded-xl hover:border-zinc-600 hover:bg-zinc-800/50 hover:text-zinc-200 transition-all group"
                       >
-                        <span className="text-emerald-500/60 group-hover:text-emerald-400 mr-1.5 transition-colors">→</span>
+                        <span className="text-zinc-500 group-hover:text-white mr-1.5 transition-colors">→</span>
                         {prompt}
                       </motion.button>
                     ))}
@@ -1699,9 +2137,9 @@ export default function SectionBuilder({
                   <motion.div
                     animate={{ y: [0, 4, 0] }}
                     transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                    className="text-emerald-500/40"
-                  >
-                    <ArrowRight className="w-4 h-4 rotate-90" />
+                  className="text-zinc-600"
+                >
+                  <ArrowRight className="w-4 h-4 rotate-90" />
                   </motion.div>
                 </motion.div>
               </div>
@@ -1743,8 +2181,8 @@ export default function SectionBuilder({
             {showGenerating && (
               <div className="bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-lg p-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
-                    <Sparkles className="w-4 h-4 text-emerald-400 animate-pulse" />
+                  <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center">
+                    <Sparkles className="w-4 h-4 text-white animate-pulse" />
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-white">Building</p>
@@ -1754,7 +2192,7 @@ export default function SectionBuilder({
                     {[0, 1, 2, 3].map((i) => (
                       <div
                         key={i}
-                        className={`w-1.5 h-1.5 rounded-full ${i <= loadingStage ? 'bg-emerald-500' : 'bg-zinc-700'}`}
+                        className={`w-1.5 h-1.5 rounded-full ${i <= loadingStage ? 'bg-white' : 'bg-zinc-700'}`}
                       />
                     ))}
                   </div>
@@ -1764,7 +2202,7 @@ export default function SectionBuilder({
 
             {/* Auth Complete State */}
             {stage === 'complete' && !isDemo && (
-              <div className="bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-lg p-2.5">
+              <div className="bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 rounded-lg p-3">
                 <AuthRefineBar
                   refinePrompt={refinePrompt}
                   setRefinePrompt={setRefinePrompt}
@@ -1772,15 +2210,17 @@ export default function SectionBuilder({
                   handleUserRefine={handleUserRefine}
                   onNextSection={handleNextSection}
                   isLastSection={isLastSection || false}
+                  onOpenAssistant={onOpenAssistant}
+                  onOpenPromptHelper={onOpenPromptHelper}
                 />
               </div>
             )}
 
             {/* Refining State */}
             {stage === 'refining' && (
-              <div className="bg-zinc-900/70 backdrop-blur-xl border border-emerald-500/20 rounded-lg p-3">
+              <div className="bg-zinc-900/70 backdrop-blur-xl border border-zinc-700 rounded-lg p-3">
                 <div className="flex items-center gap-2">
-                  <RefreshCw className="w-4 h-4 text-emerald-400 animate-spin" />
+                  <RefreshCw className="w-4 h-4 text-white animate-spin" />
                   <p className="text-sm text-white">Refining...</p>
                 </div>
               </div>
@@ -1797,12 +2237,12 @@ export default function SectionBuilder({
           >
             <div className="max-w-2xl mx-auto flex items-center justify-between">
               <p className="text-sm text-zinc-300">
-                <span className="text-emerald-400 font-medium">Demo complete.</span>
+                <span className="text-white font-medium">Demo complete.</span>
                 {' '}Sign up to keep building.
               </p>
               <button
                 onClick={() => goToSignUp()}
-                className="px-4 py-1.5 rounded-lg bg-emerald-500 text-black text-sm font-semibold hover:bg-emerald-400 transition-colors"
+                className="px-4 py-1.5 rounded-lg bg-white text-zinc-900 text-sm font-semibold hover:bg-zinc-100 transition-colors"
               >
                 Get started
               </button>

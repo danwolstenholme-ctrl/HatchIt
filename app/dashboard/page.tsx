@@ -14,7 +14,6 @@ import {
   X,
   Github,
   Folder,
-  Zap,
   Globe,
   Download,
   Code2,
@@ -24,16 +23,21 @@ import {
   Terminal,
   Layers,
   Activity,
-  Rocket
+  Rocket,
+  Layout,
+  Smartphone,
+  Shield
 } from 'lucide-react'
 import { useUser } from '@clerk/nextjs'
 import { formatDistanceToNow } from 'date-fns'
 import { DbProject } from '@/lib/supabase'
 import { LogoMark } from '@/components/Logo'
 import { useGitHub } from '@/hooks/useGitHub'
+import Badge from '@/components/singularity/Badge'
 
 // =============================================================================
-// DASHBOARD - Dense, professional, infrastructure-focused
+// DASHBOARD - Clean white glass, minimal, infrastructure-focused
+// Follows "Confident Restraint" - sparse, quiet, professional
 // =============================================================================
 
 export default function DashboardPage() {
@@ -50,10 +54,10 @@ export default function DashboardPage() {
   const tier = accountSubscription?.tier || 'free'
 
   const tierConfig = useMemo(() => {
-    if (tier === 'singularity') return { name: 'Singularity', limit: Infinity, color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/30' }
-    if (tier === 'visionary') return { name: 'Visionary', limit: Infinity, color: 'text-violet-400', bg: 'bg-violet-500/10', border: 'border-violet-500/30' }
-    if (tier === 'architect') return { name: 'Architect', limit: 3, color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' }
-    return { name: 'Free', limit: 1, color: 'text-zinc-400', bg: 'bg-zinc-800/50', border: 'border-zinc-700' }
+    if (tier === 'singularity') return { name: 'Singularity', limit: Infinity, variant: 'singularity' as const }
+    if (tier === 'visionary') return { name: 'Visionary', limit: Infinity, variant: 'visionary' as const }
+    if (tier === 'architect') return { name: 'Architect', limit: 3, variant: 'architect' as const }
+    return { name: 'Free', limit: 1, variant: 'default' as const }
   }, [tier])
 
   const isAtLimit = tierConfig.limit !== Infinity && projects.length >= tierConfig.limit
@@ -156,20 +160,20 @@ export default function DashboardPage() {
     if (res.ok) setProjects(prev => prev.filter(project => project.id !== id))
   }
 
-  // Loading state
+  // Loading state - white theme
   if (!isLoaded || !isSignedIn || isLoading) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+      <div className="flex items-center justify-center py-20">
         <div className="flex flex-col items-center gap-3">
-          <LogoMark size={32} />
-          <div className="text-xs text-zinc-600 font-mono">Loading...</div>
+          <LogoMark size={24} />
+          <div className="text-[10px] text-zinc-400 font-mono tracking-wider">LOADING</div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <>
       {/* Error Toast */}
       <AnimatePresence>
         {createError && (
@@ -177,292 +181,281 @@ export default function DashboardPage() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed top-4 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm"
+            className="fixed top-4 right-4 z-50 flex items-center gap-3 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs"
           >
-            <AlertCircle className="w-4 h-4" />
+            <AlertCircle className="w-3.5 h-3.5" />
             <span>{createError}</span>
             <button onClick={() => setCreateError(null)} className="text-red-400/60 hover:text-red-400" aria-label="Dismiss error">
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5" />
             </button>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="max-w-6xl mx-auto px-6 py-8">
+      {/* Header - Minimal */}
+      <header className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-3">
+          <h1 className="text-sm font-semibold text-white">Dashboard</h1>
+          <Badge variant={tierConfig.variant}>{tierConfig.name}</Badge>
+        </div>
+        <button
+          onClick={handleCreate}
+          disabled={isCreating}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-white bg-emerald-600 hover:bg-emerald-500 rounded-md transition-colors disabled:opacity-50"
+        >
+          {isCreating ? (
+            <div className="w-3 h-3 border border-zinc-600 border-t-white rounded-full animate-spin" />
+          ) : (
+            <Plus className="w-3 h-3" />
+          )}
+          New
+        </button>
+      </header>
+
+      {/* Main Grid */}
+      <div className="grid lg:grid-cols-3 gap-8">
         
-        {/* Header Row */}
-        <header className="flex items-center justify-between mb-8">
-          <div>
-            <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-lg font-semibold text-white">Dashboard</h1>
-              <span className={`px-2 py-0.5 text-[10px] font-medium rounded ${tierConfig.bg} ${tierConfig.border} border ${tierConfig.color}`}>
-                {tierConfig.name}
-              </span>
-            </div>
-            <p className="text-sm text-zinc-600">
-              {projects.length} project{projects.length !== 1 ? 's' : ''} 
-              {deployedCount > 0 && ` · ${deployedCount} deployed`}
-            </p>
-          </div>
-          <button
-            onClick={handleCreate}
-            disabled={isCreating}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-black bg-emerald-500 hover:bg-emerald-400 rounded-lg transition-colors disabled:opacity-50"
-          >
-            {isCreating ? (
-              <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-            ) : (
-              <Plus className="w-4 h-4" />
-            )}
-            New Project
-          </button>
-        </header>
-
-        {/* Main Grid */}
-        <div className="grid lg:grid-cols-3 gap-6">
+        {/* Left Column - Projects */}
+        <div className="lg:col-span-2 space-y-6">
           
-          {/* Left Column - Projects */}
-          <div className="lg:col-span-2 space-y-4">
-            
-            {/* Projects Header */}
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-medium text-zinc-400">Projects</h2>
-              {projects.length > 3 && (
-                <div className="relative">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-600" />
-                  <input
-                    type="text"
-                    placeholder="Search..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-8 pr-3 py-1.5 text-xs bg-zinc-900 border border-zinc-800 rounded-md text-zinc-300 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-700 w-36"
-                  />
-                </div>
-              )}
-            </div>
+          {/* Projects Header */}
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-medium text-zinc-400 uppercase tracking-wider">Projects</span>
+            {projects.length > 3 && (
+              <div className="relative">
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400" />
+                <input
+                  type="text"
+                  placeholder="Search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-7 pr-2 py-1 text-[11px] bg-zinc-900 border border-zinc-800 rounded text-zinc-300 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-700 w-28"
+                />
+              </div>
+            )}
+          </div>
 
-            {/* Projects List */}
-            {projects.length === 0 ? (
-              <div className="border border-dashed border-zinc-800 rounded-lg p-8 text-center">
-                <Terminal className="w-8 h-8 text-zinc-700 mx-auto mb-3" />
-                <p className="text-sm text-zinc-500 mb-4">No projects yet</p>
-                <button
-                  onClick={handleCreate}
-                  disabled={isCreating}
-                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-black bg-emerald-500 hover:bg-emerald-400 rounded-lg transition-colors"
+          {/* Projects List */}
+          {projects.length === 0 ? (
+            <div className="border border-dashed border-zinc-800 rounded-lg p-10 text-center bg-zinc-900/50">
+              <Terminal className="w-6 h-6 text-zinc-500 mx-auto mb-3" />
+              <p className="text-xs text-zinc-400 mb-4">No projects yet</p>
+              <button
+                onClick={handleCreate}
+                disabled={isCreating}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-500 rounded-md transition-colors"
+              >
+                <Plus className="w-3 h-3" />
+                Create
+              </button>
+            </div>
+          ) : sortedProjects.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-xs text-zinc-500">No results for &quot;{searchQuery}&quot;</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {sortedProjects.map((project) => (
+                <Link
+                  key={project.id}
+                  href={`/builder?project=${project.id}`}
+                  className="group flex items-center justify-between p-3 rounded-lg bg-zinc-900 border border-zinc-800 hover:border-zinc-600 hover:bg-zinc-900/80 transition-all"
                 >
-                  <Plus className="w-4 h-4" />
-                  Create Project
-                </button>
-              </div>
-            ) : sortedProjects.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-sm text-zinc-600">No results for &quot;{searchQuery}&quot;</p>
-              </div>
-            ) : (
-              <div className="border border-zinc-800/50 rounded-lg divide-y divide-zinc-800/50 bg-zinc-900/30">
-                {sortedProjects.map((project) => (
-                  <Link
-                    key={project.id}
-                    href={`/builder?project=${project.id}`}
-                    className="group flex items-center justify-between p-4 hover:bg-zinc-900/50 transition-colors first:rounded-t-lg last:rounded-b-lg"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className={`w-8 h-8 rounded flex items-center justify-center ${
-                        project.status === 'deployed' 
-                          ? 'bg-emerald-500/10' 
-                          : 'bg-zinc-800'
-                      }`}>
-                        {project.status === 'deployed' ? (
-                          <Globe className="w-4 h-4 text-emerald-400" />
-                        ) : (
-                          <Folder className="w-4 h-4 text-zinc-500" />
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className={`w-7 h-7 rounded-md flex items-center justify-center ${
+                      project.status === 'deployed' 
+                        ? 'bg-emerald-500/10 border border-emerald-500/30' 
+                        : 'bg-zinc-800 border border-zinc-700'
+                    }`}>
+                      {project.status === 'deployed' ? (
+                        <Globe className="w-3.5 h-3.5 text-emerald-400" />
+                      ) : (
+                        <Folder className="w-3.5 h-3.5 text-zinc-400" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium text-zinc-100 truncate group-hover:text-white transition-colors">
+                        {project.name || 'Untitled'}
+                      </p>
+                      <div className="flex items-center gap-2 text-[10px] text-zinc-500">
+                        <span>
+                          {project.updated_at 
+                            ? formatDistanceToNow(new Date(project.updated_at), { addSuffix: true })
+                            : 'Just created'
+                          }
+                        </span>
+                        {project.status === 'deployed' && (
+                          <span className="flex items-center gap-1 text-emerald-400">
+                            <span className="w-1 h-1 bg-emerald-400 rounded-full" />
+                            Live
+                          </span>
                         )}
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-white truncate group-hover:text-emerald-400 transition-colors">
-                          {project.name || 'Untitled'}
-                        </p>
-                        <div className="flex items-center gap-2 text-xs text-zinc-600">
-                          <span>
-                            {project.updated_at 
-                              ? formatDistanceToNow(new Date(project.updated_at), { addSuffix: true })
-                              : 'Just created'
-                            }
-                          </span>
-                          {project.status === 'deployed' && (
-                            <span className="flex items-center gap-1 text-emerald-500">
-                              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
-                              Live
-                            </span>
-                          )}
-                        </div>
-                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      {project.status === 'deployed' && (project as DbProject & { deployed_url?: string }).deployed_url && (
-                        <a
-                          href={(project as DbProject & { deployed_url?: string }).deployed_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="p-2 text-zinc-600 hover:text-emerald-400 rounded transition-colors"
-                          aria-label="Visit deployed site"
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                        </a>
-                      )}
-                      <button
-                        onClick={(e) => handleDelete(e, project.id)}
-                        className="p-2 text-zinc-700 hover:text-red-400 rounded transition-colors opacity-0 group-hover:opacity-100"
-                        aria-label="Delete project"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                      <ChevronRight className="w-4 h-4 text-zinc-700 group-hover:text-zinc-500 transition-colors" />
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-
-            {/* Quick Actions */}
-            <div className="grid grid-cols-3 gap-3 pt-2">
-              <Link
-                href="/demo"
-                className="flex items-center gap-2 px-3 py-2.5 text-xs text-zinc-400 bg-zinc-900/50 border border-zinc-800/50 rounded-lg hover:border-zinc-700 hover:text-zinc-300 transition-all"
-              >
-                <Layers className="w-3.5 h-3.5" />
-                Try Demo
-              </Link>
-              <Link
-                href="/dashboard/builds"
-                className="flex items-center gap-2 px-3 py-2.5 text-xs text-zinc-400 bg-zinc-900/50 border border-zinc-800/50 rounded-lg hover:border-zinc-700 hover:text-zinc-300 transition-all"
-              >
-                <Activity className="w-3.5 h-3.5" />
-                Build History
-              </Link>
-              <Link
-                href="/dashboard/billing"
-                className="flex items-center gap-2 px-3 py-2.5 text-xs text-zinc-400 bg-zinc-900/50 border border-zinc-800/50 rounded-lg hover:border-zinc-700 hover:text-zinc-300 transition-all"
-              >
-                <Zap className="w-3.5 h-3.5" />
-                Upgrade
-              </Link>
-            </div>
-          </div>
-
-          {/* Right Column - Status & Integrations */}
-          <div className="space-y-4">
-            
-            {/* Status Card */}
-            <div className="border border-zinc-800/50 rounded-lg bg-zinc-900/30 p-4">
-              <h3 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-4">Status</h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-zinc-400">Projects</span>
-                  <span className="text-sm text-white font-mono">
-                    {projects.length}{tierConfig.limit !== Infinity ? `/${tierConfig.limit}` : ''}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-zinc-400">Deployed</span>
-                  <span className="text-sm text-emerald-400 font-mono">{deployedCount}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-zinc-400">Building</span>
-                  <span className="text-sm text-amber-400 font-mono">{inProgressCount}</span>
-                </div>
-                <div className="h-px bg-zinc-800 my-1" />
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-zinc-400">Stack</span>
-                  <span className="text-sm text-violet-400 font-mono">Next.js 14</span>
-                </div>
-              </div>
-            </div>
-
-            {/* GitHub Card */}
-            <div className="border border-zinc-800/50 rounded-lg bg-zinc-900/30 p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Github className="w-4 h-4 text-zinc-500" />
-                  <h3 className="text-xs font-medium text-zinc-500 uppercase tracking-wider">GitHub</h3>
-                </div>
-                {githubConnected && (
-                  <span className="flex items-center gap-1.5 text-xs text-emerald-400">
-                    <CheckCircle2 className="w-3 h-3" />
-                    Connected
-                  </span>
-                )}
-              </div>
-              {githubConnected ? (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-zinc-400">Account</span>
-                    <span className="text-sm text-white font-mono">@{gitHub.username}</span>
                   </div>
-                  <p className="text-xs text-zinc-600">Push code directly to your repos</p>
-                  <button
-                    onClick={() => gitHub.disconnect().then(() => gitHub.refresh())}
-                    className="w-full px-3 py-2 text-xs text-zinc-500 hover:text-zinc-300 border border-zinc-800 hover:border-zinc-700 rounded transition-colors"
-                  >
-                    Disconnect
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <p className="text-xs text-zinc-600">Connect to push code to your own repositories</p>
-                  <button
-                    onClick={() => gitHub.connect()}
-                    disabled={gitHub.loading}
-                    className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm text-white bg-zinc-800 hover:bg-zinc-700 rounded transition-colors"
-                  >
-                    <Github className="w-4 h-4" />
-                    Connect GitHub
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Capabilities Card */}
-            <div className="border border-zinc-800/50 rounded-lg bg-zinc-900/30 p-4">
-              <h3 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-3">Your Plan</h3>
-              <div className="space-y-2">
-                <Capability icon={Code2} label="AI Generation" enabled />
-                <Capability icon={Layers} label="Live Preview" enabled />
-                <Capability icon={Rocket} label="Deploy to Vercel" enabled={canDeploy} />
-                <Capability icon={Download} label="ZIP Export" enabled={canExport} />
-                <Capability icon={GitBranch} label="GitHub Push" enabled={canExport} />
-                <Capability icon={Globe} label="Custom Domain" enabled={tier === 'visionary' || tier === 'singularity'} />
-              </div>
-              {tier === 'free' && (
-                <Link
-                  href="/dashboard/billing"
-                  className="flex items-center justify-center gap-2 w-full mt-4 px-3 py-2 text-sm font-medium text-black bg-emerald-500 hover:bg-emerald-400 rounded transition-colors"
-                >
-                  Upgrade to Deploy
-                  <ChevronRight className="w-4 h-4" />
+                  <div className="flex items-center gap-1">
+                    {project.status === 'deployed' && (project as DbProject & { deployed_url?: string }).deployed_url && (
+                      <a
+                        href={(project as DbProject & { deployed_url?: string }).deployed_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-1.5 text-zinc-500 hover:text-white rounded transition-colors"
+                        aria-label="Visit deployed site"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    )}
+                    <button
+                      onClick={(e) => handleDelete(e, project.id)}
+                      className="p-1.5 text-zinc-600 hover:text-red-500 rounded transition-colors opacity-0 group-hover:opacity-100"
+                      aria-label="Delete project"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                    <ChevronRight className="w-3.5 h-3.5 text-zinc-600 group-hover:text-zinc-400 transition-colors" />
+                  </div>
                 </Link>
-              )}
+              ))}
             </div>
+          )}
 
-            {/* Pipeline Info */}
-            <div className="border border-zinc-800/50 rounded-lg bg-zinc-900/30 p-4">
-              <h3 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-3">Pipeline</h3>
-              <div className="flex items-center gap-2 text-xs text-zinc-600">
-                <span className="px-2 py-1 bg-zinc-800 rounded text-zinc-400">Prompt</span>
-                <ChevronRight className="w-3 h-3" />
-                <span className="px-2 py-1 bg-zinc-800 rounded text-zinc-400">GitHub</span>
-                <ChevronRight className="w-3 h-3" />
-                <span className="px-2 py-1 bg-zinc-800 rounded text-zinc-400">Vercel</span>
-              </div>
-              <p className="text-xs text-zinc-600 mt-3">Full Next.js scaffold with brand tokens, SEO files, and component architecture</p>
+          {/* The Stack */}
+          <div className="pt-4">
+            <span className="text-[10px] font-medium text-zinc-400 uppercase tracking-wider mb-3 block">Stack</span>
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { name: 'React 19', icon: Code2 },
+                { name: 'Tailwind', icon: Layout },
+                { name: 'TypeScript', icon: Terminal },
+                { name: 'Motion', icon: Layers },
+                { name: 'Responsive', icon: Smartphone },
+                { name: 'Accessible', icon: CheckCircle2 },
+                { name: 'SEO', icon: Globe },
+                { name: 'Yours', icon: Shield },
+              ].map((tech) => (
+                <div 
+                  key={tech.name}
+                  className="flex items-center gap-2 px-2.5 py-2 bg-zinc-900 border border-zinc-800 rounded-md text-[10px] text-zinc-500 hover:text-zinc-300 hover:border-zinc-700 transition-all"
+                >
+                  <tech.icon className="w-3 h-3" />
+                  <span>{tech.name}</span>
+                </div>
+              ))}
             </div>
-
           </div>
         </div>
+
+        {/* Right Column - Status & Integrations */}
+        <div className="space-y-4">
+          
+          {/* Status Card */}
+          <div className="rounded-lg bg-zinc-900 border border-zinc-800 p-4">
+            <span className="text-[10px] font-medium text-zinc-500 uppercase tracking-wider mb-3 block">Status</span>
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-zinc-500">Projects</span>
+                <span className="text-[11px] text-zinc-300 font-mono">
+                  {projects.length}{tierConfig.limit !== Infinity ? `/${tierConfig.limit}` : ''}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-zinc-500">Deployed</span>
+                <span className="text-[11px] text-zinc-300 font-mono">{deployedCount}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-zinc-500">Building</span>
+                <span className="text-[11px] text-amber-500 font-mono">{inProgressCount}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* GitHub Card */}
+          <div className="rounded-lg bg-zinc-900 border border-zinc-800 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Github className="w-3.5 h-3.5 text-zinc-500" />
+                <span className="text-[10px] font-medium text-zinc-500 uppercase tracking-wider">GitHub</span>
+              </div>
+              {githubConnected && (
+                <span className="flex items-center gap-1 text-[10px] text-zinc-400">
+                  <CheckCircle2 className="w-2.5 h-2.5" />
+                  Connected
+                </span>
+              )}
+            </div>
+            {githubConnected ? (
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-zinc-500">Account</span>
+                  <span className="text-[11px] text-zinc-300 font-mono">@{gitHub.username}</span>
+                </div>
+                <p className="text-[10px] text-zinc-500">Push code directly to your repos</p>
+                <button
+                  onClick={() => gitHub.disconnect().then(() => gitHub.refresh())}
+                  className="w-full px-2 py-1.5 text-[10px] text-zinc-500 hover:text-zinc-300 border border-zinc-800 hover:border-zinc-700 rounded transition-colors"
+                >
+                  Disconnect
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                <p className="text-[10px] text-zinc-500">Connect to push code to your repos</p>
+                <button
+                  onClick={() => gitHub.connect()}
+                  disabled={gitHub.loading}
+                  className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 text-[11px] text-zinc-300 bg-zinc-800 hover:bg-zinc-700 rounded transition-colors"
+                >
+                  <Github className="w-3 h-3" />
+                  Connect
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Capabilities Card */}
+          <div className="rounded-lg bg-zinc-900 border border-zinc-800 p-4">
+            <span className="text-[10px] font-medium text-zinc-500 uppercase tracking-wider mb-3 block">Your Plan</span>
+            <div className="space-y-1.5">
+              <Capability icon={Code2} label="AI Generation" enabled />
+              <Capability icon={Layers} label="Live Preview" enabled />
+              <Capability icon={Rocket} label="Deploy" enabled={canDeploy} />
+              <Capability icon={Download} label="Export" enabled={canExport} />
+              <Capability icon={GitBranch} label="GitHub Push" enabled={canExport} />
+              <Capability icon={Globe} label="Custom Domain" enabled={tier === 'visionary' || tier === 'singularity'} />
+            </div>
+            {tier === 'free' && (
+              <Link
+                href="/dashboard/billing"
+                className="flex items-center justify-center gap-1.5 w-full mt-3 px-2 py-1.5 text-[11px] font-medium text-white bg-emerald-600 hover:bg-emerald-500 rounded transition-colors"
+              >
+                Upgrade
+                <ChevronRight className="w-3 h-3" />
+              </Link>
+            )}
+          </div>
+
+          {/* Quick Links */}
+          <div className="flex gap-2">
+            <Link
+              href="/dashboard/builds"
+              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 text-[10px] text-zinc-500 hover:text-zinc-300 bg-zinc-900 border border-zinc-800 rounded hover:border-zinc-700 transition-all"
+            >
+              <Activity className="w-3 h-3" />
+              All Builds
+            </Link>
+            <Link
+              href="/dashboard/settings"
+              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 text-[10px] text-zinc-500 hover:text-zinc-300 bg-zinc-900 border border-zinc-800 rounded hover:border-zinc-700 transition-all"
+            >
+              <Github className="w-3 h-3" />
+              GitHub
+            </Link>
+          </div>
+
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 
@@ -480,15 +473,15 @@ function Capability({
   enabled: boolean
 }) {
   return (
-    <div className="flex items-center justify-between py-1">
+    <div className="flex items-center justify-between py-0.5">
       <div className="flex items-center gap-2">
-        <Icon className={`w-3.5 h-3.5 ${enabled ? 'text-zinc-400' : 'text-zinc-700'}`} />
-        <span className={`text-sm ${enabled ? 'text-zinc-300' : 'text-zinc-600'}`}>{label}</span>
+        <Icon className={`w-3 h-3 ${enabled ? 'text-zinc-500' : 'text-zinc-600'}`} />
+        <span className={`text-[11px] ${enabled ? 'text-zinc-400' : 'text-zinc-600'}`}>{label}</span>
       </div>
       {enabled ? (
-        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+        <CheckCircle2 className="w-3 h-3 text-zinc-500" />
       ) : (
-        <X className="w-3.5 h-3.5 text-zinc-700" />
+        <X className="w-3 h-3 text-zinc-700" />
       )}
     </div>
   )

@@ -141,36 +141,31 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
               </p>
             </div>
 
-            {/* 3-Tier Pricing Grid */}
-            <div className="grid md:grid-cols-3 gap-4 mb-6">
+            {/* 3-Tier Pricing Grid - Compact like billing page */}
+            <div className="grid md:grid-cols-3 gap-3 mb-6">
               
               {/* ARCHITECT - $19/mo */}
-              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 flex flex-col">
-                <div className="mb-4">
-                  <span className="text-xs font-bold text-zinc-500 tracking-wider">STARTER</span>
-                  <h3 className="text-xl font-bold text-white mt-1">Architect</h3>
-                  <div className="flex items-baseline gap-1 mt-2">
-                    <span className="text-3xl font-bold text-white">$19</span>
-                    <span className="text-zinc-500 text-sm">/month</span>
+              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col hover:border-zinc-700 transition-all">
+                <div className="mb-3">
+                  <span className="text-[10px] font-medium text-zinc-500 tracking-wider">STARTER</span>
+                  <h3 className="text-sm font-semibold text-white mt-0.5">Architect</h3>
+                  <div className="flex items-baseline gap-0.5 mt-1">
+                    <span className="text-xl font-bold text-white">$19</span>
+                    <span className="text-zinc-500 text-[10px]">/mo</span>
                   </div>
-                  <p className="text-zinc-500 text-xs mt-1">Ship your projects</p>
                 </div>
                 
-                <div className="space-y-2.5 flex-1">
+                <div className="space-y-1.5 flex-1 text-[11px]">
                   {[
-                    { text: 'Unlimited AI generations', included: true },
-                    { text: 'Deploy to hatchitsites.dev', included: true },
-                    { text: 'Full Next.js project export', included: true },
-                    { text: 'Push to your GitHub', included: true },
-                    { text: '3 projects', included: true },
-                    { text: 'Custom domain', included: false },
-                    { text: 'Remove branding', included: false },
+                    'Unlimited AI generations',
+                    'Deploy to hatchitsites.dev',
+                    'Full Next.js export',
+                    'Push to GitHub',
+                    '3 projects',
                   ].map((feature, i) => (
-                    <div key={i} className={`flex items-center gap-2 text-sm ${feature.included ? 'text-zinc-300' : 'text-zinc-600'}`}>
-                      <span className={feature.included ? 'text-zinc-400' : 'text-zinc-700'}>
-                        {feature.included ? '✓' : '○'}
-                      </span>
-                      {feature.text}
+                    <div key={i} className="flex items-center gap-2 text-zinc-400">
+                      <span className="text-zinc-500">✓</span>
+                      {feature}
                     </div>
                   ))}
                 </div>
@@ -178,41 +173,36 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
                 <button
                   onClick={() => handleHatch('architect')}
                   disabled={isLoading || isSyncing}
-                  className="w-full mt-6 py-3 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white font-semibold transition-all"
+                  className="w-full mt-4 py-2 rounded-md bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-medium transition-all disabled:opacity-50"
                 >
-                  Start Building
+                  Get Started
                 </button>
               </div>
 
               {/* VISIONARY - $49 (Highlighted) */}
-              <div className="bg-zinc-900 border-2 border-emerald-500/50 rounded-xl p-5 flex flex-col relative">
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-black text-[10px] font-bold px-3 py-1 rounded-full whitespace-nowrap">
-                  MOST POPULAR
+              <div className="bg-zinc-900 border-2 border-emerald-500/40 rounded-xl p-4 flex flex-col relative shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+                <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-emerald-500 text-black text-[9px] font-bold px-2.5 py-0.5 rounded-full">
+                  RECOMMENDED
                 </div>
                 
-                <div className="mb-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-400">⚡</span>
-                    <span className="text-xs font-bold text-emerald-400 tracking-wider">PROFESSIONAL</span>
+                <div className="mb-3">
+                  <span className="text-[10px] font-medium text-emerald-400 tracking-wider">PROFESSIONAL</span>
+                  <h3 className="text-sm font-semibold text-white mt-0.5">Visionary</h3>
+                  <div className="flex items-baseline gap-0.5 mt-1">
+                    <span className="text-xl font-bold text-white">$49</span>
+                    <span className="text-zinc-500 text-[10px]">/mo</span>
                   </div>
-                  <h3 className="text-xl font-bold text-white mt-1">Visionary</h3>
-                  <div className="flex items-baseline gap-1 mt-2">
-                    <span className="text-3xl font-bold text-white">$49</span>
-                    <span className="text-zinc-500 text-sm">/month</span>
-                  </div>
-                  <p className="text-zinc-500 text-xs mt-1">Full control. No limits.</p>
                 </div>
                 
-                <div className="space-y-2.5 flex-1">
+                <div className="space-y-1.5 flex-1 text-[11px]">
                   {[
                     'Everything in Architect',
                     'Unlimited projects',
-                    'Custom domain support',
-                    'Remove HatchIt branding',
-                    'The Auditor (AI quality check)',
-                    'The Healer (auto-fix errors)',
+                    'Custom domain',
+                    'Remove branding',
+                    'AI Auditor & Healer',
                   ].map((feature, i) => (
-                    <div key={i} className="flex items-center gap-2 text-sm text-zinc-300">
+                    <div key={i} className="flex items-center gap-2 text-zinc-300">
                       <span className="text-emerald-400">✓</span>
                       {feature}
                     </div>
@@ -222,33 +212,32 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
                 <button
                   onClick={() => handleHatch('visionary')}
                   disabled={isLoading || isSyncing}
-                  className="w-full mt-6 py-3 rounded-lg bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white font-bold transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] disabled:opacity-50"
+                  className="w-full mt-4 py-2 rounded-md bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-semibold transition-all disabled:opacity-50"
                 >
-                  {isLoading ? 'Processing...' : 'Become Visionary'}
+                  {isLoading ? 'Processing...' : 'Upgrade'}
                 </button>
               </div>
 
               {/* SINGULARITY - $199 */}
-              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 flex flex-col">
-                <div className="mb-4">
-                  <span className="text-xs font-bold text-amber-400 tracking-wider">AGENCY</span>
-                  <h3 className="text-xl font-bold text-white mt-1">Singularity</h3>
-                  <div className="flex items-baseline gap-1 mt-2">
-                    <span className="text-3xl font-bold text-white">$199</span>
-                    <span className="text-zinc-500 text-sm">/month</span>
+              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col hover:border-zinc-700 transition-all">
+                <div className="mb-3">
+                  <span className="text-[10px] font-medium text-amber-400 tracking-wider">AGENCY</span>
+                  <h3 className="text-sm font-semibold text-white mt-0.5">Singularity</h3>
+                  <div className="flex items-baseline gap-0.5 mt-1">
+                    <span className="text-xl font-bold text-white">$199</span>
+                    <span className="text-zinc-500 text-[10px]">/mo</span>
                   </div>
-                  <p className="text-zinc-500 text-xs mt-1">For teams & scale</p>
                 </div>
                 
-                <div className="space-y-2.5 flex-1">
+                <div className="space-y-1.5 flex-1 text-[11px]">
                   {[
                     'Everything in Visionary',
-                    'The Replicator (clone any site)',
-                    'Commercial / white-label license',
+                    'The Replicator',
+                    'White-label license',
                     'API access',
                     'Priority support',
                   ].map((feature, i) => (
-                    <div key={i} className="flex items-center gap-2 text-sm text-zinc-300">
+                    <div key={i} className="flex items-center gap-2 text-zinc-400">
                       <span className="text-amber-400">✓</span>
                       {feature}
                     </div>
@@ -258,9 +247,9 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
                 <button
                   onClick={() => handleHatch('singularity')}
                   disabled={isLoading || isSyncing}
-                  className="w-full mt-6 py-3 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white font-semibold transition-all"
+                  className="w-full mt-4 py-2 rounded-md bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-medium transition-all disabled:opacity-50"
                 >
-                  Enter Singularity
+                  Go Agency
                 </button>
               </div>
             </div>
