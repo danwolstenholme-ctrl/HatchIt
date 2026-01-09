@@ -1895,40 +1895,194 @@ export default function GeneratedPage() {
                     <Plus className="w-4 h-4" />
                   </button>
                   
-                  {/* Export */}
-                  <button
-                    onClick={handleDownload}
-                    disabled={!assembledCode}
-                    className="p-1.5 text-zinc-500 hover:text-white transition-colors disabled:opacity-40"
-                    title="Export ZIP"
-                  >
-                    <Download className="w-4 h-4" />
-                  </button>
-                  
-                  {/* Ship */}
-                  {deployedUrl ? (
-                    <a
-                      href={deployedUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-emerald-500 text-white rounded-md hover:bg-emerald-400 transition-colors"
-                    >
-                      <Globe className="w-3.5 h-3.5" />
-                      <span className="hidden sm:inline">Live</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  ) : (
-                    <Button
-                      onClick={handleDeploy}
-                      disabled={!assembledCode || isDeploying}
-                      loading={isDeploying}
-                      size="sm"
-                      icon={<Rocket className="w-3.5 h-3.5" />}
-                      iconPosition="left"
-                    >
-                      Ship
-                    </Button>
-                  )}
+                  {/* Ship Dropdown */}
+                  <div className="relative">
+                    {deployedUrl ? (
+                      <a
+                        href={deployedUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-emerald-500 text-white rounded-md hover:bg-emerald-400 transition-colors"
+                      >
+                        <Globe className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Live</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    ) : (
+                      <Button
+                        onClick={() => setShowDeployOptions(!showDeployOptions)}
+                        disabled={!assembledCode}
+                        size="sm"
+                        icon={<Rocket className="w-3.5 h-3.5" />}
+                        iconPosition="left"
+                      >
+                        Ship
+                      </Button>
+                    )}
+                    
+                    {/* Deploy Options Dropdown */}
+                    <AnimatePresence>
+                      {showDeployOptions && (
+                        <>
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-40"
+                            onClick={() => setShowDeployOptions(false)}
+                          />
+                          <motion.div
+                            initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                            transition={{ duration: 0.15 }}
+                            className="absolute right-0 top-full mt-2 w-72 bg-zinc-900 border border-zinc-800 rounded-lg shadow-2xl z-50 overflow-hidden"
+                          >
+                            <div className="p-3 border-b border-zinc-800">
+                              <p className="text-xs font-medium text-white">Ship Your Site</p>
+                              <p className="text-[10px] text-zinc-500 mt-0.5">Choose how to deploy your code</p>
+                            </div>
+                            
+                            <div className="p-2 space-y-1">
+                              {/* Deploy to HatchIt */}
+                              <button
+                                onClick={() => {
+                                  setShowDeployOptions(false)
+                                  if (!canDeploy) {
+                                    setHatchModalReason('deploy')
+                                    setShowHatchModal(true)
+                                    return
+                                  }
+                                  handleDeploy()
+                                }}
+                                disabled={isDeploying}
+                                className="w-full flex items-start gap-3 p-2.5 rounded-md hover:bg-zinc-800/50 transition-colors text-left group"
+                              >
+                                <div className="p-1.5 bg-emerald-500/10 rounded-md">
+                                  <Rocket className="w-4 h-4 text-emerald-500" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-white">Deploy to HatchIt</p>
+                                  <p className="text-[10px] text-zinc-500">Live at yoursite.hatchitsites.dev</p>
+                                </div>
+                                {isDeploying && (
+                                  <div className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
+                                )}
+                              </button>
+                              
+                              {/* Push to GitHub */}
+                              <button
+                                onClick={() => {
+                                  setShowDeployOptions(false)
+                                  if (!canDeploy) {
+                                    setHatchModalReason('deploy')
+                                    setShowHatchModal(true)
+                                    return
+                                  }
+                                  handleGitHubPush()
+                                }}
+                                disabled={github.pushing}
+                                className="w-full flex items-start gap-3 p-2.5 rounded-md hover:bg-zinc-800/50 transition-colors text-left group"
+                              >
+                                <div className="p-1.5 bg-zinc-800 rounded-md">
+                                  <Github className="w-4 h-4 text-white" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-white flex items-center gap-1.5">
+                                    Push to GitHub
+                                    {github.connected && <Check className="w-3 h-3 text-emerald-500" />}
+                                  </p>
+                                  <p className="text-[10px] text-zinc-500">
+                                    {github.connected ? 'Connected — push full Next.js project' : 'Connect account to push code'}
+                                  </p>
+                                </div>
+                                {github.pushing && (
+                                  <div className="w-4 h-4 border-2 border-zinc-500/30 border-t-zinc-500 rounded-full animate-spin" />
+                                )}
+                              </button>
+                              
+                              {/* Download ZIP */}
+                              <button
+                                onClick={() => {
+                                  setShowDeployOptions(false)
+                                  handleDownload()
+                                }}
+                                className="w-full flex items-start gap-3 p-2.5 rounded-md hover:bg-zinc-800/50 transition-colors text-left group"
+                              >
+                                <div className="p-1.5 bg-zinc-800 rounded-md">
+                                  <Download className="w-4 h-4 text-zinc-400" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-white">Download ZIP</p>
+                                  <p className="text-[10px] text-zinc-500">Full source code, ready to run</p>
+                                </div>
+                              </button>
+                            </div>
+                            
+                            {/* Custom Domain - Visionary+ */}
+                            {isProUser && deployedUrl && (
+                              <div className="p-2 border-t border-zinc-800">
+                                <a
+                                  href={`/dashboard/projects/${project?.id}?tab=domain`}
+                                  onClick={() => setShowDeployOptions(false)}
+                                  className="w-full flex items-start gap-3 p-2.5 rounded-md hover:bg-zinc-800/50 transition-colors text-left"
+                                >
+                                  <div className="p-1.5 bg-amber-500/10 rounded-md">
+                                    <Globe className="w-4 h-4 text-amber-500" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-white">Custom Domain</p>
+                                    <p className="text-[10px] text-zinc-500">Connect yourdomain.com</p>
+                                  </div>
+                                </a>
+                              </div>
+                            )}
+                            
+                            {/* GitHub Push Result */}
+                            {githubPushResult && (
+                              <div className={`p-3 border-t ${githubPushResult.success ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-red-500/20 bg-red-500/5'}`}>
+                                {githubPushResult.success ? (
+                                  <div className="space-y-2">
+                                    <p className="text-xs font-medium text-emerald-400 flex items-center gap-1.5">
+                                      <Check className="w-3.5 h-3.5" />
+                                      Pushed to GitHub
+                                    </p>
+                                    <div className="flex gap-2">
+                                      <a
+                                        href={githubPushResult.repoUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex-1 text-center text-[10px] px-2 py-1.5 bg-zinc-800 text-zinc-300 rounded hover:bg-zinc-700 transition-colors"
+                                      >
+                                        View Repo
+                                      </a>
+                                      <a
+                                        href={githubPushResult.vercelImportUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex-1 text-center text-[10px] px-2 py-1.5 bg-zinc-800 text-zinc-300 rounded hover:bg-zinc-700 transition-colors"
+                                      >
+                                        Deploy to Vercel
+                                      </a>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <p className="text-xs text-red-400">{githubPushResult.error}</p>
+                                )}
+                              </div>
+                            )}
+                            
+                            {/* Ownership Footer */}
+                            <div className="px-3 py-2 bg-zinc-950/50 border-t border-zinc-800">
+                              <p className="text-[10px] text-zinc-600 text-center">
+                                Your code. Your repo. Your hosting. Full ownership.
+                              </p>
+                            </div>
+                          </motion.div>
+                        </>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </div>
               </div>
             </div>
