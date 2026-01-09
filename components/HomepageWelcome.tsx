@@ -25,7 +25,7 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
     if (isSignedIn) {
       const savedProjectId = localStorage.getItem('hatch_current_project')
       if (savedProjectId) {
-        setTimeout(() => setResumeUrl(`/builder?project=${savedProjectId}`), 0)
+        setResumeUrl(`/builder?project=${savedProjectId}`)
       }
     } else {
       // For guests: check for cached preview
@@ -39,7 +39,7 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
             // Check if cache is still valid (within 24 hours to be generous)
             if (Date.now() - timestamp < 24 * 60 * 60 * 1000 && code) {
               // Guest work - send to demo which will load it
-              setTimeout(() => setResumeUrl('/demo'), 0)
+              setResumeUrl('/demo')
             } else {
               // Cache expired, remove it
               localStorage.removeItem(cachedKey)
@@ -54,7 +54,7 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
     
     if (!hasSeen) {
       // Open immediately for instant impact
-      setTimeout(() => setIsOpen(true), 0)
+      setIsOpen(true)
     }
   }, [isLoaded, isSignedIn])
 
@@ -62,9 +62,8 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
     localStorage.setItem(SEEN_KEY, 'true')
     setIsOpen(false)
     
-    if (typeof window !== 'undefined') {
-      const gtag = (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag
-      gtag?.('event', 'welcome_cta_click', {
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'welcome_cta_click', {
         event_category: 'engagement',
         event_label: 'first_contact_modal',
       })
@@ -241,5 +240,3 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
     </AnimatePresence>
   )
 }
-
-

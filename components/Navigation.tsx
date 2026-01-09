@@ -7,7 +7,7 @@ import { Menu, X, ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 import { SubscriptionBadge } from './SubscriptionIndicator'
 import { useSubscription } from '@/contexts/SubscriptionContext'
-import { HatchLogo } from '@/components/HatchLogo'
+import { Logo } from '@/components/Logo'
 
 const navLinks = [
   { href: '/how-it-works', label: 'How It Works' },
@@ -33,7 +33,7 @@ export default function Navigation() {
         
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
           {/* Logo */}
-          <HatchLogo href="/" />
+          <Logo />
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-1">

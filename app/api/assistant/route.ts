@@ -64,17 +64,17 @@ function buildSystemPrompt(context: {
 }) {
   const { currentCode, projectName, pages, brand, recentHistory } = context
   
-  return `You are the AI inside HatchIt.dev  a senior React engineer who helps users build production websites fast.
+  return `You are the AI inside HatchIt.dev — a senior React engineer who helps users build production websites fast.
 
 ## YOUR PERSONALITY
 
 You're sharp, direct, and opinionated. You:
 - Give confident answers without hedging ("You should..." not "You might want to consider...")
-- Get straight to the point  no preamble, no filler
+- Get straight to the point — no preamble, no filler
 - Push back when requests are vague ("What kind of pricing? SaaS tiers? One-time? I need specifics.")
 - Proactively suggest improvements when you spot issues
 - Have strong opinions about design and UX
-- Respect the user's time  they're here to build, not chat
+- Respect the user's time — they're here to build, not chat
 
 You are NOT:
 - A generic helpful assistant
@@ -84,7 +84,7 @@ You are NOT:
 
 ## YOUR ROLE
 
-You're in **Chat Mode**  the user can talk to you without changing their code. Your job:
+You're in **Chat Mode** — the user can talk to you without changing their code. Your job:
 1. Advise on design decisions, UX, and architecture
 2. Give them exact prompts to use in Build Mode
 3. Troubleshoot issues by analyzing their current code
@@ -94,7 +94,7 @@ You're in **Chat Mode**  the user can talk to you without changing their code. Y
 ## HATCHIT.DEV CONTEXT
 
 **Build Mode** (lightning bolt) = AI generates full React + Tailwind code
-**Chat Mode** (chat bubble) = That's you  advice without code changes
+**Chat Mode** (chat bubble) = That's you — advice without code changes
 
 The stack:
 - React 18 (UMD build, no imports needed)
@@ -105,7 +105,7 @@ The stack:
 
 ## HOW TO RESPOND
 
-**Be specific.** Don't say "you could add a hero section"  say:
+**Be specific.** Don't say "you could add a hero section" — say:
 
 > "Add a hero with a bold headline, 2-line subhead, and a gradient CTA button. Switch to Build Mode and try: 'Add a hero section with a large headline, subheading, and a prominent call-to-action button with a gradient background'"
 
@@ -134,7 +134,7 @@ You: "Better how? More whitespace? Bolder colors? Different layout? Give me spec
 - Don't write code (that's Build Mode)
 - Don't explain basic React/JS concepts
 - Don't hedge with "might" "could" "perhaps" 
-- Don't be generic  reference their actual code
+- Don't be generic — reference their actual code
 - Don't go off-topic (redirect: "Let's focus on your site. What's the next feature you need?")
 
 ## CURRENT PROJECT CONTEXT
@@ -146,66 +146,35 @@ ${recentHistory && recentHistory.length > 0 ? `\n**Recent conversation:** The us
 
 ## CURRENT CODE
 \`\`\`
-${currentCode || 'Empty canvas  they haven\'t built anything yet. Ask what they want to create.'}
+${currentCode || 'Empty canvas — they haven\'t built anything yet. Ask what they want to create.'}
 \`\`\``
 }
 
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth()
-
-    const bodyUnknown = (await request.json().catch(() => ({}))) as unknown
-    const body = (typeof bodyUnknown === 'object' && bodyUnknown !== null)
-      ? (bodyUnknown as Record<string, unknown>)
-      : {}
-
-    const message = typeof body.message === 'string' ? body.message : undefined
-    const currentCode = typeof body.currentCode === 'string' ? body.currentCode : undefined
-    const projectName = typeof body.projectName === 'string' ? body.projectName : undefined
-    const pages = Array.isArray(body.pages)
-      ? body.pages
-          .map((p: unknown) => {
-            if (typeof p !== 'object' || p === null) return null
-            const rec = p as Record<string, unknown>
-            const name = typeof rec.name === 'string' ? rec.name : ''
-            const path = typeof rec.path === 'string' ? rec.path : ''
-            return name && path ? { name, path } : null
-          })
-          .filter((p): p is { name: string; path: string } => Boolean(p))
-      : undefined
-    const brand = (typeof body.brand === 'object' && body.brand !== null) ? body.brand : undefined
-    const conversationHistory = Array.isArray(body.conversationHistory) ? body.conversationHistory : undefined
-    const chatHistory = Array.isArray(body.chatHistory) ? body.chatHistory : undefined
-    const isDemo = typeof body.isDemo === 'boolean' ? body.isDemo : undefined
-    const demoId = typeof body.demoId === 'string' ? body.demoId : undefined
-
-    const effectiveHistoryRaw = Array.isArray(chatHistory)
-      ? chatHistory
-      : (Array.isArray(conversationHistory) ? conversationHistory : [])
-
-    const effectiveHistory = (effectiveHistoryRaw as Array<{ role?: unknown; content?: unknown }>).filter(Boolean)
-      .map((m) => ({
-        role: m && (m.role === 'user' || m.role === 'assistant') ? (m.role as 'user' | 'assistant') : 'user',
-        content: m && typeof m.content === 'string' ? m.content : '',
-      }))
-
-    // Allow demo usage (unauthenticated) with a per-demo-id + per-IP limiter.
-    const ip = (request.headers.get('x-forwarded-for') || '').split(',')[0].trim() || 'unknown'
-    const demoKey = typeof demoId === 'string' && demoId.trim().length > 0 ? demoId.trim() : null
-    const effectiveUserId = userId || (isDemo && demoKey ? `demo:${ip}:${demoKey}` : null)
-
-    if (!effectiveUserId) {
-      console.error('Assistant: No user ID from auth, and no demo key')
+    
+    if (!userId) {
+      console.error('Assistant: No user ID from auth')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    if (!checkRateLimit(effectiveUserId)) {
-      console.warn(`Assistant: Rate limit exceeded for user ${effectiveUserId}`)
+    if (!checkRateLimit(userId)) {
+      console.warn(`Assistant: Rate limit exceeded for user ${userId}`)
       return NextResponse.json(
-        { error: 'Rate limit exceeded. Maximum 30 requests per minute.' },
+        { error: 'Rate limit exceeded. Maximum 30 requests per minute.' }, 
         { status: 429 }
       )
     }
+
+    const { 
+      message, 
+      currentCode, 
+      projectName, 
+      pages, 
+      brand,
+      chatHistory 
+    } = await request.json()
 
     if (!message) {
       return NextResponse.json({ error: 'No message provided' }, { status: 400 })
@@ -216,15 +185,15 @@ export async function POST(request: NextRequest) {
       projectName,
       pages,
       brand,
-      recentHistory: effectiveHistory?.slice(-4) // Last 4 messages for context
+      recentHistory: chatHistory?.slice(-4) // Last 4 messages for context
     })
 
     // Build contents array for Gemini
-    const contents: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = []
+    const contents: any[] = []
     
-    if (effectiveHistory && effectiveHistory.length > 0) {
+    if (chatHistory && chatHistory.length > 0) {
       // Include last 6 messages for conversation continuity
-      const recentMessages = effectiveHistory.slice(-6)
+      const recentMessages = chatHistory.slice(-6)
       for (const msg of recentMessages) {
         if (msg.role === 'user' || msg.role === 'assistant') {
           contents.push({
@@ -257,28 +226,23 @@ export async function POST(request: NextRequest) {
     let assistantMessage = 'Something went wrong. Try again.'
     
     // Handle different SDK response structures
-    const maybeResponse = response as unknown as {
-      text?: unknown
-      response?: { text?: unknown }
-    }
-    if (typeof maybeResponse.text === 'function') {
-      assistantMessage = (maybeResponse.text as () => string)()
-    } else if (typeof maybeResponse.text === 'string') {
-      assistantMessage = maybeResponse.text
-    } else if (maybeResponse.response && typeof maybeResponse.response.text === 'function') {
-      assistantMessage = (maybeResponse.response.text as () => string)()
+    const anyResponse = response as any
+    if (anyResponse.text && typeof anyResponse.text === 'function') {
+      assistantMessage = anyResponse.text()
+    } else if (typeof anyResponse.text === 'string') {
+      assistantMessage = anyResponse.text
+    } else if (anyResponse.response && typeof anyResponse.response.text === 'function') {
+      assistantMessage = anyResponse.response.text()
     }
 
     logAssistantUsage(
-      effectiveUserId,
+      userId,
       message.length,
       0, // Gemini doesn't return token counts in simple response easily, skipping for now
       0
     )
 
     return NextResponse.json({ 
-      // UI expects `response`.
-      response: assistantMessage,
       message: assistantMessage,
       model: 'gemini-2.0-flash-001'
     })
@@ -288,4 +252,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Assistant failed' }, { status: 500 })
   }
 }
-

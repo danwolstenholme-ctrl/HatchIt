@@ -1,17 +1,16 @@
-﻿import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { GoogleGenAI } from '@google/genai'
 
 // =============================================================================
-// PROMPT HELPER
-// Interactive AI that helps users craft better prompts.
-// Demo mode is allowed (rate-limited) so the sandbox can show off the product.
+// PIP - The Refiner 🟢
+// Interactive AI that helps users craft better prompts and refine their builds
 // =============================================================================
 
 const geminiApiKey = process.env.GEMINI_API_KEY
 const genai = geminiApiKey ? new GoogleGenAI({ apiKey: geminiApiKey }) : null
 
-// Section-specific greetings
+// Section-specific greetings for Pip
 const SECTION_GREETINGS: Record<string, string> = {
   hero: "Let's make your hero section shine. What's the main message?",
   features: "Features time! What makes your product special?",
@@ -24,100 +23,74 @@ const SECTION_GREETINGS: Record<string, string> = {
   footer: "Footer time - what links and info do you need?",
 }
 
-const SYSTEM_PROMPT = `You are the Prompt Helper inside HatchIt.
+const SYSTEM_PROMPT = `You are Pip, the friendly AI assistant inside HatchIt. You're the user's creative partner - you help them refine their vision and make their website sections better.
 
-You help the user turn vague intent into a strong build prompt.
+CORE PERSONALITY:
+- Warm & encouraging - you genuinely want them to succeed
+- Sharp & perceptive - you notice what they're really trying to achieve
+- Playful but professional - occasional wit, never sarcasm
+- Direct & helpful - no padding, no corporate speak
 
-Rules:
-- Be direct and concise (1-3 sentences).
-- No hype words ("magic", "manifest", "revolutionary").
-- No mascot/character voice.
-- Ask at most ONE clarifying question if needed.
-- When possible, output a single copy-paste prompt that names layout + tone + key elements.
-`
+YOUR VOICE:
+- Talk like a smart friend, not a robot
+- Keep responses to 1-3 sentences MAX
+- Use "you" and "your" - it's personal
+- Emojis sparingly (✨ 🎯 💡 are good)
+- Never start with "Great!" or "Sure!" - just answer
 
-// Simple in-memory rate limiting (key -> timestamps of requests)
-const rateLimits = new Map<string, number[]>()
-const RATE_LIMIT_PER_MINUTE = 30
-const RATE_LIMIT_WINDOW = 60000
-const MAX_ENTRIES = 10000
+WHAT YOU DO:
+1. **After builds** - Help them see what's good and what could be better
+2. **During refines** - Suggest specific improvements they didn't think of
+3. **When stuck** - Ask ONE clarifying question to unblock them
+4. **Context-aware** - If they clicked an element, focus on THAT element
 
-function checkRateLimit(key: string): boolean {
-  const now = Date.now()
+WHEN SUGGESTING REFINEMENTS:
+Instead of generic advice, give specific prompts they can use:
+- "Try: 'Make the CTA more urgent - add scarcity'"
+- "Ask for: 'Bigger headline, smaller subtext, more whitespace'"
+- "You could say: 'Add a testimonial card with 5 stars'"
 
-  if (rateLimits.size > MAX_ENTRIES) {
-    const cutoff = now - RATE_LIMIT_WINDOW
-    for (const [k, timestamps] of rateLimits.entries()) {
-      const recent = timestamps.filter(t => t > cutoff)
-      if (recent.length === 0) {
-        rateLimits.delete(k)
-      } else {
-        rateLimits.set(k, recent)
-      }
-    }
-  }
+ELEMENT CONTEXT (when they click something):
+If they've selected an element, FOCUS on that specific thing:
+- "That headline? Try making it bolder - ask for 'Larger, gradient text'"
+- "The button looks small - 'Make CTA bigger with hover animation'"
 
-  const timestamps = rateLimits.get(key) || []
-  const recent = timestamps.filter(t => now - t < RATE_LIMIT_WINDOW)
-  if (recent.length >= RATE_LIMIT_PER_MINUTE) return false
+NEVER:
+- Give long explanations unless asked
+- Say "I'd be happy to help"
+- Apologize unnecessarily
+- List more than 3 suggestions at once
 
-  recent.push(now)
-  rateLimits.set(key, recent)
-  return true
-}
+EXAMPLE EXCHANGES:
+User: "It looks boring"
+Pip: "Add some visual pop - try 'Gradient background with animated particles' or 'Bolder colors, more contrast'"
+
+User: "The headline is weak"
+Pip: "Make it punch harder 👊 Ask for: 'Shorter headline, bigger font, action words'"
+
+User: "I'm not sure what's missing"
+Pip: "What's the ONE thing you want visitors to do? Let's build toward that."`
 
 export async function POST(request: NextRequest) {
   try {
+    // Auth check - prevent unauthorized API usage
     const { userId } = await auth()
-
-    const bodyUnknown = (await request.json().catch(() => ({}))) as unknown
-    const body = (typeof bodyUnknown === 'object' && bodyUnknown !== null)
-      ? (bodyUnknown as Record<string, unknown>)
-      : {}
-
-    const sectionType = typeof body.sectionType === 'string' ? body.sectionType : undefined
-    const sectionName = typeof body.sectionName === 'string' ? body.sectionName : undefined
-    const templateType = typeof body.templateType === 'string' ? body.templateType : undefined
-    const userMessage = typeof body.userMessage === 'string' ? body.userMessage : undefined
-    const prompt = typeof body.prompt === 'string' ? body.prompt : undefined
-    const brandName = typeof body.brandName === 'string' ? body.brandName : undefined
-    const brandTagline = typeof body.brandTagline === 'string' ? body.brandTagline : undefined
-    const isDemo = typeof body.isDemo === 'boolean' ? body.isDemo : undefined
-    const demoId = typeof body.demoId === 'string' ? body.demoId : undefined
-
-    const conversationHistory = Array.isArray(body.conversationHistory)
-      ? (body.conversationHistory as Array<{ role?: unknown; content?: unknown }>).filter(Boolean)
-          .map((m) => ({
-            role: m && (m.role === 'user' || m.role === 'assistant') ? (m.role as 'user' | 'assistant') : 'user',
-            content: m && typeof m.content === 'string' ? m.content : '',
-          }))
-      : []
-
-    const effectiveMessage = (typeof userMessage === 'string' && userMessage.trim().length > 0)
-      ? userMessage
-      : (typeof prompt === 'string' ? prompt : '')
-
-    const effectiveSectionType = typeof sectionType === 'string' && sectionType.trim().length > 0
-      ? sectionType
-      : (typeof sectionName === 'string' ? sectionName : '')
-
-    // Allow demo usage (unauthenticated) with per-demo-id + per-IP limiting.
-    const ip = (request.headers.get('x-forwarded-for') || '').split(',')[0].trim() || 'unknown'
-    const demoKey = typeof demoId === 'string' && demoId.trim().length > 0 ? demoId.trim() : null
-    const effectiveUserId = userId || (isDemo && demoKey ? `demo:${ip}:${demoKey}` : null)
-
-    if (!effectiveUserId) {
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    if (!checkRateLimit(effectiveUserId)) {
-      return NextResponse.json(
-        { error: 'Rate limit exceeded. Maximum 30 requests per minute.' },
-        { status: 429 }
-      )
-    }
+    const body = await request.json()
+    const { 
+      sectionType,
+      sectionName,
+      templateType,
+      userMessage,
+      conversationHistory = [],
+      brandName,
+      brandTagline,
+    } = body
 
-    if (!effectiveSectionType || !effectiveMessage) {
+    if (!sectionType || !userMessage) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -125,12 +98,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Get section-specific greeting hint
-    const sectionKey = effectiveSectionType.toLowerCase()
+    const sectionKey = sectionType.toLowerCase()
     const greetingHint = SECTION_GREETINGS[sectionKey] || SECTION_GREETINGS.hero
 
     // Build context for Pip
     const sectionContext = `
-Section being built: ${sectionName || effectiveSectionType}
+Section being built: ${sectionName || sectionType}
 Template type: ${templateType || 'Landing Page'}
 ${brandName ? `Brand name: ${brandName}` : ''}
 ${brandTagline ? `Brand tagline: ${brandTagline}` : ''}
@@ -138,7 +111,7 @@ Suggested greeting style: "${greetingHint}"
 `.trim()
 
     // Build contents array for Gemini
-    const contents: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = []
+    const contents: any[] = []
     
     // Add history
     if (conversationHistory && conversationHistory.length > 0) {
@@ -154,9 +127,9 @@ Suggested greeting style: "${greetingHint}"
 
     // Add current message
     // If this is the first message, prepend context
-    let finalUserMessage = effectiveMessage
+    let finalUserMessage = userMessage
     if (conversationHistory.length === 0) {
-      finalUserMessage = `[Context: ${sectionContext}]\n\nUser: ${effectiveMessage}`
+      finalUserMessage = `[Context: ${sectionContext}]\n\nUser: ${userMessage}`
     }
     
     contents.push({
@@ -187,8 +160,6 @@ Suggested greeting style: "${greetingHint}"
       assistantMessage.length > 200
 
     return NextResponse.json({
-      // UI expects `enhancedPrompt`; keep `message` for backward compatibility.
-      enhancedPrompt: assistantMessage,
       message: assistantMessage,
       isPromptReady: looksLikePrompt,
     })
