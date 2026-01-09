@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Type, Smartphone, Tablet, Monitor } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import Image from 'next/image'
 
 interface SectionPreviewProps {
@@ -23,7 +24,7 @@ interface SectionPreviewProps {
 
 type DeviceView = 'mobile' | 'tablet' | 'desktop'
 
-const deviceSizes: Record<DeviceView, { width: string; icon: any; label: string }> = {
+const deviceSizes: Record<DeviceView, { width: string; icon: LucideIcon; label: string }> = {
   mobile: { width: '375px', icon: Smartphone, label: 'Mobile' },
   tablet: { width: '768px', icon: Tablet, label: 'Tablet' },
   desktop: { width: '100%', icon: Monitor, label: 'Desktop' },
@@ -175,9 +176,9 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
           presets: ['env', 'react', 'typescript'],
           filename: 'section.tsx',
         }).code || ''
-      } catch (err: any) {
+      } catch (err: unknown) {
       console.error('Babel Transform Error:', err)
-      transformError = err.message
+      transformError = err instanceof Error ? err.message : String(err)
     }
 
     if (transformError) {

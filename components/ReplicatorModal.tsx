@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation'
 interface ReplicatorModalProps {
   isOpen: boolean
   onClose: () => void
-  onReplicate: (data: any) => void
+  onReplicate: (data: unknown) => void
 }
 
 export default function ReplicatorModal({ isOpen, onClose, onReplicate }: ReplicatorModalProps) {
@@ -70,12 +70,13 @@ export default function ReplicatorModal({ isOpen, onClose, onReplicate }: Replic
         onClose()
       }, 1000)
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       setStatus('error')
-      if (err.message === 'UPGRADE_REQUIRED') {
+      const message = err instanceof Error ? err.message : String(err)
+      if (message === 'UPGRADE_REQUIRED') {
         setError('The Replicator is a Demiurge-tier feature. Please upgrade to access.')
       } else {
-        setError(err.message || 'Something went wrong. The site might be blocked.')
+        setError(message || 'Something went wrong. The site might be blocked.')
       }
     }
   }
@@ -106,7 +107,7 @@ export default function ReplicatorModal({ isOpen, onClose, onReplicate }: Replic
                 </div>
                 <div>
                   <h2 className="text-lg font-semibold text-white">The Replicator</h2>
-                  <p className="text-xs text-zinc-400">Clone any website's DNA instantly</p>
+                  <p className="text-xs text-zinc-400">Clone any website DNA instantly</p>
                 </div>
               </div>
               <button onClick={onClose} aria-label="Close replicator" className="text-zinc-500 hover:text-white transition-colors">
@@ -200,3 +201,6 @@ export default function ReplicatorModal({ isOpen, onClose, onReplicate }: Replic
     </AnimatePresence>
   )
 }
+
+
+

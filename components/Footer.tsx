@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Logo } from '@/components/Logo'
+import { HatchLogo } from '@/components/HatchLogo'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
@@ -17,7 +17,7 @@ export default function Footer() {
           
           {/* Brand + tagline */}
           <div className="flex flex-col gap-3">
-            <Logo />
+            <HatchLogo href="/" />
             <p className="text-sm text-zinc-500 max-w-xs">
               Text to React. Ship faster.
             </p>

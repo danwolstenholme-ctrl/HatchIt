@@ -1,15 +1,9 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, ArrowRight, Lock } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-
-// =============================================================================
-// WELCOME MODAL (SIGNUP GATE)
-// Triggered after Hero section is built.
-// Forces signup to save progress.
-// =============================================================================
 
 interface WelcomeModalProps {
   trigger?: 'auto' | 'manual' | 'guest' | 'post-demo'
@@ -17,17 +11,15 @@ interface WelcomeModalProps {
   onClose?: () => void
 }
 
-export default function WelcomeModal({ isOpen: externalIsOpen, onClose }: WelcomeModalProps) {
-  const isOpen = externalIsOpen ?? false
+export default function WelcomeModal({ trigger = 'auto', isOpen: externalIsOpen, onClose }: WelcomeModalProps) {
+  const isOpen = (trigger === 'manual' || trigger === 'post-demo') ? (externalIsOpen ?? false) : false
   const router = useRouter()
 
   const handleClose = useCallback(() => {
-    // If triggered manually (gate), we allow closing but it might re-trigger on next action
     onClose?.()
   }, [onClose])
 
   const handleSignup = () => {
-    // Redirect to signup, preserving current state via localStorage (handled by BuildFlowController)
     router.push('/sign-up')
   }
 
@@ -35,7 +27,6 @@ export default function WelcomeModal({ isOpen: externalIsOpen, onClose }: Welcom
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 sm:px-6">
-          {/* Backdrop - Non-dismissible for strict gate feel */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -43,16 +34,14 @@ export default function WelcomeModal({ isOpen: externalIsOpen, onClose }: Welcom
             className="absolute inset-0 bg-black/90 backdrop-blur-md"
           />
 
-          {/* Modal */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', bounce: 0.3 }}
-            className="relative w-full max-w-[300px] sm:max-w-sm bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden"
+            className="relative w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden"
           >
-            {/* Close button - Optional: Remove to force signup? User said "They NEED to create an account" */}
-            <button 
+            <button
               onClick={handleClose}
               aria-label="Close modal"
               className="absolute top-4 right-4 p-2 text-zinc-500 hover:text-white transition-colors rounded-lg hover:bg-zinc-800 z-10"
@@ -60,37 +49,38 @@ export default function WelcomeModal({ isOpen: externalIsOpen, onClose }: Welcom
               <X className="w-5 h-5" />
             </button>
 
-            <div className="p-5 text-center">
-              <div className="w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4 border border-zinc-700">
-                <Lock className="w-6 h-6 text-zinc-400" />
+            <div className="p-8 text-center">
+              <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-6 border border-zinc-700">
+                <Lock className="w-8 h-8 text-zinc-400" />
               </div>
-              
-              <h2 className="text-lg font-bold text-white mb-2">
-                Save Your Work
-              </h2>
-              
-              <p className="text-sm text-zinc-400 mb-5 leading-relaxed">
-                Create a free account to save your progress and continue building.
+
+              <h2 className="text-2xl font-bold text-white mb-3">Save Your Masterpiece</h2>
+
+              <p className="text-zinc-400 mb-8 leading-relaxed">
+                You have built a great foundation. Create a free account to save progress and continue building the rest of the site.
               </p>
 
-              <div className="space-y-3">
-                <button 
+              <div className="space-y-4">
+                <button
                   onClick={handleSignup}
-                  className="w-full py-3 px-4 bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white font-semibold text-sm rounded-lg transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] flex items-center justify-center gap-2"
+                  className="w-full py-4 px-6 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-lg rounded-xl transition-colors flex items-center justify-center gap-2"
                 >
                   Create Free Account
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-5 h-5" />
                 </button>
-                
-                <p className="text-[11px] text-zinc-500">
-                  Have an account? <button onClick={() => router.push('/sign-in')} className="text-zinc-400 hover:text-white underline">Sign in</button>
+
+                <p className="text-xs text-zinc-500">
+                  Already have an account?{' '}
+                  <button onClick={() => router.push('/sign-in')} className="text-zinc-400 hover:text-white underline">
+                    Sign in
+                  </button>
                 </p>
               </div>
             </div>
-            
-            <div className="p-3 bg-zinc-950/50 border-t border-zinc-800 text-center">
-              <p className="text-[10px] text-zinc-500">
-                <span className="text-red-400">Warning:</span> Progress will be lost without signing up.
+
+            <div className="p-4 bg-zinc-950/50 border-t border-zinc-800 text-center">
+              <p className="text-xs text-zinc-500">
+                <span className="text-red-400">Warning:</span> Closing this window without signing up will lose your progress.
               </p>
             </div>
           </motion.div>
@@ -98,24 +88,4 @@ export default function WelcomeModal({ isOpen: externalIsOpen, onClose }: Welcom
       )}
     </AnimatePresence>
   )
-}
-
-// Hook to trigger welcome modal
-export function useWelcomeModal() {
-  const [showWelcome, setShowWelcome] = useState(false)
-  const SEEN_KEY = 'welcome_dismissed'
-
-  const triggerWelcome = useCallback(() => {
-    const hasSeenWelcome = sessionStorage.getItem(SEEN_KEY)
-    if (!hasSeenWelcome) {
-      setTimeout(() => setShowWelcome(true), 600)
-    }
-  }, [])
-
-  const closeWelcome = useCallback(() => {
-    setShowWelcome(false)
-    sessionStorage.setItem(SEEN_KEY, 'true')
-  }, [])
-
-  return { showWelcome, triggerWelcome, closeWelcome }
 }

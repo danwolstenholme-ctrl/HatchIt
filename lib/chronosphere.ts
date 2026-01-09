@@ -72,10 +72,7 @@ class Chronosphere {
     // Update patterns
     const events = this.dna.events;
     this.dna.patterns.refinementsCount = events.filter(e => e.type === 'refinement').length;
-    const isRegenerationEvent = (event: ChronoEvent) => {
-      return event.type === 'generation' && event.details.isRegeneration === true
-    }
-    this.dna.patterns.regenerationsCount = events.filter(isRegenerationEvent).length;
+    this.dna.patterns.regenerationsCount = events.filter(e => e.type === 'generation' && typeof e.details === 'object' && e.details !== null && (e.details as Record<string, unknown>).isRegeneration === true).length;
     
     // Calculate average time per section (rough estimate based on acceptance events)
     const acceptances = events.filter(e => e.type === 'acceptance');
@@ -103,3 +100,4 @@ class Chronosphere {
 }
 
 export const chronosphere = new Chronosphere();
+
