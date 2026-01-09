@@ -2166,18 +2166,6 @@ export default function GeneratedPage() {
                             <Monitor className="w-3.5 h-3.5" />
                           </button>
                         </div>
-                        
-                        {/* Edit Toggle */}
-                        <button
-                          onClick={() => setPreviewEditMode(!previewEditMode)}
-                          className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-all ${
-                            previewEditMode ? 'text-white bg-zinc-700' : 'text-zinc-500 hover:text-zinc-300'
-                          }`}
-                          title={previewEditMode ? 'Editing enabled' : 'Enable text editing'}
-                        >
-                          <Edit3 className="w-3.5 h-3.5" />
-                          {previewEditMode && <span>Edit Mode</span>}
-                        </button>
                       </div>
                     )}
                   </div>
@@ -2186,7 +2174,7 @@ export default function GeneratedPage() {
                   <div className="flex-1 overflow-hidden relative bg-zinc-900/30 p-4">
                     {previewSections.length > 0 ? (
                       <div className={`h-full mx-auto rounded-lg overflow-hidden border border-zinc-800/50 bg-white shadow-2xl transition-all duration-300 ${
-                        previewDevice === 'mobile' ? 'w-[375px]' : previewDevice === 'tablet' ? 'w-[768px]' : 'w-full'
+                        previewDevice === 'mobile' ? 'w-[375px]' : previewDevice === 'tablet' ? 'max-w-[768px] w-full' : 'w-full'
                       }`}>
                         <FullSitePreviewFrame 
                           sections={previewSections}

@@ -93,8 +93,7 @@ const AI_TOOLS: Array<{
   tier: Tier
   action: keyof SidebarProps
 }> = [
-  { id: 'oracle', icon: MessageSquare, name: 'Assistant', desc: 'Get help', tier: 'free', action: 'onOpenOracle' },
-  { id: 'architect', icon: Sparkles, name: 'Prompt Helper', desc: 'Optimize prompts', tier: 'free', action: 'onOpenArchitect' },
+  { id: 'oracle', icon: MessageSquare, name: 'AI Assistant', desc: 'Design tips & help', tier: 'free', action: 'onOpenOracle' },
 ]
 
 const TIER_ORDER: Tier[] = ['demo', 'free', 'architect', 'visionary', 'singularity']
