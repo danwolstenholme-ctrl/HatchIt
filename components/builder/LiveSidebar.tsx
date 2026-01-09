@@ -268,7 +268,8 @@ export default function LiveSidebar({
           </div>
           </LayoutGroup>
           
-          {/* Add Section - Prominent CTA */}
+          {/* Add Section - Prominent CTA (hidden for demo users) */}
+          {userTier !== 'demo' && (
           <div className="relative mt-4">
             <motion.button
               onClick={() => setShowAddMenu(!showAddMenu)}
@@ -331,6 +332,7 @@ export default function LiveSidebar({
               )}
             </AnimatePresence>
           </div>
+          )}
         </div>
 
         {/* AI Tools */}
