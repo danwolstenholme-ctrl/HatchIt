@@ -64,11 +64,21 @@ const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameP
         match[1].split(',').forEach(s => allLucideImports.add(s.trim()));
       }
 
-      // Strip imports
+      // Strip imports and directives
       code = code
         .replace(/'use client';?/g, '')
         .replace(/"use client";?/g, '')
-        .replace(/import\s+.*?from\s+['"][^'"]+['"];?\s*/g, '');
+        .replace(/import\s+.*?from\s+['"][^'"]+['"];?\s*/g, '')
+      
+      // Strip TypeScript type annotations that leak into runtime
+      // Handles: const x: string = ..., function(a: string, b: number), etc.
+      code = code
+        .replace(/:\s*(string|number|boolean|any|void|null|undefined|never|unknown)\s*([=,\)\}])/g, '$2')
+        .replace(/:\s*(string|number|boolean|any|void|null|undefined|never|unknown)\s*$/gm, '')
+        .replace(/:\s*React\.\w+(\[\])?\s*([=,\)\}])/g, '$2')
+        .replace(/:\s*\w+\[\]\s*([=,\)\}])/g, '$1')
+        .replace(/<(\w+)\s+extends\s+\w+>/g, '')
+        .replace(/as\s+(string|number|boolean|any)\s*/g, '')
 
       // Transform exports
       // Replace "export default function Name" -> "const Section_i = function Name"
