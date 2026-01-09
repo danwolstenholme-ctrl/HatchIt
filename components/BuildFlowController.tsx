@@ -1448,13 +1448,20 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       const lucideIconRegex = /<([A-Z][a-zA-Z0-9]*)\s/g
       const potentialIcons = new Set<string>()
       
+      // Non-icon component names to filter out
+      const nonIconComponents = [
+        'AnimatePresence', 'Image', 'Link', 'Component', 'Fragment',
+        'Icon', 'Icons', 'Button', 'Card', 'Section', 'Header', 'Footer',
+        'Nav', 'Main', 'Div', 'Span', 'Container', 'Wrapper', 'Box',
+        'Text', 'Title', 'Input', 'Form', 'Label', 'Modal', 'Dialog'
+      ]
+      
       // Scan original code for icons
       const fullSource = sectionsForBuild.map(s => buildState.sectionCode[s.id] || '').join('\n')
       let match
       while ((match = lucideIconRegex.exec(fullSource)) !== null) {
         const name = match[1]
-        // Filter out known non-icon components
-        if (!['AnimatePresence', 'Image', 'Link', 'Component', 'Fragment'].includes(name)) {
+        if (!nonIconComponents.includes(name)) {
           potentialIcons.add(name)
         }
       }
@@ -1561,13 +1568,20 @@ export default function GeneratedPage() {
       const lucideIconRegex = /<([A-Z][a-zA-Z0-9]*)\s/g
       const potentialIcons = new Set<string>()
       
+      // Non-icon component names to filter out
+      const nonIconComponents = [
+        'AnimatePresence', 'Image', 'Link', 'Component', 'Fragment',
+        'Icon', 'Icons', 'Button', 'Card', 'Section', 'Header', 'Footer',
+        'Nav', 'Main', 'Div', 'Span', 'Container', 'Wrapper', 'Box',
+        'Text', 'Title', 'Input', 'Form', 'Label', 'Modal', 'Dialog'
+      ]
+      
       // Scan original code for icons
       const fullSource = sectionsForBuild.map(s => buildState.sectionCode[s.id] || '').join('\n')
       let match
       while ((match = lucideIconRegex.exec(fullSource)) !== null) {
         const name = match[1]
-        // Filter out known non-icon components
-        if (!['AnimatePresence', 'Image', 'Link', 'Component', 'Fragment'].includes(name)) {
+        if (!nonIconComponents.includes(name)) {
           potentialIcons.add(name)
         }
       }

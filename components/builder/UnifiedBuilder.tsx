@@ -288,10 +288,17 @@ export default function UnifiedBuilder({
       const lucideIconRegex = /<([A-Z][a-zA-Z0-9]*)\s/g
       const potentialIcons = new Set<string>()
       const fullSource = previewSections.map(s => s.code).join('\n')
+      // Non-icon component names to filter out
+      const nonIconComponents = [
+        'AnimatePresence', 'Image', 'Link', 'Component', 'Fragment',
+        'Icon', 'Icons', 'Button', 'Card', 'Section', 'Header', 'Footer',
+        'Nav', 'Main', 'Div', 'Span', 'Container', 'Wrapper', 'Box',
+        'Text', 'Title', 'Input', 'Form', 'Label', 'Modal', 'Dialog'
+      ]
       let match
       while ((match = lucideIconRegex.exec(fullSource)) !== null) {
         const name = match[1]
-        if (!['AnimatePresence', 'Image', 'Link', 'Component', 'Fragment'].includes(name)) {
+        if (!nonIconComponents.includes(name)) {
           potentialIcons.add(name)
         }
       }
