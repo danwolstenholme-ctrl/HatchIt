@@ -446,9 +446,51 @@ export default function RootLayout({
       return Array.from(icons)
     }
     
+    // Common animation variants that may be duplicated across sections
+    const COMMON_VARIANTS = [
+      'containerVariants',
+      'cardVariants',
+      'itemVariants',
+      'fadeVariants',
+      'slideVariants',
+      'scaleVariants',
+      'staggerVariants'
+    ]
+    
+    // Helper function to deduplicate variable declarations
+    const deduplicateVariables = (codeStr: string): string => {
+      let result = codeStr
+      
+      for (const varName of COMMON_VARIANTS) {
+        // Match all declarations of this variable
+        const regex = new RegExp(`const\\s+${varName}\\s*=\\s*\\{[^}]*(?:\\{[^}]*\\}[^}]*)*\\}`, 'g')
+        const matches = result.match(regex)
+        
+        if (matches && matches.length > 1) {
+          // Keep only the first occurrence, remove duplicates
+          let isFirst = true
+          result = result.replace(regex, (match) => {
+            if (isFirst) {
+              isFirst = false
+              return match
+            }
+            return '' // Remove duplicate
+          })
+          
+          // Clean up any double newlines left behind
+          result = result.replace(/\n{3,}/g, '\n\n')
+        }
+      }
+      
+      return result
+    }
+    
     // Helper function to prepare page code
     const preparePageCode = (pageCode: string) => {
       let prepared = pageCode
+      
+      // Deduplicate common animation variant declarations
+      prepared = deduplicateVariables(prepared)
       
       // Add 'use client' if not present
       if (!prepared.includes("'use client'") && !prepared.includes('"use client"')) {
