@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth, currentUser } from '@clerk/nextjs/server'
+import { track } from '@vercel/analytics/server'
 import { getProjectById, getOrCreateUser, completeSection, checkAndIncrementGeneration } from '@/lib/db'
 import { getUserDNA } from '@/lib/db/chronosphere'
 import { StyleDNA } from '@/lib/supabase'
@@ -568,6 +569,13 @@ export async function POST(request: NextRequest) {
         error: 'AI returned an invalid response. Please try again with a more specific prompt.' 
       }, { status: 500 })
     }
+
+    // Track successful build for analytics
+    await track('Section Built', { 
+      sectionType: sectionType || 'unknown',
+      isPaid: isPaid || false,
+      codeLength: generatedCode.length,
+    })
 
     return NextResponse.json({ 
       success: true, 

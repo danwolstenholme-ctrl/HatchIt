@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth, currentUser } from '@clerk/nextjs/server'
+import { track } from '@vercel/analytics/server'
 import { 
   getOrCreateUser, 
   createProject, 
@@ -144,6 +145,13 @@ export async function POST(request: NextRequest) {
     }
     
     const dbSections = await createSectionsFromTemplate(project.id, sectionsToCreate, initialPrompt, guestSections)
+
+    // Track project creation for analytics
+    await track('Project Created', { 
+      tier,
+      sectionCount: dbSections.length,
+      hasTemplate: !!templateId,
+    })
 
     return NextResponse.json({
       project,
