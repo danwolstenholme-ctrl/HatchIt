@@ -22,7 +22,8 @@ import {
   Zap,
   Lock,
   MessageSquare,
-  Check
+  Check,
+  ChevronDown
 } from 'lucide-react'
 import GeneratingModal from './builder/GeneratingModal'
 import { LogoMark } from './Logo'
@@ -496,6 +497,66 @@ const unwrapCodePayload = (payload: unknown): string => {
 }
 
 // =============================================================================
+// AI UNDERSTOOD SUMMARY - Shows what the AI interpreted from the user's prompt
+// =============================================================================
+function AiUnderstoodSummary({ reasoning, isExpanded, onToggle }: {
+  reasoning: string
+  isExpanded: boolean
+  onToggle: () => void
+}) {
+  if (!reasoning) return null
+  
+  // Parse reasoning into bullet points (split by newlines or sentences)
+  const points = reasoning
+    .split(/[\n•]/)
+    .map(s => s.trim())
+    .filter(s => s.length > 5 && s.length < 150)
+    .slice(0, 4) // Max 4 points
+  
+  if (points.length === 0) return null
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -5 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="mb-2"
+    >
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center gap-2 px-3 py-2 bg-emerald-950/30 border border-emerald-500/20 rounded-lg hover:bg-emerald-950/50 transition-colors group"
+      >
+        <div className="w-5 h-5 rounded bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+          <Check className="w-3 h-3 text-emerald-400" />
+        </div>
+        <span className="text-xs text-emerald-400 font-medium">AI understood your request</span>
+        <ChevronDown className={`w-3 h-3 text-emerald-400/60 ml-auto transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+      </button>
+      
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="px-3 py-2 space-y-1 mt-1 bg-zinc-900/50 border border-zinc-800/50 rounded-lg">
+              {points.map((point, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <span className="text-emerald-500 text-xs mt-0.5">→</span>
+                  <span className="text-xs text-zinc-400">{point}</span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  )
+}
+
+// =============================================================================
 // AUTH REFINE BAR - Professional command bar for logged-in users with quick actions
 // =============================================================================
 function AuthRefineBar({
@@ -813,6 +874,7 @@ export default function SectionBuilder({
   const [inspectorMode, setInspectorMode] = useState(false) // Visual element selector
   const [selectedElement, setSelectedElement] = useState<{ tagName: string; text: string; className: string } | null>(null)
   const [explanation, setExplanation] = useState<string | null>(null)
+  const [showAiSummary, setShowAiSummary] = useState(true) // Show AI understood summary by default
   const [isExplaining, setIsExplaining] = useState(false)
   const [isDreaming, setIsDreaming] = useState(false)
   
@@ -2205,6 +2267,13 @@ export default function SectionBuilder({
             {/* Auth Complete State */}
             {stage === 'complete' && !isDemo && (
               <div className="bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 rounded-lg p-3">
+                {/* AI Understood Summary */}
+                <AiUnderstoodSummary
+                  reasoning={reasoning}
+                  isExpanded={showAiSummary}
+                  onToggle={() => setShowAiSummary(!showAiSummary)}
+                />
+                
                 <AuthRefineBar
                   refinePrompt={refinePrompt}
                   setRefinePrompt={setRefinePrompt}
