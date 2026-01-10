@@ -94,6 +94,8 @@ export interface DbProject {
   template_id: string
   brand_config: DbBrandConfig | null
   status: 'building' | 'complete' | 'deployed'
+  deployed_slug: string | null
+  deployed_at: string | null
   created_at: string
   updated_at: string
 }

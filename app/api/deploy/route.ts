@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth, clerkClient } from '@clerk/nextjs/server'
 import { track } from '@vercel/analytics/server'
 import { AccountSubscription } from '@/types/subscriptions'
+import { getLatestBuild, updateBuildDeployment, updateProjectStatus } from '@/lib/db'
 
 // =============================================================================
 // DEPLOYMENT API
@@ -89,7 +90,7 @@ export async function POST(req: NextRequest) {
       }, { status: 403 })
     }
 
-    const { code, pages, projectName } = await req.json()
+    const { code, pages, projectName, projectId } = await req.json()
 
     // Support both single-page (legacy) and multi-page projects
     if (!code && (!pages || pages.length === 0)) {
@@ -383,7 +384,29 @@ export default function Home() {
       )
     }
 
-    // Store the deployed project with code in Clerk metadata
+    // The deployed URL
+    const url = `https://${slug}.hatchitsites.dev`
+
+    // Store deployment in Supabase (builds table) if projectId provided
+    if (projectId) {
+      try {
+        // Get the latest build for this project
+        const latestBuild = await getLatestBuild(projectId)
+        
+        if (latestBuild) {
+          // Update the build with deployed URL
+          await updateBuildDeployment(latestBuild.id, url)
+        }
+        
+        // Also update project status to 'deployed'
+        await updateProjectStatus(projectId, 'deployed', slug)
+      } catch (err) {
+        console.error('Failed to update Supabase with deployment:', err)
+        // Don't fail - Clerk metadata is backup
+      }
+    }
+
+    // Store the deployed project with code in Clerk metadata (backup/legacy)
     try {
       const client = await clerkClient()
       const user = await client.users.getUser(userId)
@@ -409,9 +432,6 @@ export default function Home() {
       console.error('Failed to store deployed project in metadata:', err)
       // Don't fail the deployment if metadata update fails
     }
-
-    // Return the clean URL
-    const url = `https://${slug}.hatchitsites.dev`
     
     // Track deployment
     await track('Site Deployed', { slug, isMultiPage: !!(pages && pages.length > 0) })

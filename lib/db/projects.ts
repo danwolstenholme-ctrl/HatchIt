@@ -169,13 +169,22 @@ export async function getProjectBySlug(slug: string): Promise<DbProject | null> 
  */
 export async function updateProjectStatus(
   id: string,
-  status: DbProject['status']
+  status: DbProject['status'],
+  deployedSlug?: string
 ): Promise<DbProject | null> {
   if (!supabaseAdmin) return null
 
+  const updateData: Partial<DbProject> = { status }
+  
+  // If deploying, also set the deployed_slug and deployed_at
+  if (status === 'deployed' && deployedSlug) {
+    updateData.deployed_slug = deployedSlug
+    updateData.deployed_at = new Date().toISOString()
+  }
+
   const { data, error } = await supabaseAdmin
     .from('projects')
-    .update({ status })
+    .update(updateData)
     .eq('id', id)
     .select()
     .single()

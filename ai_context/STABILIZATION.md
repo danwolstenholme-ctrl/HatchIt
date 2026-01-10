@@ -35,15 +35,31 @@ _None - Session 1 complete_
 
 ## Session 2: Data Architecture
 
-### Issues
-- [ ] **Deploy saves to Clerk, Dashboard reads Supabase** - Deployments tab broken
-- [ ] **builds table not populated on deploy** - Need to save there too
-- [ ] **Project state fragmentation** - Clerk metadata vs Supabase projects vs local state
+### ✅ Completed
+- [x] **Deploy now saves to Supabase** - updates `builds.deployed_url` and `projects.deployed_slug`
+- [x] **Project status updated** - sets `status: 'deployed'` and `deployed_at`
+- [x] **projectId passed from builder** - deploy API can find the right build
+- [x] **Type safety fixed** - added `deployed_slug` and `deployed_at` to DbProject interface
+- [x] **Backward compatible** - still saves to Clerk metadata as backup
 
-### Fix
-- Save deployment to BOTH Clerk metadata AND Supabase builds table
-- Dashboard reads from builds table (already does)
-- Everything syncs
+### Architecture Now
+```
+Deploy API receives projectId
+  ↓
+1. Deploy to Vercel → get URL
+2. Update builds.deployed_url (for dashboard history)
+3. Update projects.deployed_slug + deployed_at (for project status)
+4. Update Clerk metadata (backup/legacy)
+  ↓
+Dashboard reads from:
+- builds.deployed_url (deployments tab)
+- projects.status / deployed_slug (project cards)
+```
+
+### Issues (Resolved)
+- [x] **Deploy saves to Clerk, Dashboard reads Supabase** - Fixed: now saves to both
+- [x] **builds table not populated on deploy** - Fixed: updates build.deployed_url
+- [x] **Project state fragmentation** - Fixed: project.status set to 'deployed'
 
 ---
 
@@ -95,9 +111,9 @@ _None - Session 1 complete_
 
 ## Priority Order
 
-1. **NOW:** Mobile UX polish (clunky feel)
-2. **Next:** Data architecture (broken deployments)
-3. **Then:** Component extraction (maintainability)
+1. ~~**NOW:** Mobile UX polish (clunky feel)~~ ✅ Done
+2. ~~**Next:** Data architecture (broken deployments)~~ ✅ Done
+3. **Next:** Component extraction (maintainability)
 4. **Later:** Design system (polish)
 5. **Ongoing:** Testing
 

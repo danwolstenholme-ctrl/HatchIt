@@ -618,6 +618,8 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
         template_id: restoredData?.templateId || template.id,
         status: 'building',
         brand_config: finalBrand,
+        deployed_slug: null,
+        deployed_at: null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }
@@ -1547,6 +1549,7 @@ export default function GeneratedPage() {
         body: JSON.stringify({
           code: wrappedCode,
           projectName: project.name,
+          projectId: project.id,
         }),
       })
       
