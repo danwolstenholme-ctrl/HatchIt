@@ -1872,12 +1872,15 @@ export default function SectionBuilder({
           )}
           {generatedCode ? (
             // Section Complete - Code Panel with tier-gated access
-            <div className="h-full flex flex-col bg-zinc-950">
-              {/* Code Panel Toggle */}
-              <div className="flex-shrink-0 px-4 py-2 border-b border-zinc-800/50 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-500" />
-                  <span className="text-sm text-zinc-300">{section.name} ready</span>
+            <div className="h-full flex flex-col bg-gradient-to-b from-zinc-900 to-zinc-950">
+              {/* Success Header - More celebratory */}
+              <div className="flex-shrink-0 px-4 py-3 border-b border-emerald-500/20 flex items-center justify-between bg-emerald-950/20">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                  </div>
+                  <span className="text-sm font-medium text-white">{section.name}</span>
+                  <span className="text-xs text-emerald-400/70">ready</span>
                 </div>
                 <button
                   onClick={() => setShowCodePanel(!showCodePanel)}
@@ -1920,10 +1923,13 @@ export default function SectionBuilder({
                     </div>
                   )
                 ) : (
-                  <div className="h-full flex items-center justify-center">
-                    <div className="text-center">
-                      <Code className="w-6 h-6 text-zinc-600 mx-auto mb-2" />
-                      <p className="text-xs text-zinc-500">Click &quot;View Code&quot; to see generated React</p>
+                  <div className="h-full flex items-center justify-center bg-zinc-900/30">
+                    <div className="text-center p-6">
+                      <div className="w-12 h-12 rounded-xl bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-center mx-auto mb-3">
+                        <Code className="w-5 h-5 text-zinc-500" />
+                      </div>
+                      <p className="text-sm text-zinc-400 mb-1">Code generated</p>
+                      <p className="text-xs text-zinc-600">View code or refine with the input below</p>
                     </div>
                   </div>
                 )}
