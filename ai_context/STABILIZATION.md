@@ -151,3 +151,17 @@ After user deployed a full site successfully:
 - buildState.sectionCode is properly maintained when navigating between sections
 - handleRebuild and handleRemix functions exist but unused (dead code) - refine flow covers the use case
 - Dashboard derived URL display working: `https://${project.deployed_slug}.hatchitsites.dev`
+
+### 11 Jan 2026 - Deploy Failure Prevention
+Added safeguards to prevent build failures reaching Vercel:
+- ✅ GitHub Action for type checking on push/PR (.github/workflows/typecheck.yml)
+- ✅ Pre-push git hook runs `tsc --noEmit` locally
+- ✅ Removed dead code (handleRebuild, handleRemix in SectionBuilder)
+- ✅ Fixed lint warnings (unused variables, const vs let)
+- ✅ Removed unused AnimatePresence import
+- ✅ Deleted old backup file (page.old.tsx)
+
+**Root cause of Cpu icon failure:** Something added `Cpu` to page.tsx without importing it. Now:
+1. Pre-push hook catches this locally
+2. GitHub Action catches it before Vercel
+3. Vercel build is last line of defense
