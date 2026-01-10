@@ -463,6 +463,8 @@ function DemoCommandBar({
   goToSignUp,
   reasoning,
   sectionName = 'Section',
+  onNextSection,
+  isLastSection = false,
 }: {
   stage: BuildStage
   prompt: string
@@ -475,6 +477,8 @@ function DemoCommandBar({
   goToSignUp: () => void
   reasoning: string
   sectionName?: string
+  onNextSection: () => void
+  isLastSection?: boolean
 }) {
   const [showAiSummary, setShowAiSummary] = useState(true)
   const isInitialState = stage === 'input' && !reasoning
@@ -525,13 +529,13 @@ function DemoCommandBar({
           </button>
         </div>
         
-        {/* Sign up CTA for demo users after first build */}
+        {/* Next Section button for demo users after build */}
         {!isInitialState && (
           <button
-            onClick={goToSignUp}
+            onClick={onNextSection}
             className="flex items-center gap-1.5 px-4 py-3 rounded-xl bg-white text-zinc-900 active:bg-zinc-300 hover:bg-zinc-100 text-xs font-medium transition-all whitespace-nowrap"
           >
-            Sign up
+            {isLastSection ? 'Finish' : 'Next'}
             <ArrowRight className="w-3 h-3" />
           </button>
         )}
@@ -2035,6 +2039,8 @@ export default function SectionBuilder({
                   handleUserRefine={handleUserRefine}
                   goToSignUp={goToSignUp}
                   reasoning={reasoning}
+                  onNextSection={handleNextSection}
+                  isLastSection={isLastSection}
                 />
               </div>
             )}

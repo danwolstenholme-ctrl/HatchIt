@@ -1157,7 +1157,10 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       // All sections done - stay on building phase, user can deploy from tabs
       // Clear localStorage since project is complete
       localStorage.removeItem('hatch_current_project')
-      if (!demoMode && project) {
+      if (demoMode) {
+        // Demo complete! Show the soft nudge to sign up
+        setShowDemoNudge(true)
+      } else if (project) {
         // Create build with proper error handling
         fetch(`/api/project/${project.id}/build`, { method: 'POST' })
           .then(res => {
@@ -2460,7 +2463,7 @@ export default function GeneratedPage() {
         }} 
       />
 
-      {/* Demo Soft Nudge - non-blocking prompt to sign up after 3 sections */}
+      {/* Demo Soft Nudge - prompt to sign up after demo is complete */}
       <AnimatePresence>
         {showDemoNudge && (
           <motion.div
@@ -2479,11 +2482,11 @@ export default function GeneratedPage() {
             >
               <div className="text-center mb-6">
                 <div className="w-12 h-12 bg-zinc-900 rounded-full flex items-center justify-center mx-auto mb-4 border border-zinc-800">
-                  <Sparkles className="w-6 h-6 text-emerald-400" />
+                  <Check className="w-6 h-6 text-emerald-400" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">Momentum Building</h3>
+                <h3 className="text-xl font-bold text-white mb-2">Demo Complete!</h3>
                 <p className="text-zinc-400 text-sm">
-                  You&apos;ve built {demoSectionsBuilt} sections. Sign up to save your work and unlock deploy + download.
+                  You built a Header, Hero, and Footer. Sign up to save your work and unlock deploy + download.
                 </p>
               </div>
               
@@ -2502,12 +2505,12 @@ export default function GeneratedPage() {
                   onClick={() => setShowDemoNudge(false)}
                   className="w-full py-3 px-4 bg-zinc-800 hover:bg-zinc-700 text-white font-medium rounded-lg transition-colors"
                 >
-                  Keep Building
+                  Keep Exploring
                 </button>
               </div>
               
               <p className="text-xs text-zinc-500 text-center mt-4">
-                Your work is saved locally. Sign up anytime to keep it.
+                Work saved locally. Sign up anytime to keep it.
               </p>
             </motion.div>
           </motion.div>
