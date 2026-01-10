@@ -203,6 +203,7 @@ function InlinePromptInput({
                 loading={isSubmitting}
                 size="sm"
                 shimmer={isValid && !isSubmitting}
+                title={!isValid ? 'Enter at least 10 characters' : 'Build this section'}
               >
                 Build
               </Button>
@@ -212,11 +213,17 @@ function InlinePromptInput({
           {/* Animated suggestion - hidden on small mobile to prevent overflow */}
           <div className="mt-3 sm:mt-4 hidden xs:flex h-10 items-center justify-center px-2">
             <div className="text-center max-w-full overflow-hidden">
-              <span className="text-zinc-600 text-xs">Try: </span>
-              <span className="text-zinc-400 text-xs">"</span>
-              <span className="text-zinc-300 text-xs">{displayText}</span>
-              <span className={`inline-block w-0.5 h-3.5 bg-emerald-500 ml-0.5 align-middle ${isTyping ? 'animate-pulse' : 'opacity-0'}`} />
-              <span className="text-zinc-400 text-xs">"</span>
+              {prompt.length > 0 && prompt.length < 10 ? (
+                <span className="text-amber-500/70 text-xs">{10 - prompt.length} more characters needed</span>
+              ) : (
+                <>
+                  <span className="text-zinc-600 text-xs">Try: </span>
+                  <span className="text-zinc-400 text-xs">"</span>
+                  <span className="text-zinc-300 text-xs">{displayText}</span>
+                  <span className={`inline-block w-0.5 h-3.5 bg-emerald-500 ml-0.5 align-middle ${isTyping ? 'animate-pulse' : 'opacity-0'}`} />
+                  <span className="text-zinc-400 text-xs">"</span>
+                </>
+              )}
             </div>
           </div>
           
