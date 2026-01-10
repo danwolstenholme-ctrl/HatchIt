@@ -444,10 +444,56 @@ export default function ProjectConfigPage() {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-zinc-500">State</span>
-                <span className={project.status === 'deployed' ? 'text-emerald-400' : 'text-zinc-300'}>
-                  {project.status === 'deployed' ? 'Live' : project.status === 'complete' ? 'Ready' : 'Building'}
-                </span>
+                {project.status === 'deployed' ? (
+                  <span className="text-emerald-400">Live</span>
+                ) : project.deployed_slug ? (
+                  <span className="text-amber-400">Deploy pending...</span>
+                ) : project.status === 'complete' ? (
+                  <span className="text-zinc-300">Ready</span>
+                ) : (
+                  <span className="text-zinc-500">Building</span>
+                )}
               </div>
+              {/* Show deployed URL or check status button */}
+              {project.deployed_slug && (
+                <div className="flex justify-between text-sm items-center">
+                  <span className="text-zinc-500">Site</span>
+                  {project.status === 'deployed' ? (
+                    <a 
+                      href={`https://${project.deployed_slug}.hatchitsites.dev`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
+                    >
+                      {project.deployed_slug}.hatchitsites.dev
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  ) : (
+                    <button
+                      onClick={async () => {
+                        try {
+                          const res = await fetch(`/api/deploy/status?slug=${project.deployed_slug}`)
+                          const data = await res.json()
+                          if (data.status === 'ready') {
+                            // Confirm in DB
+                            await fetch(`/api/project/${project.id}/confirm-deploy`, { method: 'POST' })
+                            refresh()
+                          } else if (data.status === 'failed') {
+                            alert(`Deploy failed: ${data.error || 'Unknown error'}\n\nCheck Vercel logs for details.`)
+                          } else {
+                            alert('Still building... try again in a moment.')
+                          }
+                        } catch {
+                          alert('Could not check status')
+                        }
+                      }}
+                      className="text-amber-400 hover:text-amber-300 text-xs"
+                    >
+                      Check Status →
+                    </button>
+                  )}
+                </div>
+              )}
               <div className="flex justify-between text-sm">
                 <span className="text-zinc-500">Sections</span>
                 <span className="text-zinc-300 tabular-nums">{completedSections}/{sections.length}</span>
@@ -734,6 +780,24 @@ export default function ProjectConfigPage() {
 
       {activeTab === 'pages' && (
         <div className="space-y-3">
+          {/* Edit Content CTA */}
+          <div className="border border-emerald-500/20 rounded-md p-4 bg-emerald-500/5">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-medium text-white">Edit Page Content</h3>
+                <p className="text-xs text-zinc-500 mt-1">
+                  Open the Builder to edit text, regenerate sections, or refine your design
+                </p>
+              </div>
+              <Link
+                href={`/builder?project=${project.id}`}
+                className="px-4 py-2 text-sm font-medium bg-emerald-500 text-black rounded hover:bg-emerald-400 transition-colors"
+              >
+                Open Builder
+              </Link>
+            </div>
+          </div>
+
           {/* Current Sections */}
           <div className="border border-zinc-800/50 rounded-md p-4 bg-zinc-900/30">
             <div className="flex items-center justify-between mb-3">

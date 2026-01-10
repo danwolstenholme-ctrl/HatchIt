@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth, clerkClient } from '@clerk/nextjs/server'
 import { track } from '@vercel/analytics/server'
 import { AccountSubscription } from '@/types/subscriptions'
-import { getLatestBuild, updateBuildDeployment, updateProjectStatus } from '@/lib/db'
+import { getLatestBuild, updateBuildDeployment, updateProjectDeploySlug } from '@/lib/db'
 
 // =============================================================================
 // DEPLOYMENT API
@@ -388,18 +388,21 @@ export default function Home() {
     const url = `https://${slug}.hatchitsites.dev`
 
     // Store deployment in Supabase (builds table) if projectId provided
+    // NOTE: We set deployed_slug but keep status as 'complete' until Vercel confirms success
+    // The builder will poll /api/deploy/status and call /api/project/[id]/confirm-deploy when ready
     if (projectId) {
       try {
         // Get the latest build for this project
         const latestBuild = await getLatestBuild(projectId)
         
         if (latestBuild) {
-          // Update the build with deployed URL
+          // Update the build with deployed URL (pending confirmation)
           await updateBuildDeployment(latestBuild.id, url)
         }
         
-        // Also update project status to 'deployed'
-        await updateProjectStatus(projectId, 'deployed', slug)
+        // Set deployed_slug so we know a deploy is in progress, but don't set status to 'deployed' yet
+        // Status will be set to 'deployed' by /api/project/[id]/confirm-deploy after Vercel confirms
+        await updateProjectDeploySlug(projectId, slug)
       } catch (err) {
         console.error('Failed to update Supabase with deployment:', err)
         // Don't fail - Clerk metadata is backup

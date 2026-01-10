@@ -19,6 +19,7 @@ export {
   getProjectById,
   getProjectBySlug,
   updateProjectStatus,
+  updateProjectDeploySlug,
   updateProjectName,
   updateProjectBrandConfig,
   deleteProject,

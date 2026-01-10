@@ -1588,6 +1588,12 @@ export default function GeneratedPage() {
             const statusData = await statusRes.json()
             
             if (statusData.status === 'ready') {
+              // Confirm deployment in database - this sets status to 'deployed'
+              try {
+                await fetch(`/api/project/${project.id}/confirm-deploy`, { method: 'POST' })
+              } catch {
+                console.error('Failed to confirm deployment in database')
+              }
               setDeploymentStatus({ status: 'ready' })
               setDeployedUrl(statusData.url)
               setIsDeploying(false)
@@ -1627,7 +1633,12 @@ export default function GeneratedPage() {
         
         setTimeout(pollStatus, 3000)
       } else if (data.url) {
-        // Immediate success (rare)
+        // Immediate success (rare) - still confirm in database
+        try {
+          await fetch(`/api/project/${project.id}/confirm-deploy`, { method: 'POST' })
+        } catch {
+          console.error('Failed to confirm deployment in database')
+        }
         setDeployedUrl(data.url)
         setDeploymentStatus({ status: 'ready' })
         setShowDeployOptions(false)

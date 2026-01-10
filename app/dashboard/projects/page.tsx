@@ -126,6 +126,8 @@ export default function ProjectsPage() {
                           Live
                           <ExternalLink className="w-2.5 h-2.5" />
                         </a>
+                      ) : project.deployed_slug && !isDeployed ? (
+                        <span className="text-[11px] text-amber-400">Deploy pending</span>
                       ) : project.status === 'complete' ? (
                         <span className="text-[11px] text-zinc-400">Ready</span>
                       ) : (

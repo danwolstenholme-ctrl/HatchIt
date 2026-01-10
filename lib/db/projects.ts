@@ -198,6 +198,34 @@ export async function updateProjectStatus(
 }
 
 /**
+ * Update project deployed_slug only (without changing status)
+ * Used when deploy starts - status changes to 'deployed' only after Vercel confirms
+ */
+export async function updateProjectDeploySlug(
+  id: string,
+  deployedSlug: string
+): Promise<DbProject | null> {
+  if (!supabaseAdmin) return null
+
+  const { data, error } = await supabaseAdmin
+    .from('projects')
+    .update({ 
+      deployed_slug: deployedSlug,
+      // Keep status as-is until Vercel confirms (don't set to 'deployed' yet)
+    })
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating project deploy slug:', error)
+    return null
+  }
+
+  return data as DbProject
+}
+
+/**
  * Update project name
  */
 export async function updateProjectName(
