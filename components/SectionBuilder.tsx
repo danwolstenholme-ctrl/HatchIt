@@ -30,6 +30,28 @@ import { LogoMark } from './Logo'
 import Button from './singularity/Button'
 
 // =============================================================================
+// SECTION-SPECIFIC PLACEHOLDER TEXT - Used in command bar and empty state
+// =============================================================================
+const SECTION_PLACEHOLDERS: Record<string, string> = {
+  'Header': 'What links? What style?',
+  'Header/Navigation': 'What links? What style?',
+  'Hero': "What's the headline? What's the vibe?",
+  'Footer': 'What should be in the footer?',
+  'Features': 'What features are you showcasing?',
+  'Pricing': 'What are your pricing tiers?',
+  'Testimonials': "Who's saying good things?",
+  'CTA': 'What action should visitors take?',
+  'Contact': 'How should people reach you?',
+  'About': "What's the story?",
+  'FAQ': 'What questions do people ask?',
+  'Services': 'What services do you offer?',
+  'Team': 'Who are the team members?',
+  'Gallery': 'What are you showcasing?',
+  'Stats': 'What numbers matter?',
+  'Portfolio': 'What work do you want to show?',
+}
+
+// =============================================================================
 // INLINE PROMPT INPUT - Command bar with animated suggestion
 // =============================================================================
 function InlinePromptInput({ 
@@ -440,6 +462,7 @@ function DemoCommandBar({
   handleUserRefine,
   goToSignUp,
   reasoning,
+  sectionName = 'Section',
 }: {
   stage: BuildStage
   prompt: string
@@ -451,13 +474,17 @@ function DemoCommandBar({
   handleUserRefine: () => void
   goToSignUp: () => void
   reasoning: string
+  sectionName?: string
 }) {
   const isInitialState = stage === 'input' && !reasoning
+  
+  const placeholderText = isInitialState 
+    ? (SECTION_PLACEHOLDERS[sectionName] || 'Describe what you want...')
+    : "What should change?"
   
   const inputValue = isInitialState ? prompt : refinePrompt
   const setInputValue = isInitialState ? setPrompt : setRefinePrompt
   const handleSubmit = isInitialState ? () => onBuild(inputValue) : handleUserRefine
-  const placeholderText = isInitialState ? "Describe your site..." : "What should change?"
   const buttonText = isInitialState ? "Build" : "Refine"
   
   return (
@@ -1921,27 +1948,7 @@ export default function SectionBuilder({
                     {section.name}
                   </h2>
                   <p className="text-zinc-400 text-sm">
-                    {section.name === 'Header' || section.name === 'Header/Navigation' 
-                      ? 'What links? What style?'
-                      : section.name === 'Hero'
-                      ? 'What\'s the headline? What\'s the vibe?'
-                      : section.name === 'Footer'
-                      ? 'What should be in the footer?'
-                      : section.name === 'Features'
-                      ? 'What features are you showcasing?'
-                      : section.name === 'Pricing'
-                      ? 'What are your pricing tiers?'
-                      : section.name === 'Testimonials'
-                      ? 'Who\'s saying good things?'
-                      : section.name === 'CTA'
-                      ? 'What action should visitors take?'
-                      : section.name === 'Contact'
-                      ? 'How should people reach you?'
-                      : section.name === 'About'
-                      ? 'What\'s the story?'
-                      : section.name === 'FAQ'
-                      ? 'What questions do people ask?'
-                      : 'Describe what you want.'}
+                    {SECTION_PLACEHOLDERS[section.name] || 'Describe what you want.'}
                   </p>
                 </motion.div>
 
@@ -1975,6 +1982,7 @@ export default function SectionBuilder({
                   stage={stage}
                   prompt={prompt}
                   setPrompt={setPrompt}
+                  sectionName={section.name}
                   onBuild={(submittedPrompt: string) => {
                     setPrompt(submittedPrompt)
                     setStage('generating')
