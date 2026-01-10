@@ -252,16 +252,27 @@ A HEADER IS NOT a hero section. It should NOT contain large headlines, taglines,
   const scopeDefinition = sectionScopeDefinitions[templateType] || ''
   const forbiddenList = forbiddenBySectionType[templateType] || []
   
-  const sectionConstraintBlock = `
-## ⚠️ CRITICAL: SECTION TYPE CONSTRAINT ⚠️
-You are building a "${templateType.toUpperCase()}" section. This is NOT a full page. This is ONE component.
+  // This constraint block MUST be the first thing Claude sees
+  const sectionConstraintBlock = `# 🛑 MANDATORY CONSTRAINT — READ FIRST 🛑
 
-${scopeDefinition}
+**SECTION TYPE: ${templateType.toUpperCase()}**
 
-${forbiddenList.length > 0 ? `### FORBIDDEN IN THIS SECTION TYPE:
-${forbiddenList.map(i => `❌ ${i}`).join('\n')}
+You are building ONLY a ${templateType.toUpperCase()} component. NOT a full page. NOT a hero. NOT a landing page. ONLY a ${templateType.toUpperCase()}.
 
-If the user's prompt seems to ask for something outside this section's scope, build what IS appropriate for a ${templateType} and ignore the out-of-scope request.` : ''}`
+## EXACT DEFINITION OF A ${templateType.toUpperCase()}:
+${scopeDefinition || `A ${templateType} section component.`}
+
+${forbiddenList.length > 0 ? `## ❌ ABSOLUTELY FORBIDDEN (DO NOT INCLUDE):
+${forbiddenList.map(i => `- ${i}`).join('\n')}
+
+IGNORE any part of the user's prompt that asks for these forbidden elements.` : ''}
+
+## ✅ SECTION BOUNDARY RULE:
+- Your component must ONLY render what is appropriate for a ${templateType}
+- If user asks for something that doesn't belong in a ${templateType}, politely build a proper ${templateType} instead
+- A header is ~60-80px tall. A hero is full-viewport. They are DIFFERENT THINGS.
+
+---`
 
   // Special instructions for headers/navs to ensure mobile menu works
   const mobileNavInstructions = (templateType === 'header' || templateType === 'nav')
@@ -310,13 +321,14 @@ Example pattern:
 `
     : ''
 
-  return `You are The Architect. You build high-quality, production-ready React components using Tailwind CSS.
+  return `${sectionConstraintBlock}
+
+# SYSTEM: THE ARCHITECT
+You build high-quality, production-ready React components using Tailwind CSS.
 DO NOT include any "powered by" text or AI branding in the output - just clean, professional code.
 
-${sectionConstraintBlock}
-
 ## YOUR MISSION
-Build a "${sectionName}" section for a website.
+Build a "${sectionName}" (type: ${templateType}) component.
 Description: ${sectionDescription}
 ${sectionPromptHint ? `Specific Requirement: ${sectionPromptHint}` : ''}
 
@@ -443,10 +455,22 @@ export async function POST(request: NextRequest) {
     // Fetch User Style DNA (The Chronosphere) - uses dbUser.id (UUID) for users table
     const styleDNA = dbUser ? await getUserDNA(dbUser.id) : null
 
-    // Build the system prompt
-    const templateType = sectionType || 'landing page'
+    // Build the system prompt - sectionType MUST be specific (header, hero, etc.)
+    // If it's missing, we have a bug upstream - log it and use sectionName as fallback
+    if (!sectionType) {
+      console.warn('[build-section] ⚠️ sectionType is missing! This is a bug. Falling back to sectionName.')
+    }
+    const templateType = sectionType || sectionName?.toLowerCase().replace(/[^a-z]/g, '') || 'section'
     const sectionTitle = sectionName || sectionType || 'section'
     const sectionDesc = sectionDescription || sectionTitle
+
+    // DEBUG: Log exactly what we're building
+    console.log('[build-section] ========== BUILD REQUEST ==========')
+    console.log('[build-section] sectionType:', sectionType)
+    console.log('[build-section] templateType:', templateType)
+    console.log('[build-section] sectionName:', sectionName)
+    console.log('[build-section] userPrompt:', userPrompt?.slice(0, 100))
+    console.log('[build-section] ===================================')
 
     const systemPrompt = buildSystemPrompt(
       sectionTitle,
@@ -458,6 +482,10 @@ export async function POST(request: NextRequest) {
       styleDNA,
       sectionPromptHint
     )
+
+    // DEBUG: Log first part of system prompt to verify constraints
+    console.log('[build-section] System prompt (first 800 chars):')
+    console.log(systemPrompt.slice(0, 800))
 
     // Call Claude 3.5 Sonnet (Anthropic)
     // Switched from Gemini 2.0 Flash for better reasoning on sparse inputs
