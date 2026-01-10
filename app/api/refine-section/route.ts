@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
         },
         body: JSON.stringify({
           model: 'claude-sonnet-4-5-20250929',
-          max_tokens: 2048,
+          max_tokens: 8000,
           thinking: {
             type: 'enabled',
             budget_tokens: 4000
