@@ -226,6 +226,40 @@ Or use CSS variables / Tailwind arbitrary values: bg-[${brandConfig.colors.prima
     ? `\n## FORBIDDEN ELEMENTS (DO NOT INCLUDE)\n${forbiddenList.map(i => `- ${i}`).join('\n')}\nFocus ONLY on the ${templateType} content.`
     : ''
 
+  // Special instructions for headers/navs to ensure mobile menu works
+  const mobileNavInstructions = (templateType === 'header' || templateType === 'nav')
+    ? `
+## MOBILE NAVIGATION (REQUIRED)
+For mobile screens, include a working hamburger menu:
+1. Add useState: const [isMenuOpen, setIsMenuOpen] = useState(false)
+2. Add a hamburger button visible only on mobile: className="md:hidden"
+3. Toggle with onClick={() => setIsMenuOpen(!isMenuOpen)}
+4. Show/hide mobile menu based on isMenuOpen state
+5. Use AnimatePresence + motion.div for smooth open/close animation
+6. Close menu when a link is clicked: onClick={() => setIsMenuOpen(false)}
+
+Example pattern:
+{/* Mobile hamburger button */}
+<button className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+  {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+</button>
+
+{/* Mobile menu */}
+<AnimatePresence>
+  {isMenuOpen && (
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      className="absolute top-full left-0 right-0 md:hidden bg-zinc-900 border-b border-zinc-800"
+    >
+      {/* Mobile nav links */}
+    </motion.div>
+  )}
+</AnimatePresence>
+`
+    : ''
+
   return `You are The Architect. You build high-quality, production-ready React components using Tailwind CSS.
 DO NOT include any "powered by" text or AI branding in the output - just clean, professional code.
 
@@ -251,7 +285,7 @@ ${getComponentReference(templateType)}
 - Modern, clean design with generous whitespace.
 - Use <section> as the root element.
 - Use placeholder images from "https://placehold.co/600x400/e2e8f0/1e293b?text=Image" if needed.
-
+${mobileNavInstructions}
 ${brandInstructions}
 ${chronosphereContext}
 ${previousContext}
