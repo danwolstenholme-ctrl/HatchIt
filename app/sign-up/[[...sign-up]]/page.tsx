@@ -130,23 +130,11 @@ export default function SignUpPage() {
                 formButtonReset: 'text-emerald-400 hover:text-emerald-300',
                 alertText: 'text-zinc-300',
                 footerActionText: 'text-zinc-400',
-                footer: 'hidden',
+
               }
             }}
           />
 
-          {/* Custom footer */}
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="text-center text-sm text-zinc-500 mt-6"
-          >
-            Already have an account?{' '}
-            <Link href="/sign-in" className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors">
-              Sign in
-            </Link>
-          </motion.p>
         </motion.div>
       </div>
     </div>

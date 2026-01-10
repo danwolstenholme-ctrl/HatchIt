@@ -101,23 +101,11 @@ export default function SignInPage() {
                 formButtonReset: 'text-emerald-400 hover:text-emerald-300',
                 alertText: 'text-zinc-300',
                 footerActionText: 'text-zinc-400',
-                footer: 'hidden',
+
               }
             }}
           />
 
-          {/* Custom footer */}
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="text-center text-sm text-zinc-500 mt-6"
-          >
-            Don't have an account?{' '}
-            <Link href="/sign-up" className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors">
-              Sign up free
-            </Link>
-          </motion.p>
         </motion.div>
       </div>
     </div>

@@ -465,6 +465,10 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error building section:', error)
-    return NextResponse.json({ error: 'Failed to build section' }, { status: 500 })
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json({ 
+      error: 'Failed to build section', 
+      details: errorMessage 
+    }, { status: 500 })
   }
 }

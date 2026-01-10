@@ -1904,94 +1904,60 @@ export default function SectionBuilder({
               placeholder={section.prompt || `Describe your ${section.name.toLowerCase()}...`}
             />
           ) : (
-            // Empty state - guide users on how to prompt well (responsive)
-            <div className="h-full flex flex-col items-center justify-center bg-zinc-950 p-4 sm:p-6 overflow-auto">
+            // Empty state - minimal section-specific guidance
+            <div className="h-full flex flex-col items-center justify-center bg-zinc-950 p-4 sm:p-6">
               {/* Subtle emerald glow backdrop */}
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.06),transparent_60%)]" />
               
-              <div className="relative max-w-md w-full space-y-4 sm:space-y-5">
-                {/* Header */}
+              <div className="relative max-w-md w-full text-center">
+                {/* Section name + simple prompt */}
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-center space-y-1"
+                  className="space-y-3"
                 >
-                  <h2 className="text-lg sm:text-xl font-semibold text-white">
-                    Be specific. Be bold.
+                  <p className="text-[11px] text-zinc-500 uppercase tracking-wider">Building</p>
+                  <h2 className="text-2xl font-bold text-white">
+                    {section.name}
                   </h2>
-                  <p className="text-zinc-500 text-xs sm:text-sm">
-                    The more detail, the better the result.
+                  <p className="text-zinc-400 text-sm">
+                    {section.name === 'Header' || section.name === 'Header/Navigation' 
+                      ? 'What links? What style?'
+                      : section.name === 'Hero'
+                      ? 'What\'s the headline? What\'s the vibe?'
+                      : section.name === 'Footer'
+                      ? 'What should be in the footer?'
+                      : section.name === 'Features'
+                      ? 'What features are you showcasing?'
+                      : section.name === 'Pricing'
+                      ? 'What are your pricing tiers?'
+                      : section.name === 'Testimonials'
+                      ? 'Who\'s saying good things?'
+                      : section.name === 'CTA'
+                      ? 'What action should visitors take?'
+                      : section.name === 'Contact'
+                      ? 'How should people reach you?'
+                      : section.name === 'About'
+                      ? 'What\'s the story?'
+                      : section.name === 'FAQ'
+                      ? 'What questions do people ask?'
+                      : 'Describe what you want.'}
                   </p>
                 </motion.div>
 
-                {/* What to include - 2x2 grid with glass cards */}
+                {/* Arrow pointing down to input */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 0.1 }}
-                  className="grid grid-cols-2 gap-2 text-left"
-                >
-                  {[
-                    { label: 'What', example: '"A fitness app landing"' },
-                    { label: 'Vibe', example: '"Dark, bold, energetic"' },
-                    { label: 'Elements', example: '"Hero, pricing cards"' },
-                    { label: 'Audience', example: '"Young professionals"' },
-                  ].map((tip, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.1 + i * 0.05 }}
-                      className="p-3 bg-zinc-900/60 backdrop-blur-sm border border-zinc-800/60 rounded-xl hover:border-zinc-700/60 transition-colors group"
-                    >
-                      <p className="text-xs font-medium text-zinc-300 group-hover:text-white transition-colors">{tip.label}</p>
-                      <p className="text-[10px] text-zinc-500 mt-0.5">{tip.example}</p>
-                    </motion.div>
-                  ))}
-                </motion.div>
-
-                {/* Example prompts - clickable with hover glow */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                  className="space-y-2"
-                >
-                  <p className="text-[10px] uppercase tracking-wider text-zinc-600 text-center">Or try one</p>
-                  <div className="space-y-1.5">
-                    {[
-                      "Dark hero for a dev tool with code snippet and glowing CTA",
-                      "Meditation app landing with soft gradients and testimonials",
-                      "Agency portfolio with project grid and bold typography",
-                    ].map((prompt, i) => (
-                      <motion.button
-                        key={i}
-                        initial={{ opacity: 0, x: -5 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.25 + i * 0.05 }}
-                        onClick={() => setPrompt(prompt)}
-                        className="w-full text-left px-3 py-2.5 text-xs text-zinc-400 bg-zinc-900/40 backdrop-blur-sm border border-zinc-800/50 rounded-xl hover:border-zinc-600 hover:bg-zinc-800/50 hover:text-zinc-200 transition-all group"
-                      >
-                        <span className="text-zinc-500 group-hover:text-white mr-1.5 transition-colors">→</span>
-                        {prompt}
-                      </motion.button>
-                    ))}
-                  </div>
-                </motion.div>
-
-                {/* Arrow indicator */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.4 }}
-                  className="hidden sm:flex justify-center pt-2"
+                  transition={{ delay: 0.3 }}
+                  className="mt-8"
                 >
                   <motion.div
-                    animate={{ y: [0, 4, 0] }}
+                    animate={{ y: [0, 6, 0] }}
                     transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                  className="text-zinc-600"
-                >
-                  <ArrowRight className="w-4 h-4 rotate-90" />
+                    className="text-zinc-600"
+                  >
+                    <ArrowRight className="w-5 h-5 rotate-90 mx-auto" />
                   </motion.div>
                 </motion.div>
               </div>
