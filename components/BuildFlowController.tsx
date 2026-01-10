@@ -2214,15 +2214,15 @@ export default function GeneratedPage() {
 
             {/* Main Build Area - Glass container with padding */}
             <div className="flex-1 flex flex-col overflow-hidden p-2 sm:p-3 lg:p-4">
-              {/* Mobile Tab Switcher for Build/Preview - More prominent */}
+              {/* Mobile Tab Switcher for Build/Preview - Instant feedback, no blur */}
               <div className="flex lg:hidden mb-2 sm:mb-3 gap-2">
-                <div className="flex flex-1 bg-zinc-900/80 rounded-xl p-1 border border-zinc-800/50 backdrop-blur-xl shadow-lg">
+                <div className="flex flex-1 bg-zinc-900 rounded-xl p-1 border border-zinc-800/50 shadow-lg">
                   <button
                     onClick={() => setBuildMobileTab('build')}
-                    className={`flex-1 py-2.5 text-xs font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2 ${
+                    className={`flex-1 py-2.5 text-xs font-medium rounded-lg transition-colors flex items-center justify-center gap-2 ${
                       buildMobileTab === 'build' 
                         ? 'bg-white text-black shadow-md' 
-                        : 'text-zinc-400 active:bg-zinc-800'
+                        : 'text-zinc-400 active:bg-zinc-700'
                     }`}
                   >
                     <Code className="w-4 h-4" />
@@ -2230,10 +2230,10 @@ export default function GeneratedPage() {
                   </button>
                   <button
                     onClick={() => setBuildMobileTab('preview')}
-                    className={`flex-1 py-2.5 text-xs font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2 ${
+                    className={`flex-1 py-2.5 text-xs font-medium rounded-lg transition-colors flex items-center justify-center gap-2 ${
                       buildMobileTab === 'preview' 
                         ? 'bg-white text-black shadow-md' 
-                        : 'text-zinc-400 active:bg-zinc-800'
+                        : 'text-zinc-400 active:bg-zinc-700'
                     }`}
                   >
                     <Eye className="w-4 h-4" />
@@ -2259,8 +2259,8 @@ export default function GeneratedPage() {
                 )}
               </div>
               
-              {/* Glass container wrapper */}
-              <div className="flex-1 flex min-h-0 overflow-hidden rounded-2xl border border-zinc-700/30 bg-zinc-900/40 backdrop-blur-2xl shadow-2xl shadow-black/20">
+              {/* Glass container wrapper - no blur on mobile for performance */}
+              <div className="flex-1 flex min-h-0 overflow-hidden rounded-2xl border border-zinc-700/30 bg-zinc-900/95 lg:bg-zinc-900/40 lg:backdrop-blur-2xl shadow-2xl shadow-black/20">
                 {getCurrentSection() && getCurrentDbSection() && (project?.id || getCurrentDbSection()!.project_id) && (
                   <div className={`flex-1 overflow-hidden ${buildMobileTab === 'build' ? 'flex' : 'hidden'} lg:flex`}>
                     <SectionBuilder
@@ -2285,9 +2285,9 @@ export default function GeneratedPage() {
                   </div>
                 )}
                 
-                {/* Mobile Preview Panel - visible when preview tab active */}
-                {buildMobileTab === 'preview' && previewSections.length > 0 && (
-                  <div className="flex-1 flex lg:hidden flex-col overflow-hidden relative">
+                {/* Mobile Preview Panel - always mounted, hidden when not active (prevents iframe re-mount) */}
+                <div className={`flex-1 lg:hidden flex-col overflow-hidden relative ${buildMobileTab === 'preview' ? 'flex' : 'hidden'}`}>
+                  {previewSections.length > 0 ? (
                     <FullSitePreviewFrame 
                       sections={previewSections}
                       deviceView="mobile"
@@ -2299,6 +2299,23 @@ export default function GeneratedPage() {
                         keywords: brandConfig.seo.keywords || ''
                       } : undefined}
                     />
+                  ) : (
+                    <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-zinc-900/50 to-zinc-950">
+                      <div className="text-center p-6">
+                        <div className="w-16 h-16 rounded-2xl bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-center mx-auto mb-4">
+                          <Eye className="w-7 h-7 text-zinc-600" />
+                        </div>
+                        <p className="text-sm font-medium text-zinc-400 mb-1">Preview will appear here</p>
+                        <p className="text-xs text-zinc-600">Build your first section to see it live</p>
+                        <button
+                          onClick={() => setBuildMobileTab('build')}
+                          className="mt-4 px-4 py-2 rounded-lg bg-zinc-800 text-white text-xs font-medium active:bg-zinc-700 transition-colors"
+                        >
+                          Start Building
+                        </button>
+                      </div>
+                    </div>
+                  )}
                     
                     {/* First Build Hint Overlay */}
                     <AnimatePresence>
@@ -2365,25 +2382,7 @@ export default function GeneratedPage() {
                       )}
                     </AnimatePresence>
                   </div>
-                )}
                 
-                {buildMobileTab === 'preview' && previewSections.length === 0 && (
-                  <div className="flex-1 flex lg:hidden items-center justify-center bg-gradient-to-br from-zinc-900/50 to-zinc-950\">
-                    <div className="text-center p-6">
-                      <div className="w-16 h-16 rounded-2xl bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-center mx-auto mb-4">
-                        <Eye className="w-7 h-7 text-zinc-600" />
-                      </div>
-                      <p className="text-sm font-medium text-zinc-400 mb-1">Preview will appear here</p>
-                      <p className="text-xs text-zinc-600">Build your first section to see it live</p>
-                      <button
-                        onClick={() => setBuildMobileTab('build')}
-                        className="mt-4 px-4 py-2 rounded-lg bg-zinc-800 text-white text-xs font-medium active:bg-zinc-700 transition-colors"
-                      >
-                        Start Building
-                      </button>
-                    </div>
-                  </div>
-                )}
 
                 {getCurrentSection() && getCurrentDbSection() && !(project?.id || getCurrentDbSection()!.project_id) && (
                   <div className="flex-1 flex items-center justify-center px-10 text-center">

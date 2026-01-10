@@ -193,7 +193,7 @@ function InlinePromptInput({
                 }
               }}
               placeholder={placeholder}
-              className="flex-1 min-w-0 bg-transparent px-3 sm:px-4 py-3.5 sm:py-4 text-sm text-white placeholder-zinc-500 focus:outline-none"
+              className="flex-1 min-w-0 bg-transparent px-3 sm:px-4 py-3.5 sm:py-4 text-base text-white placeholder-zinc-500 focus:outline-none"
               autoFocus
             />
             <div className="flex-shrink-0 px-2 sm:px-3">
@@ -413,7 +413,7 @@ function AuthRefineBar({
               onKeyDown={(e) => e.key === 'Enter' && refinePrompt.trim() && handleUserRefine()}
               disabled={isUserRefining}
               placeholder="Describe what should change..."
-              className="flex-1 bg-transparent px-4 py-3.5 text-sm text-white placeholder-zinc-500 focus:outline-none disabled:opacity-50"
+              className="flex-1 bg-transparent px-4 py-3.5 text-base text-white placeholder-zinc-500 focus:outline-none disabled:opacity-50"
             />
             <button
               onClick={handleUserRefine}
@@ -572,8 +572,8 @@ function DemoCommandBar({
       )}
       
       <div className="flex items-stretch gap-2">
-        {/* Input - larger touch targets */}
-        <div className="flex-1 flex items-center bg-zinc-900/80 border border-zinc-800/60 rounded-xl overflow-hidden focus-within:border-zinc-600">
+        {/* Input - larger touch targets, 16px font to prevent iOS zoom */}
+        <div className="flex-1 flex items-center bg-zinc-900 border border-zinc-800/60 rounded-xl overflow-hidden focus-within:border-zinc-600">
           <div className="pl-3 flex-shrink-0">
             <div className="w-5 h-5 rounded-md bg-zinc-800 flex items-center justify-center">
               <div className="w-2 h-2 rounded-full bg-zinc-400" />
@@ -586,12 +586,12 @@ function DemoCommandBar({
             onKeyDown={(e) => e.key === 'Enter' && inputValue.trim() && handleSubmit()}
             disabled={isUserRefining}
             placeholder={placeholderText}
-            className="flex-1 bg-transparent px-3 py-3 text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none disabled:opacity-50"
+            className="flex-1 bg-transparent px-3 py-3 text-base text-zinc-200 placeholder-zinc-600 focus:outline-none disabled:opacity-50"
           />
           <button
             onClick={handleSubmit}
             disabled={!inputValue.trim() || isUserRefining}
-            className="px-4 py-3 text-xs font-medium bg-zinc-800/80 border-l border-zinc-700/50 text-zinc-400 active:bg-zinc-700 hover:text-white transition-all disabled:opacity-30"
+            className="px-4 py-3 text-sm font-medium bg-zinc-800 border-l border-zinc-700/50 text-zinc-400 active:bg-zinc-700 transition-colors disabled:opacity-30"
           >
             {isUserRefining ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : buttonText}
           </button>

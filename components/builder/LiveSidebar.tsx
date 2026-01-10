@@ -216,11 +216,11 @@ export default function LiveSidebar({
                     <button
                       onClick={() => isClickable && onSelectSection?.(i)}
                       disabled={!isClickable}
-                      className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-md transition-all text-left ${
+                      className={`w-full flex items-center gap-2 px-2.5 py-3 rounded-lg transition-colors text-left ${
                         isActive 
-                          ? 'bg-zinc-800/80 border border-zinc-700/50' 
+                          ? 'bg-zinc-800 border border-zinc-700/50' 
                           : isClickable 
-                            ? 'hover:bg-zinc-900 border border-transparent cursor-pointer' 
+                            ? 'active:bg-zinc-700 border border-transparent cursor-pointer' 
                             : 'opacity-40 cursor-not-allowed border border-transparent'
                       }`}
                     >
