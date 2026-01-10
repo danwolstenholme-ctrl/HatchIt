@@ -12,7 +12,7 @@ import { componentLibrary } from '@/lib/components'
 // Build component reference based on section type
 function getComponentReference(sectionType: string): string {
   const lib = componentLibrary
-  let components: string[] = []
+  const components: string[] = []
   
   // Map section types to relevant components
   if (sectionType === 'hero') {

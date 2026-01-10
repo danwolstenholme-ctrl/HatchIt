@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
       }, { status: 403 })
     }
 
-    const email = user?.emailAddresses?.[0]?.emailAddress
+    const _email = user?.emailAddresses?.[0]?.emailAddress // Reserved for future audit tracking
 
     const body = await request.json()
     const { projectId } = body

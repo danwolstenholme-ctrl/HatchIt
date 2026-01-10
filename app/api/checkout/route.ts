@@ -27,7 +27,7 @@ async function handleCheckout(
   tier: PriceTier, 
   projectSlug: string = '', 
   projectName: string = '',
-  reqUrl: string
+  _reqUrl: string // Reserved for future redirect logic
 ): Promise<{ url?: string, error?: string, status?: number, redirect?: string }> {
   const stripe = getStripe()
   const client = await clerkClient()

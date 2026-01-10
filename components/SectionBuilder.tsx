@@ -1514,37 +1514,9 @@ ${code.slice(0, 2000)}`,
   }
 
 
-  const handleRebuild = () => {
-    chronosphere.log('rejection', { section: section.name, reason: 'rebuild' }, section.id)
-    // Clear saved preview so user can regenerate fresh (guests only)
-    if (!isSignedIn) {
-      clearSavedPreview(prompt)
-      try { localStorage.removeItem('hatch_last_prompt') } catch { /* ignore */ }
-    }
-    setStage('input')
-    setGeneratedCode('')
-    setRefined(false)
-    setRefinementChanges([])
-    setRefinePrompt('')
-    setIsUserRefining(false)
-    setHasSelfHealed(false)
-  }
-
   const handleNextSection = () => {
     chronosphere.log('acceptance', { section: section.name }, section.id)
     onNextSection()
-  }
-
-  const handleRemix = () => {
-    setPrompt(prev => `Create a completely different variation of this section. ${prev}`)
-    setStage('input')
-    setGeneratedCode('')
-    setRefined(false)
-    setRefinementChanges([])
-    setRefinePrompt('')
-    setIsUserRefining(false)
-    setHasSelfHealed(false)
-    setTimeout(() => textareaRef.current?.focus(), 100)
   }
 
   const handleUserRefine = async () => {

@@ -11,7 +11,7 @@ import { LIMITS } from '@/types/subscriptions'
 // =============================================================================
 
 // Use centralized limits from types/subscriptions.ts
-const FREE_TOTAL_CREDITS = parseInt(process.env.FREE_TOTAL_CREDITS || String(LIMITS.GUEST_TOTAL_CREDITS), 10)
+const _FREE_TOTAL_CREDITS = parseInt(process.env.FREE_TOTAL_CREDITS || String(LIMITS.GUEST_TOTAL_CREDITS), 10) // Reserved for future guest limits
 const ARCHITECT_REFINEMENT_LIMIT = LIMITS.ARCHITECT_REFINEMENTS_MONTHLY
 
 // System prompt for conversational help (when no code is being modified)
@@ -236,7 +236,7 @@ export async function POST(request: NextRequest) {
         tier?: 'architect' | 'visionary' | 'singularity'
       } | undefined
       
-      const freeCreditsUsed = (user.publicMetadata?.freeCreditsUsed as number) || 0
+      const _freeCreditsUsed = (user.publicMetadata?.freeCreditsUsed as number) || 0 // Reserved for future guest tracking
       const hasActiveSub = accountSub?.status === 'active'
       const architectUsed = (user.publicMetadata?.architectRefinementsUsed as number) || 0
 
@@ -276,7 +276,8 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      const clerkUser = await currentUser()
+      // Get current user for context (unused but available for future features)
+      const _clerkUser = await currentUser()
 
       // Verify code is provided
       if (!code) {

@@ -16,8 +16,8 @@ export async function POST() {
     const user = await client.users.getUser(userId)
 
     // Remove GitHub data from metadata
-    const { github, ...restPrivate } = (user.privateMetadata || {}) as Record<string, unknown>
-    const { githubUsername, ...restPublic } = (user.publicMetadata || {}) as Record<string, unknown>
+    const { github: _github, ...restPrivate } = (user.privateMetadata || {}) as Record<string, unknown>
+    const { githubUsername: _githubUsername, ...restPublic } = (user.publicMetadata || {}) as Record<string, unknown>
 
     await client.users.updateUser(userId, {
       privateMetadata: restPrivate,
