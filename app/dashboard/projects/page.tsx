@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { formatDistanceToNow } from 'date-fns'
+import { ExternalLink } from 'lucide-react'
 import type { DbProject } from '@/lib/supabase'
 
 type ProjectWithProgress = DbProject & {
@@ -115,8 +116,18 @@ export default function ProjectsPage() {
                       <p className="text-[11px] text-zinc-600 font-mono mt-0.5">{project.slug}</p>
                     </td>
                     <td className="px-4 py-3 hidden sm:table-cell">
-                      {isDeployed ? (
-                        <span className="text-[11px] text-emerald-400">Live</span>
+                      {isDeployed && project.deployed_slug ? (
+                        <a 
+                          href={`https://${project.deployed_slug}.hatchitsites.dev`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-[11px] text-emerald-400 hover:text-emerald-300 transition-colors"
+                        >
+                          Live
+                          <ExternalLink className="w-2.5 h-2.5" />
+                        </a>
+                      ) : project.status === 'complete' ? (
+                        <span className="text-[11px] text-zinc-400">Ready</span>
                       ) : (
                         <span className="text-[11px] text-zinc-500">Building</span>
                       )}
