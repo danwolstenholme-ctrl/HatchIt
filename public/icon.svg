@@ -1,25 +1,38 @@
-<svg viewBox="0 0 60 66" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
   <defs>
-    <radialGradient id="pip-body" cx="50%" cy="30%" r="70%">
-      <stop offset="0%" stop-color="#34d399"/>
-      <stop offset="60%" stop-color="#10b981"/>
-      <stop offset="100%" stop-color="#059669"/>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1c1c1f"/>
+      <stop offset="100%" stop-color="#09090b"/>
+    </linearGradient>
+    <linearGradient id="emerald" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#34d399"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#10b981" stop-opacity="0"/>
     </radialGradient>
+    <filter id="textGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
   
-  <g transform="translate(30, 33)">
-    <!-- Main body -->
-    <ellipse cx="0" cy="4" rx="22" ry="26" fill="url(#pip-body)"/>
-    
-    <!-- Highlight -->
-    <ellipse cx="-6" cy="-8" rx="8" ry="6" fill="white" opacity="0.3"/>
-    
-    <!-- Left eye -->
-    <ellipse cx="-7" cy="0" rx="4" ry="5" fill="#09090b"/>
-    <ellipse cx="-8" cy="-1" rx="1.5" ry="2" fill="white"/>
-    
-    <!-- Right eye -->
-    <ellipse cx="7" cy="0" rx="4" ry="5" fill="#09090b"/>
-    <ellipse cx="6" cy="-1" rx="1.5" ry="2" fill="white"/>
-  </g>
+  <!-- Background -->
+  <rect width="32" height="32" rx="7" fill="url(#bg)"/>
+  
+  <!-- Border -->
+  <rect x="0.5" y="0.5" width="31" height="31" rx="6.5" fill="none" stroke="#27272a"/>
+  
+  <!-- Top accent line -->
+  <rect x="6" y="2" width="20" height="1" rx="0.5" fill="#10b981" opacity="0.4"/>
+  
+  <!-- Ambient glow behind text -->
+  <ellipse cx="16" cy="17" rx="10" ry="8" fill="url(#glow)"/>
+  
+  <!-- The "It" -->
+  <text x="16" y="22" text-anchor="middle" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-weight="700" font-size="16" letter-spacing="-0.02em" fill="url(#emerald)" filter="url(#textGlow)">It</text>
 </svg>

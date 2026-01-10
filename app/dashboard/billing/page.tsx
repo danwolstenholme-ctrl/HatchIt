@@ -142,20 +142,20 @@ export default function BillingPage() {
             </ul>
 
             {plan.current ? (
-              <div className="w-full py-1.5 text-center text-[11px] text-zinc-400 border border-zinc-700 rounded-md bg-zinc-800/50">
+              <div className="w-full py-2.5 text-center text-xs text-zinc-400 border border-zinc-700 rounded-md bg-zinc-800/50">
                 Current plan
               </div>
             ) : plan.free ? (
-              <div className="w-full py-1.5 text-center text-[11px] text-zinc-500 border border-zinc-700 rounded-md">
+              <div className="w-full py-2.5 text-center text-xs text-zinc-500 border border-zinc-700 rounded-md">
                 Free forever
               </div>
             ) : (
               <a
                 href={`/api/checkout?tier=${plan.id}`}
-                className={`block w-full py-1.5 text-center text-[11px] font-medium rounded-md transition-colors ${
+                className={`block w-full py-2.5 text-center text-xs font-medium rounded-md transition-colors active:scale-[0.98] ${
                   plan.recommended
-                    ? 'bg-emerald-500 hover:bg-emerald-400 text-white'
-                    : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-200'
+                    ? 'bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white'
+                    : 'bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-600 text-zinc-200'
                 }`}
               >
                 {plan.cta}

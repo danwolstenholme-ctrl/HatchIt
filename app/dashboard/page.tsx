@@ -20,7 +20,14 @@ import ProjectWizard from '@/components/ProjectWizard'
 type ProjectWithProgress = DbProject & {
   total_sections?: number
   completed_sections?: number
-  deployed_url?: string
+}
+
+// Helper to get deployed URL from slug
+const getDeployedUrl = (project: ProjectWithProgress): string | null => {
+  if (project.deployed_slug) {
+    return `https://${project.deployed_slug}.hatchitsites.dev`
+  }
+  return null
 }
 
 const TIER_CONFIG = {
@@ -351,14 +358,14 @@ export default function DashboardPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3">
-                        {isDeployed && project.deployed_url && (
+                      <div className="flex items-center gap-2">
+                        {isDeployed && getDeployedUrl(project) && (
                           <a
-                            href={project.deployed_url}
+                            href={getDeployedUrl(project)!}
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="text-xs text-zinc-500 hover:text-white transition-colors"
+                            className="px-3 py-1.5 text-xs text-emerald-400 bg-emerald-500/10 rounded-md active:bg-emerald-500/20 transition-colors"
                           >
                             Visit ↗
                           </a>
@@ -366,10 +373,10 @@ export default function DashboardPage() {
                         {tier === 'singularity' && (
                           <button
                             onClick={(e) => handleDelete(e, project.id)}
-                            className="p-1.5 text-zinc-600 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                            className="p-2 text-zinc-600 hover:text-red-400 active:text-red-400 transition-colors sm:opacity-0 sm:group-hover:opacity-100"
                             title="Delete project"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         )}
                         <span className="text-zinc-700 group-hover:text-zinc-500 transition-colors">→</span>
