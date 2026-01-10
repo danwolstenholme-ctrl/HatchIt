@@ -685,6 +685,11 @@ export default function SectionBuilder({
   const [isExplaining, setIsExplaining] = useState(false)
   const [isDreaming, setIsDreaming] = useState(false)
   
+  // Refiner suggestions state - auto-populated after build
+  const [refinerSuggestions, setRefinerSuggestions] = useState<string[]>([])
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [hasAnalyzed, setHasAnalyzed] = useState(false)
+  
   // Guest prompt modal - shows when guest arrives with no prompt (actual guests only)
   const [, setShowGuestPromptModal] = useState(
     !isSignedIn && !effectivePrompt && !savedPreview
@@ -998,6 +1003,46 @@ export default function SectionBuilder({
       onHealingStateChange?.(false, 'Healing failed')
     } finally {
       setIsSelfHealing(false)
+    }
+  }
+
+  // Auto-analyze code after build to suggest improvements
+  const analyzeForSuggestions = async (code: string) => {
+    if (hasAnalyzed || isAnalyzing || !code) return
+    
+    setIsAnalyzing(true)
+    try {
+      const response = await fetch('/api/refine-section', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: `Analyze this React component and suggest 2-3 quick improvements the user could make. Be specific and actionable. Format as a short bulleted list.
+          
+Code:
+${code.slice(0, 3000)}`,
+          sectionName: section.name,
+        }),
+      })
+
+      if (response.ok) {
+        const { response: suggestions } = await response.json()
+        // Parse bullet points from the response
+        const bulletPoints = suggestions
+          .split('\n')
+          .filter((line: string) => line.trim().startsWith('-') || line.trim().startsWith('•'))
+          .map((line: string) => line.replace(/^[-•]\s*/, '').trim())
+          .filter((line: string) => line.length > 0)
+          .slice(0, 3)
+        
+        if (bulletPoints.length > 0) {
+          setRefinerSuggestions(bulletPoints)
+        }
+      }
+    } catch (err) {
+      console.error('Analysis failed:', err)
+    } finally {
+      setIsAnalyzing(false)
+      setHasAnalyzed(true)
     }
   }
 
@@ -1354,7 +1399,12 @@ export default function SectionBuilder({
       setStreamingCode('')
       setRefined(false)
       setRefinementChanges([])
+      setRefinerSuggestions([]) // Reset suggestions for new build
+      setHasAnalyzed(false) // Allow fresh analysis
       setStage('complete')
+      
+      // Auto-analyze for suggestions (runs in background)
+      analyzeForSuggestions(normalizedCode)
       
       // Save to localStorage for guest preview persistence (guests only)
       if (!isSignedIn) {
@@ -2070,13 +2120,37 @@ export default function SectionBuilder({
 
             {/* Auth Complete State */}
             {stage === 'complete' && !isDemo && (
-              <div className="bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 rounded-lg p-3">
+              <div className="bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 rounded-lg p-3 space-y-3">
                 {/* AI Understood Summary */}
                 <AiUnderstoodSummary
                   reasoning={reasoning}
                   isExpanded={showAiSummary}
                   onToggle={() => setShowAiSummary(!showAiSummary)}
                 />
+                
+                {/* Refiner Suggestions */}
+                {(isAnalyzing || refinerSuggestions.length > 0) && (
+                  <div className="border-t border-zinc-700/50 pt-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                      <span className="text-xs font-medium text-emerald-400">Refiner Suggestions</span>
+                      {isAnalyzing && <RefreshCw className="w-3 h-3 text-zinc-500 animate-spin" />}
+                    </div>
+                    {refinerSuggestions.length > 0 && (
+                      <div className="space-y-1.5">
+                        {refinerSuggestions.map((suggestion, i) => (
+                          <button
+                            key={i}
+                            onClick={() => setRefinePrompt(suggestion)}
+                            className="w-full text-left px-3 py-2 text-xs text-zinc-400 bg-zinc-800/50 hover:bg-emerald-500/10 hover:text-emerald-300 rounded-lg border border-transparent hover:border-emerald-500/30 transition-all"
+                          >
+                            {suggestion}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
                 
                 <AuthRefineBar
                   refinePrompt={refinePrompt}

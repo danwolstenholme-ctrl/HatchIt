@@ -58,14 +58,15 @@ export default function HatchModal({
     setIsLoading(true)
 
     try {
-      const response = await fetch('/api/assistant', {
+      // Use the refiner in help mode (no code = conversational)
+      const response = await fetch('/api/refine-section', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: userMessage,
           currentCode,
           projectName,
-          sectionType: sectionName,
+          sectionName,
           conversationHistory: messages.slice(-6),
         }),
       })

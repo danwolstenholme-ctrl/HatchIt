@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 628">
+  <!-- Dark background matching the reference -->
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1c1c1c"/>
+      <stop offset="100%" style="stop-color:#111111"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Rounded rectangle background -->
+  <rect x="40" y="40" width="1120" height="548" rx="24" fill="url(#bg)"/>
+  
+  <!-- Main content - centered -->
+  <g transform="translate(600, 314)">
+    <!-- Headline - white -->
+    <text x="0" y="-100" text-anchor="middle" fill="#ffffff" font-family="system-ui, -apple-system, sans-serif" font-size="52" font-weight="700">
+      Stop maintaining WordPress.
+    </text>
+    
+    <!-- Second line - green accent -->
+    <text x="0" y="-30" text-anchor="middle" fill="#4ade80" font-family="system-ui, -apple-system, sans-serif" font-size="52" font-weight="700">
+      Start shipping React.
+    </text>
+    
+    <!-- Tagline -->
+    <text x="0" y="50" text-anchor="middle" fill="#a1a1aa" font-family="system-ui, -apple-system, sans-serif" font-size="22">
+      Text → React → Live URL. Your code. 30 seconds.
+    </text>
+    
+    <!-- CTA Button -->
+    <rect x="-115" y="90" width="230" height="52" rx="26" fill="#4ade80"/>
+    <text x="0" y="124" text-anchor="middle" fill="#111111" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="600">
+      Try the Demo Free →
+    </text>
+    
+    <!-- URL -->
+    <text x="0" y="200" text-anchor="middle" fill="#4ade80" font-family="system-ui, -apple-system, sans-serif" font-size="18" opacity="0.7">
+      hatchit.dev
+    </text>
+  </g>
+</svg>
