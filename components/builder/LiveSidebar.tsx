@@ -267,6 +267,7 @@ export default function LiveSidebar({
                           <button
                             onClick={(e) => { e.stopPropagation(); onMoveSection?.(i, i - 1) }}
                             className="p-0.5 rounded hover:bg-zinc-700"
+                            aria-label="Move section up"
                           >
                             <ArrowUp className="w-3 h-3 text-zinc-500" />
                           </button>
@@ -275,6 +276,7 @@ export default function LiveSidebar({
                           <button
                             onClick={(e) => { e.stopPropagation(); onMoveSection?.(i, i + 1) }}
                             className="p-0.5 rounded hover:bg-zinc-700"
+                            aria-label="Move section down"
                           >
                             <ArrowDown className="w-3 h-3 text-zinc-500" />
                           </button>
@@ -283,6 +285,7 @@ export default function LiveSidebar({
                           <button
                             onClick={(e) => { e.stopPropagation(); onRemoveSection?.(i) }}
                             className="p-0.5 rounded hover:bg-red-500/20"
+                            aria-label="Remove section"
                           >
                             <Trash2 className="w-3 h-3 text-zinc-500 hover:text-red-400" />
                           </button>

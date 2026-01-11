@@ -535,6 +535,7 @@ export default function GeneratedPage() {
             <button
               onClick={() => router.push('/dashboard')}
               className="text-zinc-500 hover:text-white transition-colors flex items-center gap-1.5 text-sm"
+              aria-label="Back to dashboard"
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
@@ -657,7 +658,7 @@ export default function GeneratedPage() {
           <div className="px-4 pb-2">
             <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 flex items-center gap-2">
               {error}
-              <button onClick={() => setError(null)} className="ml-auto text-red-400/60 hover:text-red-400">
+              <button onClick={() => setError(null)} className="ml-auto text-red-400/60 hover:text-red-400" aria-label="Dismiss error">
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>

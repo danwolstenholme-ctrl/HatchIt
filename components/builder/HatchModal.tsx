@@ -147,6 +147,7 @@ export default function HatchModal({
               <button
                 onClick={onClose}
                 className="p-2 rounded-lg text-zinc-500 hover:text-white hover:bg-zinc-800 transition-colors"
+                aria-label="Close AI Help"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -309,6 +310,7 @@ export default function HatchModal({
                   onClick={handleSend}
                   disabled={!input.trim() || isLoading}
                   className="p-3 text-emerald-400 hover:text-emerald-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  aria-label="Send message"
                 >
                   <Send className="w-5 h-5" />
                 </button>

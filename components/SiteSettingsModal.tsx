@@ -209,6 +209,7 @@ export default function SiteSettingsModal({
                     accept="image/*" 
                     className="hidden" 
                     onChange={handleLogoUpload}
+                    aria-label="Upload logo"
                   />
                   
                   {/* Project Name */}
@@ -228,6 +229,7 @@ export default function SiteSettingsModal({
                           }
                         }}
                         className="text-xl font-semibold text-white bg-transparent border-b-2 border-zinc-400 outline-none px-0 py-1"
+                        aria-label="Project name"
                       />
                     ) : (
                       <h2 
@@ -247,6 +249,7 @@ export default function SiteSettingsModal({
                 <button 
                   onClick={onClose} 
                   className="p-2 rounded-lg text-zinc-500 hover:text-white hover:bg-zinc-800 transition-all"
+                  aria-label="Close settings"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -387,12 +390,14 @@ export default function SiteSettingsModal({
                                 value={settings.brand.primaryColor}
                                 onChange={e => setSettings({...settings, brand: {...settings.brand, primaryColor: e.target.value}})}
                                 className="w-10 h-10 rounded-lg cursor-pointer border border-zinc-700 bg-transparent"
+                                aria-label="Primary color picker"
                               />
                               <input
                                 type="text"
                                 value={settings.brand.primaryColor}
                                 onChange={e => setSettings({...settings, brand: {...settings.brand, primaryColor: e.target.value}})}
                                 className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white font-mono text-sm uppercase"
+                                aria-label="Primary color hex value"
                               />
                             </div>
                           </div>
@@ -404,12 +409,14 @@ export default function SiteSettingsModal({
                                 value={settings.brand.secondaryColor}
                                 onChange={e => setSettings({...settings, brand: {...settings.brand, secondaryColor: e.target.value}})}
                                 className="w-10 h-10 rounded-lg cursor-pointer border border-zinc-700 bg-transparent"
+                                aria-label="Secondary color picker"
                               />
                               <input
                                 type="text"
                                 value={settings.brand.secondaryColor}
                                 onChange={e => setSettings({...settings, brand: {...settings.brand, secondaryColor: e.target.value}})}
                                 className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white font-mono text-sm uppercase"
+                                aria-label="Secondary color hex value"
                               />
                             </div>
                           </div>
@@ -428,6 +435,7 @@ export default function SiteSettingsModal({
                                 onChange={e => setSettings({...settings, brand: {...settings.brand, headingFont: e.target.value}})}
                                 className="w-full appearance-none bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-zinc-500/50 outline-none cursor-pointer"
                                 style={{ fontFamily: settings.brand.headingFont }}
+                                aria-label="Heading font"
                               >
                                 {FONT_OPTIONS.map((font) => (
                                   <option key={font.value} value={font.value} style={{ fontFamily: font.value }}>
@@ -446,6 +454,7 @@ export default function SiteSettingsModal({
                                 onChange={e => setSettings({...settings, brand: {...settings.brand, font: e.target.value}})}
                                 className="w-full appearance-none bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-zinc-500/50 outline-none cursor-pointer"
                                 style={{ fontFamily: settings.brand.font }}
+                                aria-label="Body text font"
                               >
                                 {FONT_OPTIONS.map((font) => (
                                   <option key={font.value} value={font.value} style={{ fontFamily: font.value }}>

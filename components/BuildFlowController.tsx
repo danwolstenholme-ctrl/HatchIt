@@ -2236,6 +2236,7 @@ export default function GeneratedPage() {
                       <button
                         onClick={() => setShowMobileSidebar(false)}
                         className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-white transition-colors z-10"
+                        aria-label="Close sidebar"
                       >
                         <X className="w-5 h-5" />
                       </button>
