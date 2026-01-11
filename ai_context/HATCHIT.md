@@ -538,7 +538,7 @@ Projects with IDs starting with `demo-` skip:
 ### Full Site Preview (`components/builder/FullSitePreviewFrame.tsx`)
 - Combines all sections into single preview
 - Device modes: Mobile (375px), Tablet (768px), Desktop (100%)
-- Edit mode: Double-click text to edit inline (contentEditable)
+- Edit mode: Tap (mobile) or double-click (desktop) text to edit inline (contentEditable)
 
 ### TypeScript Stripping
 Generated code may include TypeScript annotations that break the preview:
@@ -1039,7 +1039,7 @@ As of January 11, 2026:
 - ✅ Replicator URL cloning (Singularity)
 - ✅ Stripe subscriptions (3 paid tiers)
 - ✅ Custom domains (Visionary+)
-- ✅ Text editing in preview (double-click)
+- ✅ Text editing in preview (tap on mobile, double-click on desktop)
 - ✅ TypeScript stripping for preview
 - ✅ Mobile-optimized builder
 
