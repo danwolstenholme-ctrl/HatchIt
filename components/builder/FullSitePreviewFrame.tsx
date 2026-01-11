@@ -185,6 +185,9 @@ const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameP
       let editModeEnabled = false;
       let activeEditor = null;
       
+      // Detect if mobile
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      
       window.addEventListener('message', (event) => {
         if (event.data.type === 'set-edit-mode') {
           editModeEnabled = event.data.enabled;
@@ -196,7 +199,7 @@ const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameP
             const div = document.createElement('div');
             div.id = 'edit-mode-indicator';
             div.style.cssText = 'position:fixed;top:8px;left:50%;transform:translateX(-50%);background:#a855f7;color:white;padding:4px 12px;border-radius:9999px;font-size:11px;z-index:99999;font-family:system-ui;pointer-events:none;';
-            div.textContent = '✏️ Edit Mode - Double-click text to edit';
+            div.textContent = isMobile ? '✏️ Edit Mode - Tap text to edit' : '✏️ Edit Mode - Double-click text to edit';
             document.body.appendChild(div);
           } else if (!editModeEnabled && indicator) {
             indicator.remove();
@@ -219,11 +222,13 @@ const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameP
         return '';
       }
       
-      document.addEventListener('dblclick', (e) => {
+      // Mobile: use single tap when edit mode is on (dblclick doesn't work well on iOS)
+      // Desktop: use double-click
+      function handleEditTrigger(e) {
         if (!editModeEnabled) return;
         
         const target = e.target;
-        if (!target.matches(editableSelectors)) return;
+        if (!target.matches || !target.matches(editableSelectors)) return;
         if (target === document.body || target.id === 'root') return;
         
         // Don't edit if already editing
@@ -241,14 +246,21 @@ const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameP
         target.contentEditable = 'true';
         target.style.outline = '2px solid #a855f7';
         target.style.backgroundColor = 'rgba(168, 85, 247, 0.1)';
-        target.focus();
         
-        // Select all text
-        const range = document.createRange();
-        range.selectNodeContents(target);
-        const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
+        // Delay focus slightly on mobile to prevent scroll jump
+        setTimeout(() => {
+          target.focus();
+          // Select all text
+          try {
+            const range = document.createRange();
+            range.selectNodeContents(target);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+          } catch (err) {
+            console.log('Selection failed:', err);
+          }
+        }, isMobile ? 100 : 0);
         
         activeEditor = target;
         
@@ -287,7 +299,15 @@ const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameP
             target.blur();
           }
         });
-      }, true);
+      }
+      
+      // Attach edit trigger event listeners
+      // Desktop: double-click to edit
+      document.addEventListener('dblclick', handleEditTrigger, true);
+      // Mobile: single tap to edit (double-tap zooms on iOS, doesn't fire dblclick reliably)
+      if (isMobile) {
+        document.addEventListener('click', handleEditTrigger, true);
+      }
       
       // Hover effect in edit mode
       document.addEventListener('mouseover', (e) => {
@@ -415,29 +435,46 @@ ${Array.from(allLucideImports).map((name) => {
   </style>
   <script>
     // Block ALL navigation in preview - it's a preview, not a live site
-    document.addEventListener('click', function(e) {
+    // Handle both click and touch events for mobile Safari
+    function blockNavigation(e) {
       var target = e.target;
       while (target && target !== document) {
         if (target.tagName === 'A' || target.tagName === 'BUTTON') {
-          var href = target.getAttribute('href');
+          var href = target.getAttribute('href') || target.getAttribute('data-href');
           // Allow anchor links that scroll within the page
-          if (href && href.startsWith('#')) {
+          if (href && href.startsWith('#') && href.length > 1) {
             // Smooth scroll to section
             var sectionId = href.slice(1);
             var element = document.getElementById(sectionId) || document.querySelector('[id$="' + sectionId + '"]');
             if (element) {
               e.preventDefault();
+              e.stopPropagation();
               element.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
-            return;
+            return false;
           }
           // Block all other navigation
           e.preventDefault();
+          e.stopPropagation();
+          return false;
+        }
+        target = target.parentElement;
+      }
+    }
+    document.addEventListener('click', blockNavigation, true);
+    document.addEventListener('touchend', blockNavigation, true);
+    // Prevent any default touch behaviors that might cause navigation
+    document.addEventListener('touchstart', function(e) {
+      var target = e.target;
+      while (target && target !== document) {
+        if (target.tagName === 'A') {
+          // Don't prevent touchstart, just mark it
+          target.setAttribute('data-touched', 'true');
           return;
         }
         target = target.parentElement;
       }
-    }, true);
+    }, { passive: true });
   </script>
 </head>
 <body>
@@ -453,7 +490,7 @@ ${Array.from(allLucideImports).map((name) => {
       var fillStyle = fill ? { position: 'absolute', height: '100%', width: '100%', inset: 0, objectFit: 'cover', ...style } : style;
       return <img src={src} alt={alt || ''} className={className} style={fillStyle} {...rest} />;
     };
-    var Link = ({ href, children, ...props }) => <a href={href} onClick={(e) => { e.preventDefault(); }} {...props}>{children}</a>;
+    var Link = ({ href, children, ...props }) => <a href="#" role="link" data-href={href} onClick={(e) => { e.preventDefault(); e.stopPropagation(); return false; }} onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); return false; }} {...props}>{children}</a>;
     var Head = ({ children }) => null;
     var Script = (props) => null;
     const getPath = () => window.location.hash?.slice(1) || '/';
@@ -551,7 +588,9 @@ ${Array.from(allLucideImports).map((name) => {
         title="Preview"
         srcDoc={srcDoc}
         className="w-full h-full border-0 bg-zinc-950"
-        sandbox="allow-scripts"
+        sandbox="allow-scripts allow-same-origin"
+        referrerPolicy="no-referrer"
+        loading="lazy"
       />
     </div>
   )
