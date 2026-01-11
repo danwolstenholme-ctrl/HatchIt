@@ -161,7 +161,7 @@ export async function POST(req: NextRequest) {
             start: 'next start'
           },
           dependencies: {
-            next: '14.1.0',
+            next: '14.2.28',
             react: '18.2.0',
             'react-dom': '18.2.0',
             'framer-motion': '^11.0.0',
@@ -551,15 +551,17 @@ export default function RootLayout({
       // Handle naming conflicts between next/image and lucide-react
       // If both are used, rename the Lucide Image to ImageIcon
       const hasNextImage = prepared.includes("from 'next/image'") || prepared.includes('from "next/image"')
-      const hasLucideImage = /\bImage\b/.test(prepared) && 
-        (prepared.includes("from 'lucide-react'") || prepared.includes('from "lucide-react"'))
+      const lucideImportMatch = prepared.match(/import\s*\{([^}]+)\}\s*from\s*['"]lucide-react['"]/)
+      const hasLucideImage = lucideImportMatch && /\bImage\b/.test(lucideImportMatch[1])
       
       if (hasNextImage && hasLucideImage) {
-        // Rename Lucide Image to ImageIcon in imports
+        // Rename Lucide Image to ImageIcon in imports - handle it within the icon list
         prepared = prepared.replace(
-          /import\s*\{([^}]*)\bImage\b([^}]*)\}\s*from\s*['"]lucide-react['"]/,
-          (match, before, after) => {
-            return `import {${before}Image as ImageIcon${after}} from 'lucide-react'`
+          /import\s*\{([^}]+)\}\s*from\s*['"]lucide-react['"]/,
+          (match, iconList) => {
+            // Replace standalone Image with Image as ImageIcon in the icon list
+            const fixedIconList = iconList.replace(/\bImage\b(?!\s+as\s)/, 'Image as ImageIcon')
+            return `import { ${fixedIconList.trim()} } from 'lucide-react'`
           }
         )
         // Replace <Image usage that's NOT from next/image (Lucide icons are used as <Image />)
