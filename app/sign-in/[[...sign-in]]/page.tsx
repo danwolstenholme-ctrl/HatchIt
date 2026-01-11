@@ -5,7 +5,6 @@ import { useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Sparkles } from 'lucide-react'
 import Link from 'next/link'
-import { LogoMark } from '@/components/Logo'
 
 export default function SignInPage() {
   const searchParams = useSearchParams()
@@ -27,12 +26,6 @@ export default function SignInPage() {
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             className="max-w-md"
         >
-          {/* Logo */}
-          <Link href="/" className="inline-flex items-center gap-3 mb-10 group">
-            <LogoMark size={40} />
-            <span className="text-xl font-bold text-white tracking-tight">HatchIt</span>
-          </Link>
-
           {/* Headline */}
           <h1 className="text-3xl xl:text-4xl font-bold text-white mb-4 tracking-tight">
             Welcome back

@@ -339,7 +339,9 @@ ${getComponentReference(templateType)}
 - React 19 (Functional Components)
 - Tailwind CSS 4 (Utility-first)
 - Lucide React (Icons) - import { IconName } from 'lucide-react'
-- Framer Motion (Animations) - import { motion } from 'framer-motion'
+- Framer Motion (Animations) - ONLY use: motion, AnimatePresence, variants
+  ❌ DO NOT USE: useScroll, useSpring, useTransform, useMotionValue, useInView, useAnimation
+  These hooks are NOT available in the preview environment and WILL crash.
 - Next.js Image (Optimization) - import Image from 'next/image'
 
 ## COMPONENT SPEC

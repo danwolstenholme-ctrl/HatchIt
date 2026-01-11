@@ -16,6 +16,7 @@ interface FullSitePreviewFrameProps {
   seo?: { title: string; description: string; keywords: string }
   editMode?: boolean
   onTextEdit?: (oldText: string, newText: string, sectionId: string) => void
+  onSyntaxError?: (error: string, lineNumber?: number) => void
 }
 
 // =============================================================================
@@ -23,7 +24,7 @@ interface FullSitePreviewFrameProps {
 // Renders all assembled sections in an iframe - simplified for reliability
 // =============================================================================
 
-const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameProps>(function FullSitePreviewFrame({ sections, deviceView, seo, editMode = false, onTextEdit }, ref) {
+const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameProps>(function FullSitePreviewFrame({ sections, deviceView, seo, editMode = false, onTextEdit, onSyntaxError }, ref) {
   const internalRef = useRef<HTMLIFrameElement>(null)
   
   // Expose the internal ref to parent
@@ -42,10 +43,17 @@ const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameP
       if (event.data?.type === 'text-edited' && onTextEdit) {
         onTextEdit(event.data.oldText, event.data.newText, event.data.sectionId || '')
       }
+      // Listen for syntax errors from iframe - pass to Overseer for auto-fix
+      if (event.data?.type === 'syntax-error') {
+        console.log('[Overseer] Received syntax error from iframe:', event.data.error)
+        if (onSyntaxError) {
+          onSyntaxError(event.data.error, event.data.line)
+        }
+      }
     }
     window.addEventListener('message', handleMessage)
     return () => window.removeEventListener('message', handleMessage)
-  }, [onTextEdit])
+  }, [onTextEdit, onSyntaxError])
   
   const srcDoc = useMemo(() => {
     if (!sections || sections.length === 0) {
@@ -71,14 +79,54 @@ const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameP
         .replace(/import\s+.*?from\s+['"][^'"]+['"];?\s*/g, '')
       
       // Strip TypeScript type annotations that leak into runtime
-      // Handles: const x: string = ..., function(a: string, b: number), etc.
+      // This is critical - Claude often outputs TS in refined code
       code = code
-        .replace(/:\s*(string|number|boolean|any|void|null|undefined|never|unknown)\s*([=,\)\}])/g, '$2')
+        // 1. Strip inline type annotation objects: ({ foo }: { foo: string }) → ({ foo })
+        //    Must handle nested braces and multi-line
+        .replace(/\}\s*:\s*\{[^{}]*\}/g, '}')
+        .replace(/\}\s*:\s*\{[\s\S]*?\}/g, '}')
+        
+        // 2. Strip interface/type definitions entirely
+        .replace(/^(export\s+)?(interface|type)\s+\w+[\s\S]*?^\}/gm, '')
+        
+        // 3. Strip optional type annotations: foo?: string → foo
+        .replace(/\?\s*:\s*(string|number|boolean|any|void|null|undefined|never|unknown|React\.\w+|\w+\[\])/g, '')
+        
+        // 4. Strip required type annotations: foo: string → foo  
+        .replace(/:\s*(string|number|boolean|any|void|null|undefined|never|unknown)\s*([=,\)\}\]])/g, '$2')
         .replace(/:\s*(string|number|boolean|any|void|null|undefined|never|unknown)\s*$/gm, '')
-        .replace(/:\s*React\.\w+(\[\])?\s*([=,\)\}])/g, '$2')
+        
+        // 5. Strip React types: : React.FC, : React.ReactNode, etc.
+        .replace(/:\s*React\.\w+(<[^>]*>)?(\[\])?\s*([=,\)\}])?/g, (m, g, arr, end) => end || '')
+        
+        // 6. Strip array types: : string[], : number[]
         .replace(/:\s*\w+\[\]\s*([=,\)\}])/g, '$1')
-        .replace(/<(\w+)\s+extends\s+\w+>/g, '')
-        .replace(/as\s+(string|number|boolean|any)\s*/g, '')
+        
+        // 7. Strip generic constraints: <T extends Something>
+        .replace(/<\w+\s+extends\s+[^>]+>/g, '')
+        
+        // 8. Strip type assertions: as string, as SomeType
+        .replace(/\s+as\s+\w+(\[\])?/g, '')
+        
+        // 9. Strip return type annotations: ): string => or ): void {
+        .replace(/\)\s*:\s*(string|number|boolean|void|any|null|undefined|never|React\.\w+|\w+\[\])\s*(=>|\{)/g, ') $2')
+        
+        // 10. Strip generic type parameters on functions: function foo<T>() → function foo()
+        .replace(/(<[A-Z]\w*(,\s*[A-Z]\w*)*>)\s*\(/g, '(')
+
+      // =============================================================================
+      // TERNARY FIXER - Fix Claude's incomplete ternary operators
+      // =============================================================================
+      // ONLY fix patterns that are UNAMBIGUOUSLY broken - don't touch valid code
+      
+      // Fix: ={condition ? { object }} (missing : {})
+      code = code.replace(
+        /=\{(\w+)\s*\?\s*(\{[^{}]*\})\s*\}\}/g,
+        (match, condition, trueValue) => {
+          if (match.includes(' : ')) return match
+          return `={${condition} ? ${trueValue} : {}}`
+        }
+      )
 
       // Transform exports
       // Replace "export default function Name" -> "const Section_i = function Name"
@@ -370,6 +418,39 @@ ${Array.from(allLucideImports).map((name) => {
   <script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script>
+    // Global error handler - notify parent of syntax errors for auto-fix
+    window.onerror = function(message, source, lineno, colno, error) {
+      if (message && (message.includes('SyntaxError') || message.includes('Unexpected token'))) {
+        window.parent.postMessage({
+          type: 'syntax-error',
+          error: String(message),
+          line: lineno
+        }, '*');
+      }
+      return false;
+    };
+    
+    // Also catch Babel compile errors via custom transformer
+    if (window.Babel) {
+      const originalTransform = window.Babel.transform;
+      window.Babel.transform = function(code, options) {
+        try {
+          return originalTransform.call(this, code, options);
+        } catch (e) {
+          // Extract line number from Babel error
+          const lineMatch = e.message && e.message.match(/[(](\\d+):(\\d+)[)]/);
+          const line = lineMatch ? parseInt(lineMatch[1], 10) : undefined;
+          console.log('[Overseer] Babel syntax error captured:', e.message, 'line:', line);
+          window.parent.postMessage({
+            type: 'syntax-error',
+            error: e.message || String(e),
+            line: line
+          }, '*');
+          throw e;
+        }
+      };
+    }
+    
     tailwind.config = {
       darkMode: 'class',
       theme: {

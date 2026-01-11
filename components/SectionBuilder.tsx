@@ -426,12 +426,19 @@ function AuthRefineBar({
               onClick={handleUserRefine}
               disabled={!refinePrompt.trim() || isUserRefining}
               className={`px-4 py-3.5 text-sm font-medium transition-all ${
-                refinePrompt.trim() && !isUserRefining
-                  ? 'bg-emerald-500 text-white active:bg-emerald-600 hover:bg-emerald-400'
-                  : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
+                isUserRefining
+                  ? 'bg-emerald-500/80 text-white'
+                  : refinePrompt.trim()
+                    ? 'bg-emerald-500 text-white active:bg-emerald-600 hover:bg-emerald-400'
+                    : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
               }`}
             >
-              {isUserRefining ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Refine'}
+              {isUserRefining ? (
+                <span className="flex items-center gap-2">
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>Refining...</span>
+                </span>
+              ) : 'Refine'}
             </button>
           </div>
         </div>
@@ -578,6 +585,7 @@ function DemoCommandBar({
         </div>
       )}
       
+      {/* Input row */}
       <div className="flex items-stretch gap-2">
         {/* Input - larger touch targets, 16px font to prevent iOS zoom */}
         <div className="flex-1 flex items-center bg-zinc-900 border border-zinc-800/60 rounded-xl overflow-hidden focus-within:border-zinc-600">
@@ -598,23 +606,32 @@ function DemoCommandBar({
           <button
             onClick={handleSubmit}
             disabled={!inputValue.trim() || isUserRefining}
-            className="px-4 py-3 text-sm font-medium bg-zinc-800 border-l border-zinc-700/50 text-zinc-400 active:bg-zinc-700 transition-colors disabled:opacity-30"
+            className={`px-5 py-3 text-sm font-medium border-l border-zinc-700/50 transition-all rounded-r-xl ${
+              isUserRefining
+                ? 'bg-emerald-500 text-white min-w-[120px]'
+                : 'bg-zinc-800 text-zinc-400 active:bg-zinc-700 disabled:opacity-30'
+            }`}
           >
-            {isUserRefining ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : buttonText}
+            {isUserRefining ? (
+              <span className="flex items-center justify-center gap-2">
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                <span>Refining...</span>
+              </span>
+            ) : buttonText}
           </button>
         </div>
-        
-        {/* Next Section button for demo users after build */}
-        {hasCode && (
-          <button
-            onClick={onNextSection}
-            className="flex items-center gap-1.5 px-4 py-3 rounded-xl bg-white text-zinc-900 active:bg-zinc-300 hover:bg-zinc-100 text-xs font-medium transition-all whitespace-nowrap"
-          >
-            {isLastSection ? 'Finish' : 'Next'}
-            <ArrowRight className="w-3 h-3" />
-          </button>
-        )}
       </div>
+        
+      {/* Next Section button - full width, prominent, separate row */}
+      {hasCode && (
+        <button
+          onClick={onNextSection}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-white text-zinc-900 active:bg-zinc-300 hover:bg-zinc-100 text-sm font-medium transition-all"
+        >
+          {isLastSection ? 'Finish' : 'Next Section'}
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      )}
     </div>
   )
 }
@@ -679,8 +696,8 @@ export default function SectionBuilder({
           const saved = localStorage.getItem(key)
           if (saved) {
             const { code, reasoning, timestamp, prompt: savedPrompt } = JSON.parse(saved)
-            // Expire after 1 hour
-            if (Date.now() - timestamp < 60 * 60 * 1000) {
+            // Expire after 24 hours
+            if (Date.now() - timestamp < 24 * 60 * 60 * 1000) {
               return { code, reasoning, prompt: savedPrompt }
             }
             localStorage.removeItem(key)
@@ -697,8 +714,8 @@ export default function SectionBuilder({
       const saved = localStorage.getItem(getStorageKey(p))
       if (saved) {
         const { code, reasoning, timestamp } = JSON.parse(saved)
-        // Expire after 1 hour
-        if (Date.now() - timestamp < 60 * 60 * 1000) {
+        // Expire after 24 hours
+        if (Date.now() - timestamp < 24 * 60 * 60 * 1000) {
           return { code, reasoning }
         }
         localStorage.removeItem(getStorageKey(p))
@@ -724,8 +741,8 @@ export default function SectionBuilder({
   
   // Check for saved preview on init (guest mode only - signed in users use database)
   // First try matching prompt, then fall back to ANY saved preview
-  const matchedPreview = !isSignedIn ? getSavedPreview(effectivePrompt) : null
-  const anyPreview = !isSignedIn && !matchedPreview ? getAnySavedPreview() : null
+  const matchedPreview = isSignedIn !== true ? getSavedPreview(effectivePrompt) : null
+  const anyPreview = isSignedIn !== true && !matchedPreview ? getAnySavedPreview() : null
   const savedPreview = matchedPreview || anyPreview
   
   // If we recovered a preview with a different prompt, use that prompt
@@ -782,7 +799,7 @@ export default function SectionBuilder({
   // This is needed because useState initial values are set during SSR when localStorage isn't available
   useEffect(() => {
     if (typeof window === 'undefined') return
-    if (isSignedIn) return // Only for guests/demo users
+    if (isSignedIn === true) return // Only for guests/demo users
     if (generatedCode) return // Already have code, don't overwrite
     if (stage === 'generating') return // Don't interrupt generation
     
@@ -1498,7 +1515,8 @@ ${code.slice(0, 2000)}`,
       analyzeForSuggestions(normalizedCode)
       
       // Save to localStorage for guest preview persistence (guests only)
-      if (!isSignedIn) {
+      // isSignedIn can be undefined during loading, so check explicitly for false or undefined
+      if (isSignedIn !== true) {
         savePreview(buildPrompt, normalizedCode, aiReasoning || '')
         // Also save the prompt so demo page can restore it
         try { localStorage.setItem('hatch_last_prompt', buildPrompt) } catch { /* ignore */ }
@@ -1899,12 +1917,9 @@ ${code.slice(0, 2000)}`,
                   )
                 ) : (
                   <div className="h-full flex items-center justify-center bg-zinc-900/30">
-                    <div className="text-center p-6">
-                      <div className="w-12 h-12 rounded-xl bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-center mx-auto mb-3">
-                        <Code className="w-5 h-5 text-zinc-500" />
-                      </div>
-                      <p className="text-sm text-zinc-400 mb-1">Code generated</p>
-                      <p className="text-xs text-zinc-600">View code or refine with the input below</p>
+                    <div className="text-center p-4">
+                      <p className="text-sm text-zinc-400">Code generated</p>
+                      <p className="text-xs text-zinc-600 mt-1">Refine with the input below</p>
                     </div>
                   </div>
                 )}
@@ -2161,7 +2176,17 @@ ${code.slice(0, 2000)}`,
           <div className="mx-auto w-full max-w-2xl">
             {/* Demo Mode Command Bar */}
             {isDemo && (stage === 'input' || stage === 'complete') && (
-              <div className="bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-lg p-2.5">
+              <div className="bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-lg p-2.5 space-y-2">
+                {/* Gentle ephemeral reminder */}
+                <p className="text-[10px] text-zinc-600 text-center">Demo mode — progress resets on refresh</p>
+                {/* Refining Progress Bar */}
+                {isUserRefining && (
+                  <div className="relative h-1 bg-zinc-800 rounded-full overflow-hidden">
+                    <div className="absolute inset-0 bg-emerald-500 animate-pulse" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent" 
+                         style={{ animation: 'shimmer 1.5s infinite' }} />
+                  </div>
+                )}
                 <DemoCommandBar
                   stage={stage}
                   prompt={prompt}
@@ -2219,6 +2244,15 @@ ${code.slice(0, 2000)}`,
             {/* Auth Complete State */}
             {stage === 'complete' && !isDemo && (
               <div className="bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 rounded-lg p-3 space-y-3">
+                {/* Refining Progress Bar */}
+                {isUserRefining && (
+                  <div className="relative h-1 bg-zinc-800 rounded-full overflow-hidden">
+                    <div className="absolute inset-0 bg-emerald-500 animate-pulse" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" 
+                         style={{ animation: 'shimmer 1.5s infinite' }} />
+                  </div>
+                )}
+                
                 {/* AI Understood Summary */}
                 <AiUnderstoodSummary
                   reasoning={reasoning}

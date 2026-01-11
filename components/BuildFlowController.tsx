@@ -27,7 +27,8 @@ import {
   Smartphone,
   Tablet,
   Monitor,
-  AlertCircle
+  AlertCircle,
+  RefreshCw
 } from 'lucide-react'
 import { track } from '@vercel/analytics'
 import SectionProgress from './SectionProgress'
@@ -144,7 +145,18 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   const [phase, setPhase] = useState<BuildPhase>('building')
   const [selectedTemplate, setSelectedTemplate] = useState<Template>(SINGULARITY_TEMPLATE)
   const [customizedSections, setCustomizedSections] = useState<Section[]>(SINGULARITY_TEMPLATE.sections)
-  const [brandConfig, setBrandConfig] = useState<DbBrandConfig | null>(null)
+  // Default brand config - neutral/minimal palette (Apple-like)
+  // Users refine from here: "make it warmer", "add earthy tones", etc.
+  const [brandConfig, setBrandConfig] = useState<DbBrandConfig | null>(isDemo ? {
+    brandName: 'Untitled Project',
+    colors: {
+      primary: '#ffffff', // White - clean CTAs on dark
+      secondary: '#09090b', // Zinc-950 - dark backgrounds
+      accent: '#a1a1aa' // Zinc-400 - subtle highlights
+    },
+    fontStyle: 'Inter',
+    styleVibe: 'minimal'
+  } : null)
   const [buildState, setBuildState] = useState<BuildState | null>(null)
   const [project, setProject] = useState<DbProject | null>(null)
   const [hatchModalReason, setHatchModalReason] = useState<'generation_limit' | 'code_access' | 'deploy' | 'download' | 'proactive' | 'running_low' | 'guest_lock'>('proactive')
@@ -179,7 +191,10 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   const [showMobileSidebar, setShowMobileSidebar] = useState(false)
   const [previewEditMode, setPreviewEditMode] = useState(false)
   const [previewDevice, setPreviewDevice] = useState<'mobile' | 'tablet' | 'desktop'>('desktop')
+  const [previewKey, setPreviewKey] = useState(0) // Increment to force preview refresh
   const [showFirstBuildHint, setShowFirstBuildHint] = useState(false)
+  const [syntaxError, setSyntaxError] = useState<{ error: string; line?: number } | null>(null)
+  const [isAutoFixing, setIsAutoFixing] = useState(false)
 
   // Reset legacy welcome flags so V2 intro shows for all users (esp. mobile)
   useEffect(() => {
@@ -572,15 +587,18 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
     // Use the prompt from First Contact if available
     const projectPrompt = initialPrompt
     
+    // Neutral default brand - Apple-like minimal aesthetic
+    // Dark mode, typography-led, lots of whitespace
+    // Users refine: "make it warmer", "add brand colors", etc.
     const brand: DbBrandConfig = {
       brandName: brandConfig?.brandName || (template.name === 'The Singularity' ? 'Untitled Project' : template.name),
       colors: {
-        primary: '#10b981', // Emerald-500
-        secondary: '#09090b', // Zinc-950
-        accent: '#34d399' // Emerald-400
+        primary: '#ffffff', // White - clean CTAs
+        secondary: '#09090b', // Zinc-950 - dark backgrounds  
+        accent: '#a1a1aa' // Zinc-400 - subtle highlights
       },
       fontStyle: 'Inter',
-      styleVibe: brandConfig?.styleVibe || 'modern'
+      styleVibe: brandConfig?.styleVibe || 'minimal'
     }
 
     const setupDemoMode = (restoredData?: DemoRestoreData) => {
@@ -1158,6 +1176,85 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       }
     }
   }, [buildState, demoMode, project?.id])
+
+  // Handle syntax errors from preview - auto-fix via refiner
+  const handleSyntaxError = useCallback(async (error: string, line?: number) => {
+    // Debounce - don't spam the refiner
+    if (isAutoFixing || syntaxError) return
+    
+    console.log('[Overseer] Syntax error detected:', error, 'at line:', line)
+    setSyntaxError({ error, line })
+    setIsAutoFixing(true)
+    
+    // Get current section code
+    if (!buildState || !project) {
+      setIsAutoFixing(false)
+      return
+    }
+    
+    const currentSectionId = sectionsForBuild[buildState.currentSectionIndex]?.id
+    const currentCode = currentSectionId ? buildState.sectionCode[currentSectionId] : null
+    
+    if (!currentCode || !currentSectionId) {
+      setIsAutoFixing(false)
+      return
+    }
+    
+    // Find the dbSection
+    const dbSection = dbSections.find(s => s.section_id === currentSectionId)
+    if (!dbSection) {
+      setIsAutoFixing(false)
+      return
+    }
+    
+    try {
+      // Call refine API with syntax fix prompt
+      const fixPrompt = `SYNTAX ERROR - AUTO FIX NEEDED. The code has a JavaScript syntax error: "${error}"${line ? ` around line ${line}` : ''}. This is likely an incomplete ternary operator (missing : null after ?). Fix the syntax error while preserving all functionality.`
+      
+      const response = await fetch('/api/refine-section', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId: project.id,
+          sectionId: dbSection.id,
+          code: currentCode,
+          refineRequest: fixPrompt,
+          sectionType: currentSectionId,
+          sectionName: sectionsForBuild[buildState.currentSectionIndex]?.name || currentSectionId
+        })
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        if (data.code) {
+          // Update the section code
+          setBuildState(prev => {
+            if (!prev) return prev
+            return {
+              ...prev,
+              sectionCode: {
+                ...prev.sectionCode,
+                [currentSectionId]: data.code
+              }
+            }
+          })
+          // Force preview refresh
+          setPreviewKey(k => k + 1)
+          console.log('[Overseer] Auto-fix applied successfully')
+        }
+      } else {
+        console.error('[Overseer] Auto-fix failed:', await response.text())
+      }
+    } catch (err) {
+      console.error('[Overseer] Auto-fix error:', err)
+    } finally {
+      // Reset after a delay to allow re-detection if fix didn't work
+      setTimeout(() => {
+        setSyntaxError(null)
+        setIsAutoFixing(false)
+      }, 3000)
+    }
+  }, [isAutoFixing, syntaxError, buildState, project, sectionsForBuild, dbSections])
 
   const handleNextSection = () => {
     if (!buildState) return
@@ -1865,8 +1962,12 @@ export default function GeneratedPage() {
     setBuildState(null)
     setDemoMode(false)
     setJustCreatedProjectId(null)
-    // Go to new project wizard for a clean start
-    window.location.href = '/dashboard/projects/new'
+    // Demo users go to homepage, auth users go to new project wizard
+    if (isDemo) {
+      window.location.href = '/'
+    } else {
+      window.location.href = '/dashboard/projects/new'
+    }
   }
 
   const handleGoHome = () => {
@@ -1959,9 +2060,9 @@ export default function GeneratedPage() {
                   </button>
                   
                   <button
-                    onClick={() => router.push('/dashboard')}
+                    onClick={() => router.push(isDemo ? '/' : '/dashboard')}
                     className="p-1.5 text-zinc-500 hover:text-white transition-colors"
-                    aria-label="Back to dashboard"
+                    aria-label={isDemo ? 'Back to home' : 'Back to dashboard'}
                   >
                     <ArrowLeft className="w-4 h-4" />
                   </button>
@@ -1980,9 +2081,19 @@ export default function GeneratedPage() {
                     <Plus className="w-4 h-4" />
                   </button>
                   
-                  {/* Ship Dropdown */}
+                  {/* Ship Dropdown - or Sign Up CTA for demo */}
                   <div className="relative">
-                    {deploymentStatus.status === 'deploying' || deploymentStatus.status === 'building' ? (
+                    {/* Demo users: Simple sign up CTA instead of Ship flow */}
+                    {demoMode ? (
+                      <Button
+                        onClick={() => router.push('/sign-up?redirect_url=/builder')}
+                        size="sm"
+                        icon={<Rocket className="w-3.5 h-3.5" />}
+                        iconPosition="left"
+                      >
+                        Sign Up
+                      </Button>
+                    ) : deploymentStatus.status === 'deploying' || deploymentStatus.status === 'building' ? (
                       <div className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-emerald-500/20 text-emerald-400 rounded-md border border-emerald-500/30">
                         <div className="w-3.5 h-3.5 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin" />
                         <span className="hidden sm:inline">{deploymentStatus.message || 'Building...'}</span>
@@ -2373,17 +2484,29 @@ export default function GeneratedPage() {
                 {/* Mobile Preview Panel - always mounted, hidden when not active (prevents iframe re-mount) */}
                 <div className={`flex-1 lg:hidden flex-col overflow-hidden relative ${buildMobileTab === 'preview' ? 'flex' : 'hidden'}`}>
                   {previewSections.length > 0 ? (
-                    <FullSitePreviewFrame 
-                      sections={previewSections}
-                      deviceView="mobile"
-                      editMode={previewEditMode}
-                      onTextEdit={handleTextEdit}
-                      seo={brandConfig?.seo ? {
-                        title: brandConfig.seo.title || '',
-                        description: brandConfig.seo.description || '',
-                        keywords: brandConfig.seo.keywords || ''
-                      } : undefined}
-                    />
+                    <>
+                      {/* Mobile Preview Refresh Button */}
+                      <button
+                        onClick={() => setPreviewKey(k => k + 1)}
+                        className="absolute top-2 right-2 z-10 p-2 rounded-lg bg-zinc-900/80 backdrop-blur-sm text-zinc-400 hover:text-white border border-zinc-700/50 transition-all"
+                        title="Refresh Preview"
+                      >
+                        <RefreshCw className="w-4 h-4" />
+                      </button>
+                      <FullSitePreviewFrame 
+                        key={previewKey}
+                        sections={previewSections}
+                        deviceView="mobile"
+                        editMode={previewEditMode}
+                        onTextEdit={handleTextEdit}
+                        onSyntaxError={handleSyntaxError}
+                        seo={brandConfig?.seo ? {
+                          title: brandConfig.seo.title || '',
+                          description: brandConfig.seo.description || '',
+                          keywords: brandConfig.seo.keywords || ''
+                        } : undefined}
+                      />
+                    </>
                   ) : (
                     <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-zinc-900/50 to-zinc-950">
                       <div className="text-center p-6">
@@ -2518,6 +2641,15 @@ export default function GeneratedPage() {
                     
                     {previewSections.length > 0 && (
                       <div className="flex items-center gap-3">
+                        {/* Refresh Preview */}
+                        <button
+                          onClick={() => setPreviewKey(k => k + 1)}
+                          className="p-1.5 rounded text-zinc-500 hover:text-zinc-300 bg-zinc-800/50 hover:bg-zinc-700/50 transition-all"
+                          title="Refresh Preview"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                        </button>
+                        
                         {/* Edit Mode Toggle */}
                         <button
                           onClick={() => setPreviewEditMode(!previewEditMode)}
@@ -2578,11 +2710,13 @@ export default function GeneratedPage() {
                         previewDevice === 'mobile' ? 'w-[375px]' : previewDevice === 'tablet' ? 'w-[768px]' : 'w-full'
                       }`}>
                         <FullSitePreviewFrame 
+                          key={previewKey}
                           sections={previewSections}
                           deviceView={previewDevice}
                           ref={previewIframeRef}
                           editMode={previewEditMode}
                           onTextEdit={handleTextEdit}
+                          onSyntaxError={handleSyntaxError}
                           seo={brandConfig?.seo ? {
                             title: brandConfig.seo.title || '',
                             description: brandConfig.seo.description || '',
@@ -2698,10 +2832,6 @@ export default function GeneratedPage() {
                   Keep Exploring
                 </button>
               </div>
-              
-              <p className="text-xs text-zinc-500 text-center mt-4">
-                Work saved locally. Sign up anytime to keep it.
-              </p>
             </motion.div>
           </motion.div>
         )}
