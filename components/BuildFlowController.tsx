@@ -257,7 +257,6 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
     // If signed in and not explicitly in demo, force live mode
     if (isSignedIn && !isDemo) {
       if (demoMode) {
-        console.log('[Builder] Forcing demoMode=false for signed-in user')
         setDemoMode(false)
       }
     }
@@ -546,7 +545,6 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
     if (isSignedIn && !isDemo) {
       const lastProjectId = localStorage.getItem('hatch_current_project')
       if (lastProjectId) {
-        console.log('[Builder] Resuming last project:', lastProjectId)
         loadExistingProject(lastProjectId)
         return
       }
@@ -2759,7 +2757,6 @@ export default function GeneratedPage() {
         onClose={() => setShowReplicator(false)}
         onReplicate={(data) => {
           // Handle replicated site data - could populate sections with cloned content
-          console.log('Replicated site data:', data)
           setShowReplicator(false)
         }}
       />
