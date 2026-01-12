@@ -214,6 +214,31 @@ export default function DashboardPage() {
           )}
         </div>
       )}
+
+      {/* Quick Tips */}
+      {projects.length > 0 && projects.length <= 2 && (
+        <div className="mt-6 border border-zinc-800/40 rounded-lg p-4 bg-zinc-900/20">
+          <h3 className="text-xs text-zinc-500 uppercase tracking-wide mb-3">Quick Tips</h3>
+          <div className="grid sm:grid-cols-2 gap-3 text-xs text-zinc-500">
+            <div className="flex items-start gap-2">
+              <span className="text-emerald-500">•</span>
+              <span><strong className="text-zinc-400">Contact forms</strong> use Formspree — set your ID in Settings → Integrations</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-emerald-500">•</span>
+              <span><strong className="text-zinc-400">Design controls</strong> in the sidebar let you adjust spacing, buttons, icons globally</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-emerald-500">•</span>
+              <span><strong className="text-zinc-400">Double-click</strong> text in the preview to edit it directly</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-emerald-500">•</span>
+              <span><strong className="text-zinc-400">Export</strong> your full Next.js project from the Deploy tab</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

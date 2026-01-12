@@ -826,6 +826,28 @@ export default function ProjectConfigPage() {
               )}
             </div>
           </div>
+
+          {/* Integrations Guide */}
+          <div className="md:col-span-2 border border-zinc-800/50 rounded-md p-4 bg-zinc-900/30">
+            <h3 className="text-xs text-zinc-500 uppercase tracking-wide mb-3">Form Handling</h3>
+            <div className="space-y-3">
+              <p className="text-sm text-zinc-400">
+                Contact forms use <a href="https://formspree.io" target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline">Formspree</a> to handle submissions. Free tier includes 50 submissions/month.
+              </p>
+              <div className="bg-zinc-800/30 rounded-lg p-3 space-y-2">
+                <p className="text-xs text-zinc-500 font-medium">Quick Setup:</p>
+                <ol className="text-xs text-zinc-400 space-y-1 list-decimal list-inside">
+                  <li>Create free account at <a href="https://formspree.io/register" target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline">formspree.io/register</a></li>
+                  <li>Create a new form → copy your form ID (e.g. <code className="text-emerald-400/80 bg-zinc-800 px-1 rounded">xwkdpqba</code>)</li>
+                  <li>In Builder: Settings → Integrations → paste your Formspree ID</li>
+                  <li>Redeploy your site</li>
+                </ol>
+              </div>
+              <p className="text-xs text-zinc-500">
+                Submissions go to your Formspree dashboard. Set up email notifications there.
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
