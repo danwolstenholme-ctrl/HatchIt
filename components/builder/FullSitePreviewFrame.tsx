@@ -985,7 +985,7 @@ ${Array.from(allLucideImports).map((name) => {
 </html>`;
 
     return html
-  }, [sections, seo])
+  }, [sections, seo, designTokens])
 
   return (
     <div className={`w-full h-full bg-zinc-950 transition-all duration-300 mx-auto ${
