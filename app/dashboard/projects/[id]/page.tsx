@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle, XCircle, Loader2, ExternalLink, AlertTriangle, Globe, Copy, Check } from 'lucide-react'
+import { CheckCircle, XCircle, Loader2, ExternalLink, AlertTriangle, Globe, Copy, Check, Trash2, RefreshCw } from 'lucide-react'
 import type { DbProject, DbSection, DbBrandConfig, DbBuild } from '@/lib/supabase'
 
 function formatDate(value: string | undefined) {
@@ -17,6 +17,295 @@ function formatDate(value: string | undefined) {
     hour: '2-digit', 
     minute: '2-digit' 
   })
+}
+
+// =============================================================================
+// DEPLOYMENTS TAB - Fetches real Vercel data
+// =============================================================================
+interface VercelData {
+  deployed: boolean
+  vercelDeleted?: boolean
+  message?: string
+  vercelProjectId?: string
+  vercelProjectName?: string
+  liveUrl?: string
+  status?: string
+  production?: {
+    deploymentId: string
+    url: string
+    state: string
+    createdAt: string
+    readyAt: string | null
+  }
+  deployments?: Array<{
+    id: string
+    state: string
+    url: string
+    createdAt: string
+    readyAt: string | null
+    buildingAt: string | null
+  }>
+  vercelDashboard?: string
+  vercelLogs?: string
+}
+
+function DeploymentsTab({ projectId, project }: { projectId: string; project: DbProject }) {
+  const [vercelData, setVercelData] = useState<VercelData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [takingDown, setTakingDown] = useState(false)
+  const router = useRouter()
+
+  const fetchVercelData = useCallback(async () => {
+    try {
+      setError(null)
+      const res = await fetch(`/api/project/${projectId}/vercel`)
+      if (!res.ok) throw new Error('Failed to fetch')
+      const data = await res.json()
+      setVercelData(data)
+    } catch {
+      setError('Could not load deployment data')
+    } finally {
+      setLoading(false)
+    }
+  }, [projectId])
+
+  useEffect(() => {
+    fetchVercelData()
+  }, [fetchVercelData])
+
+  const handleTakeDown = async () => {
+    if (!confirm('Take down this site? The URL will stop working immediately.')) return
+    
+    setTakingDown(true)
+    try {
+      const res = await fetch(`/api/project/${projectId}/vercel`, { method: 'DELETE' })
+      if (!res.ok) throw new Error('Failed to take down')
+      
+      // Refresh data
+      await fetchVercelData()
+      router.refresh()
+    } catch {
+      alert('Failed to take down site')
+    } finally {
+      setTakingDown(false)
+    }
+  }
+
+  const getStatusColor = (state: string) => {
+    switch (state) {
+      case 'READY': return 'bg-emerald-500/20 text-emerald-400'
+      case 'BUILDING': return 'bg-blue-500/20 text-blue-400'
+      case 'QUEUED': case 'INITIALIZING': return 'bg-amber-500/20 text-amber-400'
+      case 'ERROR': case 'CANCELED': return 'bg-red-500/20 text-red-400'
+      default: return 'bg-zinc-800 text-zinc-400'
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-5 h-5 text-zinc-500 animate-spin" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="border border-red-500/30 bg-red-500/10 rounded-md p-4">
+        <p className="text-sm text-red-400">{error}</p>
+        <button 
+          onClick={fetchVercelData}
+          className="mt-2 text-xs text-zinc-400 hover:text-white"
+        >
+          Retry
+        </button>
+      </div>
+    )
+  }
+
+  // Not deployed yet
+  if (!vercelData?.deployed) {
+    return (
+      <div className="space-y-6">
+        <div className="border border-zinc-800/50 rounded-md bg-zinc-900/30 p-6 text-center">
+          <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-zinc-800/50 flex items-center justify-center">
+            <Globe className="w-6 h-6 text-zinc-500" />
+          </div>
+          <h3 className="text-white font-medium mb-2">Not deployed yet</h3>
+          <p className="text-sm text-zinc-500 mb-4">
+            Deploy your site from the Builder to make it live.
+          </p>
+          <Link
+            href={`/builder?project=${projectId}`}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/15 border border-emerald-500/40 text-white text-sm rounded-lg hover:bg-emerald-500/20 transition-colors"
+          >
+            Open Builder
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Production Status */}
+      <div className="border border-zinc-800/50 rounded-md bg-zinc-900/30 overflow-hidden">
+        <div className="px-4 py-3 border-b border-zinc-800/50 flex items-center justify-between">
+          <h3 className="text-xs text-zinc-500 uppercase tracking-wide">Production</h3>
+          <button
+            onClick={fetchVercelData}
+            className="text-zinc-500 hover:text-zinc-300 transition-colors"
+            title="Refresh"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+          </button>
+        </div>
+        <div className="p-4">
+          {vercelData.production ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`w-2 h-2 rounded-full ${
+                    vercelData.production.state === 'READY' 
+                      ? 'bg-emerald-500 animate-pulse' 
+                      : 'bg-amber-500'
+                  }`} />
+                  <span className={`text-sm ${
+                    vercelData.production.state === 'READY' 
+                      ? 'text-emerald-400' 
+                      : 'text-amber-400'
+                  }`}>
+                    {vercelData.production.state === 'READY' ? 'Live' : vercelData.status}
+                  </span>
+                </div>
+                {vercelData.liveUrl && (
+                  <a
+                    href={vercelData.liveUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-sm text-zinc-300 hover:text-white transition-colors"
+                  >
+                    {vercelData.liveUrl.replace('https://', '')}
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                )}
+              </div>
+
+              {/* Meta info */}
+              <div className="grid grid-cols-2 gap-4 text-xs">
+                <div>
+                  <span className="text-zinc-500">Deployed</span>
+                  <p className="text-zinc-300 mt-0.5">
+                    {formatDate(vercelData.production.readyAt || vercelData.production.createdAt)}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-zinc-500">Vercel Project</span>
+                  <p className="text-zinc-300 mt-0.5 font-mono">
+                    {vercelData.vercelProjectName}
+                  </p>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-3 pt-2 border-t border-zinc-800/50">
+                {vercelData.vercelDashboard && (
+                  <a
+                    href={vercelData.vercelDashboard}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+                  >
+                    View on Vercel →
+                  </a>
+                )}
+                <button
+                  onClick={handleTakeDown}
+                  disabled={takingDown}
+                  className="text-xs text-red-400/70 hover:text-red-400 transition-colors ml-auto flex items-center gap-1"
+                >
+                  {takingDown ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-3 h-3" />
+                  )}
+                  Take Down Site
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-amber-500 rounded-full" />
+              <span className="text-sm text-amber-400">
+                {vercelData.status === 'BUILDING' ? 'Building...' : 'Deploying...'}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Deployment History from Vercel */}
+      <div className="border border-zinc-800/50 rounded-md bg-zinc-900/30 overflow-hidden">
+        <div className="px-4 py-3 border-b border-zinc-800/50">
+          <h3 className="text-xs text-zinc-500 uppercase tracking-wide">Deployment History</h3>
+        </div>
+        
+        {!vercelData.deployments || vercelData.deployments.length === 0 ? (
+          <div className="p-4">
+            <p className="text-sm text-zinc-500">No deployments yet</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-zinc-800/50">
+            {vercelData.deployments.map((deployment, index) => (
+              <div key={deployment.id} className="px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${getStatusColor(deployment.state)}`}>
+                      {deployment.state}
+                    </span>
+                    {index === 0 && deployment.state === 'READY' && (
+                      <span className="text-[10px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 rounded">
+                        production
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-xs text-zinc-600 tabular-nums">
+                    {formatDate(deployment.createdAt)}
+                  </span>
+                </div>
+                
+                <div className="mt-2 flex items-center gap-3">
+                  <a
+                    href={deployment.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors flex items-center gap-1 truncate"
+                  >
+                    {deployment.url.replace('https://', '')}
+                    <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Redeploy CTA */}
+      <div className="border border-dashed border-zinc-700/50 rounded-md p-4 text-center">
+        <p className="text-sm text-zinc-500 mb-3">
+          Made changes? Redeploy from the Builder.
+        </p>
+        <Link
+          href={`/builder?project=${projectId}`}
+          className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
+        >
+          Open Builder →
+        </Link>
+      </div>
+    </div>
+  )
 }
 
 const SECTION_TYPES = ['header', 'hero', 'features', 'pricing', 'testimonials', 'cta', 'about', 'contact', 'footer', 'services', 'faq']
@@ -926,155 +1215,7 @@ export default function ProjectConfigPage() {
       )}
 
       {activeTab === 'deployments' && (
-        <div className="space-y-6">
-          {/* Current Deployment Status */}
-          <div className="border border-zinc-800/50 rounded-md bg-zinc-900/30 overflow-hidden">
-            <div className="px-4 py-3 border-b border-zinc-800/50">
-              <h3 className="text-xs text-zinc-500 uppercase tracking-wide">Production</h3>
-            </div>
-            <div className="p-4">
-              {project.status === 'deployed' && project.deployed_slug ? (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                      <span className="text-sm text-emerald-400">Live</span>
-                    </div>
-                    <a
-                      href={`https://${project.deployed_slug}.hatchit.dev`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 text-sm text-zinc-300 hover:text-white transition-colors"
-                    >
-                      {project.deployed_slug}.hatchit.dev
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  </div>
-                  {latestBuild?.deployed_at && (
-                    <p className="text-xs text-zinc-600">
-                      Last deployed {formatDate(latestBuild.deployed_at)}
-                    </p>
-                  )}
-                </div>
-              ) : project.deployed_slug ? (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-amber-500 rounded-full" />
-                    <span className="text-sm text-amber-400">Deploy in progress</span>
-                  </div>
-                  <p className="text-xs text-zinc-500">
-                    Target: {project.deployed_slug}.hatchit.dev
-                  </p>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-zinc-600 rounded-full" />
-                  <span className="text-sm text-zinc-500">Not deployed</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Deployment History */}
-          <div className="border border-zinc-800/50 rounded-md bg-zinc-900/30 overflow-hidden">
-            <div className="px-4 py-3 border-b border-zinc-800/50">
-              <h3 className="text-xs text-zinc-500 uppercase tracking-wide">Deployment History</h3>
-            </div>
-            
-            {builds.length === 0 ? (
-              <div className="p-4">
-                <p className="text-sm text-zinc-500">No builds yet</p>
-              </div>
-            ) : (
-              <div className="divide-y divide-zinc-800/50">
-                {builds.slice(0, 10).map((build, index) => {
-                  const isLatest = index === 0
-                  const deployStatus = build.deploy_status
-                  const hasDeployment = build.deployed_url || build.deployment_id
-                  
-                  return (
-                    <div key={build.id} className="px-4 py-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm font-mono text-zinc-400">v{build.version}</span>
-                          {isLatest && (
-                            <span className="text-[10px] px-1.5 py-0.5 bg-zinc-800 text-zinc-400 rounded">
-                              latest
-                            </span>
-                          )}
-                          {/* Deploy status indicator */}
-                          {hasDeployment && (
-                            <span className={`text-[10px] px-1.5 py-0.5 rounded ${
-                              deployStatus === 'ready' 
-                                ? 'bg-emerald-500/20 text-emerald-400' 
-                                : deployStatus === 'failed'
-                                ? 'bg-red-500/20 text-red-400'
-                                : deployStatus === 'building'
-                                ? 'bg-blue-500/20 text-blue-400'
-                                : 'bg-zinc-800 text-zinc-500'
-                            }`}>
-                              {deployStatus === 'ready' ? 'deployed' : deployStatus || 'pending'}
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-xs text-zinc-600 tabular-nums">
-                          {formatDate(build.created_at)}
-                        </span>
-                      </div>
-                      
-                      {/* Deployment details for this build */}
-                      {hasDeployment && (
-                        <div className="mt-2 pl-[60px] space-y-1">
-                          {build.deployed_url && (
-                            <a
-                              href={build.deployed_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors flex items-center gap-1"
-                            >
-                              {build.deployed_url}
-                              <ExternalLink className="w-3 h-3" />
-                            </a>
-                          )}
-                          {build.deploy_error && (
-                            <div className="text-xs text-red-400/80">
-                              Error: {build.deploy_error}
-                            </div>
-                          )}
-                          {build.deploy_logs_url && (
-                            <a
-                              href={build.deploy_logs_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
-                            >
-                              View logs →
-                            </a>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Deploy from builder CTA */}
-          {project.status !== 'deployed' && (
-            <div className="border border-dashed border-zinc-700/50 rounded-md p-4 text-center">
-              <p className="text-sm text-zinc-500 mb-3">
-                Ready to go live? Deploy your site from the Builder.
-              </p>
-              <Link
-                href={`/builder?project=${project.id}`}
-                className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
-              >
-                Open Builder →
-              </Link>
-            </div>
-          )}
-        </div>
+        <DeploymentsTab projectId={project.id} project={project} />
       )}
 
       {activeTab === 'domain' && (

@@ -752,9 +752,9 @@ export default function Home() {
           await updateBuildDeployment(latestBuild.id, url, deployment.id)
         }
         
-        // Set deployed_slug so we know a deploy is in progress, but don't set status to 'deployed' yet
+        // Set deployed_slug and save the Vercel project ID for future API calls
         // Status will be set to 'deployed' by /api/project/[id]/confirm-deploy after Vercel confirms
-        await updateProjectDeploySlug(projectId, slug)
+        await updateProjectDeploySlug(projectId, slug, deployment.projectId)
       } catch (err) {
         console.error('Failed to update Supabase with deployment:', err)
         // Don't fail - Clerk metadata is backup

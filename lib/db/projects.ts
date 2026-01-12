@@ -203,16 +203,24 @@ export async function updateProjectStatus(
  */
 export async function updateProjectDeploySlug(
   id: string,
-  deployedSlug: string
+  deployedSlug: string,
+  vercelProjectId?: string
 ): Promise<DbProject | null> {
   if (!supabaseAdmin) return null
 
+  const updateData: Record<string, unknown> = { 
+    deployed_slug: deployedSlug,
+    // Keep status as-is until Vercel confirms (don't set to 'deployed' yet)
+  }
+  
+  // Save Vercel project ID if provided (first deploy)
+  if (vercelProjectId) {
+    updateData.vercel_project_id = vercelProjectId
+  }
+
   const { data, error } = await supabaseAdmin
     .from('projects')
-    .update({ 
-      deployed_slug: deployedSlug,
-      // Keep status as-is until Vercel confirms (don't set to 'deployed' yet)
-    })
+    .update(updateData)
     .eq('id', id)
     .select()
     .single()

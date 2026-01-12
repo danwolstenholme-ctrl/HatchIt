@@ -32,6 +32,10 @@ CREATE TABLE projects (
   template_id TEXT NOT NULL,
   brand_config JSONB DEFAULT NULL,
   status TEXT DEFAULT 'building' CHECK (status IN ('building', 'complete', 'deployed')),
+  -- Vercel deployment tracking
+  vercel_project_id TEXT,                                              -- Vercel project ID for API calls
+  deployed_slug TEXT,                                                  -- The subdomain slug
+  deployed_at TIMESTAMP WITH TIME ZONE,                                -- When last deployed
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
