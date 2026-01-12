@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
+import type { DesignTokens } from '@/lib/tokens'
 
 // Sanitize SVG data URLs to prevent XSS
 const sanitizeSvgDataUrls = (input: string) => {
@@ -8,16 +9,6 @@ const sanitizeSvgDataUrls = (input: string) => {
     const safe = data.replace(/"/g, '%22').replace(/'/g, '%27')
     return `url("${safe}")`
   })
-}
-
-// Design token interface for live styling
-interface DesignTokens {
-  sectionPadding: number
-  componentGap: number
-  borderRadius: number
-  headingSizeMultiplier: number
-  shadowIntensity: 'none' | 'subtle' | 'medium' | 'strong'
-  fontWeight: 'normal' | 'medium' | 'semibold' | 'bold'
 }
 
 interface FullSitePreviewFrameProps {
@@ -609,6 +600,8 @@ ${Array.from(allLucideImports).map((name) => {
       --component-gap: ${designTokens?.componentGap ?? 24}px;
       --border-radius: ${designTokens?.borderRadius ?? 12}px;
       --heading-multiplier: ${designTokens?.headingSizeMultiplier ?? 1};
+      --body-multiplier: ${designTokens?.bodySizeMultiplier ?? 1};
+      --button-scale: ${designTokens?.buttonScale ?? 1};
       --font-weight: ${designTokens?.fontWeight === 'normal' ? 400 : designTokens?.fontWeight === 'medium' ? 500 : designTokens?.fontWeight === 'semibold' ? 600 : designTokens?.fontWeight === 'bold' ? 700 : 500};
       --shadow: ${designTokens?.shadowIntensity === 'none' ? 'none' : designTokens?.shadowIntensity === 'subtle' ? '0 1px 2px 0 rgb(0 0 0 / 0.05)' : designTokens?.shadowIntensity === 'medium' ? '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' : '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)'};
     }
@@ -634,6 +627,17 @@ ${Array.from(allLucideImports).map((name) => {
     h2 { font-size: calc(1.875rem * var(--heading-multiplier)); }
     h3 { font-size: calc(1.5rem * var(--heading-multiplier)); }
     h4 { font-size: calc(1.25rem * var(--heading-multiplier)); }
+    
+    /* Apply body text size multiplier */
+    p, li, span:not([class*="text-"]), div:not([class*="text-"]) > span {
+      font-size: calc(1rem * var(--body-multiplier));
+    }
+    
+    /* Apply button scale - affects padding and font size */
+    button, a[class*="bg-"], [class*="btn"], [role="button"] {
+      padding: calc(12px * var(--button-scale)) calc(24px * var(--button-scale)) !important;
+      font-size: calc(1rem * var(--button-scale)) !important;
+    }
     
     /* Apply shadow */
     [class*="shadow"] {

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Sliders, ChevronDown, ChevronUp, Lock, Check } from 'lucide-react'
+import { Sliders, ChevronDown, Lock, Check } from 'lucide-react'
 import { DesignTokens, defaultTokens, tokenPresets } from '@/lib/tokens'
 
 interface DesignPanelProps {
@@ -54,22 +54,18 @@ export default function DesignPanel({ tokens, onChange, isLocked = false, onUpgr
   }
 
   return (
-    <div className="border-t border-zinc-800/50">
-      {/* Toggle Header */}
+    <div className="border-t border-zinc-800/40">
+      {/* Toggle Header - More compact */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-zinc-800/30 transition-colors"
+        className="w-full px-3 py-2 flex items-center justify-between text-left hover:bg-zinc-900/30 transition-colors"
       >
         <div className="flex items-center gap-2">
-          <Sliders className="w-4 h-4 text-zinc-400" />
-          <span className="text-sm font-medium text-zinc-300">Design Controls</span>
-          {isLocked && <Lock className="w-3 h-3 text-amber-400" />}
+          <Sliders className="w-3 h-3 text-zinc-500" />
+          <span className="text-[10px] uppercase tracking-wider text-zinc-500">Design</span>
+          {isLocked && <Lock className="w-2.5 h-2.5 text-amber-400" />}
         </div>
-        {isExpanded ? (
-          <ChevronUp className="w-4 h-4 text-zinc-500" />
-        ) : (
-          <ChevronDown className="w-4 h-4 text-zinc-500" />
-        )}
+        <ChevronDown className={`w-3 h-3 text-zinc-600 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
       </button>
 
       {/* Panel Content */}
@@ -83,28 +79,24 @@ export default function DesignPanel({ tokens, onChange, isLocked = false, onUpgr
             className="overflow-hidden"
           >
             {isLocked ? (
-              <div className="px-4 py-6 text-center">
-                <Lock className="w-8 h-8 text-amber-400 mx-auto mb-3" />
-                <p className="text-sm text-zinc-400 mb-3">
-                  Design controls unlock with Visionary
-                </p>
+              <div className="px-3 py-4 text-center">
+                <Lock className="w-6 h-6 text-amber-400 mx-auto mb-2" />
+                <p className="text-xs text-zinc-500 mb-2">Unlock with Visionary</p>
                 <button
                   onClick={onUpgrade}
-                  className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-semibold rounded-lg transition-colors"
+                  className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-medium rounded transition-colors"
                 >
                   Upgrade
                 </button>
               </div>
             ) : (
-              <div className="px-4 pb-4 space-y-5">
-                {/* Presets - Horizontal Scroll */}
+              <div className="px-3 pb-3 space-y-3">
+                {/* Presets - Compact */}
                 <div>
-                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 mb-2 block">
-                    Quick Presets
-                  </label>
+                  <label className="text-[9px] uppercase tracking-wider text-zinc-600 mb-1.5 block">Presets</label>
                   <div 
                     ref={presetsRef}
-                    className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide"
+                    className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-hide"
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                   >
                     {Object.keys(tokenPresets).map((name) => {
@@ -116,26 +108,21 @@ export default function DesignPanel({ tokens, onChange, isLocked = false, onUpgr
                           key={name}
                           onClick={() => applyPreset(name)}
                           whileTap={{ scale: 0.95 }}
-                          animate={wasJustApplied ? { 
-                            scale: [1, 1.05, 1],
-                            transition: { duration: 0.3 }
-                          } : {}}
-                          className={`relative flex-shrink-0 px-3 py-2 text-xs rounded-lg border transition-all capitalize ${
+                          animate={wasJustApplied ? { scale: [1, 1.05, 1], transition: { duration: 0.3 } } : {}}
+                          className={`relative flex-shrink-0 px-2 py-1 text-[10px] rounded border transition-all capitalize ${
                             isActive
-                              ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-400'
-                              : 'bg-zinc-800/80 border-zinc-700/50 text-zinc-400 hover:border-zinc-600 hover:text-zinc-300'
+                              ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400'
+                              : 'bg-zinc-800/60 border-zinc-700/40 text-zinc-500 hover:border-zinc-600 hover:text-zinc-400'
                           }`}
                         >
-                          <span className="flex items-center gap-1.5">
-                            {isActive && <Check className="w-3 h-3" />}
-                            {name}
-                          </span>
+                          {isActive && <Check className="w-2 h-2 inline mr-1" />}
+                          {name}
                           {wasJustApplied && (
                             <motion.div
-                              initial={{ opacity: 0.8, scale: 1 }}
-                              animate={{ opacity: 0, scale: 1.5 }}
-                              transition={{ duration: 0.5 }}
-                              className="absolute inset-0 rounded-lg bg-emerald-500/30"
+                              initial={{ opacity: 0.6, scale: 1 }}
+                              animate={{ opacity: 0, scale: 1.4 }}
+                              transition={{ duration: 0.4 }}
+                              className="absolute inset-0 rounded bg-emerald-500/30"
                             />
                           )}
                         </motion.button>
@@ -144,9 +131,9 @@ export default function DesignPanel({ tokens, onChange, isLocked = false, onUpgr
                   </div>
                 </div>
 
-                {/* Section Padding - Smooth 1px steps */}
+                {/* Sliders - Compact */}
                 <SliderControl
-                  label="Section Padding"
+                  label="Padding"
                   value={tokens.sectionPadding}
                   min={32}
                   max={128}
@@ -155,9 +142,8 @@ export default function DesignPanel({ tokens, onChange, isLocked = false, onUpgr
                   onChange={(v) => updateToken('sectionPadding', v)}
                 />
 
-                {/* Border Radius */}
                 <SliderControl
-                  label="Border Radius"
+                  label="Radius"
                   value={tokens.borderRadius}
                   min={0}
                   max={32}
@@ -166,9 +152,8 @@ export default function DesignPanel({ tokens, onChange, isLocked = false, onUpgr
                   onChange={(v) => updateToken('borderRadius', v)}
                 />
 
-                {/* Component Gap */}
                 <SliderControl
-                  label="Component Gap"
+                  label="Gap"
                   value={tokens.componentGap}
                   min={4}
                   max={48}
@@ -177,9 +162,8 @@ export default function DesignPanel({ tokens, onChange, isLocked = false, onUpgr
                   onChange={(v) => updateToken('componentGap', v)}
                 />
 
-                {/* Heading Size */}
                 <SliderControl
-                  label="Heading Size"
+                  label="Headings"
                   value={tokens.headingSizeMultiplier}
                   min={0.7}
                   max={1.6}
@@ -189,45 +173,63 @@ export default function DesignPanel({ tokens, onChange, isLocked = false, onUpgr
                   formatValue={(v) => v.toFixed(2)}
                 />
 
-                {/* Shadow Intensity */}
+                <SliderControl
+                  label="Body Text"
+                  value={tokens.bodySizeMultiplier ?? 1}
+                  min={0.8}
+                  max={1.3}
+                  step={0.05}
+                  unit="x"
+                  onChange={(v) => updateToken('bodySizeMultiplier', Math.round(v * 100) / 100)}
+                  formatValue={(v) => v.toFixed(2)}
+                />
+
+                <SliderControl
+                  label="Buttons"
+                  value={tokens.buttonScale ?? 1}
+                  min={0.7}
+                  max={1.4}
+                  step={0.05}
+                  unit="x"
+                  onChange={(v) => updateToken('buttonScale', Math.round(v * 100) / 100)}
+                  formatValue={(v) => v.toFixed(2)}
+                />
+
+                {/* Shadow - Inline */}
                 <div>
-                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 mb-2 block">
-                    Shadow
-                  </label>
-                  <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+                  <label className="text-[9px] uppercase tracking-wider text-zinc-600 mb-1 block">Shadow</label>
+                  <div className="flex gap-1">
                     {(['none', 'subtle', 'medium', 'strong'] as const).map((level) => (
                       <button
                         key={level}
                         onClick={() => updateToken('shadowIntensity', level)}
-                        className={`flex-1 min-w-[60px] px-2 py-2 text-xs rounded-lg border transition-all capitalize ${
+                        className={`flex-1 px-1.5 py-1 text-[10px] rounded border transition-all capitalize ${
                           tokens.shadowIntensity === level
-                            ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-400'
-                            : 'bg-zinc-800/80 border-zinc-700/50 text-zinc-500 hover:border-zinc-600 hover:text-zinc-400'
+                            ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400'
+                            : 'bg-zinc-800/60 border-zinc-700/40 text-zinc-600 hover:text-zinc-400'
                         }`}
                       >
-                        {level}
+                        {level === 'none' ? '—' : level.charAt(0).toUpperCase()}
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Font Weight */}
+                {/* Font Weight - Inline */}
                 <div>
-                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 mb-2 block">
-                    Font Weight
-                  </label>
-                  <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+                  <label className="text-[9px] uppercase tracking-wider text-zinc-600 mb-1 block">Weight</label>
+                  <div className="flex gap-1">
                     {(['normal', 'medium', 'semibold', 'bold'] as const).map((weight) => (
                       <button
                         key={weight}
                         onClick={() => updateToken('fontWeight', weight)}
-                        className={`flex-1 min-w-[60px] px-2 py-2 text-xs rounded-lg border transition-all capitalize ${
+                        className={`flex-1 px-1.5 py-1 text-[10px] rounded border transition-all ${
                           tokens.fontWeight === weight
-                            ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-400'
-                            : 'bg-zinc-800/80 border-zinc-700/50 text-zinc-500 hover:border-zinc-600 hover:text-zinc-400'
+                            ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400'
+                            : 'bg-zinc-800/60 border-zinc-700/40 text-zinc-600 hover:text-zinc-400'
                         }`}
                       >
-                        {weight}
+                        {weight.charAt(0).toUpperCase()}
                       </button>
                     ))}
                   </div>
@@ -241,7 +243,7 @@ export default function DesignPanel({ tokens, onChange, isLocked = false, onUpgr
   )
 }
 
-// Polished slider with custom styling
+// Compact slider with custom styling
 function SliderControl({
   label,
   value,
@@ -266,25 +268,16 @@ function SliderControl({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
-        <label className="text-[10px] uppercase tracking-wider text-zinc-500">
-          {label}
-        </label>
-        <span className="text-xs text-emerald-400/80 font-mono tabular-nums">
-          {displayValue}{unit}
-        </span>
+      <div className="flex items-center justify-between mb-1">
+        <label className="text-[9px] uppercase tracking-wider text-zinc-600">{label}</label>
+        <span className="text-[10px] text-emerald-400/70 font-mono tabular-nums">{displayValue}{unit}</span>
       </div>
-      <div className="relative h-6 flex items-center">
-        {/* Track Background */}
-        <div className="absolute inset-x-0 h-1.5 bg-zinc-800 rounded-full" />
-        
-        {/* Filled Track */}
+      <div className="relative h-4 flex items-center">
+        <div className="absolute inset-x-0 h-1 bg-zinc-800 rounded-full" />
         <div 
-          className="absolute left-0 h-1.5 bg-gradient-to-r from-emerald-600 to-emerald-500 rounded-full transition-all duration-75"
+          className="absolute left-0 h-1 bg-emerald-500/80 rounded-full transition-all duration-75"
           style={{ width: `${percentage}%` }}
         />
-        
-        {/* Native Input (for dragging) */}
         <input
           type="range"
           min={min}
@@ -293,12 +286,11 @@ function SliderControl({
           value={value}
           onChange={(e) => onChange(parseFloat(e.target.value))}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+          aria-label={label}
         />
-        
-        {/* Thumb */}
         <div 
-          className="absolute w-4 h-4 bg-emerald-500 rounded-full shadow-lg shadow-emerald-500/30 pointer-events-none transition-all duration-75"
-          style={{ left: `calc(${percentage}% - 8px)` }}
+          className="absolute w-3 h-3 bg-emerald-500 rounded-full shadow pointer-events-none transition-all duration-75"
+          style={{ left: `calc(${percentage}% - 6px)` }}
         />
       </div>
     </div>

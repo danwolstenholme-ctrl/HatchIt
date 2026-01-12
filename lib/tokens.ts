@@ -5,7 +5,7 @@ export interface DesignTokens {
   // Spacing
   sectionPadding: number // px - vertical padding for sections
   componentGap: number // px - gap between components
-  buttonPadding: string // CSS padding value for buttons
+  buttonScale: number // 0.8 - 1.4, multiplier for button padding
 
   // Typography
   headingSizeMultiplier: number // 0.8 - 1.5, multiplier for heading sizes
@@ -23,7 +23,7 @@ export interface DesignTokens {
 export const defaultTokens: DesignTokens = {
   sectionPadding: 80,
   componentGap: 24,
-  buttonPadding: '12px 24px',
+  buttonScale: 1,
   headingSizeMultiplier: 1,
   bodySizeMultiplier: 1,
   fontWeight: 'medium',
@@ -41,10 +41,15 @@ export function tokensToCSS(tokens: DesignTokens): string {
     strong: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
   }
 
+  // Button padding scales from 8px 16px (0.8) to 20px 40px (1.4)
+  const btnPadY = Math.round(12 * tokens.buttonScale)
+  const btnPadX = Math.round(24 * tokens.buttonScale)
+
   return `
     --section-padding: ${tokens.sectionPadding}px;
     --component-gap: ${tokens.componentGap}px;
-    --button-padding: ${tokens.buttonPadding};
+    --button-padding: ${btnPadY}px ${btnPadX}px;
+    --button-scale: ${tokens.buttonScale};
     --heading-multiplier: ${tokens.headingSizeMultiplier};
     --body-multiplier: ${tokens.bodySizeMultiplier};
     --font-weight: ${tokens.fontWeight === 'normal' ? 400 : tokens.fontWeight === 'medium' ? 500 : tokens.fontWeight === 'semibold' ? 600 : 700};
@@ -62,6 +67,7 @@ export const tokenPresets: Record<string, Partial<DesignTokens>> = {
     borderRadius: 4,
     shadowIntensity: 'none',
     fontWeight: 'normal',
+    buttonScale: 0.85,
   },
   modern: {
     sectionPadding: 80,
@@ -69,6 +75,7 @@ export const tokenPresets: Record<string, Partial<DesignTokens>> = {
     borderRadius: 12,
     shadowIntensity: 'subtle',
     fontWeight: 'medium',
+    buttonScale: 1,
   },
   bold: {
     sectionPadding: 96,
@@ -77,6 +84,7 @@ export const tokenPresets: Record<string, Partial<DesignTokens>> = {
     shadowIntensity: 'medium',
     fontWeight: 'bold',
     headingSizeMultiplier: 1.2,
+    buttonScale: 1.15,
   },
   soft: {
     sectionPadding: 80,
@@ -85,5 +93,6 @@ export const tokenPresets: Record<string, Partial<DesignTokens>> = {
     shadowIntensity: 'subtle',
     fontWeight: 'normal',
     borderWidth: 0,
+    buttonScale: 1,
   },
 }

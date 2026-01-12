@@ -3,15 +3,14 @@
 import { useState } from 'react'
 import DesignPanel from '@/components/DesignPanel'
 import { DesignTokens, defaultTokens } from '@/lib/tokens'
-import Image from 'next/image'
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
 import { 
   Plus, 
   Layers, 
-  Sparkles, 
   MessageSquare,
   Zap,
   ChevronRight,
+  ChevronDown,
   Settings,
   Check,
   ArrowUp,
@@ -30,11 +29,12 @@ import {
   Briefcase,
   Menu as MenuIcon,
   Star,
+  FileText,
   Globe
 } from 'lucide-react'
 
 // =============================================================================
-// BUILDER SIDEBAR - Clean, solid, infrastructure-focused
+// BUILDER SIDEBAR - Minimal, clean, uncluttered
 // =============================================================================
 
 type Tier = 'demo' | 'free' | 'architect' | 'visionary' | 'singularity'
@@ -55,11 +55,10 @@ const SECTION_TYPES = [
   { id: 'footer', name: 'Footer', icon: Type, pinned: 'bottom' },
 ] as const
 
-// Page type for multi-page support
 export interface SitePage {
   id: string
-  path: string // e.g. '/' or '/about'
-  name: string // Display name e.g. 'Home' or 'About'
+  path: string
+  name: string
   isActive?: boolean
 }
 
@@ -75,14 +74,12 @@ interface SidebarProps {
   userTier: Tier
   isHealing?: boolean
   lastHealMessage?: string
-  // Multi-page support
   pages?: SitePage[]
   currentPageId?: string
   onSelectPage?: (pageId: string) => void
   onAddPage?: () => void
   onRenamePage?: (pageId: string, newName: string) => void
   onDeletePage?: (pageId: string) => void
-  // Settings and actions
   onOpenSettings?: () => void
   onAddSection?: () => void
   onAddSectionOfType?: (sectionType: string) => void
@@ -99,17 +96,6 @@ interface SidebarProps {
   designTokens?: DesignTokens
   onDesignTokensChange?: (tokens: DesignTokens) => void
 }
-
-const AI_TOOLS: Array<{
-  id: string
-  icon: typeof Plus
-  name: string
-  desc: string
-  tier: Tier
-  action: keyof SidebarProps
-}> = [
-  { id: 'ai-help', icon: MessageSquare, name: 'AI Help', desc: 'Get building tips', tier: 'free', action: 'onOpenHatch' },
-]
 
 const TIER_ORDER: Tier[] = ['demo', 'free', 'architect', 'visionary', 'singularity']
 
@@ -152,11 +138,10 @@ export default function LiveSidebar({
   onDesignTokensChange,
 }: SidebarProps) {
   const [showAddMenu, setShowAddMenu] = useState(false)
-  const [showPageMenu, setShowPageMenu] = useState(false)
   const [editingPageId, setEditingPageId] = useState<string | null>(null)
   const [editingPageName, setEditingPageName] = useState('')
+  const [pagesExpanded, setPagesExpanded] = useState(false)
   const isDemo = userTier === 'demo'
-  const hasMultiplePages = pages.length > 1
 
   const getSectionLabel = (index: number) => {
     const names = allSectionNames || sectionNames
@@ -166,162 +151,151 @@ export default function LiveSidebar({
     return `Section ${index + 1}`
   }
 
-  const handleAIToolClick = (tool: typeof AI_TOOLS[0]) => {
-    if (!canAccess(userTier, tool.tier)) {
-      if (isDemo && onSignUp) {
-        onSignUp()
-      } else {
-        onUpgrade?.(tool.tier)
-      }
-      return
-    }
-    
-    const callbacks: Record<string, (() => void) | undefined> = {
-      onOpenHatch,
-    }
-    
-    callbacks[tool.action]?.()
-  }
-
   const availableSectionTypes = SECTION_TYPES.filter(type => {
     if (!('pinned' in type)) return true
     return !sectionIds?.includes(type.id)
   })
 
-  const unlockedAITools = AI_TOOLS.filter(t => canAccess(userTier, t.tier))
-
   return (
     <div className="w-full h-full flex flex-col bg-zinc-950">
-      {/* Project Header - Compact */}
-      <div className="px-3 py-3 border-b border-zinc-800/60">
+      {/* Compact Header */}
+      <div className="px-3 py-2 border-b border-zinc-800/40 flex items-center justify-between">
         <h2 className="text-xs font-medium text-white truncate">{projectName}</h2>
-        <div className="flex items-center gap-1.5 mt-1">
-          <div className={`w-1.5 h-1.5 rounded-full ${isHealing ? 'bg-amber-400 animate-pulse' : isGenerating ? 'bg-emerald-400 animate-pulse' : 'bg-emerald-500'}`} />
-          <span className="text-[10px] text-zinc-500">
-            {isHealing ? 'Fixing...' : isGenerating ? 'Building...' : 'Ready'}
-          </span>
-        </div>
+        <div className={`w-1.5 h-1.5 rounded-full ${isHealing ? 'bg-amber-400 animate-pulse' : isGenerating ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-600'}`} />
       </div>
-
+      
+      {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto">
-        {/* Pages Section - Only show if multi-page enabled */}
+        
+        {/* Pages - Collapsible */}
         {pages.length > 0 && (
-          <div className="px-2 pt-3 pb-2 border-b border-zinc-800/40">
-            <div className="px-1 pb-1.5 flex items-center justify-between">
-              <span className="text-[10px] uppercase tracking-wide text-zinc-500">Pages</span>
-              {userTier !== 'demo' && (
-                <button
-                  onClick={onAddPage}
-                  className="text-xs text-emerald-400 hover:text-emerald-300 active:text-emerald-200 flex items-center gap-1 py-1 px-1.5 -mr-1 rounded-md hover:bg-emerald-500/10 active:bg-emerald-500/20 min-h-[32px]"
+          <div className="border-b border-zinc-800/40">
+            <button
+              onClick={() => setPagesExpanded(!pagesExpanded)}
+              className="w-full px-3 py-2 flex items-center justify-between hover:bg-zinc-900/30 transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <FileText className="w-3 h-3 text-zinc-500" />
+                <span className="text-[10px] uppercase tracking-wider text-zinc-500">Pages</span>
+              </div>
+              <ChevronDown className={`w-3 h-3 text-zinc-600 transition-transform ${pagesExpanded ? 'rotate-180' : ''}`} />
+            </button>
+            
+            <AnimatePresence>
+              {pagesExpanded && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="overflow-hidden"
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add</span>
-                </button>
-              )}
-            </div>
-            <div className="space-y-0.5">
-              {pages.map((page) => {
-                const isCurrentPage = page.id === currentPageId
-                const isEditing = editingPageId === page.id
-                const canDelete = pages.length > 1 && page.path !== '/'
-                
-                return (
-                  <div key={page.id} className="group relative">
-                    {isEditing ? (
-                      <div className="flex items-center gap-1.5 px-2 py-1">
-                        <input
-                          type="text"
-                          value={editingPageName}
-                          onChange={(e) => setEditingPageName(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              onRenamePage?.(page.id, editingPageName)
-                              setEditingPageId(null)
-                            } else if (e.key === 'Escape') {
-                              setEditingPageId(null)
-                            }
-                          }}
-                          onBlur={() => {
-                            if (editingPageName.trim()) {
-                              onRenamePage?.(page.id, editingPageName)
-                            }
-                            setEditingPageId(null)
-                          }}
-                          placeholder="Page name"
-                          className="flex-1 bg-zinc-800 border border-zinc-700 rounded px-2.5 py-2 text-sm text-white outline-none focus:border-emerald-500"
-                          autoFocus
-                        />
-                      </div>
-                    ) : (
+                  <div className="px-2 pb-2 space-y-0.5">
+                    {pages.map((page) => {
+                      const isCurrentPage = page.id === currentPageId
+                      const isEditing = editingPageId === page.id
+                      const canDelete = pages.length > 1 && page.path !== '/'
+                      
+                      if (isEditing) {
+                        return (
+                          <div key={page.id} className="px-2 py-1">
+                            <input
+                              type="text"
+                              value={editingPageName}
+                              onChange={(e) => setEditingPageName(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  onRenamePage?.(page.id, editingPageName)
+                                  setEditingPageId(null)
+                                } else if (e.key === 'Escape') {
+                                  setEditingPageId(null)
+                                }
+                              }}
+                              onBlur={() => {
+                                if (editingPageName.trim()) {
+                                  onRenamePage?.(page.id, editingPageName)
+                                }
+                                setEditingPageId(null)
+                              }}
+                              className="w-full bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-white outline-none focus:border-emerald-500"
+                              autoFocus
+                              placeholder="Page name"
+                              aria-label="Page name"
+                            />
+                          </div>
+                        )
+                      }
+                      
+                      return (
+                        <div key={page.id} className="group relative">
+                          <button
+                            onClick={() => onSelectPage?.(page.id)}
+                            className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-left text-xs ${
+                              isCurrentPage 
+                                ? 'bg-emerald-500/10 text-emerald-400' 
+                                : 'text-zinc-400 hover:bg-zinc-800/50'
+                            }`}
+                          >
+                            <Globe className="w-3 h-3 flex-shrink-0" />
+                            <span className="flex-1 truncate">{page.name}</span>
+                            <span className="text-[9px] text-zinc-600 font-mono">{page.path}</span>
+                          </button>
+                          
+                          {!isDemo && (
+                            <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setEditingPageId(page.id)
+                                  setEditingPageName(page.name)
+                                }}
+                                className="p-1 rounded hover:bg-zinc-700"
+                                aria-label="Rename page"
+                              >
+                                <Type className="w-2.5 h-2.5 text-zinc-500" />
+                              </button>
+                              {canDelete && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    onDeletePage?.(page.id)
+                                  }}
+                                  className="p-1 rounded hover:bg-red-500/20"
+                                  aria-label="Delete page"
+                                >
+                                  <Trash2 className="w-2.5 h-2.5 text-zinc-500 hover:text-red-400" />
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                    
+                    {/* Add Page */}
+                    {!isDemo && (
                       <button
-                        onClick={() => onSelectPage?.(page.id)}
-                        className={`w-full flex items-center gap-2 px-2.5 py-2.5 rounded-lg transition-colors text-left min-h-[44px] ${
-                          isCurrentPage 
-                            ? 'bg-emerald-500/10 border border-emerald-500/30' 
-                            : 'hover:bg-zinc-800/50 active:bg-zinc-800 border border-transparent'
-                        }`}
+                        onClick={onAddPage}
+                        className="w-full flex items-center justify-center gap-1 px-2 py-1.5 rounded text-xs text-emerald-400 hover:bg-emerald-500/10 transition-colors"
                       >
-                        <Globe className={`w-3.5 h-3.5 flex-shrink-0 ${
-                          isCurrentPage ? 'text-emerald-400' : 'text-zinc-600'
-                        }`} />
-                        <span className={`flex-1 text-xs truncate ${
-                          isCurrentPage ? 'text-emerald-300' : 'text-zinc-400'
-                        }`}>
-                          {page.name}
-                        </span>
-                        <span className="text-[9px] text-zinc-600 font-mono">
-                          {page.path}
-                        </span>
+                        <Plus className="w-3 h-3" />
+                        Add Page
                       </button>
                     )}
-                    
-                    {/* Page actions - visible on hover (desktop) or when selected (mobile) */}
-                    {!isEditing && userTier !== 'demo' && (
-                      <div className={`absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1 transition-opacity bg-zinc-900/95 rounded px-1 ${
-                        isCurrentPage ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                      }`}>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setEditingPageId(page.id)
-                            setEditingPageName(page.name)
-                          }}
-                          className="p-1.5 rounded hover:bg-zinc-700 active:bg-zinc-600"
-                          aria-label="Rename page"
-                        >
-                          <Type className="w-3.5 h-3.5 text-zinc-400" />
-                        </button>
-                        {canDelete && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              onDeletePage?.(page.id)
-                            }}
-                            className="p-1.5 rounded hover:bg-red-500/20 active:bg-red-500/30"
-                            aria-label="Delete page"
-                          >
-                            <Trash2 className="w-3.5 h-3.5 text-zinc-400 hover:text-red-400" />
-                          </button>
-                        )}
-                      </div>
-                    )}
                   </div>
-                )
-              })}
-            </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
 
-        {/* Sections Header */}
-        <div className="px-3 pt-3 pb-1.5 flex items-center justify-between">
-          <span className="text-[10px] uppercase tracking-wide text-zinc-500">
-            {pages.length > 0 ? `Sections (${pages.find(p => p.id === currentPageId)?.name || 'Home'})` : 'Sections'}
-          </span>
-          <span className="text-[10px] text-zinc-400">{completedSectionIds.length}/{totalSections} built</span>
-        </div>
-
-        {/* Sections List */}
-        <div className="px-2 pb-3">
+        {/* Sections */}
+        <div className="px-2 py-2">
+          <div className="px-1 pb-1.5 flex items-center justify-between">
+            <span className="text-[10px] uppercase tracking-wider text-zinc-500">Sections</span>
+            <span className="text-[10px] text-zinc-600">{completedSectionIds.length}/{totalSections}</span>
+          </div>
+          
           <LayoutGroup>
             <div className="space-y-0.5">
               {Array.from({ length: allSectionNames?.length || totalSections }).map((_, i) => {
@@ -330,7 +304,7 @@ export default function LiveSidebar({
                 const isBuilt = id ? completedSectionIds.includes(id) : false
                 const isClickable = isBuilt || isActive
                 const SectionIcon = getSectionIcon(id || '')
-                const isCurrentlyBuilding = isActive && isGenerating
+                const isBuilding = isActive && isGenerating
 
                 const isHeader = id === 'header'
                 const isFooter = id === 'footer'
@@ -352,60 +326,32 @@ export default function LiveSidebar({
                     <button
                       onClick={() => isClickable && onSelectSection?.(i)}
                       disabled={!isClickable}
-                      className={`w-full flex items-center gap-2 px-2.5 py-3 rounded-lg transition-colors text-left ${
+                      className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-left text-xs ${
                         isActive 
-                          ? 'bg-zinc-800 border border-zinc-700/50' 
+                          ? 'bg-zinc-800 text-white' 
                           : isClickable 
-                            ? 'active:bg-zinc-700 border border-transparent cursor-pointer' 
-                            : 'opacity-40 cursor-not-allowed border border-transparent'
+                            ? 'text-zinc-400 hover:bg-zinc-800/50' 
+                            : 'text-zinc-600 opacity-50'
                       }`}
                     >
-                      {/* Status indicator */}
                       <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                        isCurrentlyBuilding ? 'bg-amber-400 animate-pulse' : isBuilt ? 'bg-emerald-500' : isActive ? 'bg-zinc-400' : 'bg-zinc-700'
+                        isBuilding ? 'bg-amber-400 animate-pulse' : isBuilt ? 'bg-emerald-500' : 'bg-zinc-700'
                       }`} />
-                      
-                      {/* Icon */}
-                      <SectionIcon className={`w-3.5 h-3.5 flex-shrink-0 ${
-                        isActive ? 'text-zinc-300' : isBuilt ? 'text-zinc-500' : 'text-zinc-600'
-                      }`} />
-                      
-                      {/* Label */}
-                      <span className={`flex-1 text-xs truncate ${
-                        isActive ? 'text-white' : isBuilt ? 'text-zinc-400' : 'text-zinc-600'
-                      }`}>
-                        {getSectionLabel(i)}
-                      </span>
-                      
-                      {/* Built checkmark or building indicator */}
-                      {isCurrentlyBuilding ? (
-                        <motion.div
-                          animate={{ opacity: [0.5, 1, 0.5] }}
-                          transition={{ duration: 1.5, repeat: Infinity }}
-                        >
-                          <Image
-                            src="/assets/hatchit_definitive.svg"
-                            alt=""
-                            width={14}
-                            height={14}
-                            className="flex-shrink-0"
-                          />
-                        </motion.div>
-                      ) : isBuilt && !isActive ? (
-                        <Check className="w-3.5 h-3.5 text-emerald-500/70 flex-shrink-0" />
-                      ) : null}
+                      <SectionIcon className="w-3 h-3 flex-shrink-0" />
+                      <span className="flex-1 truncate">{getSectionLabel(i)}</span>
+                      {isBuilt && !isActive && <Check className="w-3 h-3 text-emerald-500/60" />}
                     </button>
 
-                    {/* Move/Delete actions */}
+                    {/* Actions on hover */}
                     {(canMoveUp || canMoveDown || canRemove) && (
-                      <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-900/95 rounded px-0.5">
+                      <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-900/90 rounded px-0.5">
                         {canMoveUp && (
                           <button
                             onClick={(e) => { e.stopPropagation(); onMoveSection?.(i, i - 1) }}
                             className="p-0.5 rounded hover:bg-zinc-700"
                             aria-label="Move section up"
                           >
-                            <ArrowUp className="w-3 h-3 text-zinc-500" />
+                            <ArrowUp className="w-2.5 h-2.5 text-zinc-500" />
                           </button>
                         )}
                         {canMoveDown && (
@@ -414,7 +360,7 @@ export default function LiveSidebar({
                             className="p-0.5 rounded hover:bg-zinc-700"
                             aria-label="Move section down"
                           >
-                            <ArrowDown className="w-3 h-3 text-zinc-500" />
+                            <ArrowDown className="w-2.5 h-2.5 text-zinc-500" />
                           </button>
                         )}
                         {canRemove && (
@@ -423,7 +369,7 @@ export default function LiveSidebar({
                             className="p-0.5 rounded hover:bg-red-500/20"
                             aria-label="Remove section"
                           >
-                            <Trash2 className="w-3 h-3 text-zinc-500 hover:text-red-400" />
+                            <Trash2 className="w-2.5 h-2.5 text-zinc-500 hover:text-red-400" />
                           </button>
                         )}
                       </div>
@@ -434,14 +380,14 @@ export default function LiveSidebar({
             </div>
           </LayoutGroup>
           
-          {/* Add Section Button */}
-          {userTier !== 'demo' && (
-            <div className="relative mt-2">
+          {/* Add Section */}
+          {!isDemo && (
+            <div className="relative mt-1.5">
               <button
                 onClick={() => setShowAddMenu(!showAddMenu)}
-                className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-md hover:bg-zinc-900 border border-zinc-800/60 text-emerald-400 text-xs transition-all"
+                className="w-full flex items-center justify-center gap-1 px-2 py-1.5 rounded text-xs text-emerald-400 hover:bg-emerald-500/10 border border-dashed border-zinc-800 transition-colors"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-3 h-3" />
                 Add Section
               </button>
 
@@ -450,34 +396,28 @@ export default function LiveSidebar({
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setShowAddMenu(false)} />
                     <motion.div
-                      initial={{ opacity: 0, y: 8 }}
+                      initial={{ opacity: 0, y: 4 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 8 }}
-                      className="absolute left-0 right-0 bottom-full mb-1.5 bg-zinc-900 border border-zinc-800/50 rounded-md shadow-xl z-50 overflow-hidden"
+                      exit={{ opacity: 0, y: 4 }}
+                      className="absolute left-0 right-0 bottom-full mb-1 bg-zinc-900 border border-zinc-800 rounded shadow-xl z-50"
                     >
-                      <div className="p-1.5">
-                        <div className="grid grid-cols-2 gap-0.5 max-h-48 overflow-y-auto">
-                          {availableSectionTypes.map((type) => {
-                            const Icon = type.icon
-                            return (
-                              <button
-                                key={type.id}
-                                onClick={() => {
-                                  if (onAddSectionOfType) {
-                                    onAddSectionOfType(type.id)
-                                  } else if (onAddSection) {
-                                    onAddSection()
-                                  }
-                                  setShowAddMenu(false)
-                                }}
-                                className="flex items-center gap-1.5 px-2 py-1.5 rounded hover:bg-zinc-800 text-left transition-all group"
-                              >
-                                <Icon className="w-3 h-3 text-zinc-600 group-hover:text-zinc-300" />
-                                <span className="text-[10px] text-zinc-500 group-hover:text-white">{type.name}</span>
-                              </button>
-                            )
-                          })}
-                        </div>
+                      <div className="p-1 grid grid-cols-2 gap-0.5 max-h-40 overflow-y-auto">
+                        {availableSectionTypes.map((type) => {
+                          const Icon = type.icon
+                          return (
+                            <button
+                              key={type.id}
+                              onClick={() => {
+                                onAddSectionOfType ? onAddSectionOfType(type.id) : onAddSection?.()
+                                setShowAddMenu(false)
+                              }}
+                              className="flex items-center gap-1.5 px-2 py-1 rounded text-[10px] text-zinc-400 hover:bg-zinc-800 hover:text-white"
+                            >
+                              <Icon className="w-2.5 h-2.5" />
+                              {type.name}
+                            </button>
+                          )
+                        })}
                       </div>
                     </motion.div>
                   </>
@@ -487,32 +427,28 @@ export default function LiveSidebar({
           )}
         </div>
 
-        {/* AI Tools */}
-        <div className="px-3 py-2 border-t border-zinc-800/60">
-          <p className="text-[10px] uppercase tracking-wide text-zinc-500 mb-1.5">AI Tools</p>
-          <div className="space-y-0.5">
-            {unlockedAITools.map((tool) => (
-              <button
-                key={tool.id}
-                onClick={() => handleAIToolClick(tool)}
-                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-amber-950/30 transition-all group"
-              >
-                <div className="w-5 h-5 rounded bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center">
-                  <tool.icon className="w-3 h-3 text-amber-400" />
-                </div>
-                <span className="flex-1 text-left text-xs text-zinc-400 group-hover:text-white">{tool.name}</span>
-                <ChevronRight className="w-3 h-3 text-zinc-700 group-hover:text-amber-400" />
-              </button>
-            ))}
-          </div>
+        {/* AI Help - Minimal */}
+        <div className="px-2 py-2 border-t border-zinc-800/40">
+          <button
+            onClick={() => {
+              if (isDemo && onSignUp) {
+                onSignUp()
+              } else {
+                onOpenHatch?.()
+              }
+            }}
+            className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs text-zinc-400 hover:bg-amber-500/10 hover:text-amber-400 transition-colors"
+          >
+            <MessageSquare className="w-3 h-3" />
+            AI Help
+            <ChevronRight className="w-3 h-3 ml-auto" />
+          </button>
           
-          {/* Self-healing indicator for Visionary+ */}
+          {/* Auto-fix indicator */}
           {(userTier === 'visionary' || userTier === 'singularity') && (
-            <div className="mt-2 px-2.5 py-1.5 rounded-md bg-emerald-950/20 border border-emerald-500/10">
-              <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[10px] text-emerald-400/70">Auto-fix enabled</span>
-              </div>
+            <div className="mt-1 px-2 py-1 flex items-center gap-1.5">
+              <div className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[9px] text-emerald-400/60">Auto-fix active</span>
             </div>
           )}
         </div>
@@ -526,25 +462,25 @@ export default function LiveSidebar({
         onUpgrade={() => onUpgrade?.('visionary')}
       />
 
-      {/* Bottom - Settings / Sign Up */}
-      <div className="p-2 border-t border-zinc-800/60">
+      {/* Footer */}
+      <div className="p-2 border-t border-zinc-800/40">
         {isDemo && onSignUp ? (
           <button
             onClick={onSignUp}
-            className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-md bg-white text-zinc-900 hover:bg-zinc-100 text-xs font-medium transition-all"
+            className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded bg-white text-zinc-900 hover:bg-zinc-100 text-xs font-medium transition-colors"
           >
             Sign Up Free
             <ArrowRight className="w-3 h-3" />
           </button>
-        ) : onOpenSettings ? (
+        ) : onOpenSettings && (
           <button
             onClick={onOpenSettings}
-            className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-zinc-900 transition-all group"
+            className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300 transition-colors"
           >
-            <Settings className="w-3.5 h-3.5 text-zinc-600 group-hover:text-zinc-400" />
-            <span className="text-xs text-zinc-500 group-hover:text-white">Settings</span>
+            <Settings className="w-3 h-3" />
+            Settings
           </button>
-        ) : null}
+        )}
       </div>
     </div>
   )
