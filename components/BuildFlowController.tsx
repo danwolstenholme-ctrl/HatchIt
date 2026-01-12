@@ -31,7 +31,8 @@ import {
   RefreshCw,
   Wand2,
   Maximize2,
-  Minimize2
+  Minimize2,
+  MousePointer2
 } from 'lucide-react'
 import { track } from '@vercel/analytics'
 import SectionProgress from './SectionProgress'
@@ -45,7 +46,8 @@ import SiteSettingsModal, { SiteSettings } from './SiteSettingsModal'
 import HatchAssistantModal from './builder/HatchModal'
 import { useGitHub } from '@/hooks/useGitHub'
 import { Github } from 'lucide-react'
-import FullSitePreviewFrame from './builder/FullSitePreviewFrame'
+import FullSitePreviewFrame, { SelectedElement } from './builder/FullSitePreviewFrame'
+import ElementEditor from './builder/ElementEditor'
 import BuildSuccessModal from './BuildSuccessModal'
 import Button from './singularity/Button'
 import ReplicatorModal from './ReplicatorModal'
@@ -204,6 +206,8 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   const [demoSectionsBuilt, setDemoSectionsBuilt] = useState(0)
   const [showMobileSidebar, setShowMobileSidebar] = useState(false)
   const [previewEditMode, setPreviewEditMode] = useState(false)
+  const [previewInspectMode, setPreviewInspectMode] = useState(false)
+  const [selectedElement, setSelectedElement] = useState<SelectedElement | null>(null)
   const [previewDevice, setPreviewDevice] = useState<'mobile' | 'tablet' | 'desktop'>('desktop')
   const [previewKey, setPreviewKey] = useState(0) // Increment to force preview refresh
   const [showFirstBuildHint, setShowFirstBuildHint] = useState(false)
@@ -2862,10 +2866,12 @@ export default function GeneratedPage() {
                         sections={previewSections}
                         deviceView="mobile"
                         editMode={previewEditMode}
+                        inspectMode={previewInspectMode}
                         designTokens={designTokens}
                         onTextEdit={handleTextEdit}
                         onSyntaxError={handleSyntaxError}
                         onRuntimeError={handleRuntimeError}
+                        onElementSelect={(element) => setSelectedElement(element)}
                         seo={brandConfig?.seo ? {
                           title: brandConfig.seo.title || '',
                           description: brandConfig.seo.description || '',
@@ -3029,6 +3035,26 @@ export default function GeneratedPage() {
                           <Edit3 className="w-3.5 h-3.5" />
                         </button>
                         
+                        {/* Inspect Mode Toggle */}
+                        <button
+                          onClick={() => {
+                            setPreviewInspectMode(!previewInspectMode)
+                            if (!previewInspectMode) {
+                              setPreviewEditMode(false) // Disable edit mode when entering inspect
+                            } else {
+                              setSelectedElement(null) // Clear selection when exiting
+                            }
+                          }}
+                          className={`p-1.5 rounded transition-all ${
+                            previewInspectMode 
+                              ? 'bg-cyan-500/20 text-cyan-400 ring-1 ring-cyan-500/50' 
+                              : 'text-zinc-500 hover:text-zinc-300 bg-zinc-800/50'
+                          }`}
+                          title={previewInspectMode ? 'Exit Inspect Mode' : 'Inspect & Edit Elements'}
+                        >
+                          <MousePointer2 className="w-3.5 h-3.5" />
+                        </button>
+                        
                         {/* Device Toggle */}
                         <div className="flex items-center gap-1 bg-zinc-800/50 rounded-md p-0.5">
                           <button
@@ -3090,16 +3116,37 @@ export default function GeneratedPage() {
                           deviceView={previewDevice}
                           ref={previewIframeRef}
                           editMode={previewEditMode}
+                          inspectMode={previewInspectMode}
                           designTokens={designTokens}
                           onTextEdit={handleTextEdit}
                           onSyntaxError={handleSyntaxError}
                           onRuntimeError={handleRuntimeError}
+                          onElementSelect={(element) => setSelectedElement(element)}
                           seo={brandConfig?.seo ? {
                             title: brandConfig.seo.title || '',
                             description: brandConfig.seo.description || '',
                             keywords: brandConfig.seo.keywords || ''
                           } : undefined}
                         />
+                        
+                        {/* Element Editor - positioned over preview */}
+                        {previewInspectMode && selectedElement && (
+                          <ElementEditor
+                            element={selectedElement}
+                            onClose={() => setSelectedElement(null)}
+                            onStyleChange={(property, value) => {
+                              // Send style change to iframe
+                              if (previewIframeRef.current?.contentWindow) {
+                                previewIframeRef.current.contentWindow.postMessage({
+                                  type: 'apply-element-style',
+                                  elementPath: selectedElement.elementPath,
+                                  property,
+                                  value
+                                }, '*')
+                              }
+                            }}
+                          />
+                        )}
                       </div>
                     ) : (
                       <div className="h-full flex items-center justify-center">
@@ -3232,10 +3279,12 @@ export default function GeneratedPage() {
                   sections={previewSections}
                   deviceView={previewDevice}
                   editMode={previewEditMode}
+                  inspectMode={previewInspectMode}
                   designTokens={designTokens}
                   onTextEdit={handleTextEdit}
                   onSyntaxError={handleSyntaxError}
                   onRuntimeError={handleRuntimeError}
+                  onElementSelect={(element) => setSelectedElement(element)}
                   seo={brandConfig?.seo ? {
                     title: brandConfig.seo.title || '',
                     description: brandConfig.seo.description || '',

@@ -195,6 +195,17 @@ export default function DesignPanel({ tokens, onChange, isLocked = false, onUpgr
                   formatValue={(v) => v.toFixed(2)}
                 />
 
+                <SliderControl
+                  label="Icons"
+                  value={tokens.iconScale ?? 1}
+                  min={0.5}
+                  max={1.5}
+                  step={0.05}
+                  unit="x"
+                  onChange={(v) => updateToken('iconScale', Math.round(v * 100) / 100)}
+                  formatValue={(v) => v.toFixed(2)}
+                />
+
                 {/* Shadow - Inline */}
                 <div>
                   <label className="text-[9px] uppercase tracking-wider text-zinc-600 mb-1 block">Shadow</label>

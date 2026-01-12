@@ -16,10 +16,32 @@ interface FullSitePreviewFrameProps {
   deviceView: 'mobile' | 'tablet' | 'desktop'
   seo?: { title: string; description: string; keywords: string }
   editMode?: boolean
+  inspectMode?: boolean
   designTokens?: DesignTokens
   onTextEdit?: (oldText: string, newText: string, sectionId: string) => void
+  onElementSelect?: (element: SelectedElement | null) => void
   onSyntaxError?: (error: string, lineNumber?: number) => void
   onRuntimeError?: (error: string, sectionId?: string) => void
+}
+
+// Element info passed when user clicks something in inspect mode
+export interface SelectedElement {
+  tagName: string
+  className: string
+  textContent: string
+  computedStyles: {
+    fontSize: string
+    fontWeight: string
+    color: string
+    backgroundColor: string
+    padding: string
+    margin: string
+    borderRadius: string
+    width: string
+    height: string
+  }
+  sectionId: string
+  elementPath: string // CSS selector path to re-find element
 }
 
 // =============================================================================
@@ -27,7 +49,7 @@ interface FullSitePreviewFrameProps {
 // Renders all assembled sections in an iframe - simplified for reliability
 // =============================================================================
 
-const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameProps>(function FullSitePreviewFrame({ sections, deviceView, seo, editMode = false, designTokens, onTextEdit, onSyntaxError, onRuntimeError }, ref) {
+const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameProps>(function FullSitePreviewFrame({ sections, deviceView, seo, editMode = false, inspectMode = false, designTokens, onTextEdit, onElementSelect, onSyntaxError, onRuntimeError }, ref) {
   const internalRef = useRef<HTMLIFrameElement>(null)
   
   // Expose the internal ref to parent
@@ -40,11 +62,25 @@ const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameP
     }
   }, [editMode])
   
+  // Send inspect mode state to iframe
+  useEffect(() => {
+    if (internalRef.current?.contentWindow) {
+      internalRef.current.contentWindow.postMessage({ type: 'set-inspect-mode', enabled: inspectMode }, '*')
+    }
+  }, [inspectMode])
+  
   // Listen for text edit messages from iframe
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === 'text-edited' && onTextEdit) {
         onTextEdit(event.data.oldText, event.data.newText, event.data.sectionId || '')
+      }
+      // Listen for element selection in inspect mode
+      if (event.data?.type === 'element-selected' && onElementSelect) {
+        onElementSelect(event.data.element)
+      }
+      if (event.data?.type === 'element-deselected' && onElementSelect) {
+        onElementSelect(null)
       }
       // Listen for syntax errors from iframe - pass to Overseer for auto-fix
       if (event.data?.type === 'syntax-error') {
@@ -409,6 +445,154 @@ const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameP
       }, true);
       
       // ============================================
+      // INSPECT MODE - Click to select and edit elements
+      // ============================================
+      let inspectModeEnabled = false;
+      let selectedElement = null;
+      let hoverElement = null;
+      
+      // Create selection highlight overlay
+      const selectionOverlay = document.createElement('div');
+      selectionOverlay.id = 'inspect-selection';
+      selectionOverlay.style.cssText = 'position:fixed;pointer-events:none;border:2px solid #10b981;background:rgba(16,185,129,0.1);z-index:99998;display:none;transition:all 0.1s ease;';
+      document.body.appendChild(selectionOverlay);
+      
+      // Create hover highlight overlay
+      const hoverOverlay = document.createElement('div');
+      hoverOverlay.id = 'inspect-hover';
+      hoverOverlay.style.cssText = 'position:fixed;pointer-events:none;border:1px dashed #60a5fa;background:rgba(96,165,250,0.05);z-index:99997;display:none;transition:all 0.05s ease;';
+      document.body.appendChild(hoverOverlay);
+      
+      function updateOverlay(overlay, element) {
+        if (!element) {
+          overlay.style.display = 'none';
+          return;
+        }
+        const rect = element.getBoundingClientRect();
+        overlay.style.display = 'block';
+        overlay.style.top = rect.top + 'px';
+        overlay.style.left = rect.left + 'px';
+        overlay.style.width = rect.width + 'px';
+        overlay.style.height = rect.height + 'px';
+      }
+      
+      function getElementPath(el) {
+        const path = [];
+        while (el && el !== document.body) {
+          let selector = el.tagName.toLowerCase();
+          if (el.id) {
+            selector += '#' + el.id;
+            path.unshift(selector);
+            break;
+          } else if (el.className && typeof el.className === 'string') {
+            const classes = el.className.split(' ').filter(c => c && !c.includes(':'));
+            if (classes.length) selector += '.' + classes.slice(0, 2).join('.');
+          }
+          const siblings = el.parentElement ? Array.from(el.parentElement.children).filter(c => c.tagName === el.tagName) : [];
+          if (siblings.length > 1) {
+            const idx = siblings.indexOf(el);
+            selector += ':nth-of-type(' + (idx + 1) + ')';
+          }
+          path.unshift(selector);
+          el = el.parentElement;
+        }
+        return path.join(' > ');
+      }
+      
+      window.addEventListener('message', (event) => {
+        if (event.data.type === 'set-inspect-mode') {
+          inspectModeEnabled = event.data.enabled;
+          document.body.style.cursor = inspectModeEnabled ? 'crosshair' : '';
+          
+          // Show/hide indicator
+          let indicator = document.getElementById('inspect-mode-indicator');
+          if (inspectModeEnabled && !indicator) {
+            const div = document.createElement('div');
+            div.id = 'inspect-mode-indicator';
+            div.style.cssText = 'position:fixed;top:8px;left:50%;transform:translateX(-50%);background:#10b981;color:white;padding:4px 12px;border-radius:9999px;font-size:11px;z-index:99999;font-family:system-ui;pointer-events:none;';
+            div.textContent = '🎯 Inspect Mode - Click any element to edit';
+            document.body.appendChild(div);
+          } else if (!inspectModeEnabled && indicator) {
+            indicator.remove();
+            selectionOverlay.style.display = 'none';
+            hoverOverlay.style.display = 'none';
+            selectedElement = null;
+            window.parent.postMessage({ type: 'element-deselected' }, '*');
+          }
+        }
+        
+        // Apply style changes from parent
+        if (event.data.type === 'apply-element-style' && selectedElement) {
+          const { property, value } = event.data;
+          selectedElement.style[property] = value;
+          updateOverlay(selectionOverlay, selectedElement);
+        }
+      });
+      
+      // Hover highlight
+      document.addEventListener('mousemove', (e) => {
+        if (!inspectModeEnabled || editModeEnabled) return;
+        const target = e.target;
+        if (target === document.body || target.id === 'root' || target.id?.startsWith('inspect-') || target.id?.startsWith('edit-')) {
+          hoverOverlay.style.display = 'none';
+          return;
+        }
+        if (target !== hoverElement) {
+          hoverElement = target;
+          updateOverlay(hoverOverlay, target);
+        }
+      }, true);
+      
+      // Click to select
+      document.addEventListener('click', (e) => {
+        if (!inspectModeEnabled || editModeEnabled) return;
+        
+        const target = e.target;
+        if (target === document.body || target.id === 'root' || target.id?.startsWith('inspect-') || target.id?.startsWith('edit-')) {
+          return;
+        }
+        
+        e.preventDefault();
+        e.stopPropagation();
+        
+        selectedElement = target;
+        updateOverlay(selectionOverlay, target);
+        hoverOverlay.style.display = 'none';
+        
+        // Get computed styles
+        const cs = window.getComputedStyle(target);
+        const elementInfo = {
+          tagName: target.tagName.toLowerCase(),
+          className: target.className || '',
+          textContent: target.innerText?.slice(0, 100) || '',
+          computedStyles: {
+            fontSize: cs.fontSize,
+            fontWeight: cs.fontWeight,
+            color: cs.color,
+            backgroundColor: cs.backgroundColor,
+            padding: cs.padding,
+            margin: cs.margin,
+            borderRadius: cs.borderRadius,
+            width: cs.width,
+            height: cs.height,
+          },
+          sectionId: findSectionId(target),
+          elementPath: getElementPath(target)
+        };
+        
+        window.parent.postMessage({ type: 'element-selected', element: elementInfo }, '*');
+      }, true);
+      
+      // ESC to deselect
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && inspectModeEnabled && selectedElement) {
+          selectedElement = null;
+          selectionOverlay.style.display = 'none';
+          window.parent.postMessage({ type: 'element-deselected' }, '*');
+        }
+      });
+      
+      // ============================================
       // LINK INTERCEPTION - Prevent navigation in preview
       // ============================================
       // Stop ALL link clicks from navigating the iframe
@@ -602,6 +786,7 @@ ${Array.from(allLucideImports).map((name) => {
       --heading-multiplier: ${designTokens?.headingSizeMultiplier ?? 1};
       --body-multiplier: ${designTokens?.bodySizeMultiplier ?? 1};
       --button-scale: ${designTokens?.buttonScale ?? 1};
+      --icon-scale: ${designTokens?.iconScale ?? 1};
       --font-weight: ${designTokens?.fontWeight === 'normal' ? 400 : designTokens?.fontWeight === 'medium' ? 500 : designTokens?.fontWeight === 'semibold' ? 600 : designTokens?.fontWeight === 'bold' ? 700 : 500};
       --shadow: ${designTokens?.shadowIntensity === 'none' ? 'none' : designTokens?.shadowIntensity === 'subtle' ? '0 1px 2px 0 rgb(0 0 0 / 0.05)' : designTokens?.shadowIntensity === 'medium' ? '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' : '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)'};
     }
@@ -637,6 +822,20 @@ ${Array.from(allLucideImports).map((name) => {
     button, a[class*="bg-"], [class*="btn"], [role="button"] {
       padding: calc(12px * var(--button-scale)) calc(24px * var(--button-scale)) !important;
       font-size: calc(1rem * var(--button-scale)) !important;
+    }
+    
+    /* Apply icon scale - SVGs and lucide icons */
+    svg {
+      transform: scale(var(--icon-scale));
+      transform-origin: center;
+    }
+    
+    /* Also target common icon wrapper classes */
+    [class*="w-"][class*="h-"] > svg,
+    [class*="size-"] > svg {
+      width: calc(100% * var(--icon-scale)) !important;
+      height: calc(100% * var(--icon-scale)) !important;
+      transform: none;
     }
     
     /* Apply shadow */

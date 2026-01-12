@@ -12,6 +12,9 @@ export interface DesignTokens {
   bodySizeMultiplier: number // 0.8 - 1.2, multiplier for body text
   fontWeight: 'normal' | 'medium' | 'semibold' | 'bold'
 
+  // Icons
+  iconScale: number // 0.5 - 1.5, multiplier for icon sizes
+
   // Borders
   borderRadius: number // px - global border radius
   borderWidth: number // px - border thickness
@@ -27,6 +30,7 @@ export const defaultTokens: DesignTokens = {
   headingSizeMultiplier: 1,
   bodySizeMultiplier: 1,
   fontWeight: 'medium',
+  iconScale: 1,
   borderRadius: 12,
   borderWidth: 1,
   shadowIntensity: 'subtle',
@@ -52,6 +56,7 @@ export function tokensToCSS(tokens: DesignTokens): string {
     --button-scale: ${tokens.buttonScale};
     --heading-multiplier: ${tokens.headingSizeMultiplier};
     --body-multiplier: ${tokens.bodySizeMultiplier};
+    --icon-scale: ${tokens.iconScale};
     --font-weight: ${tokens.fontWeight === 'normal' ? 400 : tokens.fontWeight === 'medium' ? 500 : tokens.fontWeight === 'semibold' ? 600 : 700};
     --border-radius: ${tokens.borderRadius}px;
     --border-width: ${tokens.borderWidth}px;
@@ -68,6 +73,7 @@ export const tokenPresets: Record<string, Partial<DesignTokens>> = {
     shadowIntensity: 'none',
     fontWeight: 'normal',
     buttonScale: 0.85,
+    iconScale: 0.85,
   },
   modern: {
     sectionPadding: 80,
@@ -76,6 +82,7 @@ export const tokenPresets: Record<string, Partial<DesignTokens>> = {
     shadowIntensity: 'subtle',
     fontWeight: 'medium',
     buttonScale: 1,
+    iconScale: 1,
   },
   bold: {
     sectionPadding: 96,
@@ -85,6 +92,7 @@ export const tokenPresets: Record<string, Partial<DesignTokens>> = {
     fontWeight: 'bold',
     headingSizeMultiplier: 1.2,
     buttonScale: 1.15,
+    iconScale: 1.2,
   },
   soft: {
     sectionPadding: 80,
@@ -94,5 +102,6 @@ export const tokenPresets: Record<string, Partial<DesignTokens>> = {
     fontWeight: 'normal',
     borderWidth: 0,
     buttonScale: 1,
+    iconScale: 0.9,
   },
 }
