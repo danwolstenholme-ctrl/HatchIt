@@ -2809,17 +2809,37 @@ export default function GeneratedPage() {
                 </div>
                 {/* Edit Mode Toggle - Mobile */}
                 {buildMobileTab === 'preview' && previewSections.length > 0 && (
-                  <button
-                    onClick={() => setPreviewEditMode(!previewEditMode)}
-                    className={`p-2.5 rounded-xl border transition-all ${
-                      previewEditMode 
-                        ? 'bg-purple-500/20 text-purple-400 border-purple-500/50' 
-                        : 'bg-zinc-900/80 text-zinc-400 border-zinc-800/50 active:bg-zinc-800'
-                    }`}
-                    title={previewEditMode ? 'Exit Edit Mode' : 'Edit Text'}
-                  >
-                    <Edit3 className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setPreviewEditMode(!previewEditMode)}
+                      className={`p-2.5 rounded-xl border transition-all ${
+                        previewEditMode 
+                          ? 'bg-purple-500/20 text-purple-400 border-purple-500/50' 
+                          : 'bg-zinc-900/80 text-zinc-400 border-zinc-800/50 active:bg-zinc-800'
+                      }`}
+                      title={previewEditMode ? 'Exit Edit Mode' : 'Edit Text'}
+                    >
+                      <Edit3 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setPreviewInspectMode(!previewInspectMode)
+                        if (!previewInspectMode) {
+                          setPreviewEditMode(false)
+                        } else {
+                          setSelectedElement(null)
+                        }
+                      }}
+                      className={`p-2.5 rounded-xl border transition-all ${
+                        previewInspectMode 
+                          ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/50' 
+                          : 'bg-zinc-900/80 text-zinc-400 border-zinc-800/50 active:bg-zinc-800'
+                      }`}
+                      title={previewInspectMode ? 'Exit Inspect Mode' : 'Inspect Elements'}
+                    >
+                      <MousePointer2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 )}
               </div>
               
@@ -2878,6 +2898,26 @@ export default function GeneratedPage() {
                           keywords: brandConfig.seo.keywords || ''
                         } : undefined}
                       />
+                      
+                      {/* Element Editor - Mobile */}
+                      {previewInspectMode && selectedElement && (
+                        <ElementEditor
+                          element={selectedElement}
+                          onClose={() => setSelectedElement(null)}
+                          onStyleChange={(property, value) => {
+                            // Find the mobile iframe and send style change
+                            const mobileIframe = document.querySelector('.lg\\:hidden iframe') as HTMLIFrameElement
+                            if (mobileIframe?.contentWindow) {
+                              mobileIframe.contentWindow.postMessage({
+                                type: 'apply-element-style',
+                                elementPath: selectedElement.elementPath,
+                                property,
+                                value
+                              }, '*')
+                            }
+                          }}
+                        />
+                      )}
                     </>
                   ) : (
                     <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-zinc-900/50 to-zinc-950">
