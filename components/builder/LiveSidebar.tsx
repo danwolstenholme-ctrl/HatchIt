@@ -302,7 +302,8 @@ export default function LiveSidebar({
                 const isActive = i === currentSection - 1
                 const id = sectionIds?.[i]
                 const isBuilt = id ? completedSectionIds.includes(id) : false
-                const isClickable = isBuilt || isActive
+                // Allow clicking any section - users should navigate freely
+                const isClickable = true
                 const SectionIcon = getSectionIcon(id || '')
                 const isBuilding = isActive && isGenerating
 
@@ -329,9 +330,9 @@ export default function LiveSidebar({
                       className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-left text-xs ${
                         isActive 
                           ? 'bg-zinc-800 text-white' 
-                          : isClickable 
-                            ? 'text-zinc-400 hover:bg-zinc-800/50' 
-                            : 'text-zinc-600 opacity-50'
+                          : isBuilt
+                            ? 'text-zinc-400 hover:bg-zinc-800/50'
+                            : 'text-zinc-500 hover:bg-zinc-800/50 hover:text-zinc-300'
                       }`}
                     >
                       <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
