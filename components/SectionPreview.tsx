@@ -253,18 +253,31 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
   <script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js"></script>
   
   <script>
-    // Ensure Motion is defined before we try to use it
-    window.motion = window.Motion?.motion || new Proxy({}, {
-      get: (target, prop) => prop // Return string for tag name if Motion fails
+    // Create fallback motion components that render actual HTML elements
+    const createMotionComponent = (tag) => {
+      return function MotionComponent(props) {
+        const { initial, animate, exit, transition, whileHover, whileTap, whileInView, variants, ...rest } = props;
+        return React.createElement(tag, rest);
+      };
+    };
+    
+    const motionProxy = new Proxy({}, {
+      get: (target, prop) => {
+        if (typeof prop === 'string') return createMotionComponent(prop);
+        return createMotionComponent('div');
+      }
     });
     
+    // Use real motion if available, fallback to proxy
+    window.motion = window.Motion?.motion || motionProxy;
     window.AnimatePresence = window.Motion?.AnimatePresence || function(p) { return p.children; };
     window.useInView = window.Motion?.useInView || function() { return true; };
-    window.useScroll = window.Motion?.useScroll || function() { return { scrollY: 0, scrollYProgress: 0 }; };
+    window.useScroll = window.Motion?.useScroll || function() { return { scrollY: { get: () => 0 }, scrollYProgress: { get: () => 0 } }; };
     window.useTransform = window.Motion?.useTransform || function(v) { return v; };
     window.useMotionValue = window.Motion?.useMotionValue || function(v) { return { get: () => v, set: () => {} }; };
     window.useSpring = window.Motion?.useSpring || function(v) { return v; };
-    window.useAnimation = window.Motion?.useAnimation || function() { return { start: () => {}, stop: () => {} }; };
+    window.useAnimation = window.Motion?.useAnimation || function() { return { start: () => Promise.resolve(), stop: () => {} }; };
+    window.useReducedMotion = window.Motion?.useReducedMotion || function() { return false; };
 
     // Force all links to open in a new tab to keep the preview sandboxed
     document.addEventListener('click', (e) => {
@@ -536,7 +549,18 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
     var require = function(name) {
       if (name === 'react') return React;
       if (name === 'react-dom') return ReactDOM;
-      if (name === 'framer-motion') return window.Motion || window.motion || {};
+      if (name === 'framer-motion') return {
+        motion: window.motion,
+        AnimatePresence: window.AnimatePresence,
+        useInView: window.useInView,
+        useScroll: window.useScroll,
+        useTransform: window.useTransform,
+        useMotionValue: window.useMotionValue,
+        useSpring: window.useSpring,
+        useAnimation: window.useAnimation,
+        useReducedMotion: window.useReducedMotion,
+        ...(window.Motion || {})
+      };
       if (name === 'lucide-react') return window.LucideIcons;
       if (name === 'next/image') return NextImage;
       if (name === 'next/link') return NextLink;

@@ -770,22 +770,40 @@ ${Array.from(allLucideImports).map((name) => {
     // --- ROBUST PROXY SHIMS ---
     
     // 1. Motion Proxy
-    // If framer-motion fails to load, or loads weirdly, we fallback to a Proxy.
-    // The Proxy is a FUNCTION so that <motion /> doesn't crash (returns null).
-    // The Proxy's 'get' trap returns the property name (e.g. 'div') so <motion.div> works.
+    // If framer-motion fails to load, we fallback to a Proxy that returns
+    // React components that render the underlying HTML element.
+    // This ensures <motion.div> renders as <div> even without framer-motion.
     
-    const motionProxy = new Proxy(function() { return null; }, {
+    const createMotionComponent = (tag) => {
+      return function MotionComponent(props) {
+        const { initial, animate, exit, transition, whileHover, whileTap, whileInView, variants, ...rest } = props;
+        return React.createElement(tag, rest);
+      };
+    };
+    
+    const motionProxy = new Proxy({}, {
       get: (target, prop) => {
-        // If accessing a property like motion.div, return the tag name 'div'
-        if (typeof prop === 'string') return prop;
-        return 'div';
+        if (typeof prop === 'string') {
+          return createMotionComponent(prop);
+        }
+        return createMotionComponent('div');
       }
     });
     
-    // Try to find the real motion object
-    // framer-motion UMD usually exposes 'Motion' global
-    window.motion = (window.Motion && window.Motion.motion) || motionProxy;
-    window.AnimatePresence = (window.Motion && window.Motion.AnimatePresence) || function({ children }) { return children; };
+    // Try to find the real motion object from framer-motion UMD
+    // framer-motion UMD exposes 'Motion' global with motion, AnimatePresence, etc.
+    const realMotion = window.Motion?.motion;
+    window.motion = realMotion || motionProxy;
+    window.AnimatePresence = window.Motion?.AnimatePresence || function AnimatePresenceFallback({ children }) { return children; };
+    
+    // Shim other framer-motion hooks that AI might use
+    window.useInView = window.Motion?.useInView || function() { return true; };
+    window.useScroll = window.Motion?.useScroll || function() { return { scrollY: { get: () => 0 }, scrollYProgress: { get: () => 0 } }; };
+    window.useTransform = window.Motion?.useTransform || function(value) { return value; };
+    window.useMotionValue = window.Motion?.useMotionValue || function(v) { return { get: () => v, set: () => {} }; };
+    window.useSpring = window.Motion?.useSpring || function(v) { return v; };
+    window.useAnimation = window.Motion?.useAnimation || function() { return { start: () => Promise.resolve(), stop: () => {} }; };
+    window.useReducedMotion = window.Motion?.useReducedMotion || function() { return false; };
 
     // 2. Lucide Proxy
     // If lucide-react fails, we provide a Proxy that returns a DummyIcon component.
@@ -929,7 +947,7 @@ ${Array.from(allLucideImports).map((name) => {
   <script type="text/babel" data-presets="react,typescript">
     // Global imports
     const { useState, useEffect, useRef, useMemo, useCallback } = React;
-    const { motion, AnimatePresence } = window;
+    const { motion, AnimatePresence, useInView, useScroll, useTransform, useMotionValue, useSpring, useAnimation, useReducedMotion } = window;
     
     // Next.js Mocks - using var to allow redeclaration by AI code
     var Image = (props) => {
@@ -999,7 +1017,18 @@ ${Array.from(allLucideImports).map((name) => {
     var require = (name) => {
       if (name === 'react') return React;
       if (name === 'react-dom') return ReactDOM;
-      if (name === 'framer-motion') return window.Motion || window.motion || window['framer-motion'] || {};
+      if (name === 'framer-motion') return {
+        motion: window.motion,
+        AnimatePresence: window.AnimatePresence,
+        useInView: window.useInView,
+        useScroll: window.useScroll,
+        useTransform: window.useTransform,
+        useMotionValue: window.useMotionValue,
+        useSpring: window.useSpring,
+        useAnimation: window.useAnimation,
+        useReducedMotion: window.useReducedMotion,
+        ...(window.Motion || {})
+      };
       if (name === 'lucide-react') return window.LucideIcons || {};
       if (name === 'next/image') return NextImage;
       if (name === 'next/link') return NextLink;
