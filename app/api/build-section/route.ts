@@ -226,11 +226,21 @@ Or use CSS variables / Tailwind arbitrary values: bg-[${brandConfig.colors.prima
   // What each section type SHOULD contain - explicit scope definition
   const sectionScopeDefinitions: Record<string, string> = {
     header: `A HEADER/NAVIGATION is ONLY:
-- A compact horizontal bar (typically 60-80px tall)
-- Logo on the left
+- A compact horizontal bar (typically 60-80px tall, NEVER more than 100px)
+- Logo on the left: either text (text-lg or text-xl max) OR a small image (h-8 max)
 - Navigation links (horizontal on desktop, hamburger menu on mobile)
-- Optional CTA button on the right
+- Optional CTA button on the right (small: px-4 py-2, text-sm)
 - Optional glass/blur effect on scroll
+
+HEADER SIZING RULES:
+- Total header height: h-16 to h-20 (64-80px)
+- Logo text: text-lg or text-xl (NEVER text-2xl or larger)
+- Logo image: h-6 to h-8 max (NEVER h-10 or larger)
+- Nav links: text-sm (NEVER text-base or larger)
+- Hamburger icon: w-5 h-5 or w-6 h-6 (NEVER w-8 or larger)
+- Header padding: px-4 or px-6 (NEVER px-8 or larger)
+- Use flex items-center justify-between for layout
+
 A HEADER IS NOT a hero section. It should NOT contain large headlines, taglines, feature descriptions, or call-to-action areas below it.`,
     hero: `A HERO SECTION is:
 - The first major content section BELOW the header
@@ -395,6 +405,15 @@ Every ternary MUST have both branches: \`condition ? trueValue : falseValue\`
 
 ## 🚨 SIZING GUIDELINES - CRITICAL
 Components must be appropriately sized. Oversized elements look amateurish.
+
+HEADER/NAVIGATION:
+- Total height: h-16 to h-20 (NEVER h-24 or more)
+- Logo text: text-lg or text-xl (NEVER text-2xl+)
+- Logo image: h-6 to h-8 (NEVER h-10+)
+- Nav link text: text-sm (NEVER text-base+)
+- Hamburger/menu icon: w-5 h-5 or w-6 h-6 (NEVER w-8+)
+- Header padding: px-4 md:px-6 (NEVER px-8+)
+- CTA in header: px-3 py-1.5 text-sm (compact!)
 
 BUTTONS:
 - Standard buttons: px-4 py-2 or px-6 py-2.5 (NEVER px-8 py-4 or larger)

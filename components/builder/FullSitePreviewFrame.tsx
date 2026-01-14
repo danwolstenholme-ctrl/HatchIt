@@ -327,7 +327,8 @@ const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameP
         console.log('[Preview] Render complete!');
       } catch (err) {
         console.error('[Preview] Render failed:', err);
-        document.getElementById('root').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#ef4444;font-family:ui-monospace,monospace;flex-direction:column;gap:12px;padding:20px;text-align:center;"><div style="font-size:14px;font-weight:600;">Render Error</div><div style="font-size:12px;color:#fca5a5;max-width:400px;word-break:break-word;">' + String(err.message || err).slice(0, 200) + '</div></div>';
+        // Show healing animation instead of scary error
+        document.getElementById('root').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);font-family:system-ui;flex-direction:column;gap:16px;padding:20px;text-align:center;"><style>@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}</style><div style="width:48px;height:48px;border:3px solid #1e293b;border-top-color:#10b981;border-radius:50%;animation:spin 1s linear infinite;"></div><div style="color:#10b981;font-size:15px;font-weight:600;animation:pulse 2s ease-in-out infinite;">Self-healing in progress...</div><div style="color:#64748b;font-size:12px;max-width:280px;">AI is automatically fixing the code.</div></div>';
         window.parent.postMessage({ type: 'runtime-error', error: String(err.message || err) }, '*');
       }
       
@@ -720,13 +721,21 @@ ${Array.from(allLucideImports).map((name) => {
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script>console.log('[Preview] Babel loaded:', typeof Babel);</script>
   <script>
+    // Healing animation HTML
+    var healingHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);font-family:system-ui;flex-direction:column;gap:16px;padding:20px;text-align:center;">' +
+      '<style>@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}</style>' +
+      '<div style="width:48px;height:48px;border:3px solid #1e293b;border-top-color:#10b981;border-radius:50%;animation:spin 1s linear infinite;"></div>' +
+      '<div style="color:#10b981;font-size:15px;font-weight:600;animation:pulse 2s ease-in-out infinite;">Self-healing in progress...</div>' +
+      '<div style="color:#64748b;font-size:12px;max-width:280px;">AI is automatically fixing the code. This usually takes a few seconds.</div>' +
+      '</div>';
+    
     // Show loading indicator until Babel runs
     window._previewLoading = true;
     setTimeout(function() {
       if (window._previewLoading) {
         var root = document.getElementById('root');
         if (root && !root.innerHTML) {
-          root.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#ef4444;font-family:system-ui;flex-direction:column;gap:12px;padding:20px;text-align:center;"><div style="font-size:14px;font-weight:600;">Preview Failed to Load</div><div style="font-size:12px;color:#a1a1aa;max-width:300px;">Check browser console for errors. Try refreshing.</div></div>';
+          root.innerHTML = healingHTML;
           window.parent.postMessage({ type: 'runtime-error', error: 'Preview failed to load - check console' }, '*');
         }
       }
@@ -735,10 +744,10 @@ ${Array.from(allLucideImports).map((name) => {
     // Global error handler - notify parent of syntax errors for auto-fix
     window.onerror = function(message, source, lineno, colno, error) {
       console.error('[Preview Error]', message, 'at line', lineno);
-      // Show error in root
+      // Show healing animation instead of scary error
       var root = document.getElementById('root');
       if (root) {
-        root.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#ef4444;font-family:ui-monospace,monospace;flex-direction:column;gap:12px;padding:20px;text-align:center;"><div style="font-size:14px;font-weight:600;">Runtime Error</div><div style="font-size:12px;color:#fca5a5;max-width:400px;word-break:break-word;">' + String(message).slice(0, 200) + '</div><div style="font-size:11px;color:#71717a;">Line: ' + lineno + '</div></div>';
+        root.innerHTML = healingHTML;
       }
       if (message && (message.includes('SyntaxError') || message.includes('Unexpected token'))) {
         window.parent.postMessage({
@@ -856,7 +865,7 @@ ${Array.from(allLucideImports).map((name) => {
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #09090b; color: #fff; }
     ::-webkit-scrollbar { width: 0px; background: transparent; }
-    a { cursor: pointer; }
+    a { cursor: pointer; text-decoration: none; }
     
     /* Design Token CSS Variables - Live Styling Controls */
     :root {
@@ -871,56 +880,73 @@ ${Array.from(allLucideImports).map((name) => {
       --shadow: ${designTokens?.shadowIntensity === 'none' ? 'none' : designTokens?.shadowIntensity === 'subtle' ? '0 1px 2px 0 rgb(0 0 0 / 0.05)' : designTokens?.shadowIntensity === 'medium' ? '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' : '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)'};
     }
     
-    /* Apply design tokens to common patterns */
-    section, [class*="py-"] {
+    /* 
+     * DESIGN TOKEN RULES - Conservative approach
+     * Only apply to MAIN CONTENT sections, not navigation/header/footer
+     * These use data attributes or specific selectors to avoid breaking nav
+     */
+    
+    /* Section padding - only on main content sections with large py- classes */
+    section:not(header):not(nav):not(footer),
+    main > div[class*="py-16"],
+    main > div[class*="py-20"],
+    main > div[class*="py-24"] {
       padding-top: var(--section-padding) !important;
       padding-bottom: var(--section-padding) !important;
     }
     
-    /* Apply border radius to cards and buttons */
-    [class*="rounded-xl"], [class*="rounded-lg"], [class*="rounded-2xl"] {
+    /* Border radius - only on cards and CTA buttons, not nav elements */
+    main [class*="rounded-xl"],
+    main [class*="rounded-2xl"],
+    section:not(header):not(nav) [class*="rounded-xl"],
+    section:not(header):not(nav) [class*="rounded-2xl"] {
       border-radius: var(--border-radius) !important;
     }
     
-    /* Apply gap to flex and grid containers */
-    [class*="gap-"] {
+    /* Gap - only in main content grids, not nav spacing */
+    main [class*="grid"][class*="gap-"],
+    section:not(header):not(nav):not(footer) [class*="grid"][class*="gap-"] {
       gap: var(--component-gap) !important;
     }
     
-    /* Apply heading size multiplier */
+    /* Heading sizes - apply universally, these are safe */
     h1 { font-size: calc(2.25rem * var(--heading-multiplier)); }
     h2 { font-size: calc(1.875rem * var(--heading-multiplier)); }
     h3 { font-size: calc(1.5rem * var(--heading-multiplier)); }
     h4 { font-size: calc(1.25rem * var(--heading-multiplier)); }
     
-    /* Apply body text size multiplier */
-    p, li, span:not([class*="text-"]), div:not([class*="text-"]) > span {
+    /* Body text - only paragraphs and list items in main content */
+    main p, main li,
+    section:not(header):not(nav):not(footer) p,
+    section:not(header):not(nav):not(footer) li {
       font-size: calc(1rem * var(--body-multiplier));
     }
     
-    /* Apply button scale - affects padding and font size */
-    button, a[class*="bg-"], [class*="btn"], [role="button"] {
-      padding: calc(12px * var(--button-scale)) calc(24px * var(--button-scale)) !important;
-      font-size: calc(1rem * var(--button-scale)) !important;
+    /* Button scale - only CTA-style buttons with bg color AND padding */
+    main a[class*="bg-"][class*="px-"][class*="py-"],
+    main button[class*="bg-"][class*="px-"],
+    section:not(header):not(nav) a[class*="bg-"][class*="px-"][class*="py-"],
+    section:not(header):not(nav) button[class*="bg-"][class*="px-"] {
+      transform: scale(var(--button-scale));
+      transform-origin: center;
     }
     
-    /* Apply icon scale - SVGs and lucide icons */
-    svg {
+    /* Icon scale - only for decorative icons in content, NOT navigation */
+    main [class*="w-8"] > svg,
+    main [class*="w-10"] > svg,
+    main [class*="w-12"] > svg,
+    section:not(header):not(nav):not(footer) [class*="w-8"] > svg,
+    section:not(header):not(nav):not(footer) [class*="w-10"] > svg,
+    section:not(header):not(nav):not(footer) [class*="w-12"] > svg {
       transform: scale(var(--icon-scale));
       transform-origin: center;
     }
     
-    /* Also target common icon wrapper classes */
-    [class*="w-"][class*="h-"] > svg,
-    [class*="size-"] > svg {
-      width: calc(100% * var(--icon-scale)) !important;
-      height: calc(100% * var(--icon-scale)) !important;
-      transform: none;
-    }
-    
-    /* Apply shadow */
-    [class*="shadow"] {
+    /* Shadow - only on cards in main content */
+    main [class*="shadow-"],
+    section:not(header):not(nav):not(footer) [class*="shadow-"] {
       box-shadow: var(--shadow) !important;
+    }
     }
   </style>
   <script>

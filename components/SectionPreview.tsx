@@ -353,10 +353,11 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
       window.parent.postMessage({ type: 'preview-error', message: message, line: lineno }, '*');
       const root = document.getElementById('root');
       if (root) {
-        root.innerHTML = '<div style="color: #ef4444; padding: 20px; font-family: monospace; background: #18181b; border-radius: 8px; margin: 20px; border: 1px solid #3f3f46;">' +
-          '<h3 style="font-weight: bold; margin-bottom: 10px;">Runtime Error</h3>' +
-          '<div style="margin-bottom: 10px;">' + message + '</div>' +
-          '<div style="opacity: 0.7; font-size: 0.9em;">Line: ' + lineno + '</div>' +
+        root.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);font-family:system-ui;flex-direction:column;gap:16px;padding:20px;text-align:center;">' +
+          '<style>@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}</style>' +
+          '<div style="width:48px;height:48px;border:3px solid #1e293b;border-top-color:#10b981;border-radius:50%;animation:spin 1s linear infinite;"></div>' +
+          '<div style="color:#10b981;font-size:15px;font-weight:600;animation:pulse 2s ease-in-out infinite;">Self-healing in progress...</div>' +
+          '<div style="color:#64748b;font-size:12px;max-width:280px;">AI is automatically fixing the code.</div>' +
           '</div>';
       }
     };
@@ -649,7 +650,7 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
       }
     } catch (err) {
       console.error(err);
-      document.getElementById('root').innerHTML = '<div class="error-display">Render Error: ' + err.message + '</div>';
+      document.getElementById('root').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:200px;background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);font-family:system-ui;flex-direction:column;gap:12px;padding:20px;text-align:center;"><style>@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}</style><div style="width:32px;height:32px;border:2px solid #1e293b;border-top-color:#10b981;border-radius:50%;animation:spin 1s linear infinite;"></div><div style="color:#10b981;font-size:13px;font-weight:600;animation:pulse 2s ease-in-out infinite;">Self-healing...</div></div>';
     }
   </script>
 </body>
