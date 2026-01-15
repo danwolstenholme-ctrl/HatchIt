@@ -1312,6 +1312,21 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       return
     }
     
+    // Ignore generic/unhelpful errors that can't be fixed
+    const ignoredErrors = [
+      'Script error',
+      'Script error.',
+      'ResizeObserver loop',
+      'Loading chunk',
+      'ChunkLoadError',
+      'Network Error',
+      'Failed to fetch',
+    ]
+    if (ignoredErrors.some(e => error.includes(e))) {
+      console.log('[Self-Healing] Ignoring unfixable error:', error)
+      return
+    }
+    
     // Debounce - don't spam the refiner
     if (isAutoFixing) return
     

@@ -141,7 +141,7 @@ export async function POST(request: NextRequest) {
 `
     }
 
-    // Call Claude Opus 4 with extended thinking
+    // Call Claude Sonnet for page refinement (faster than Opus, still high quality)
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -150,12 +150,8 @@ export async function POST(request: NextRequest) {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-opus-4-5-20251101',
-        max_tokens: 32000,
-        thinking: {
-          type: 'enabled',
-          budget_tokens: 10000
-        },
+        model: 'claude-sonnet-4-5-20250929',
+        max_tokens: 16000,
         system: PAGE_REFINER_SYSTEM_PROMPT + brandContext,
         messages: [
           { 

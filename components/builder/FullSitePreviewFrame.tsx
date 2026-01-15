@@ -103,11 +103,11 @@ const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameP
   
   const srcDoc = useMemo(() => {
     if (!sections || sections.length === 0) {
-      console.log('[FullSitePreviewFrame] No sections to render')
       return ''
     }
     
-    console.log('[FullSitePreviewFrame] Generating srcDoc for', sections.length, 'sections:', sections.map(s => s.id))
+    // Debug logging disabled to prevent console spam during re-renders
+    // console.log('[FullSitePreviewFrame] Generating srcDoc for', sections.length, 'sections:', sections.map(s => s.id))
 
     // 1. Extract all Lucide imports to ensure they are available
     const allLucideImports = new Set<string>();
