@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   ArrowLeft, 
   Globe, 
-  Rocket, 
+  Upload, 
   Eye, 
   Layout,
   MessageSquare,
@@ -1749,8 +1749,8 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
     {
       id: 'deploy' as const,
       label: 'Deploy',
-      meta: canDeploy ? 'Ship it' : 'Upgrade',
-      icon: Rocket,
+      meta: canDeploy ? 'Publish' : 'Upgrade',
+      icon: Upload,
       action: () => {
         if (!canDeploy || !assembledCode) {
           setHatchModalReason('deploy')
@@ -2447,15 +2447,13 @@ export default function GeneratedPage() {
                   
                   {/* Ship Dropdown - or Sign Up CTA for demo */}
                   <div className="relative">
-                    {/* Demo users: Simple sign up CTA instead of Ship flow */}
+                    {/* Demo users: Simple sign up CTA instead of Publish flow */}
                     {demoMode ? (
                       <Button
                         onClick={() => router.push('/sign-up?redirect_url=/builder')}
                         size="sm"
-                        icon={<Rocket className="w-3.5 h-3.5" />}
-                        iconPosition="left"
                       >
-                        Sign Up
+                        Sign Up to Publish
                       </Button>
                     ) : deploymentStatus.status === 'deploying' || deploymentStatus.status === 'building' ? (
                       <div className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-emerald-500/20 text-emerald-400 rounded-md border border-emerald-500/30">
@@ -2463,26 +2461,78 @@ export default function GeneratedPage() {
                         <span className="hidden sm:inline">{deploymentStatus.message || 'Building...'}</span>
                       </div>
                     ) : deploymentStatus.status === 'failed' ? (
-                      <div className="flex items-center gap-2">
+                      <div className="relative">
                         <button
-                          onClick={() => setDeploymentStatus({ status: 'idle' })}
+                          onClick={() => setShowDeployOptions(!showDeployOptions)}
                           className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-red-500/20 text-red-400 rounded-md border border-red-500/30 hover:bg-red-500/30 transition-colors"
-                          title={deploymentStatus.error}
                         >
                           <AlertCircle className="w-3.5 h-3.5" />
-                          <span className="hidden sm:inline">Failed</span>
+                          <span className="hidden sm:inline">Deploy Failed</span>
+                          <span className="sm:hidden">Error</span>
                         </button>
-                        {deploymentStatus.logsUrl && (
-                          <a
-                            href={deploymentStatus.logsUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-1.5 text-zinc-500 hover:text-white transition-colors"
-                            title="View Vercel logs"
-                          >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </a>
-                        )}
+                        {/* Error dropdown - show when deploy options are open */}
+                        <AnimatePresence>
+                          {showDeployOptions && (
+                            <>
+                              <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="fixed inset-0 z-40"
+                                onClick={() => setShowDeployOptions(false)}
+                              />
+                              <motion.div
+                                initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                                className="absolute right-0 top-full mt-2 w-80 bg-zinc-900 border border-red-500/30 rounded-lg shadow-2xl z-50 overflow-hidden"
+                              >
+                                <div className="p-3 border-b border-red-500/20 bg-red-500/5">
+                                  <p className="text-xs font-medium text-red-400 flex items-center gap-1.5">
+                                    <AlertCircle className="w-3.5 h-3.5" />
+                                    Deployment Failed
+                                  </p>
+                                </div>
+                                <div className="p-3">
+                                  <p className="text-xs text-zinc-300 mb-3">{deploymentStatus.error || 'An error occurred during deployment.'}</p>
+                                  <div className="space-y-2">
+                                    <button
+                                      onClick={() => {
+                                        setShowDeployOptions(false)
+                                        setDeploymentStatus({ status: 'idle' })
+                                        handleDeploy()
+                                      }}
+                                      className="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium bg-emerald-600 hover:bg-emerald-500 text-white rounded-md transition-colors"
+                                    >
+                                      <RefreshCw className="w-3.5 h-3.5" />
+                                      Try Again
+                                    </button>
+                                    {deploymentStatus.logsUrl && (
+                                      <a
+                                        href={deploymentStatus.logsUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-md transition-colors"
+                                      >
+                                        <ExternalLink className="w-3.5 h-3.5" />
+                                        View Build Logs
+                                      </a>
+                                    )}
+                                    <button
+                                      onClick={() => {
+                                        setShowDeployOptions(false)
+                                        setDeploymentStatus({ status: 'idle' })
+                                      }}
+                                      className="w-full px-3 py-2 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+                                    >
+                                      Dismiss
+                                    </button>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            </>
+                          )}
+                        </AnimatePresence>
                       </div>
                     ) : deployedUrl ? (
                       <a
@@ -2496,15 +2546,14 @@ export default function GeneratedPage() {
                         <ExternalLink className="w-3 h-3" />
                       </a>
                     ) : (
-                      <Button
+                      <button
                         onClick={() => setShowDeployOptions(!showDeployOptions)}
                         disabled={!assembledCode || isDeploying}
-                        size="sm"
-                        icon={<Rocket className="w-3.5 h-3.5" />}
-                        iconPosition="left"
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-emerald-600 hover:bg-emerald-500 disabled:bg-zinc-700 disabled:text-zinc-500 text-white rounded-md transition-colors"
                       >
-                        Ship
-                      </Button>
+                        <Upload className="w-3.5 h-3.5" />
+                        Publish
+                      </button>
                     )}
                     
                     {/* Deploy Options Dropdown */}
@@ -2526,8 +2575,14 @@ export default function GeneratedPage() {
                             className="absolute right-0 top-full mt-2 w-72 bg-zinc-900 border border-zinc-800 rounded-lg shadow-2xl z-50 overflow-hidden"
                           >
                             <div className="p-3 border-b border-zinc-800">
-                              <p className="text-xs font-medium text-white">Ship Your Site</p>
-                              <p className="text-[10px] text-zinc-500 mt-0.5">Choose how to deploy your code</p>
+                              <p className="text-xs font-medium text-white">Publish Your Site</p>
+                              <p className="text-[10px] text-zinc-500 mt-0.5">Deploy or download your project</p>
+                              {deployedUrl && (
+                                <div className="mt-2 flex items-center gap-1.5 text-[10px] text-emerald-400">
+                                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                  Live at {new URL(deployedUrl).hostname}
+                                </div>
+                              )}
                             </div>
                             
                             <div className="p-2 space-y-1">
@@ -2546,11 +2601,16 @@ export default function GeneratedPage() {
                                 className="w-full flex items-start gap-3 p-2.5 rounded-md hover:bg-zinc-800/50 transition-colors text-left group"
                               >
                                 <div className="p-1.5 bg-emerald-500/10 rounded-md">
-                                  <Rocket className="w-4 h-4 text-emerald-500" />
+                                  <Globe className="w-4 h-4 text-emerald-500" />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium text-white">Deploy to HatchIt</p>
-                                  <p className="text-[10px] text-zinc-500">Live at yoursite.hatchit.dev</p>
+                                  <p className="text-sm font-medium text-white flex items-center gap-2">
+                                    Deploy to HatchIt
+                                    {deployedUrl && <span className="text-[9px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 rounded">Live</span>}
+                                  </p>
+                                  <p className="text-[10px] text-zinc-500">
+                                    {deployedUrl ? `Redeploy to ${new URL(deployedUrl).hostname}` : 'yoursite.hatchit.dev'}
+                                  </p>
                                 </div>
                                 {isDeploying && (
                                   <div className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
