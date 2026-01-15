@@ -249,9 +249,17 @@ A HEADER IS NOT a hero section. It should NOT contain large headlines, taglines,
 - May include an image, illustration, or background
 - Takes up significant viewport height (often 80-100vh)
 DO NOT include a footer, navigation, or any other section type.`,
-    services: `A SERVICES section lists 3-6 service offerings in cards or a grid. Brief descriptions, icons, maybe links to learn more. NO footer, NO navigation.`,
-    features: `A FEATURES section highlights key product/service features. Grid of feature cards with icons, titles, and short descriptions. NO footer, NO navigation.`,
-    pricing: `A PRICING section shows pricing tiers/plans. 2-4 cards with plan names, prices, feature lists, and CTA buttons. NO footer, NO navigation.`,
+    services: `A SERVICES section lists 3-6 service offerings in cards or a grid. Brief descriptions, icons, maybe links to learn more. NO footer, NO navigation.
+CRITICAL: Generate REAL service content - actual service names, descriptions, and benefits. Do NOT leave cards empty or use placeholder text.`,
+    features: `A FEATURES section highlights key product/service features. Grid of feature cards with icons, titles, and short descriptions. NO footer, NO navigation.
+CRITICAL: Generate REAL feature content - actual feature names, descriptions, and icons. Each card MUST have visible text content. Do NOT:
+- Leave cards empty
+- Use empty arrays
+- Use placeholder text like "[Feature Name]" or "Lorem ipsum"
+- Skip the icon, title, or description
+Example: "Lightning Fast Performance - Our optimized infrastructure delivers sub-100ms response times globally."`,
+    pricing: `A PRICING section shows pricing tiers/plans. 2-4 cards with plan names, prices, feature lists, and CTA buttons. NO footer, NO navigation.
+CRITICAL: Generate REAL pricing content - actual plan names, prices, and feature lists. Do NOT leave cards empty.`,
     testimonials: `A TESTIMONIALS section shows customer quotes. Cards with quote text, customer name, photo/avatar, and company. NO footer, NO navigation.`,
     contact: `A CONTACT section has a form (name, email, message) and/or contact details (address, phone, email links). NO footer, NO navigation.`,
     footer: `A FOOTER is the bottom section with copyright, links, social icons. Typically darker background, multiple columns. This is ONLY a footer - no other content.`,
@@ -367,6 +375,26 @@ ${getComponentReference(templateType)}
   These hooks are NOT available in the preview environment and WILL crash.
 - Next.js Image (Optimization) - import Image from 'next/image'
 
+## 🚨 ICONS - RENDER DIRECTLY, NOT VIA DATA
+When using icons in mapped arrays, render them DIRECTLY - do NOT pass icon components in data:
+❌ WRONG (icon in data object - won't render):
+\`\`\`
+const features = [{ icon: Star, title: '...' }]
+features.map(f => <f.icon className="..." />) // BROKEN - f.icon is undefined
+\`\`\`
+✅ CORRECT (render icons inline based on index or switch):
+\`\`\`
+import { Zap, Shield, Users } from 'lucide-react'
+const icons = [Zap, Shield, Users]
+const features = [{ title: 'Fast', desc: '...' }, { title: 'Secure', desc: '...' }, { title: 'Support', desc: '...' }]
+features.map((f, i) => {
+  const Icon = icons[i]
+  return <Icon className="h-6 w-6" />
+})
+\`\`\`
+OR use a switch statement to pick icons based on index.
+NEVER store React components inside data arrays - it breaks in production builds.
+
 ## 🚨 CRITICAL: VALID JAVASCRIPT/JSX ONLY - NO TYPESCRIPT
 Output PLAIN JavaScript/JSX. The preview uses Babel which does NOT support TypeScript.
 DO NOT include ANY of these - they will cause Babel transform errors:
@@ -386,6 +414,20 @@ DO NOT include ANY of these - they will cause Babel transform errors:
 - Default props: function Component({ title = 'Default' }) { ... }
 - Arrays: const items = ['a', 'b', 'c']
 - Objects: const config = { key: 'value' }
+
+## 🚨 CRITICAL: NO EMPTY DATA
+When generating content that uses arrays (features, services, testimonials, etc.):
+❌ NEVER use empty arrays: \`const features = []\`
+❌ NEVER use placeholder text: \`title: "[Feature Name]"\` or \`desc: "Lorem ipsum"\`
+✅ ALWAYS populate with REAL, specific content:
+\`\`\`
+const features = [
+  { icon: Zap, title: 'Lightning Performance', desc: 'Sub-100ms response times globally.' },
+  { icon: Shield, title: 'Enterprise Security', desc: 'SOC 2 compliant with end-to-end encryption.' },
+  { icon: Users, title: '24/7 Support', desc: 'Dedicated team available around the clock.' },
+]
+\`\`\`
+If you generate a .map() loop, the array MUST have 3-6 items with real content.
 
 ## 🚨 TERNARY OPERATORS - MUST BE COMPLETE
 Every ternary MUST have both branches: \`condition ? trueValue : falseValue\`

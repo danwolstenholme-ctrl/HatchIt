@@ -247,22 +247,30 @@ export const features: ComponentDefinition = {
   variants: [
     {
       name: 'grid-3',
-      description: 'Three-column feature grid',
-      code: `<section className="py-24 px-6">
+      description: 'Three-column feature grid with icons',
+      code: `import { Zap, Shield, Users } from 'lucide-react'
+
+const icons = [Zap, Shield, Users]
+const features = [
+  { title: 'Lightning Fast', desc: 'Sub-100ms response times powered by edge computing.' },
+  { title: 'Enterprise Security', desc: 'SOC 2 compliant with end-to-end encryption.' },
+  { title: '24/7 Support', desc: 'Dedicated team available around the clock.' }
+]
+
+<section className="py-24 px-6">
   <div className="max-w-6xl mx-auto">
-    <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-16">Features</h2>
+    <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-16">Why Choose Us</h2>
     <div className="grid md:grid-cols-3 gap-8">
-      {[
-        { icon: Star, title: 'Feature One', desc: 'Description of the first feature and its benefits.' },
-        { icon: Check, title: 'Feature Two', desc: 'Description of the second feature and its benefits.' },
-        { icon: ArrowRight, title: 'Feature Three', desc: 'Description of the third feature and its benefits.' }
-      ].map((f, i) => (
-        <div key={i} className="p-6 border border-zinc-800 rounded-xl">
-          <f.icon className="h-8 w-8 text-white mb-4" />
-          <h3 className="text-lg font-semibold text-white mb-2">{f.title}</h3>
-          <p className="text-zinc-400">{f.desc}</p>
-        </div>
-      ))}
+      {features.map((f, i) => {
+        const Icon = icons[i]
+        return (
+          <div key={i} className="p-6 border border-zinc-800 rounded-xl">
+            <Icon className="h-8 w-8 text-white mb-4" />
+            <h3 className="text-lg font-semibold text-white mb-2">{f.title}</h3>
+            <p className="text-zinc-400">{f.desc}</p>
+          </div>
+        )
+      })}
     </div>
   </div>
 </section>`
@@ -273,8 +281,8 @@ export const features: ComponentDefinition = {
       code: `<section className="py-24 px-6">
   <div className="max-w-5xl mx-auto space-y-24">
     {[
-      { title: 'First Feature', desc: 'Detailed description of this feature and how it helps users.', align: 'left' },
-      { title: 'Second Feature', desc: 'Detailed description of this feature and how it helps users.', align: 'right' }
+      { title: 'Intelligent Automation', desc: 'Let AI handle the repetitive tasks while you focus on what matters. Our smart workflows adapt to your needs.', align: 'left' },
+      { title: 'Real-time Collaboration', desc: 'Work together seamlessly with your team. Changes sync instantly across all devices.', align: 'right' }
     ].map((f, i) => (
       <div key={i} className={\`grid md:grid-cols-2 gap-12 items-center \${f.align === 'right' ? 'md:flex-row-reverse' : ''}\`}>
         <div className={f.align === 'right' ? 'md:order-2' : ''}>
