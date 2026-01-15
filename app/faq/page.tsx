@@ -104,7 +104,7 @@ export default function FAQPage() {
         },
         {
           q: 'What do paid plans include?',
-          a: 'Architect ($19/mo): Deploy to hatchit.dev, download code, 3 projects. Visionary ($49/mo): Unlimited projects, custom domains, remove branding. Singularity ($199/mo): White-label, API access, website cloning.',
+          a: 'Architect ($19/mo): Deploy to hatchit.dev, download code, 3 projects. Visionary ($49/mo): Unlimited projects, custom domains, remove branding, auto-healing. Singularity ($199/mo): Site cloning, white-label license, commercial use.',
         },
         {
           q: 'Can I cancel anytime?',

@@ -82,6 +82,9 @@ export async function POST(req: NextRequest) {
     
     const hasDeployAccess = ['architect', 'visionary', 'singularity'].includes(accountSub?.tier || '') || userRecord.publicMetadata?.role === 'admin'
     
+    // Visionary+ can remove branding
+    const canRemoveBranding = ['visionary', 'singularity'].includes(accountSub?.tier || '') || userRecord.publicMetadata?.role === 'admin'
+    
     if (!hasDeployAccess) {
       return NextResponse.json({ 
         error: 'Deployment requires Architect tier or higher', 
@@ -240,7 +243,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: '${projectName || 'My Site'}',
-  description: 'Built with HatchIt.dev',
+  description: '${canRemoveBranding ? (projectName || 'My Site') : 'Built with HatchIt.dev'}',
 }
 
 export default function RootLayout({

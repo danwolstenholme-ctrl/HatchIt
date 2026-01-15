@@ -47,6 +47,9 @@ export async function POST(req: NextRequest) {
   
   const hasExportAccess = ['architect', 'visionary', 'singularity'].includes(accountSub?.tier || '') || user.publicMetadata?.role === 'admin'
   
+  // Visionary+ can remove branding
+  const canRemoveBranding = ['visionary', 'singularity'].includes(accountSub?.tier || '') || user.publicMetadata?.role === 'admin'
+  
   if (!hasExportAccess) {
     return NextResponse.json({ 
       error: 'Code export requires Architect tier or higher', 
@@ -138,8 +141,9 @@ export async function POST(req: NextRequest) {
     },
     seo: {
       title: project?.name || 'My HatchIt Project',
-      description: 'Built with HatchIt.dev',
+      description: canRemoveBranding ? (project?.name || 'My HatchIt Project') : 'Built with HatchIt.dev',
     },
+    includeBranding: !canRemoveBranding, // Pass flag to scaffold
   }
 
   // Generate scaffold files

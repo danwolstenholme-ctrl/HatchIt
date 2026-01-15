@@ -200,7 +200,7 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
                     'Unlimited projects',
                     'Custom domain',
                     'Remove branding',
-                    'Code audit + auto-fix',
+                    'Auto-healing (AI fix)',
                   ].map((feature, i) => (
                     <div key={i} className="flex items-center gap-2 text-zinc-300">
                       <span className="text-emerald-400">✓</span>
@@ -234,8 +234,7 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
                     'Everything in Visionary',
                     'Site cloner',
                     'White-label license',
-                    'API access',
-                    'Priority support',
+                    'Commercial use',
                   ].map((feature, i) => (
                     <div key={i} className="flex items-center gap-2 text-zinc-400">
                       <span className="text-amber-400">✓</span>

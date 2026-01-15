@@ -497,7 +497,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       color: 'amber',
       icon: Crown,
       projectLimit: Infinity,
-      features: ['Unlimited Projects', 'Custom Domains', 'Remove Branding', 'Commercial License', 'Priority Support'],
+      features: ['Unlimited Projects', 'Custom Domains', 'Remove Branding', 'Site Cloning', 'Commercial License'],
       gradient: 'from-amber-500 to-orange-500',
       badge: {
         wrapper: 'bg-gradient-to-r from-amber-500/10 to-orange-500/10',
@@ -511,7 +511,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       color: 'violet',
       icon: Zap,
       projectLimit: Infinity,
-      features: ['Unlimited Projects', 'Custom Domains', 'Remove Branding', 'Evolution Engine'],
+      features: ['Unlimited Projects', 'Custom Domains', 'Remove Branding', 'Auto-Healing'],
       gradient: 'from-violet-500 to-purple-500',
       badge: {
         wrapper: 'bg-gradient-to-r from-violet-500/10 to-purple-500/10',
@@ -1304,7 +1304,14 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   }, [isAutoFixing, syntaxError, buildState, project, sectionsForBuild, dbSections])
 
   // Handle runtime errors from preview - auto-fix via refiner (self-healing)
+  // TIER GATE: Visionary+ only (isProUser)
   const handleRuntimeError = useCallback(async (error: string, sectionId?: string) => {
+    // Only Visionary+ users get auto-healing
+    if (!isProUser) {
+      console.log('[Self-Healing] Skipped - requires Visionary+ tier')
+      return
+    }
+    
     // Debounce - don't spam the refiner
     if (isAutoFixing) return
     
@@ -1380,7 +1387,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
         setIsAutoFixing(false)
       }, 5000) // 5 second cooldown for runtime errors
     }
-  }, [isAutoFixing, buildState, project, sectionsForBuild, dbSections])
+  }, [isAutoFixing, buildState, project, sectionsForBuild, dbSections, isProUser])
 
   // Handle page-wide refinement - applies changes to all sections at once
   const handlePageRefine = useCallback(async () => {

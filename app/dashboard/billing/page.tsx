@@ -69,14 +69,14 @@ export default function BillingPage() {
       id: 'visionary',
       name: 'Visionary',
       price: 49,
-      features: ['Unlimited projects', 'Custom domain', 'Remove branding', 'AI Auditor & Healer'],
+      features: ['Unlimited projects', 'Custom domain', 'Remove branding', 'Auto-healing'],
       recommended: true,
     },
     {
       id: 'singularity',
       name: 'Singularity',
       price: 199,
-      features: ['Everything + Replicator', 'White-label license', 'API access', 'Priority support'],
+      features: ['Site cloning', 'White-label license', 'Commercial use'],
     },
   ]
 

@@ -79,8 +79,7 @@ export const PRICING_TIERS: Record<string, PricingTier> = {
       'Unlimited projects',
       'Custom domain support',
       'Remove HatchIt branding',
-      'The Auditor (AI quality check)',
-      'The Healer (auto-fix errors)',
+      'Auto-healing (AI error fix)',
     ],
   },
   singularity: {
@@ -90,11 +89,8 @@ export const PRICING_TIERS: Record<string, PricingTier> = {
     architectRefinementsPerMonth: -1,
     features: [
       'Everything in Visionary',
-      'The Replicator (clone any site)',
+      'Site cloning (replicate any URL)',
       'Commercial / white-label license',
-      'API access',
-      'Priority support',
-      'Early access to new features',
     ],
   },
 }

@@ -21,6 +21,7 @@ export interface ProjectConfig {
     keywords?: string
   }
   pages?: PageConfig[]
+  includeBranding?: boolean // If false, removes HatchIt branding from README etc.
 }
 
 export interface PageConfig {
@@ -608,9 +609,51 @@ export default function ${page.name.replace(/\s+/g, '')}Page() {
   })
 
   // 16. README
-  files.push({
-    path: 'README.md',
-    content: `# ${config.name}
+  const readmeContent = config.includeBranding === false
+    ? `# ${config.name}
+
+## Getting Started
+
+\`\`\`bash
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Start production server
+npm start
+\`\`\`
+
+Open [http://localhost:3000](http://localhost:3000) to see your site.
+
+## Project Structure
+
+\`\`\`
+├── app/                 # Next.js App Router pages
+│   ├── layout.tsx       # Root layout with fonts/metadata
+│   ├── page.tsx         # Home page
+│   ├── globals.css      # Global styles with brand colors
+│   ├── sitemap.ts       # Auto-generated sitemap
+│   └── robots.ts        # SEO robots config
+├── components/          # React components
+│   ├── Header.tsx       # Site header/navigation
+│   ├── Footer.tsx       # Site footer
+│   └── sections/        # Your generated sections
+├── lib/                 # Utilities
+│   ├── config.ts        # Site configuration
+│   └── utils.ts         # Helper functions
+└── public/              # Static assets
+\`\`\`
+
+## Deployment
+
+Push to GitHub and import to [Vercel](https://vercel.com) for instant deployment.
+`
+    : `# ${config.name}
 
 Built with [HatchIt.dev](https://hatchit.dev) - AI-powered website builder.
 
@@ -659,6 +702,10 @@ Push to GitHub and import to [Vercel](https://vercel.com) for instant deployment
 
 Generated with ❤️ by [HatchIt.dev](https://hatchit.dev)
 `
+
+  files.push({
+    path: 'README.md',
+    content: readmeContent
   })
 
   // 17. .gitignore
