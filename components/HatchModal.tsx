@@ -1,11 +1,18 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { track } from '@vercel/analytics'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { useSubscription } from '@/contexts/SubscriptionContext'
+
+// Admin emails that can access paid tiers
+const ADMIN_EMAILS = [
+  'dan@hatchit.ai',
+  'dan@hatchit.dev',
+  'dan.wolstenholme@gmail.com',
+]
 
 interface HatchModalProps {
   isOpen: boolean
@@ -20,8 +27,16 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { isPaidUser, tier, syncSubscription, isSyncing } = useSubscription()
-  const { isSignedIn } = useUser()
+  const { isSignedIn, user } = useUser()
   const router = useRouter()
+
+  // Check if user is admin (can access paid tiers)
+  const isAdmin = useMemo(() => {
+    if (!user) return false
+    const email = user.emailAddresses?.[0]?.emailAddress?.toLowerCase()
+    const hasAdminRole = user.publicMetadata?.role === 'admin'
+    return hasAdminRole || (!!email && ADMIN_EMAILS.includes(email))
+  }, [user])
 
   // Track when modal is shown
   useEffect(() => {
@@ -170,13 +185,20 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
                   ))}
                 </div>
 
-                <button
-                  onClick={() => handleHatch('architect')}
-                  disabled={isLoading || isSyncing}
-                  className="w-full mt-4 py-2 rounded-md bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-medium transition-all disabled:opacity-50"
-                >
-                  Get Started
-                </button>
+                {/* 🔒 LAUNCH LOCK: Show "Coming Soon" for non-admins */}
+                {!isAdmin && isSignedIn ? (
+                  <div className="w-full mt-4 py-2 rounded-md bg-zinc-800/50 text-amber-500/70 text-xs font-medium text-center">
+                    Coming Soon
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => handleHatch('architect')}
+                    disabled={isLoading || isSyncing}
+                    className="w-full mt-4 py-2 rounded-md bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-medium transition-all disabled:opacity-50"
+                  >
+                    Get Started
+                  </button>
+                )}
               </div>
 
               {/* VISIONARY - $49 (Highlighted) */}
@@ -209,13 +231,20 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
                   ))}
                 </div>
 
-                <button
-                  onClick={() => handleHatch('visionary')}
-                  disabled={isLoading || isSyncing}
-                  className="w-full mt-4 py-2 rounded-md bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-semibold transition-all disabled:opacity-50"
-                >
-                  {isLoading ? 'Processing...' : 'Upgrade'}
-                </button>
+                {/* 🔒 LAUNCH LOCK: Show "Coming Soon" for non-admins */}
+                {!isAdmin && isSignedIn ? (
+                  <div className="w-full mt-4 py-2 rounded-md bg-emerald-500/20 text-amber-500/70 text-xs font-medium text-center">
+                    Coming Soon
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => handleHatch('visionary')}
+                    disabled={isLoading || isSyncing}
+                    className="w-full mt-4 py-2 rounded-md bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-semibold transition-all disabled:opacity-50"
+                  >
+                    {isLoading ? 'Processing...' : 'Upgrade'}
+                  </button>
+                )}
               </div>
 
               {/* SINGULARITY - $199 */}
@@ -243,13 +272,20 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
                   ))}
                 </div>
 
-                <button
-                  onClick={() => handleHatch('singularity')}
-                  disabled={isLoading || isSyncing}
-                  className="w-full mt-4 py-2 rounded-md bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-medium transition-all disabled:opacity-50"
-                >
-                  Go Agency
-                </button>
+                {/* 🔒 LAUNCH LOCK: Show "Coming Soon" for non-admins */}
+                {!isAdmin && isSignedIn ? (
+                  <div className="w-full mt-4 py-2 rounded-md bg-zinc-800/50 text-amber-500/70 text-xs font-medium text-center">
+                    Coming Soon
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => handleHatch('singularity')}
+                    disabled={isLoading || isSyncing}
+                    className="w-full mt-4 py-2 rounded-md bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-medium transition-all disabled:opacity-50"
+                  >
+                    Go Agency
+                  </button>
+                )}
               </div>
             </div>
 

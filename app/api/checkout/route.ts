@@ -13,6 +13,13 @@ const getStripe = () => {
   })
 }
 
+// Admin emails that can access paid tiers (others see "Coming Soon")
+const ADMIN_EMAILS = [
+  'dan@hatchit.ai',
+  'dan@hatchit.dev',
+  'dan.wolstenholme@gmail.com',
+]
+
 // Price IDs for each tier
 const PRICE_IDS = {
   architect: process.env.STRIPE_ARCHITECT_PRICE_ID,    // $19/mo
@@ -21,6 +28,13 @@ const PRICE_IDS = {
 } as const
 
 type PriceTier = keyof typeof PRICE_IDS
+
+// Check if user is admin (by email or role)
+function isAdminUser(user: { emailAddresses?: { emailAddress?: string }[]; publicMetadata?: Record<string, unknown> }): boolean {
+  const email = user.emailAddresses?.[0]?.emailAddress?.toLowerCase()
+  const hasAdminRole = user.publicMetadata?.role === 'admin'
+  return hasAdminRole || (!!email && ADMIN_EMAILS.includes(email))
+}
 
 async function handleCheckout(
   userId: string, 
@@ -32,6 +46,15 @@ async function handleCheckout(
   const stripe = getStripe()
   const client = await clerkClient()
   const user = await client.users.getUser(userId)
+  
+  // 🔒 LAUNCH LOCK: Only admins can access paid tiers during soft launch
+  if (!isAdminUser(user)) {
+    return { 
+      error: 'Paid plans coming soon! Join the waitlist for early access.', 
+      status: 403 
+    }
+  }
+  
   const existingSubscription = user.publicMetadata?.accountSubscription as AccountSubscription | null
 
   // Check for existing active subscription

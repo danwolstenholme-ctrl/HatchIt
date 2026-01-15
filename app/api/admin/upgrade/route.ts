@@ -5,6 +5,7 @@ import { AccountSubscription } from '@/types/subscriptions'
 // Admin emails that can upgrade accounts (bootstrap list)
 const ADMIN_EMAILS = [
   'dan@hatchit.ai',
+  'dan@hatchit.dev',
   'dan.wolstenholme@gmail.com',
 ]
 

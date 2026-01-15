@@ -1,8 +1,15 @@
 'use client'
 
 import { useUser } from '@clerk/nextjs'
-import { useEffect, useState } from 'react'
-import { CreditCard, Receipt, Calendar, ArrowRight, ExternalLink, Check } from 'lucide-react'
+import { useEffect, useState, useMemo } from 'react'
+import { CreditCard, Receipt, Calendar, ArrowRight, ExternalLink, Check, Clock } from 'lucide-react'
+
+// Admin emails that can access paid tiers
+const ADMIN_EMAILS = [
+  'dan@hatchit.ai',
+  'dan@hatchit.dev',
+  'dan.wolstenholme@gmail.com',
+]
 
 interface BillingInfo {
   currentPeriodEnd?: string
@@ -25,6 +32,14 @@ export default function BillingPage() {
   } | undefined
   const currentTier = accountSubscription?.tier || 'free'
   const hasSubscription = currentTier !== 'free'
+
+  // Check if user is admin (can access paid tiers)
+  const isAdmin = useMemo(() => {
+    if (!user) return false
+    const email = user.emailAddresses?.[0]?.emailAddress?.toLowerCase()
+    const hasAdminRole = user.publicMetadata?.role === 'admin'
+    return hasAdminRole || (!!email && ADMIN_EMAILS.includes(email))
+  }, [user])
 
   // Fetch billing info from Stripe
   useEffect(() => {
@@ -225,22 +240,31 @@ export default function BillingPage() {
                 ))}
               </ul>
               {plan.id !== currentTier && (
-                <a
-                  href={plan.id === 'free' ? '#' : `/api/checkout?tier=${plan.id}`}
-                  className={`block mt-3 text-center text-[11px] py-1.5 rounded transition-colors ${
-                    plan.id === 'free'
-                      ? 'text-zinc-600 cursor-default'
-                      : currentTier === 'free' || plans.findIndex(p => p.id === plan.id) > plans.findIndex(p => p.id === currentTier)
-                      ? 'text-emerald-400 hover:text-emerald-300'
-                      : 'text-zinc-500 hover:text-zinc-400'
-                  }`}
-                >
-                  {plan.id === 'free' 
-                    ? '—' 
-                    : plans.findIndex(p => p.id === plan.id) > plans.findIndex(p => p.id === currentTier)
-                    ? 'Upgrade'
-                    : 'Downgrade'}
-                </a>
+                <>
+                  {/* 🔒 LAUNCH LOCK: Show "Coming Soon" for non-admins */}
+                  {!isAdmin && plan.id !== 'free' ? (
+                    <div className="mt-3 text-center text-[11px] py-1.5 text-amber-500/70 flex items-center justify-center gap-1">
+                      <Clock className="w-3 h-3" /> Coming Soon
+                    </div>
+                  ) : (
+                    <a
+                      href={plan.id === 'free' ? '#' : `/api/checkout?tier=${plan.id}`}
+                      className={`block mt-3 text-center text-[11px] py-1.5 rounded transition-colors ${
+                        plan.id === 'free'
+                          ? 'text-zinc-600 cursor-default'
+                          : currentTier === 'free' || plans.findIndex(p => p.id === plan.id) > plans.findIndex(p => p.id === currentTier)
+                          ? 'text-emerald-400 hover:text-emerald-300'
+                          : 'text-zinc-500 hover:text-zinc-400'
+                      }`}
+                    >
+                      {plan.id === 'free' 
+                        ? '—' 
+                        : plans.findIndex(p => p.id === plan.id) > plans.findIndex(p => p.id === currentTier)
+                        ? 'Upgrade'
+                        : 'Downgrade'}
+                    </a>
+                  )}
+                </>
               )}
             </div>
           ))}
