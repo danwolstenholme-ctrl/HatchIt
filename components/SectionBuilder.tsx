@@ -268,10 +268,16 @@ const unwrapCodePayload = (payload: unknown): string => {
         const parsed = JSON.parse(trimmed)
         return unwrapCodePayload(parsed)
       } catch {
-        return payload
+        // If JSON parse fails, continue with string processing
       }
     }
-    return payload
+    // Fix escaped newlines - AI sometimes returns literal \n instead of actual newlines
+    // This causes Babel to fail with "Expecting Unicode escape sequence \uXXXX"
+    let code = trimmed
+      .replace(/\\n/g, '\n')      // Literal \n -> newline
+      .replace(/\\t/g, '\t')      // Literal \t -> tab
+      .replace(/\\r/g, '')        // Remove \r
+    return code
   }
 
   if (typeof payload === 'object' && 'code' in (payload as Record<string, unknown>)) {

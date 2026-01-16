@@ -132,6 +132,13 @@ const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameP
     const processedSections = stableSections.map((section, index) => {
       let code = sanitizeSvgDataUrls(section.code || '')
       
+      // Fix escaped newlines - AI sometimes returns literal \n instead of actual newlines
+      // This causes Babel to fail with "Expecting Unicode escape sequence \uXXXX"
+      code = code
+        .replace(/\\n/g, '\n')      // Literal \n -> newline
+        .replace(/\\t/g, '\t')      // Literal \t -> tab
+        .replace(/\\r/g, '')        // Remove \r
+      
       // Extract imports
       const lucideImportRegex = /import\s+\{(.*?)\}\s+from\s+['"]lucide-react['"]/g;
       let match;

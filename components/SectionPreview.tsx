@@ -148,6 +148,13 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
         .replace(/"use client"/g, '')
         .trim();
       
+      // Fix escaped newlines - AI sometimes returns literal \n instead of actual newlines
+      // This causes Babel to fail with "Expecting Unicode escape sequence \uXXXX"
+      cleanCode = cleanCode
+        .replace(/\\n/g, '\n')      // Literal \n -> newline
+        .replace(/\\t/g, '\t')      // Literal \t -> tab
+        .replace(/\\r/g, '')        // Remove \r
+      
       // Handle case where API returned raw JSON instead of extracted code
       if (cleanCode.startsWith('{') && cleanCode.includes('"code"')) {
         try {
