@@ -10,6 +10,19 @@ import { componentLibrary } from '@/lib/components'
 // CLAUDE SONNET 4.5 - THE ARCHITECT (BUILDER MODE)
 // =============================================================================
 
+// Sanitize code output - fix common AI escape issues that break Babel
+function sanitizeCodeOutput(code: string): string {
+  if (!code) return code
+  return code
+    // Fix JSON-escaped strings that weren't properly unescaped
+    .replace(/\\"/g, '"')       // Escaped quote \" -> "
+    .replace(/\\'/g, "'")       // Escaped single quote \' -> '
+    .replace(/\\n/g, '\n')      // Literal \n -> newline
+    .replace(/\\t/g, '\t')      // Literal \t -> tab
+    .replace(/\\r/g, '')        // Remove \r
+    .replace(/\\\\/g, '\\')     // Double backslash \\\\ -> single \\
+}
+
 // Build component reference based on section type
 function getComponentReference(sectionType: string): string {
   const lib = componentLibrary
@@ -796,6 +809,9 @@ export async function POST(request: NextRequest) {
         console.log('[build-section] Strategy 5 (raw code) succeeded')
       }
     }
+
+    // Sanitize code to fix common AI escape issues (\\", \\n, etc.)
+    generatedCode = sanitizeCodeOutput(generatedCode)
 
     // Save to DB only if we have a valid user and it's not a demo project
     if (generatedCode && userId && !projectId.startsWith('demo-')) {

@@ -126,22 +126,25 @@ export async function POST(req: NextRequest) {
   const files: Record<string, string> = {}
 
   // Generate proper scaffold from project config
-  const brandConfig = project?.brand_config as Record<string, string | undefined> | null
+  const brandConfig = project?.brand_config as Record<string, unknown> | null
   
   const scaffoldConfig: ProjectConfig = {
     name: project?.name || 'My HatchIt Project',
     slug: project?.slug || 'my-hatchit-project',
     description: '', // Projects don't have description field yet
     brand: {
-      primaryColor: brandConfig?.primaryColor || '#10b981',
-      secondaryColor: brandConfig?.secondaryColor || '#059669',
-      font: brandConfig?.font || 'Inter',
-      headingFont: brandConfig?.headingFont || brandConfig?.font || 'Inter',
-      mode: (brandConfig?.mode as 'dark' | 'light') || 'dark',
+      primaryColor: (brandConfig?.colors as { primary?: string })?.primary || brandConfig?.primaryColor as string || '#10b981',
+      secondaryColor: (brandConfig?.colors as { secondary?: string })?.secondary || brandConfig?.secondaryColor as string || '#059669',
+      font: brandConfig?.fontStyle as string || brandConfig?.font as string || 'Inter',
+      headingFont: brandConfig?.fontStyle as string || brandConfig?.headingFont as string || 'Inter',
+      mode: (brandConfig?.styleVibe as 'dark' | 'light') || (brandConfig?.mode as 'dark' | 'light') || 'dark',
+      logo: brandConfig?.logoUrl as string | undefined,
+      favicon: brandConfig?.faviconUrl as string | undefined,
     },
     seo: {
-      title: project?.name || 'My HatchIt Project',
-      description: canRemoveBranding ? (project?.name || 'My HatchIt Project') : 'Built with HatchIt.dev',
+      title: (brandConfig?.seo as { title?: string })?.title || project?.name || 'My HatchIt Project',
+      description: (brandConfig?.seo as { description?: string })?.description || (canRemoveBranding ? '' : 'Built with HatchIt.dev'),
+      keywords: (brandConfig?.seo as { keywords?: string })?.keywords || '',
     },
     includeBranding: !canRemoveBranding, // Pass flag to scaffold
   }
@@ -149,11 +152,24 @@ export async function POST(req: NextRequest) {
   // Generate scaffold files
   const scaffoldFiles = generateProjectScaffold(scaffoldConfig)
   
+  // Track base64 files separately (like favicon)
+  const binaryFiles: Array<{ path: string; content: Buffer }> = []
+  
   // Add scaffold files (but we'll override page.tsx with actual content)
   for (const file of scaffoldFiles) {
     // Skip page files - we'll add those with actual generated content
     if (!file.path.endsWith('page.tsx')) {
-      files[file.path] = file.content
+      if (file.isBase64) {
+        // Handle base64 encoded binary files (like favicon)
+        try {
+          const buffer = Buffer.from(file.content, 'base64')
+          binaryFiles.push({ path: file.path, content: buffer })
+        } catch {
+          console.error(`Failed to decode base64 file: ${file.path}`)
+        }
+      } else {
+        files[file.path] = file.content
+      }
     }
   }
 
@@ -251,6 +267,11 @@ ${code}`
 
   for (const [path, content] of Object.entries(files)) {
     zip.file(path, content)
+  }
+
+  // Add binary files (like favicon from scaffold)
+  for (const file of binaryFiles) {
+    zip.file(file.path, file.content)
   }
 
   for (const asset of assetFiles) {

@@ -67,6 +67,7 @@ export interface DbBrandConfig {
   brandName: string
   tagline?: string
   logoUrl?: string
+  faviconUrl?: string // Base64 data URL or external URL for site favicon
   colorPreset?: string
   colors: {
     primary: string

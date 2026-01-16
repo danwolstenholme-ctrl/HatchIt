@@ -37,6 +37,7 @@ export interface SiteSettings {
     headingFont: string
     mode: 'dark' | 'light'
     logo?: string
+    favicon?: string // Base64 data URL for favicon
   }
   integrations: {
     formspreeId: string
@@ -81,6 +82,7 @@ export default function SiteSettingsModal({
   const [tempName, setTempName] = useState(projectName)
   const nameInputRef = useRef<HTMLInputElement>(null)
   const logoInputRef = useRef<HTMLInputElement>(null)
+  const faviconInputRef = useRef<HTMLInputElement>(null)
   
   const [settings, setSettings] = useState<SiteSettings>({
     seo: {
@@ -123,7 +125,8 @@ export default function SiteSettingsModal({
             font: currentBrand.fontStyle || prev.brand.font,
             headingFont: currentBrand.fontStyle || prev.brand.headingFont,
             mode: 'dark',
-            logo: currentBrand.logoUrl || undefined
+            logo: currentBrand.logoUrl || undefined,
+            favicon: currentBrand.faviconUrl || undefined
           }
         }))
       }
@@ -152,6 +155,25 @@ export default function SiteSettingsModal({
         setSettings(prev => ({
           ...prev,
           brand: { ...prev.brand, logo: reader.result as string }
+        }))
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleFaviconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      // Validate size (max 500KB for favicon)
+      if (file.size > 500 * 1024) {
+        alert('Favicon must be under 500KB')
+        return
+      }
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setSettings(prev => ({
+          ...prev,
+          brand: { ...prev.brand, favicon: reader.result as string }
         }))
       }
       reader.readAsDataURL(file)
@@ -325,6 +347,43 @@ export default function SiteSettingsModal({
                           )}
                         </div>
                         <p className="text-xs text-zinc-500 mt-2">PNG, SVG, or JPG. Max 2MB.</p>
+                      </div>
+
+                      {/* Favicon Upload */}
+                      <div>
+                        <label className="block text-sm font-medium text-zinc-300 mb-3">Favicon</label>
+                        <div className="flex items-center gap-4">
+                          <div 
+                            className="w-16 h-16 rounded-lg bg-zinc-800 border-2 border-dashed border-zinc-700 flex items-center justify-center overflow-hidden cursor-pointer hover:border-zinc-600 transition-colors group"
+                            onClick={() => faviconInputRef.current?.click()}
+                          >
+                            {settings.brand.favicon ? (
+                              <img src={settings.brand.favicon} alt="Favicon" className="w-full h-full object-contain" />
+                            ) : (
+                              <div className="text-center">
+                                <ImageIcon className="w-4 h-4 text-zinc-500 mx-auto group-hover:text-zinc-400 transition-colors" />
+                                <span className="text-[9px] text-zinc-500 mt-0.5 block">32×32</span>
+                              </div>
+                            )}
+                          </div>
+                          <input
+                            ref={faviconInputRef}
+                            type="file"
+                            className="hidden"
+                            accept="image/png,image/svg+xml,image/x-icon,image/ico,.ico"
+                            onChange={handleFaviconUpload}
+                          />
+                          {settings.brand.favicon && (
+                            <button
+                              onClick={() => setSettings(prev => ({ ...prev, brand: { ...prev.brand, favicon: undefined } }))}
+                              className="flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                              Remove
+                            </button>
+                          )}
+                        </div>
+                        <p className="text-xs text-zinc-500 mt-2">PNG, SVG, or ICO. 32×32px recommended. Max 500KB.</p>
                       </div>
 
                       {/* Site Title for Header */}

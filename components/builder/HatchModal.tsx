@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Send, Bot, User, Copy, Check, Sparkles, Wand2, Bug, Palette, Code, Lightbulb, Zap } from 'lucide-react'
+import { X, Send, Bot, User, Copy, Check, Sparkles, Wand2, Bug, Palette, Code, Lightbulb, Zap, Layers } from 'lucide-react'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -16,6 +16,9 @@ interface HatchModalProps {
   sectionName?: string
   projectName?: string
   onUsePrompt?: (prompt: string) => void
+  // Full site context
+  allSectionsCode?: Record<string, string>
+  sectionNames?: string[]
 }
 
 export default function HatchModal({
@@ -25,6 +28,8 @@ export default function HatchModal({
   sectionName,
   projectName,
   onUsePrompt,
+  allSectionsCode,
+  sectionNames,
 }: HatchModalProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
@@ -58,7 +63,7 @@ export default function HatchModal({
     setIsLoading(true)
 
     try {
-      // Use the refiner in help mode (no code = conversational)
+      // Use the refiner in help mode with FULL SITE CONTEXT
       const response = await fetch('/api/refine-section', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -67,7 +72,10 @@ export default function HatchModal({
           currentCode,
           projectName,
           sectionName,
-          conversationHistory: messages.slice(-6),
+          conversationHistory: messages.slice(-10), // Increased from 6 to 10 for better context
+          // Full site context for intelligent assistance
+          allSectionsCode,
+          sectionNames,
         }),
       })
 
@@ -99,14 +107,27 @@ export default function HatchModal({
     }
   }
 
-  const quickActions = [
+  // Dynamic quick actions based on whether we have full site context
+  const hasSiteContext = allSectionsCode && Object.keys(allSectionsCode).length > 1
+  
+  const quickActions = hasSiteContext ? [
+    { icon: Layers, label: 'Review site', prompt: 'Look at my whole site - are the sections visually consistent?', color: 'cyan' },
+    { icon: Lightbulb, label: 'Ideas', prompt: 'What would make this section more engaging?', color: 'emerald' },
+    { icon: Palette, label: 'Style match', prompt: 'Does my current section match the style of my other sections?', color: 'purple' },
+    { icon: Bug, label: 'Fix issue', prompt: 'Something looks off - can you spot what\'s wrong?', color: 'red' },
+  ] : [
     { icon: Lightbulb, label: 'Ideas', prompt: 'What would make this section more engaging?', color: 'emerald' },
     { icon: Bug, label: 'Fix issue', prompt: 'Something looks off - can you spot what\'s wrong?', color: 'red' },
     { icon: Palette, label: 'Style tips', prompt: 'How can I improve the visual design?', color: 'purple' },
     { icon: Wand2, label: 'Enhance', prompt: 'Can you suggest a more polished version of this?', color: 'emerald' },
   ]
 
-  const promptStarters = [
+  const promptStarters = hasSiteContext ? [
+    'Are my colors consistent across all sections?',
+    'Which section needs the most work?',
+    'How can I make the transitions between sections smoother?',
+    'What\'s missing from my site?',
+  ] : [
     'Make my hero section more dynamic with animations',
     'Add a gradient background that looks modern',
     'Create a pricing section with 3 tiers',
@@ -220,11 +241,15 @@ export default function HatchModal({
                     </div>
                   </motion.div>
                   
-                  {currentCode && (
-                    <p className="text-[10px] text-emerald-500/50 mt-4">
-                      ● Working on: {sectionName || 'Current section'}
-                    </p>
-                  )}
+                  {/* Site context indicator */}
+                  <div className="mt-4 text-[10px] text-emerald-500/50 space-y-0.5">
+                    {currentCode && (
+                      <p>● Working on: {sectionName || 'Current section'}</p>
+                    )}
+                    {allSectionsCode && Object.keys(allSectionsCode).length > 0 && (
+                      <p>● Full site context: {Object.keys(allSectionsCode).length} sections loaded</p>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <>

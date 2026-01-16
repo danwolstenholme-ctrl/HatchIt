@@ -132,12 +132,16 @@ const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameP
     const processedSections = stableSections.map((section, index) => {
       let code = sanitizeSvgDataUrls(section.code || '')
       
-      // Fix escaped newlines - AI sometimes returns literal \n instead of actual newlines
+      // Fix escaped characters - AI sometimes returns JSON-escaped strings
       // This causes Babel to fail with "Expecting Unicode escape sequence \uXXXX"
+      // In regex: /\\"/g matches backslash followed by quote (\\  escapes to single backslash in regex)
       code = code
+        .replace(/\\"/g, '"')       // Escaped quote \" -> "
+        .replace(/\\'/g, "'")       // Escaped single quote \' -> '
         .replace(/\\n/g, '\n')      // Literal \n -> newline
         .replace(/\\t/g, '\t')      // Literal \t -> tab
         .replace(/\\r/g, '')        // Remove \r
+        .replace(/\\\\/g, '\\')     // Double backslash \\\\ -> single \\
       
       // Extract imports
       const lucideImportRegex = /import\s+\{(.*?)\}\s+from\s+['"]lucide-react['"]/g;
@@ -766,28 +770,72 @@ ${Array.from(allLucideImports).map((name) => {
       }
     }, 3000);
     
+    // Wrap console.error to catch Babel syntax errors that don't throw
+    var originalConsoleError = console.error;
+    var lastBabelError = null;
+    console.error = function() {
+      originalConsoleError.apply(console, arguments);
+      // Check if this is a Babel syntax error
+      var msg = Array.from(arguments).join(' ');
+      if (msg.includes('SyntaxError') || msg.includes('Unexpected token') || (msg.includes('expected') && msg.includes(':'))) {
+        // Extract line number from Babel error format (123:45)
+        var lineMatch = msg.match(/[(](\\d+):(\\d+)[)]/);
+        var line = lineMatch ? parseInt(lineMatch[1], 10) : undefined;
+        // Debounce - don't spam if same error
+        if (lastBabelError !== msg) {
+          lastBabelError = msg;
+          console.log('[Overseer] Detected Babel error via console.error:', msg.substring(0, 200));
+          window.parent.postMessage({
+            type: 'syntax-error',
+            error: msg.substring(0, 500),
+            line: line
+          }, '*');
+        }
+      }
+    };
+    
     // Global error handler - notify parent of syntax errors for auto-fix
     window.onerror = function(message, source, lineno, colno, error) {
-      console.error('[Preview Error]', message, 'at line', lineno);
+      console.log('[Preview Error]', message, 'at line', lineno); // Use console.log to avoid infinite loop
       // Show healing animation instead of scary error
       var root = document.getElementById('root');
       if (root) {
         root.innerHTML = healingHTML;
       }
-      if (message && (message.includes('SyntaxError') || message.includes('Unexpected token'))) {
+      // Check for syntax-related errors (Babel errors include "expected")
+      var msgStr = String(message || '');
+      var isSyntaxError = msgStr.includes('SyntaxError') || 
+                          msgStr.includes('Unexpected token') || 
+                          msgStr.includes('expected "') ||
+                          msgStr.includes("expected '");
+      if (isSyntaxError) {
         window.parent.postMessage({
           type: 'syntax-error',
-          error: String(message),
+          error: msgStr,
           line: lineno
         }, '*');
       } else {
         window.parent.postMessage({
           type: 'runtime-error',
-          error: String(message),
+          error: msgStr,
           line: lineno
         }, '*');
       }
       return false;
+    };
+    
+    // Global unhandled promise rejection handler - catches async errors
+    window.onunhandledrejection = function(event) {
+      console.error('[Preview] Unhandled rejection:', event.reason);
+      var message = event.reason && event.reason.message ? event.reason.message : String(event.reason);
+      // Check if it's a Babel/syntax error
+      if (message.includes('SyntaxError') || message.includes('Unexpected token') || message.includes('expected')) {
+        window.parent.postMessage({
+          type: 'syntax-error',
+          error: message,
+          line: undefined
+        }, '*');
+      }
     };
     
     // Also catch Babel compile errors via custom transformer
@@ -809,6 +857,26 @@ ${Array.from(allLucideImports).map((name) => {
           throw e;
         }
       };
+      
+      // Also wrap transformScriptTags which Babel calls automatically
+      if (window.Babel.transformScriptTags) {
+        const originalTransformTags = window.Babel.transformScriptTags;
+        window.Babel.transformScriptTags = function(scriptTags, options) {
+          try {
+            return originalTransformTags.call(this, scriptTags, options);
+          } catch (e) {
+            const lineMatch = e.message && e.message.match(/[(](\\d+):(\\d+)[)]/);
+            const line = lineMatch ? parseInt(lineMatch[1], 10) : undefined;
+            console.log('[Overseer] Babel transformScriptTags error:', e.message, 'line:', line);
+            window.parent.postMessage({
+              type: 'syntax-error',
+              error: e.message || String(e),
+              line: line
+            }, '*');
+            throw e;
+          }
+        };
+      }
     }
     
     tailwind.config = {

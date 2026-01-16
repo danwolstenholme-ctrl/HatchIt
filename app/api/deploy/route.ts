@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth, clerkClient } from '@clerk/nextjs/server'
 import { track } from '@vercel/analytics/server'
 import { AccountSubscription } from '@/types/subscriptions'
-import { getLatestBuild, updateBuildDeployment, updateProjectDeploySlug, updateBuildDeployStatus } from '@/lib/db'
+import { getLatestBuild, updateBuildDeployment, updateProjectDeploySlug, updateBuildDeployStatus, getProjectById } from '@/lib/db'
 
 // =============================================================================
 // DEPLOYMENT API
@@ -128,6 +128,19 @@ export async function POST(req: NextRequest) {
     // This prevents double-suffix issue when updating a deployed project
     const slug = baseSlug.endsWith(`-${userSuffix}`) ? baseSlug : `${baseSlug}-${userSuffix}`
 
+    // Fetch project data to get brand config (including favicon)
+    let projectBrandConfig: Record<string, unknown> | null = null
+    if (projectId) {
+      try {
+        const project = await getProjectById(projectId)
+        if (project) {
+          projectBrandConfig = project.brand_config as Record<string, unknown> | null
+        }
+      } catch (err) {
+        console.error('Failed to fetch project for brand config:', err)
+      }
+    }
+
     // Verify user has an active account subscription
     const client = await clerkClient()
     let userWithSub = await client.users.getUser(userId)
@@ -151,7 +164,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Create the file structure for deployment
-    const files = [
+    const files: Array<{ file: string; data: string; isBase64?: boolean }> = [
       {
         file: 'package.json',
         data: JSON.stringify({
@@ -281,6 +294,29 @@ export default function RootLayout({
 }`
       }
     ]
+
+    // Add favicon if available in brand config
+    const faviconUrl = projectBrandConfig?.faviconUrl as string | undefined
+    if (faviconUrl) {
+      // Parse base64 data URL: data:image/png;base64,<content>
+      const faviconMatch = faviconUrl.match(/^data:image\/(png|svg\+xml|x-icon|ico);base64,(.+)$/)
+      if (faviconMatch) {
+        const mimeType = faviconMatch[1]
+        const base64Content = faviconMatch[2]
+        
+        // Determine file extension based on mime type
+        let ext = 'png'
+        if (mimeType === 'svg+xml') ext = 'svg'
+        else if (mimeType === 'x-icon' || mimeType === 'ico') ext = 'ico'
+        
+        // Next.js uses app/icon.{ext} for favicon
+        files.push({
+          file: `app/icon.${ext}`,
+          data: base64Content,
+          isBase64: true // Flag for special handling
+        })
+      }
+    }
     
     // Known Lucide icons - comprehensive list for detection
     const LUCIDE_ICONS = new Set([
@@ -672,7 +708,8 @@ export default function Home() {
         name: slug,
         files: files.map(f => ({
           file: f.file,
-          data: Buffer.from(f.data).toString('base64'),
+          // If already base64 (like favicon), use as-is; otherwise encode
+          data: (f as { isBase64?: boolean }).isBase64 ? f.data : Buffer.from(f.data).toString('base64'),
           encoding: 'base64'
         })),
         projectSettings: {

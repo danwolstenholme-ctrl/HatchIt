@@ -14,6 +14,7 @@ export interface ProjectConfig {
     headingFont?: string
     mode?: 'dark' | 'light'
     logo?: string
+    favicon?: string // Base64 data URL for favicon
   }
   seo?: {
     title?: string
@@ -33,6 +34,7 @@ export interface PageConfig {
 export interface ScaffoldFile {
   path: string
   content: string
+  isBase64?: boolean // If true, content is base64-encoded binary data
 }
 
 // Default page structure for a website
@@ -765,6 +767,30 @@ next-env.d.ts
 // see https://nextjs.org/docs/basic-features/typescript for more information.
 `
   })
+
+  // 20. Favicon (if provided as base64 data URL)
+  if (config.brand?.favicon) {
+    const faviconDataUrl = config.brand.favicon
+    // Extract the base64 content and mime type from data URL
+    // Format: data:image/png;base64,<content>
+    const match = faviconDataUrl.match(/^data:image\/(png|svg\+xml|x-icon|ico);base64,(.+)$/)
+    if (match) {
+      const mimeType = match[1]
+      const base64Content = match[2]
+      
+      // Determine file extension based on mime type
+      let ext = 'png'
+      if (mimeType === 'svg+xml') ext = 'svg'
+      else if (mimeType === 'x-icon' || mimeType === 'ico') ext = 'ico'
+      
+      // Next.js uses app/icon.{ext} for favicon
+      files.push({
+        path: `app/icon.${ext}`,
+        content: base64Content,
+        isBase64: true
+      })
+    }
+  }
 
   return files
 }

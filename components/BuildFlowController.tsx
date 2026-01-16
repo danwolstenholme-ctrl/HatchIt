@@ -347,7 +347,9 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
         brandName: settings.seo.title || project.name,
         styleVibe: settings.brand.mode,
         seo: settings.seo,
-        integrations: settings.integrations
+        integrations: settings.integrations,
+        logoUrl: settings.brand.logo,
+        faviconUrl: settings.brand.favicon
       }
 
       setProject(prev => prev ? ({ ...prev, brand_config: updatedBrandConfig }) : null)
@@ -371,7 +373,9 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
             brandName: settings.seo.title || project.name,
             styleVibe: settings.brand.mode,
             seo: settings.seo,
-            integrations: settings.integrations
+            integrations: settings.integrations,
+            logoUrl: settings.brand.logo,
+            faviconUrl: settings.brand.favicon
           }
         })
       })
@@ -1239,24 +1243,59 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       return
     }
     
-    const currentSectionId = sectionsForBuild[buildState.currentSectionIndex]?.id
-    const currentCode = currentSectionId ? buildState.sectionCode[currentSectionId] : null
+    // Try to find which section has the error by scanning all section codes
+    // The error message might contain a line number relative to the combined code
+    let targetSectionId = sectionsForBuild[buildState.currentSectionIndex]?.id
+    let targetCode = targetSectionId ? buildState.sectionCode[targetSectionId] : null
     
-    if (!currentCode || !currentSectionId) {
+    // If line number is large (>100), the error might be in a later section
+    // Scan all sections to find potential culprits
+    if (!targetCode || (line && line > 100)) {
+      for (const section of sectionsForBuild) {
+        const code = buildState.sectionCode[section.id]
+        if (code) {
+          // Check if this section's code has obvious syntax issues
+          // Look for common problems: incomplete ternaries, TypeScript syntax, etc.
+          const hasIncompleteternary = /\?\s*\([^)]*\)\s*[)}]/.test(code) && !/\?\s*\([^)]*\)\s*:\s*/.test(code)
+          const hasTypeScript = /:\s*(string|number|boolean|any)\b/.test(code)
+          const hasTypeAnnotation = /\([^)]*:\s*\{[^}]*\}[^)]*\)/.test(code)
+          
+          if (hasIncompleteternary || hasTypeScript || hasTypeAnnotation) {
+            targetSectionId = section.id
+            targetCode = code
+            console.log('[Overseer] Found suspicious section:', section.id)
+            break
+          }
+        }
+      }
+    }
+    
+    if (!targetCode || !targetSectionId) {
       setIsAutoFixing(false)
       return
     }
     
     // Find the dbSection
-    const dbSection = dbSections.find(s => s.section_id === currentSectionId)
+    const dbSection = dbSections.find(s => s.section_id === targetSectionId)
     if (!dbSection) {
       setIsAutoFixing(false)
       return
     }
     
     try {
-      // Call refine API with syntax fix prompt
-      const fixPrompt = `SYNTAX ERROR - AUTO FIX NEEDED. The code has a JavaScript syntax error: "${error}"${line ? ` around line ${line}` : ''}. This is likely an incomplete ternary operator (missing : null after ?). Fix the syntax error while preserving all functionality.`
+      // Build a detailed fix prompt that covers common issues
+      const fixPrompt = `SYNTAX ERROR - AUTO FIX NEEDED. 
+Error: "${error}"${line ? ` around line ${line}` : ''}
+
+COMMON CAUSES TO CHECK AND FIX:
+1. Incomplete ternary operators: condition ? (jsx) should be condition ? (jsx) : null
+2. TypeScript type annotations: Remove things like ": string", ": number", ": { prop: type }"
+3. TypeScript "as" casts: Remove "as Type" expressions
+4. Generic type parameters: Remove <T> from functions
+5. Optional chaining without fallback in JSX: foo?.bar should have a fallback
+6. Missing closing tags or parentheses
+
+Fix the syntax error while preserving all functionality. Output plain JavaScript/JSX only.`
       
       const response = await fetch('/api/refine-section', {
         method: 'POST',
@@ -1264,30 +1303,30 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
         body: JSON.stringify({
           projectId: project.id,
           sectionId: dbSection.id,
-          code: currentCode,
+          code: targetCode,
           refineRequest: fixPrompt,
-          sectionType: currentSectionId,
-          sectionName: sectionsForBuild[buildState.currentSectionIndex]?.name || currentSectionId
+          sectionType: targetSectionId,
+          sectionName: sectionsForBuild.find(s => s.id === targetSectionId)?.name || targetSectionId
         })
       })
       
       if (response.ok) {
         const data = await response.json()
         if (data.code) {
-          // Update the section code
+          // Update the section code - use targetSectionId not currentSectionId
           setBuildState(prev => {
             if (!prev) return prev
             return {
               ...prev,
               sectionCode: {
                 ...prev.sectionCode,
-                [currentSectionId]: data.code
+                [targetSectionId]: data.code
               }
             }
           })
           // Force preview refresh
           setPreviewKey(k => k + 1)
-          console.log('[Overseer] Auto-fix applied successfully')
+          console.log('[Overseer] Auto-fix applied successfully for section:', targetSectionId)
         }
       } else {
         console.error('[Overseer] Auto-fix failed:', await response.text())
@@ -3644,7 +3683,7 @@ export default function GeneratedPage() {
         }}
       />
 
-      {/* Hatch - AI Building Assistant */}
+      {/* Hatch - AI Building Assistant with FULL SITE CONTEXT */}
       <HatchAssistantModal
         isOpen={showHatch}
         onClose={() => setShowHatch(false)}
@@ -3655,6 +3694,9 @@ export default function GeneratedPage() {
           setShowHatch(false)
           navigator.clipboard.writeText(prompt)
         }}
+        // Full site context - AI knows about ALL sections
+        allSectionsCode={buildState?.sectionCode}
+        sectionNames={sectionsForBuild.map(s => s.name)}
       />
     </div>
   )
