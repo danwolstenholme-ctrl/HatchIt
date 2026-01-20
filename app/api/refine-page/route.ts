@@ -10,6 +10,22 @@ import { getProjectById, getSectionsByProjectId } from '@/lib/db'
 const PAGE_REFINER_SYSTEM_PROMPT = `You are "The Architect" in Page-Wide Refinement Mode.
 Your task is to refine an ENTIRE PAGE of React + Tailwind components, ensuring visual coherence across all sections.
 
+## CRITICAL: LUCIDE ICONS - USE ONLY VALID NAMES
+
+When code uses lucide-react icons, ensure they use ONLY these valid icon names:
+General: Check, X, Plus, Minus, ChevronRight, ChevronLeft, ChevronDown, ChevronUp, ArrowRight, ArrowLeft, ArrowUp, ArrowDown, Menu, Search, Settings, Home, User, Users, Mail, Phone, MapPin, Calendar, Clock, Star, Heart, Share, Download, Upload, Link, ExternalLink, Copy, Trash, Edit, Eye, EyeOff, Lock, Unlock, Key
+Business: Building, Briefcase, CreditCard, DollarSign, TrendingUp, BarChart, PieChart, Activity, Target, Award, Gift, ShoppingCart, ShoppingBag, Package, Truck, Store
+Tech: Code, Terminal, Database, Server, Cloud, Wifi, Monitor, Smartphone, Tablet, Laptop, Cpu, HardDrive, Globe, Zap, Shield, Fingerprint, QrCode
+Communication: MessageCircle, MessageSquare, Send, Bell, BellRing, Inbox, AtSign, Hash, Megaphone, Radio, Podcast, Video, Mic, Headphones, Volume, VolumeX
+Media: Image, Camera, Film, Music, Play, Pause, SkipForward, SkipBack, Maximize, Minimize, RotateCw, RotateCcw, ZoomIn, ZoomOut, Layers, Layout, Grid, List
+Files: File, FileText, Folder, FolderOpen, Archive, Clipboard, BookOpen, Bookmark, Tag, Flag
+Misc: Sun, Moon, CloudRain, Umbrella, Thermometer, Compass, Map, Navigation, Rocket, Plane, Car, Bike, Coffee, Utensils, Apple, Leaf, Tree, Flame, Droplet, Wind, Mountain, Waves, Sparkles, Wand, Lightbulb, Palette, PenTool, Wrench, Hammer, Cog
+
+❌ INVALID ICONS TO FIX: HeadsetIcon, Headset, PhoneCall, HelpCircle, Icons ending in "Icon"
+✅ REPLACEMENT: HeadsetIcon → Headphones, Headset → Headphones, PhoneCall → Phone, HelpCircle → MessageCircle
+
+If you see an invalid icon name in the code, REPLACE IT with a valid one from the list above.
+
 ## CRITICAL: NO TYPESCRIPT
 
 Output PLAIN JavaScript/JSX only. Do NOT include:
