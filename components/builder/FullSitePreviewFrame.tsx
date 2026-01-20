@@ -144,6 +144,74 @@ const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameP
       return ''
     }
 
+    // =============================================================================
+    // SECTION VALIDATION - Check each section for common syntax issues BEFORE assembly
+    // =============================================================================
+    const validateSection = (code: string, sectionId: string): { valid: boolean; error?: string } => {
+      if (!code || code.trim().length < 50) {
+        return { valid: false, error: `Section "${sectionId}" has no code or code is too short` }
+      }
+      
+      // Check for balanced braces
+      const openBraces = (code.match(/\{/g) || []).length
+      const closeBraces = (code.match(/\}/g) || []).length
+      if (openBraces !== closeBraces) {
+        return { valid: false, error: `Section "${sectionId}" has unbalanced braces: ${openBraces} open, ${closeBraces} close` }
+      }
+      
+      // Check for balanced parentheses
+      const openParens = (code.match(/\(/g) || []).length
+      const closeParens = (code.match(/\)/g) || []).length
+      if (openParens !== closeParens) {
+        return { valid: false, error: `Section "${sectionId}" has unbalanced parentheses: ${openParens} open, ${closeParens} close` }
+      }
+      
+      // Check for function definition
+      if (!code.includes('function') && !code.includes('=>')) {
+        return { valid: false, error: `Section "${sectionId}" has no function definition` }
+      }
+      
+      // Check for return statement
+      if (!code.includes('return')) {
+        return { valid: false, error: `Section "${sectionId}" has no return statement` }
+      }
+      
+      return { valid: true }
+    }
+
+    // Validate all sections first
+    const validationErrors: string[] = []
+    stableSections.forEach(section => {
+      const result = validateSection(section.code || '', section.id)
+      if (!result.valid) {
+        console.error('[Preview Validation]', result.error)
+        validationErrors.push(result.error!)
+      }
+    })
+    
+    // If any section is invalid, show error in preview instead of crashing
+    if (validationErrors.length > 0) {
+      console.error('[Preview] Validation failed for sections:', validationErrors)
+      return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <script src="https://cdn.tailwindcss.com"></script>
+        </head>
+        <body class="bg-zinc-950 text-white p-8 font-sans">
+          <div class="max-w-2xl mx-auto">
+            <h1 class="text-2xl font-bold text-red-500 mb-4">⚠️ Code Validation Error</h1>
+            <p class="text-zinc-400 mb-6">One or more sections have syntax issues that need to be fixed:</p>
+            <ul class="space-y-2">
+              ${validationErrors.map(err => `<li class="text-red-400 bg-red-950/30 p-3 rounded border border-red-500/30">• ${err}</li>`).join('')}
+            </ul>
+            <p class="text-zinc-500 mt-6 text-sm">Click "Rebuild Section" on the affected section to regenerate the code.</p>
+          </div>
+        </body>
+        </html>
+      `
+    }
+
     // 1. Extract all Lucide imports to ensure they are available
     const allLucideImports = new Set<string>();
     const processedSections = stableSections.map((section, index) => {
@@ -724,12 +792,19 @@ const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameP
 
     // 4. Construct the script
     // We explicitly destructure the used icons from window.LucideIcons
+    // IMPORTANT: Provide fallback for missing icons to avoid React error #130 (undefined element)
     const lucideDestructuring = allLucideImports.size > 0 
       ? `var _icons = window.LucideIcons || {};
+var _missingIcon = function(props) { 
+  return React.createElement('span', { 
+    style: { display: 'inline-block', width: props?.size || 24, height: props?.size || 24, background: '#ef4444', borderRadius: '50%' },
+    title: 'Missing icon'
+  });
+};
 ${Array.from(allLucideImports).map((name) => {
-  if (name === 'Image') return 'var ImageIcon = _icons.Image;';
-  if (name === 'Link') return 'var LinkIcon = _icons.Link;';
-  return 'var ' + name + ' = _icons.' + name + ';';
+  if (name === 'Image') return 'var ImageIcon = _icons.Image || _missingIcon;';
+  if (name === 'Link') return 'var LinkIcon = _icons.Link || _missingIcon;';
+  return 'var ' + name + ' = _icons.' + name + ' || _missingIcon;';
 }).join('\n')}`
       : '';
 

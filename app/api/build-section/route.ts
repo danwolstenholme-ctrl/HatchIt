@@ -833,18 +833,48 @@ export async function POST(request: NextRequest) {
       await completeSection(sectionId, generatedCode, reasoning)
     }
 
-    // Guard: Don't return invalid/empty code - that breaks the preview
-    if (!generatedCode || !generatedCode.includes('function') || generatedCode.length < 100) {
-      console.error('[build-section] FAILED: Code validation failed')
+    // =============================================================================
+    // CODE VALIDATION - Prevent corrupted code from being returned
+    // =============================================================================
+    const validateGeneratedCode = (code: string): { valid: boolean; error?: string } => {
+      if (!code || code.length < 100) {
+        return { valid: false, error: 'Code too short' }
+      }
+      if (!code.includes('function')) {
+        return { valid: false, error: 'Missing function definition' }
+      }
+      if (!code.includes('return')) {
+        return { valid: false, error: 'Missing return statement' }
+      }
+      
+      // Check balanced braces
+      const openBraces = (code.match(/\{/g) || []).length
+      const closeBraces = (code.match(/\}/g) || []).length
+      if (openBraces !== closeBraces) {
+        return { valid: false, error: `Unbalanced braces: ${openBraces} open, ${closeBraces} close` }
+      }
+      
+      // Check balanced parentheses
+      const openParens = (code.match(/\(/g) || []).length
+      const closeParens = (code.match(/\)/g) || []).length
+      if (openParens !== closeParens) {
+        return { valid: false, error: `Unbalanced parentheses: ${openParens} open, ${closeParens} close` }
+      }
+      
+      return { valid: true }
+    }
+
+    const validation = validateGeneratedCode(generatedCode || '')
+    if (!validation.valid) {
+      console.error('[build-section] FAILED: Code validation failed -', validation.error)
       console.error('[build-section] generatedCode length:', generatedCode?.length || 0)
-      console.error('[build-section] has function:', generatedCode?.includes('function'))
       console.error('[build-section] Full raw response:', responseText)
       return NextResponse.json({ 
-        error: 'AI returned an invalid response. Please try again with a more specific prompt.',
+        error: `AI generated invalid code: ${validation.error}. Please try again with a more specific prompt.`,
         debug: process.env.NODE_ENV === 'development' ? {
           responseLength: responseText.length,
           codeLength: generatedCode?.length || 0,
-          hasFunction: generatedCode?.includes('function'),
+          validationError: validation.error,
           preview: responseText.slice(0, 200)
         } : undefined
       }, { status: 500 })
