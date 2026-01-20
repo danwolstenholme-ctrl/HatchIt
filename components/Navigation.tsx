@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X, ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 import { SubscriptionBadge } from './SubscriptionIndicator'
@@ -89,42 +89,55 @@ export default function Navigation() {
       </motion.nav>
 
       {/* Mobile menu */}
-      <motion.div
-        initial={false}
-        animate={{ 
-          opacity: mobileMenuOpen ? 1 : 0,
-          y: mobileMenuOpen ? 0 : -10,
-          pointerEvents: mobileMenuOpen ? 'auto' : 'none'
-        }}
-        transition={{ duration: 0.2 }}
-        className="fixed top-[57px] left-0 right-0 z-40 md:hidden"
-      >
-        <div className="bg-zinc-950/95 backdrop-blur-2xl border-b border-zinc-800/50">
-          <div className="max-w-6xl mx-auto px-4 py-4 flex flex-col gap-1">
-            {navLinks.map((link) => (
-              <Link 
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-4 py-3 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800/50 rounded-lg transition-colors"
-              >
-                {link.label}
-              </Link>
-            ))}
-            <SignedOut>
-              <div className="mt-2 pt-2 border-t border-zinc-800/50">
-                <Link 
-                  href="/sign-in"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-4 py-3 text-sm text-zinc-400 hover:text-white hover:bg-zinc-800/50 rounded-lg transition-colors"
-                >
-                  Sign in
-                </Link>
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm md:hidden"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            {/* Menu panel */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="fixed top-[57px] left-0 right-0 z-40 md:hidden"
+            >
+              <div className="bg-zinc-950/95 backdrop-blur-2xl border-b border-zinc-800/50">
+                <div className="max-w-6xl mx-auto px-4 py-4 flex flex-col gap-1">
+                  {navLinks.map((link) => (
+                    <Link 
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="px-4 py-3 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800/50 rounded-lg transition-colors"
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                  <SignedOut>
+                    <div className="mt-2 pt-2 border-t border-zinc-800/50">
+                      <Link 
+                        href="/sign-in"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block px-4 py-3 text-sm text-zinc-400 hover:text-white hover:bg-zinc-800/50 rounded-lg transition-colors"
+                      >
+                        Sign in
+                      </Link>
+                    </div>
+                  </SignedOut>
+                </div>
               </div>
-            </SignedOut>
-          </div>
-        </div>
-      </motion.div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </>
   )
 }
