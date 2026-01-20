@@ -215,6 +215,12 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   const [isAutoFixing, setIsAutoFixing] = useState(false)
   const [isFullscreenPreview, setIsFullscreenPreview] = useState(false) // Fullscreen preview mode
   
+  // Self-healing failsafes
+  const [healingRetryCount, setHealingRetryCount] = useState(0)
+  const [lastHealedError, setLastHealedError] = useState<string | null>(null)
+  const [healingPaused, setHealingPaused] = useState(false)
+  const MAX_HEALING_RETRIES = 3 // Stop after 3 failed attempts
+  
   // Page-wide refiner state
   const [pageRefinePrompt, setPageRefinePrompt] = useState('')
   const [isPageRefining, setIsPageRefining] = useState(false)
@@ -1351,6 +1357,29 @@ Fix the syntax error while preserving all functionality. Output plain JavaScript
       return
     }
     
+    // CIRCUIT BREAKER: If healing is paused, don't try again
+    if (healingPaused) {
+      console.log('[Self-Healing] Paused by user - skipping')
+      return
+    }
+    
+    // RETRY LIMIT: Stop after MAX_HEALING_RETRIES attempts
+    if (healingRetryCount >= MAX_HEALING_RETRIES) {
+      console.log('[Self-Healing] Max retries reached - pausing self-healing')
+      setHealingPaused(true)
+      setIsAutoFixing(false)
+      setIsHealing(false)
+      return
+    }
+    
+    // ERROR DEDUPLICATION: Don't retry the exact same error
+    const errorHash = `${error}-${sectionId || 'unknown'}`
+    if (errorHash === lastHealedError) {
+      console.log('[Self-Healing] Same error detected again - stopping to prevent loop')
+      setHealingRetryCount(prev => prev + 1)
+      return
+    }
+    
     // Ignore generic/unhelpful errors that can't be fixed
     const ignoredErrors = [
       'Script error',
@@ -1360,6 +1389,7 @@ Fix the syntax error while preserving all functionality. Output plain JavaScript
       'ChunkLoadError',
       'Network Error',
       'Failed to fetch',
+      'Self-healing in progress', // Prevent recursion from UI text
     ]
     if (ignoredErrors.some(e => error.includes(e))) {
       console.log('[Self-Healing] Ignoring unfixable error:', error)
@@ -1396,6 +1426,10 @@ Fix the syntax error while preserving all functionality. Output plain JavaScript
     }
     
     try {
+      // Track this error for deduplication
+      setLastHealedError(`${error}-${sectionId || 'unknown'}`)
+      setHealingRetryCount(prev => prev + 1)
+      
       // Call refine API with runtime error fix prompt
       const fixPrompt = `FIX RUNTIME ERROR: ${error}. The component crashed with this error. Fix the code so it renders correctly. Do not change the design, just fix the crash.`
       
@@ -1428,6 +1462,9 @@ Fix the syntax error while preserving all functionality. Output plain JavaScript
           })
           // Force preview refresh
           setPreviewKey(k => k + 1)
+          // Reset retry count on success
+          setHealingRetryCount(0)
+          setLastHealedError(null)
           console.log('[Self-Healing] Auto-fix applied successfully for', targetSectionId)
         }
       } else {
@@ -1441,7 +1478,44 @@ Fix the syntax error while preserving all functionality. Output plain JavaScript
         setIsAutoFixing(false)
       }, 5000) // 5 second cooldown for runtime errors
     }
-  }, [isAutoFixing, buildState, project, sectionsForBuild, dbSections, isProUser])
+  }, [isAutoFixing, buildState, project, sectionsForBuild, dbSections, isProUser, healingPaused, healingRetryCount, lastHealedError])
+
+  // Handle healing stuck - pause self-healing when it can't fix the issue
+  const handleHealingStuck = useCallback(() => {
+    console.log('[Self-Healing] Detected stuck state - pausing auto-healing')
+    setHealingPaused(true)
+    setIsAutoFixing(false)
+    setIsHealing(false)
+  }, [])
+
+  // Handle rebuild request from preview - user clicked "Rebuild Section" button
+  const handleRequestRebuild = useCallback(() => {
+    console.log('[Self-Healing] User requested rebuild - clearing section code')
+    if (!buildState) return
+    
+    const currentSectionId = sectionsForBuild[buildState.currentSectionIndex]?.id
+    if (!currentSectionId) return
+    
+    // Clear the broken code and reset to input state
+    setBuildState(prev => {
+      if (!prev) return prev
+      const newSectionCode = { ...prev.sectionCode }
+      delete newSectionCode[currentSectionId]
+      return {
+        ...prev,
+        sectionCode: newSectionCode,
+        completedSections: prev.completedSections.filter(id => id !== currentSectionId)
+      }
+    })
+    
+    // Reset healing state
+    setHealingPaused(false)
+    setHealingRetryCount(0)
+    setLastHealedError(null)
+    
+    // Refresh preview
+    setPreviewKey(k => k + 1)
+  }, [buildState, sectionsForBuild])
 
   // Handle page-wide refinement - applies changes to all sections at once
   const handlePageRefine = useCallback(async () => {
@@ -2826,6 +2900,15 @@ export default function GeneratedPage() {
                         completedSectionIds={buildState.completedSections}
                         isGenerating={false}
                         isHealing={isHealing}
+                        healingPaused={healingPaused}
+                        onToggleHealing={() => {
+                          setHealingPaused(!healingPaused)
+                          if (healingPaused) {
+                            // Resuming - reset retry count
+                            setHealingRetryCount(0)
+                            setLastHealedError(null)
+                          }
+                        }}
                         lastHealMessage={lastHealMessage ?? undefined}
                         pages={sidebarPages}
                         currentPageId={currentPageId}
@@ -2885,6 +2968,15 @@ export default function GeneratedPage() {
                 completedSectionIds={buildState.completedSections}
                 isGenerating={false}
                 isHealing={isHealing}
+                healingPaused={healingPaused}
+                onToggleHealing={() => {
+                  setHealingPaused(!healingPaused)
+                  if (healingPaused) {
+                    // Resuming - reset retry count
+                    setHealingRetryCount(0)
+                    setLastHealedError(null)
+                  }
+                }}
                 lastHealMessage={lastHealMessage ?? undefined}
                 pages={sidebarPages}
                 currentPageId={currentPageId}
@@ -3008,6 +3100,8 @@ export default function GeneratedPage() {
                         onTextEdit={handleTextEdit}
                         onSyntaxError={handleSyntaxError}
                         onRuntimeError={handleRuntimeError}
+                        onHealingStuck={handleHealingStuck}
+                        onRequestRebuild={handleRequestRebuild}
                         onElementSelect={(element) => setSelectedElement(element)}
                         seo={brandConfig?.seo ? {
                           title: brandConfig.seo.title || '',
@@ -3307,6 +3401,8 @@ export default function GeneratedPage() {
                           onTextEdit={handleTextEdit}
                           onSyntaxError={handleSyntaxError}
                           onRuntimeError={handleRuntimeError}
+                          onHealingStuck={handleHealingStuck}
+                          onRequestRebuild={handleRequestRebuild}
                           onElementSelect={(element) => setSelectedElement(element)}
                           seo={brandConfig?.seo ? {
                             title: brandConfig.seo.title || '',
@@ -3470,6 +3566,8 @@ export default function GeneratedPage() {
                   onTextEdit={handleTextEdit}
                   onSyntaxError={handleSyntaxError}
                   onRuntimeError={handleRuntimeError}
+                  onHealingStuck={handleHealingStuck}
+                  onRequestRebuild={handleRequestRebuild}
                   onElementSelect={(element) => setSelectedElement(element)}
                   seo={brandConfig?.seo ? {
                     title: brandConfig.seo.title || '',

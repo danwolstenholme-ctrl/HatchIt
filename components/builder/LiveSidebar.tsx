@@ -73,6 +73,8 @@ interface SidebarProps {
   projectName?: string
   userTier: Tier
   isHealing?: boolean
+  healingPaused?: boolean
+  onToggleHealing?: () => void
   lastHealMessage?: string
   pages?: SitePage[]
   currentPageId?: string
@@ -119,6 +121,8 @@ export default function LiveSidebar({
   projectName = 'Untitled',
   userTier,
   isHealing,
+  healingPaused,
+  onToggleHealing,
   pages = [],
   currentPageId,
   onSelectPage,
@@ -447,10 +451,16 @@ export default function LiveSidebar({
           
           {/* Auto-fix indicator */}
           {(userTier === 'visionary' || userTier === 'singularity') && (
-            <div className="mt-1 px-2 py-1 flex items-center gap-1.5">
-              <div className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[9px] text-emerald-400/60">Auto-fix active</span>
-            </div>
+            <button
+              onClick={onToggleHealing}
+              className="mt-1 px-2 py-1 flex items-center gap-1.5 w-full rounded hover:bg-zinc-800/50 transition-colors"
+              title={healingPaused ? 'Click to resume auto-healing' : 'Click to pause auto-healing'}
+            >
+              <div className={`w-1.5 h-1.5 rounded-full ${healingPaused ? 'bg-amber-500' : 'bg-emerald-400 animate-pulse'}`} />
+              <span className={`text-[9px] ${healingPaused ? 'text-amber-400/80' : 'text-emerald-400/60'}`}>
+                {healingPaused ? 'Auto-fix paused (click to resume)' : 'Auto-fix active'}
+              </span>
+            </button>
           )}
         </div>
       </div>

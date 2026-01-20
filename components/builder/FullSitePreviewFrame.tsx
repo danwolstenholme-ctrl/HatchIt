@@ -31,6 +31,8 @@ interface FullSitePreviewFrameProps {
   onElementSelect?: (element: SelectedElement | null) => void
   onSyntaxError?: (error: string, lineNumber?: number) => void
   onRuntimeError?: (error: string, sectionId?: string) => void
+  onHealingStuck?: () => void
+  onRequestRebuild?: () => void
 }
 
 // Element info passed when user clicks something in inspect mode
@@ -58,7 +60,7 @@ export interface SelectedElement {
 // Renders all assembled sections in an iframe - simplified for reliability
 // =============================================================================
 
-const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameProps>(function FullSitePreviewFrame({ sections, deviceView, seo, editMode = false, inspectMode = false, designTokens, onTextEdit, onElementSelect, onSyntaxError, onRuntimeError }, ref) {
+const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameProps>(function FullSitePreviewFrame({ sections, deviceView, seo, editMode = false, inspectMode = false, designTokens, onTextEdit, onElementSelect, onSyntaxError, onRuntimeError, onHealingStuck, onRequestRebuild }, ref) {
   const internalRef = useRef<HTMLIFrameElement>(null)
   
   // Stabilize sections reference to prevent infinite re-renders
@@ -117,10 +119,24 @@ const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameP
           onRuntimeError(event.data.error, event.data.sectionId)
         }
       }
+      // Listen for healing stuck notification
+      if (event.data?.type === 'healing-stuck') {
+        console.log('[Self-Healing] Healing stuck - user needs to manually fix')
+        if (onHealingStuck) {
+          onHealingStuck()
+        }
+      }
+      // Listen for rebuild request from user
+      if (event.data?.type === 'request-rebuild') {
+        console.log('[Self-Healing] User requested rebuild')
+        if (onRequestRebuild) {
+          onRequestRebuild()
+        }
+      }
     }
     window.addEventListener('message', handleMessage)
     return () => window.removeEventListener('message', handleMessage)
-  }, [onTextEdit, onSyntaxError, onElementSelect, onRuntimeError])
+  }, [onTextEdit, onSyntaxError, onElementSelect, onRuntimeError, onHealingStuck, onRequestRebuild])
   
   // eslint-disable-next-line react-hooks/exhaustive-deps -- stableSections is intentionally used instead of sections to prevent re-renders
   const srcDoc = useMemo(() => {
@@ -759,8 +775,20 @@ ${Array.from(allLucideImports).map((name) => {
       '<div style="color:#64748b;font-size:12px;max-width:280px;">AI is automatically fixing the code. This usually takes a few seconds.</div>' +
       '</div>';
     
+    // Stuck state HTML - shown after timeout
+    var stuckHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);font-family:system-ui;flex-direction:column;gap:16px;padding:20px;text-align:center;">' +
+      '<div style="width:48px;height:48px;background:#f59e0b20;border-radius:50%;display:flex;align-items:center;justify-content:center;">' +
+      '<svg width="24" height="24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+      '</div>' +
+      '<div style="color:#f59e0b;font-size:15px;font-weight:600;">Self-healing stuck</div>' +
+      '<div style="color:#64748b;font-size:12px;max-width:280px;margin-bottom:8px;">The code has an issue that auto-fix couldn\\'t resolve. Try rebuilding this section or adjusting your prompt.</div>' +
+      '<button onclick="window.parent.postMessage({type:\\'request-rebuild\\'},\\'*\\')" style="background:#f59e0b;color:#000;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;margin-top:8px;">Rebuild Section</button>' +
+      '</div>';
+    
     // Show loading indicator until Babel runs
     window._previewLoading = true;
+    window._healingStartTime = Date.now();
+    
     setTimeout(function() {
       if (window._previewLoading) {
         var root = document.getElementById('root');
@@ -770,6 +798,15 @@ ${Array.from(allLucideImports).map((name) => {
         }
       }
     }, 3000);
+    
+    // After 15 seconds, show stuck state instead of infinite healing
+    setTimeout(function() {
+      var root = document.getElementById('root');
+      if (root && root.innerHTML.includes('Self-healing in progress')) {
+        root.innerHTML = stuckHTML;
+        window.parent.postMessage({ type: 'healing-stuck' }, '*');
+      }
+    }, 15000);
     
     // Wrap console.error to catch Babel syntax errors that don't throw
     var originalConsoleError = console.error;
