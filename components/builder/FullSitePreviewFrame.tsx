@@ -763,7 +763,7 @@ ${Array.from(allLucideImports).map((name) => {
   <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
   <script>console.log('[Preview] framer-motion loaded, Motion:', typeof Motion, 'motion:', typeof motion);</script>
   <script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js"></script>
-  <script>console.log('[Preview] lucide-react loaded:', typeof LucideReact, 'icons:', LucideReact ? Object.keys(LucideReact).length : 0);</script>
+  <script>console.log('[Preview] lucide-react loaded:', typeof LucideReact);</script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script>console.log('[Preview] Babel loaded:', typeof Babel);</script>
   <script>
