@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth, clerkClient, currentUser } from '@clerk/nextjs/server'
-import { getProjectById, getSectionById, updateSectionRefinement, getSectionsByProjectId } from '@/lib/db'
+import { getProjectById, getSectionById, updateSectionRefinement, getSectionsByProjectId, pushSectionVersion } from '@/lib/db'
 import { LIMITS } from '@/types/subscriptions'
 
 // =============================================================================
@@ -687,6 +687,9 @@ ${code}`
     // SAVE TO DATABASE - persist the refined code (skip for demo mode)
     if (wasRefined && !isDemoMode && sectionId) {
       await updateSectionRefinement(sectionId, true, refinedCode, changes)
+      // Also save to version history
+      const label = refineRequest ? `User: "${refineRequest.slice(0, 30)}..."` : 'AI refinement'
+      await pushSectionVersion(sectionId, refinedCode, label, refineRequest)
     }
 
     return NextResponse.json({

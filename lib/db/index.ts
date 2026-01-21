@@ -38,6 +38,9 @@ export {
   skipSection,
   resetSection,
   getSectionStats,
+  pushSectionVersion,
+  getSectionVersions,
+  rollbackSectionToVersion,
 } from './sections'
 
 // Builds

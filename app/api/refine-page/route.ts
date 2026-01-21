@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth, clerkClient, currentUser } from '@clerk/nextjs/server'
-import { getProjectById, getSectionsByProjectId } from '@/lib/db'
+import { auth, clerkClient } from '@clerk/nextjs/server'
+import { getProjectById, getSectionsByProjectId, updateSectionRefinement, pushSectionVersion } from '@/lib/db'
 
 // =============================================================================
 // PAGE-WIDE REFINER - Refines all sections at once with coherent styling
@@ -199,6 +199,36 @@ export async function POST(request: NextRequest) {
       if (!parsed.sections || typeof parsed.sections !== 'object') {
         throw new Error('Invalid response structure')
       }
+
+      // =============================================================================
+      // SAVE TO DATABASE - Persist refined code for each section
+      // =============================================================================
+      const dbSections = await getSectionsByProjectId(projectId)
+      const savePromises: Promise<unknown>[] = []
+      const versionPromises: Promise<unknown>[] = []
+      
+      for (const [sectionId, refinedCode] of Object.entries(parsed.sections)) {
+        if (typeof refinedCode !== 'string') continue
+        
+        // Find the DB section by section_id (e.g., "header", "hero")
+        const dbSection = dbSections.find(s => s.section_id === sectionId)
+        if (dbSection) {
+          console.log(`[refine-page] Saving refined code for section: ${sectionId} (DB ID: ${dbSection.id})`)
+          savePromises.push(
+            updateSectionRefinement(dbSection.id, true, refinedCode, [parsed.summary || 'Page-wide refinement'])
+          )
+          // Also save to version history
+          versionPromises.push(
+            pushSectionVersion(dbSection.id, refinedCode, `Page refine: "${refineRequest.slice(0, 25)}..."`, refineRequest)
+          )
+        } else {
+          console.warn(`[refine-page] Could not find DB section for: ${sectionId}`)
+        }
+      }
+      
+      // Wait for all saves to complete
+      await Promise.all([...savePromises, ...versionPromises])
+      console.log(`[refine-page] Saved ${savePromises.length} sections to database with version history`)
 
       return NextResponse.json({
         success: true,

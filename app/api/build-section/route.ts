@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { track } from '@vercel/analytics/server'
-import { getProjectById, getOrCreateUser, completeSection, checkAndIncrementGeneration } from '@/lib/db'
+import { getProjectById, getOrCreateUser, completeSection, checkAndIncrementGeneration, pushSectionVersion } from '@/lib/db'
 import { getUserDNA } from '@/lib/db/chronosphere'
 import { StyleDNA } from '@/lib/supabase'
 import { componentLibrary } from '@/lib/components'
@@ -831,6 +831,8 @@ export async function POST(request: NextRequest) {
     // Save to DB only if we have a valid user and it's not a demo project
     if (generatedCode && userId && !projectId.startsWith('demo-')) {
       await completeSection(sectionId, generatedCode, reasoning)
+      // Also save to version history
+      await pushSectionVersion(sectionId, generatedCode, 'Initial build', userPrompt)
     }
 
     // =============================================================================

@@ -280,3 +280,131 @@ export async function getSectionStats(projectId: string): Promise<{
     building: sections.filter(s => s.status === 'building').length,
   }
 }
+
+// =============================================================================
+// SECTION VERSION HISTORY
+// =============================================================================
+
+interface SectionVersion {
+  code: string
+  label: string
+  timestamp: number
+  prompt?: string
+}
+
+/**
+ * Push a new version to section history
+ * Keeps last 10 versions in the code_versions JSONB column
+ */
+export async function pushSectionVersion(
+  sectionId: string,
+  code: string,
+  label: string,
+  prompt?: string
+): Promise<boolean> {
+  if (!supabaseAdmin) return false
+
+  try {
+    // Get current section with versions
+    const { data: section, error: fetchError } = await supabaseAdmin
+      .from('sections')
+      .select('code_versions')
+      .eq('id', sectionId)
+      .single()
+
+    if (fetchError) {
+      console.error('Error fetching section for version push:', fetchError)
+      return false
+    }
+
+    // Get existing versions or empty array
+    const existingVersions: SectionVersion[] = (section?.code_versions as SectionVersion[]) || []
+    
+    // Don't push duplicate code
+    if (existingVersions.length > 0 && existingVersions[existingVersions.length - 1].code === code) {
+      return true // Already have this version
+    }
+
+    // Add new version, keep last 10
+    const newVersions = [
+      ...existingVersions,
+      { code, label, timestamp: Date.now(), prompt }
+    ].slice(-10)
+
+    // Update section
+    const { error: updateError } = await supabaseAdmin
+      .from('sections')
+      .update({ code_versions: newVersions })
+      .eq('id', sectionId)
+
+    if (updateError) {
+      console.error('Error pushing section version:', updateError)
+      return false
+    }
+
+    console.log(`[Section Version] Pushed version "${label}" for section ${sectionId} (${newVersions.length} total)`)
+    return true
+  } catch (err) {
+    console.error('Error in pushSectionVersion:', err)
+    return false
+  }
+}
+
+/**
+ * Get version history for a section
+ */
+export async function getSectionVersions(sectionId: string): Promise<SectionVersion[]> {
+  if (!supabaseAdmin) return []
+
+  const { data, error } = await supabaseAdmin
+    .from('sections')
+    .select('code_versions')
+    .eq('id', sectionId)
+    .single()
+
+  if (error) {
+    console.error('Error fetching section versions:', error)
+    return []
+  }
+
+  return (data?.code_versions as SectionVersion[]) || []
+}
+
+/**
+ * Rollback section to a specific version index
+ */
+export async function rollbackSectionToVersion(
+  sectionId: string,
+  versionIndex: number
+): Promise<DbSection | null> {
+  if (!supabaseAdmin) return null
+
+  // Get versions
+  const versions = await getSectionVersions(sectionId)
+  
+  if (versionIndex < 0 || versionIndex >= versions.length) {
+    console.error(`Invalid version index ${versionIndex} for section ${sectionId}`)
+    return null
+  }
+
+  const targetVersion = versions[versionIndex]
+
+  // Update section code
+  const { data, error } = await supabaseAdmin
+    .from('sections')
+    .update({ 
+      code: targetVersion.code,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', sectionId)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error rolling back section:', error)
+    return null
+  }
+
+  console.log(`[Section Rollback] Rolled back to version ${versionIndex} for section ${sectionId}`)
+  return data as DbSection
+}
